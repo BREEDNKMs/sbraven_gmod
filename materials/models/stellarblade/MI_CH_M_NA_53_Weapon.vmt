@@ -1,0 +1,35 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\stellarblade\ch_m_na_53_weapon_a" 
+	"$model" 1 
+	"$detailscale" 1        
+	"$detailblendfactor" 1  
+	"$detailblendmode" 5    
+	"$bumpmap"	"models\stellarblade\ch_m_na_53_weapon_n"
+	"$selfillum" 1
+//	"$selfillummask" "models\stellarblade\ch_m_na_53_weapon_e" // can't be used with bumpmap 
+//	"$detail" "models\stellarblade\ch_m_na_53_weapon_e" // ditto 
+	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
+	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
+	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
+	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
+	"$EmissiveBlendBaseTexture" 	"models\stellarblade\ch_m_na_53_weapon_e"	// this is the glowing texture.vtf
+	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
+	"$EmissiveBlendTint" 			" [ 1 1 1 ] "		// RGB glow intensity. Leave at 1 1 1. This can be used to change how strong each color should glow. So instead of using a darker red color, you may use [.5 1 1] to have red glow half as strong.
+	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
+	 // Phong Shading
+    "$phong" "1"
+	"$phongexponenttexture"		"models/stellarblade/CH_M_NA_53_Weapon_phongexp"
+    "$phongboost" "5"                         // 5 may blow out highlights, 2–3 is safer
+    "$phongexponent" "30"                     // higher = sharper highlights
+    "$phongalbedotint" "1"
+    $phongfresnelranges			"[0.1 0.8 1.0]"           // tweak for a stronger fresnel/glint effect 
+	"$normalmapalphaenvmapmask" "1"             // allows bump alpha to control reflection mask
+	
+	"$envmap"						"env_cubemap"
+	"$envmaptint"					"[0.1 0.1 0.1]"
+	"$envmapcontrast"				1.0
+	"$envmapmask"					"models/stellarblade/CH_M_NA_53_Weapon_envmap"
+	"$envmapfresnel"				1
+
+}
