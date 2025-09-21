@@ -1,0 +1,9 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\alvaroports\SBRaven\Eyelashes-1"
+	"$bumpmap" "dev/flat_normal"
+	$nodecal							"1"
+	$translucent							"1"
+//	$allowAlphaToCoverage				"1"
+	$nocull								"1"
+}

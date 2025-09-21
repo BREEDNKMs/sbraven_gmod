@@ -1,0 +1,25 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\alvaroports\SBRaven\Legs-2"
+	"$bumpmap" "models\alvaroports\SBRaven\Legs-2_normal"
+	"$phongexponenttexture" "models\alvaroports\SBRaven\Legs-2_roughness"
+
+	"$phong" "1"
+	"$phongexponentfactor" "30"
+//	"$phongexponent" "10" 					 // (controla o espalhamento, maior=menos espalhamento, metal polido ou algo assim)
+	"$phongboost" "1" 					 // controle de reflexo/quanto mais alto = mais molhado/reflexo
+	"$phongfresnelranges" "[.1 .5 1]" 	 // força do phong, maior os numeros = phong mais branco e intenso
+//	"$phongfresnelranges" "[0.1 0.5 1]" 	 // força do phong, maior os numeros = phong mais branco e intenso
+//	"$phongalbedotint" "1" 					 // aplicar phong a textura base, desativar se quiser o phong mais branco
+
+	"$rimlight" "1"
+	"$rimlightexponent" "1"     // não sei, não funciona
+	"$rimlightboost" "1"        // igual o phongexponent, controla o espalhamento
+	"$rimmask" "1"				// Usa o alpha channel do phongexponenttexture como specular (inutil se usar dxt1 sem alpha)
+
+	"$nodecal"					"1"
+//	"$alphatest"				"1"
+	"$allowAlphaToCoverage"		"1"
+	"$nocull"					"1"
+//	"$blendtintbybasealpha" "1" // aplica color2 apenas no alpha da textura base
+}
