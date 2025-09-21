@@ -1,0 +1,245 @@
+// custom animations 
+
+$animation "a_walking_walk_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 3
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_N" "sbravenpm_anims\M_Raven_Caution_Fw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_S" "sbravenpm_anims\M_Raven_Caution_Bw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_E" "sbravenpm_anims\M_Raven_Caution_Lw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_W" "sbravenpm_anims\M_Raven_Caution_Rw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+} 
+
+
+
+$sequence "m_raven_run_l2" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_WALK_AGITATED 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l3" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_MP_JUMP_SECONDARY 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l4" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_IDLE 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l5" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_IDLE_STEALTH 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l6" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_IDLE_ANGRY 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l7" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_RANGE_ATTACK1 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l8" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_RANGE_ATTACK2 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+
+$sequence "m_raven_run_l9" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180 
+	blendwidth 9 
+	fps 30 
+	activity ACT_MELEE_ATTACK2 32768 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+} 
+

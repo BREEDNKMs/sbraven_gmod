@@ -1,0 +1,1910 @@
+$sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	260.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	241.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	69.0	 "M_Raven_vo_Dmg_L_Cue" }
+	{event AE_SV_PLAYSOUND 	244.0	 "M_Raven_vo_Dmg_L_Cue" }
+	{event AE_SV_PLAYSOUND 	123.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_SV_PLAYSOUND 	285.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	313.0	 "M_Raven_Bodyfall_L_Cue" }
+} 
+
+$sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_e.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	11.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	90.0	 "M_Raven_Bodyfall_L_Cue" }
+	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	29.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	14.0	 "M_Raven_vo_Dmg_L_Cue" }
+} 
+
+$sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_s.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	24.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_SV_PLAYSOUND 	115.0	 "M_Raven_Bodyfall_S_Cue" }
+} 
+
+$sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	175.0	 "" }
+	{event AE_SV_PLAYSOUND 	250.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event 1004 	165.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	172.0	 "" }
+	{event 1004 	30.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	39.0	 "" }
+	{event AE_NPC_LEFTFOOT 	8.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	42.0	 "" }
+	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_Cloth_XL3_Cue" }
+	{event AE_SV_PLAYSOUND 	148.0	 "M_Raven_vo_Cast_S_Cue" }
+} 
+
+$sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	407.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
+	{event AE_NPC_LEFTFOOT 	201.0	 "" }
+	{event AE_SV_PLAYSOUND 	168.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	315.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	178.0	 "M_Raven_Cloth_XL3_Cue" }
+	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	24.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_LEFTFOOT 	333.0	 "" }
+	{event AE_NPC_LEFTFOOT 	402.0	 "" }
+	{event AE_SV_PLAYSOUND 	314.0	 "M_Raven_Cloth_XL3_Cue" }
+	{event AE_NPC_RIGHTFOOT 	340.0	 "" }
+	{event AE_SV_PLAYSOUND 	316.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	78.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	90.0	 "" }
+} 
+
+$sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_LEFTFOOT 	16.0	 "" }
+	{event AE_SV_PLAYSOUND 	43.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_RIGHTFOOT 	89.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	54.0	 "" }
+	{event AE_SV_PLAYSOUND 	43.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_NPC_LEFTFOOT 	58.0	 "" }
+} 
+
+$sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacountergrabsuccess.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	233.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
+	{event AE_NPC_LEFTFOOT 	47.0	 "" }
+	{event AE_SV_PLAYSOUND 	127.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_SV_PLAYSOUND 	125.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	94.0	 "" }
+	{event AE_SV_PLAYSOUND 	68.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
+	{event AE_SV_PLAYSOUND 	229.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
+} 
+
+$sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+} 
+
+$sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+} 
+
+$sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	56.0	 "" }
+	{event AE_NPC_LEFTFOOT 	57.0	 "" }
+	{event AE_SV_PLAYSOUND 	39.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_RIGHTFOOT 	7.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
+	{event AE_NPC_LEFTFOOT 	31.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	87.0	 "" }
+	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	56.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	23.0	 "M_Raven_vo_Cast_M_Cue" }
+} 
+
+$sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
+	{event AE_NPC_LEFTFOOT 	32.0	 "" }
+	{event AE_NPC_LEFTFOOT 	59.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	58.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
+	{event AE_SV_PLAYSOUND 	37.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_RIGHTFOOT 	9.0	 "" }
+	{event AE_SV_PLAYSOUND 	21.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_SV_PLAYSOUND 	56.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	88.0	 "" }
+} 
+
+$sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	233.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
+	{event AE_NPC_LEFTFOOT 	47.0	 "" }
+	{event AE_SV_PLAYSOUND 	132.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	37.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	134.0	 "M_Raven_Skill_Stab_Cue" }
+	{event AE_SV_PLAYSOUND 	82.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event 1004 	226.0	 "CharSESound" }
+	{event AE_SV_PLAYSOUND 	132.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
+} 
+
+$sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
+	{event AE_NPC_LEFTFOOT 	41.0	 "" }
+	{event AE_SV_PLAYSOUND 	124.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	45.0	 "" }
+	{event AE_NPC_LEFTFOOT 	233.0	 "" }
+	{event AE_SV_PLAYSOUND 	128.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	229.0	 "M_Raven_Bodyfall_S_Cue" }
+} 
+
+$sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	160.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	170.0	 "" }
+	{event AE_NPC_LEFTFOOT 	8.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	334.0	 "" }
+	{event AE_SV_PLAYSOUND 	256.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	88.0	 "" }
+	{event AE_NPC_LEFTFOOT 	361.0	 "" }
+	{event AE_NPC_LEFTFOOT 	189.0	 "" }
+	{event AE_NPC_LEFTFOOT 	96.0	 "" }
+	{event AE_SV_PLAYSOUND 	354.0	 "M_Raven_SwordSwish_XS_Cue" }
+	{event AE_SV_PLAYSOUND 	30.0	 "M_Raven_SwordSwish_XS_Cue" }
+	{event AE_SV_PLAYSOUND 	27.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	380.0	 "" }
+} 
+
+$sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	203.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	237.0	 "" }
+	{event AE_SV_PLAYSOUND 	36.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_SV_PLAYSOUND 	38.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	128.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	200.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	185.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	354.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	143.0	 "" }
+	{event AE_NPC_LEFTFOOT 	154.0	 "" }
+	{event AE_NPC_LEFTFOOT 	298.0	 "" }
+	{event AE_SV_PLAYSOUND 	199.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	167.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	267.0	 "" }
+} 
+
+$sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_L_Cue" }
+} 
+
+$sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_SwordSwish_XL_C_Cue" }
+	{event AE_NPC_RIGHTFOOT 	127.0	 "" }
+	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_L_Cue" }
+} 
+
+$sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	84.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	301.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	38.0	 "" }
+	{event 1004 	79.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	197.0	 "" }
+	{event AE_NPC_LEFTFOOT 	294.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	223.0	 "" }
+	{event AE_NPC_LEFTFOOT 	152.0	 "" }
+	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	16.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_NPC_RIGHTFOOT 	173.0	 "" }
+	{event AE_SV_PLAYSOUND 	21.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_SV_PLAYSOUND 	165.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_NPC_LEFTFOOT 	169.0	 "" }
+	{event AE_SV_PLAYSOUND 	171.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
+	{event AE_NPC_LEFTFOOT 	92.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	96.0	 "" }
+	{event AE_SV_PLAYSOUND 	214.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event 1004 	43.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+} 
+
+$sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	7.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
+} 
+
+$sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+} 
+
+$sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	7.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	25.0	 "" }
+} 
+
+$sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	6.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
+} 
+
+$sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	6.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	22.0	 "" }
+} 
+
+$sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_RIGHTFOOT 	146.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	20.0	 "" }
+	{event 1004 	134.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	150.0	 "" }
+	{event AE_SV_PLAYSOUND 	101.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_LEFTFOOT 	210.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	218.0	 "" }
+} 
+
+$sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	68.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	74.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
+	{event AE_NPC_LEFTFOOT 	141.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	207.0	 "" }
+} 
+
+$sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	260.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	235.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	104.0	 "" }
+	{event AE_SV_PLAYSOUND 	88.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_NPC_LEFTFOOT 	106.0	 "" }
+	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_SV_PLAYSOUND 	182.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	90.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	186.0	 "" }
+} 
+
+$sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	12.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	385.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	360.0	 "" }
+	{event AE_SV_PLAYSOUND 	145.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	214.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	221.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	144.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_Cloth_XL2_Ce" }
+} 
+
+$sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsuccessend.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	361.0	 "" }
+	{event AE_SV_PLAYSOUND 	120.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	306.0	 "" }
+	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_Bodyfall_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	258.0	 "" }
+	{event AE_SV_PLAYSOUND 	114.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	63.0	 "" }
+	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_vo_Dmg_L_Cue" }
+	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_vo_Dmg_S_Cue" }
+} 
+
+$sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+} 
+
+$sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	72.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	140.0	 "" }
+	{event AE_SV_PLAYSOUND 	161.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	81.0	 "" }
+	{event AE_SV_PLAYSOUND 	112.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_NPC_RIGHTFOOT 	95.0	 "" }
+	{event AE_NPC_LEFTFOOT 	167.0	 "" }
+	{event AE_NPC_LEFTFOOT 	101.0	 "" }
+	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	145.0	 "" }
+	{event AE_SV_PLAYSOUND 	117.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+} 
+
+$sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordaura.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	45.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
+	{event AE_NPC_LEFTFOOT 	107.0	 "" }
+	{event AE_SV_PLAYSOUND 	94.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	195.0	 "" }
+	{event AE_SV_PLAYSOUND 	7.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	5.0	 "M_Raven_Cloth_XL3_Cue" }
+	{event AE_SV_PLAYSOUND 	49.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event 1004 	37.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+} 
+
+$sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
+	{event AE_NPC_LEFTFOOT 	42.0	 "" }
+	{event AE_SV_PLAYSOUND 	35.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event 1004 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+} 
+
+$sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	71.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
+	{event AE_NPC_LEFTFOOT 	68.0	 "" }
+	{event 1004 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	35.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	42.0	 "" }
+} 
+
+$sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
+	{event AE_SV_PLAYSOUND 	140.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_LEFTFOOT 	93.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	294.0	 "" }
+	{event 1004 	119.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+	{event AE_NPC_LEFTFOOT 	395.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	385.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	166.0	 "" }
+	{event AE_NPC_LEFTFOOT 	217.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	80.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	315.0	 "" }
+	{event AE_NPC_LEFTFOOT 	162.0	 "" }
+	{event AE_NPC_LEFTFOOT 	364.0	 "" }
+	{event 1004 	155.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	285.0	 "" }
+} 
+
+$sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	214.0	 "" }
+	{event AE_NPC_LEFTFOOT 	227.0	 "" }
+	{event AE_NPC_LEFTFOOT 	80.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	106.0	 "" }
+	{event AE_SV_PLAYSOUND 	140.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	162.0	 "" }
+} 
+
+$sequence "m_raven_parry" "sbravenpm_anims\m_raven_parry.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	49.0	 "M_Raven_SwordSwish_XS_Cue" }
+	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	45.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	5.0	 "" }
+} 
+
+$sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_RIGHTFOOT 	100.0	 "" }
+	{event AE_NPC_LEFTFOOT 	150.0	 "" }
+	{event AE_NPC_LEFTFOOT 	4.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	79.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	5.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	209.0	 "" }
+} 
+
+$sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	29.0	 "" }
+	{event AE_SV_PLAYSOUND 	150.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	156.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	158.0	 "" }
+	{event AE_NPC_LEFTFOOT 	267.0	 "" }
+} 
+
+$sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycounterslashsuccess.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_NPC_LEFTFOOT 	379.0	 "" }
+	{event 1004 	308.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	326.0	 "" }
+	{event AE_SV_PLAYSOUND 	243.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_SV_PLAYSOUND 	192.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	261.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_RIGHTFOOT 	373.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	322.0	 "" }
+	{event AE_SV_PLAYSOUND 	16.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_SV_PLAYSOUND 	154.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	304.0	 "M_Raven_vo_ATK_L_Cue" }
+} 
+
+$sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_ATK_S_Cue" }
+} 
+
+$sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { 
+	fps 31 
+	activity ACT_TRANSITION 1 
+	origin 0 0 42 
+	addlayer inverse_proportions 
+	transition "walking" "" 
+	{event AE_NPC_LEFTFOOT 	6.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
+} 
+
+$sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	transition "" "walking" 
+	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
+} 
+
+$sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakercounter.smd" { 
+	fps 32 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_NPC_LEFTFOOT 	222.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	248.0	 "" }
+	{event AE_NPC_LEFTFOOT 	124.0	 "" }
+	{event AE_SV_PLAYSOUND 	86.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	170.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	172.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	324.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	113.0	 "" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_SV_PLAYSOUND 	83.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	168.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_NPC_LEFTFOOT 	275.0	 "" }
+} 
+
+$sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
+	{event AE_NPC_LEFTFOOT 	50.0	 "" }
+	{event AE_NPC_LEFTFOOT 	105.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	154.0	 "" }
+	{event AE_SV_PLAYSOUND 	101.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	28.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_SwordSwish_XL_Cue" }
+} 
+
+$sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_NPC_RIGHTFOOT 	118.0	 "" }
+	{event AE_NPC_LEFTFOOT 	122.0	 "" }
+	{event AE_NPC_LEFTFOOT 	174.0	 "" }
+	{event AE_SV_PLAYSOUND 	40.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_SV_PLAYSOUND 	116.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	168.0	 "" }
+	{event AE_SV_PLAYSOUND 	40.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	79.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	76.0	 "M_Raven_SwordSwish_XL_Cue" }
+	{event 1004 	111.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+} 
+
+$sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	343.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	449.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	314.0	 "" }
+	{event AE_SV_PLAYSOUND 	259.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	404.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_SV_PLAYSOUND 	194.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_SV_PLAYSOUND 	151.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event 1004 	433.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_NPC_LEFTFOOT 	251.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	256.0	 "" }
+	{event AE_SV_PLAYSOUND 	406.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	261.0	 "mon_swish_m_cue" }
+	{event AE_SV_PLAYSOUND 	173.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event AE_SV_PLAYSOUND 	236.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event AE_NPC_RIGHTFOOT 	526.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	66.0	 "" }
+	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_vo_SkillLaugh_Cue" }
+	{event AE_SV_PLAYSOUND 	407.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event AE_NPC_LEFTFOOT 	322.0	 "" }
+	{event AE_SV_PLAYSOUND 	342.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	147.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	444.0	 "" }
+	{event AE_SV_PLAYSOUND 	286.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_SV_PLAYSOUND 	376.0	 "M_Raven_vo_Cast_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	498.0	 "" }
+	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_Cloth_XL2_Ce" }
+	{event AE_NPC_RIGHTFOOT 	223.0	 "" }
+	{event AE_SV_PLAYSOUND 	172.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	287.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	219.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_SV_PLAYSOUND 	261.0	 "M_Raven_vo_Cast_M_Cue" }
+} 
+
+$sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	175.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	210.0	 "" }
+	{event 1004 	111.0	 "*Skill/Monster/Raven/M_Raven_Skill_ElectricImpact_S_1.wav" }
+	{event 1004 	201.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	202.0	 "M_Raven_vo_Cast_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	347.0	 "" }
+	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	109.0	 "" }
+	{event AE_NPC_LEFTFOOT 	102.0	 "" }
+	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_NPC_LEFTFOOT 	206.0	 "" }
+	{event 1004 	164.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+	{event AE_NPC_LEFTFOOT 	20.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	168.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	69.0	 "" }
+	{event AE_SV_PLAYSOUND 	109.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event AE_SV_PLAYSOUND 	142.0	 "M_Raven_SwordSwish_L_Cue" }
+	{event AE_SV_PLAYSOUND 	138.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	185.0	 "M_Raven_Cloth_XL2_Ce" }
+} 
+
+$sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	110.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	46.0	 "" }
+	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	76.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	122.0	 "" }
+	{event AE_SV_PLAYSOUND 	208.0	 "M_Raven_SwordSwish_M_Cue" }
+	{event AE_SV_PLAYSOUND 	41.0	 "M_Raven_vo_ATK_S_Cue" }
+	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_vo_Cast_M_Cue" }
+	{event AE_NPC_LEFTFOOT 	223.0	 "" }
+} 
+
+$sequence "result_hit_add_light_fw_dw" "sbravenpm_anims\result_hit_add_light_fw_dw.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
+} 
+
+$sequence "result_hit_add_light_fw_lw" "sbravenpm_anims\result_hit_add_light_fw_lw.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+} 
+
+$sequence "result_hit_add_light_fw_rw" "sbravenpm_anims\result_hit_add_light_fw_rw.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+} 
+
+$sequence "result_hit_add_light_fw_uw" "sbravenpm_anims\result_hit_add_light_fw_uw.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+} 
+
+$sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw.smd" { 
+	fps 30 
+	activity ACT_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_NPC_RIGHTFOOT 	33.0	 "" }
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	17.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light_fw_dw.smd" { 
+	fps 30 
+	activity ACT_BIG_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	6.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light_fw_lw.smd" { 
+	fps 30 
+	activity ACT_BIG_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	12.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light_fw_rw.smd" { 
+	fps 30 
+	activity ACT_BIG_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	12.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light_fw_uw.smd" { 
+	fps 30 
+	activity ACT_BIG_FLINCH 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	6.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	16.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	10.0	 "" }
+} 
+
+$sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	9.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	15.0	 "" }
+} 
+
+$sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	transition "result_state_groggy_l" "" 
+	{event AE_NPC_LEFTFOOT 	45.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
+} 
+
+$sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	node "result_state_groggy_l" 
+} 
+
+$sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	transition "" "result_state_groggy_l" 
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_P_Cue" }
+	{event AE_SV_PLAYSOUND 	28.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_NPC_LEFTFOOT 	15.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	22.0	 "" }
+	{event 1004 	31.0	 "*Skill/Monster/Raven/M_Raven_SwordDrop.wav" }
+} 
+
+$sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	transition "result_state_knockdown_l" "" 
+	{event AE_NPC_LEFTFOOT 	17.0	 "" }
+	{event AE_NPC_RIGHTFOOT 	32.0	 "" }
+} 
+
+$sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	node result_state_knockdown_l 
+} 
+
+$sequence "result_state_knockdown_s_bw" "sbravenpm_anims\result_state_knockdown_s_bw.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Dmg_L_Cue" }
+	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_L_Cue" }
+} 
+
+$sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_s_fw.smd" { 
+	fps 30 
+	activity ACT_TRANSITION 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_Dmg_L_Cue" }
+	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	5.0	 "M_Raven_Bodyfall_S_Cue" }
+	{event AE_SV_PLAYSOUND 	11.0	 "M_Raven_Bodyfall_L_Cue" }
+	{event AE_NPC_RIGHTFOOT 	5.0	 "" }
+} 
+
+$sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { 
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	{event AE_NPC_RIGHTFOOT 	1.0	 "" }
+	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Dmg_L_Cue" }
+} 
+
+$sequence "Hit_Raven_BetaCounterGrabE" "sbravenpm_anims\Hit_Raven_BetaCounterGrabE.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGrabL.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGrabS.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCounter.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryCounterSlashSuccess.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBreakerCounter.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_E.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_S.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { 
+	fps 60 
+	activity ACT_IDLE 100000 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { 
+	fps 60 
+	activity ACT_IDLE 50000 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { 
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "mann_fix_down_idle" "sbravenpm_anims\mann_fix_down_idle.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_a" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_A.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_b" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_B.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_c" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_C.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_d" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_D.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_e" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_e.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_g" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_g.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Xion06_RavenAppearance_eve_h" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_h.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "Xion01_Legacy2_Hologram_Raven_01" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "Xion01_Legacy2_Hologram_Raven_01_1" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_1.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "Xion01_Legacy2_Hologram_Raven_01_2" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_2.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "Xion01_Legacy2_Hologram_Raven_02" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_02.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_WLA10_Legacy4_Hologram_Raven_01" "sbravenpm_anims\MV_WLA10_Legacy4_Hologram_Raven_01.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_A" "sbravenpm_anims\MV_Nest_Intro_eve_A.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_C" "sbravenpm_anims\MV_Nest_Intro_eve_C.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_H" "sbravenpm_anims\MV_Nest_Intro_eve_H.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_A" "sbravenpm_anims\MV_Nest_Intro_raven_A.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_B" "sbravenpm_anims\MV_Nest_Intro_raven_B.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_C" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_D" "sbravenpm_anims\MV_Nest_Intro_raven_D.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_E" "sbravenpm_anims\MV_Nest_Intro_raven_E.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_F" "sbravenpm_anims\MV_Nest_Intro_raven_F.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_H" "sbravenpm_anims\MV_Nest_Intro_raven_H.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_raven_I" "sbravenpm_anims\MV_Nest_Intro_raven_I.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_eve_A.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_eve_B.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_eve_C.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_D" "sbravenpm_anims\MV_Nest_RavenBattle_eve_D.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_eve_E.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_eve_F.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_raven_A.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_raven_B.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_raven_C.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_raven_D.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_raven_E.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_a.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_b.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_a.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_B_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_b.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_C_idle" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C_idle.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_d_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_a.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_d_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_b.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_d_c" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_c.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_E.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_F_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F_a.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_G" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_G.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_Z.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A.smd" { // actually has 19681 frames, this must last 10.25 seconds 
+	fps 60 // originally 1920 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_a.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_b.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_A_Ch" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_Ch.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B_a.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C.smd" { 
+	fps 60 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_C_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C_a.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_D.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_E.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_F.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_Z.smd" { 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { 
+	fps 60 
+	activity ACT_RESET 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+} 
+
+$sequence "m_raven_battleidle01" "sbravenpm_anims\m_raven_battleidle01.smd" { 
+	fps 60 
+	activity ACT_HL2MP_IDLE_MELEE_ANGRY 9999 
+	origin 0 0 42 
+	fadein 0.6
+	fadeout 0.6 
+	cmdlist lockfeet
+	addlayer inverse_proportions 
+	fudgeloop 
+} 
+
+$sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { // from tests 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	frames 73 74 
+} 
+
+$sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { // from tests 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	frames 623 624 
+} 
+
+// custom animations 
+
+$animation "a_walking_walk_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 3
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_N" "sbravenpm_anims\M_Raven_Caution_Fw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_S" "sbravenpm_anims\M_Raven_Caution_Bw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_E" "sbravenpm_anims\M_Raven_Caution_Lw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_walking_walk_cautious_W" "sbravenpm_anims\M_Raven_Caution_Rw.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
+	LX LY
+	origin 0 0 42 
+} 
+
+$sequence "walk_cautious" {
+	"a_walking_walk_cautious_S"  // row 1 col 1 (SW slot → backward)
+	"a_walking_walk_cautious_S"  // row 1 col 2 (S slot)
+	"a_walking_walk_cautious_S"  // row 1 col 3 (SE slot)
+
+	"a_walking_walk_cautious_W"  // row 2 col 1 (W slot)
+	"a_walking_walk_cautious_C"  // row 2 col 2 (Center still)
+	"a_walking_walk_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_walking_walk_cautious_N"  // row 3 col 1 (NW slot)
+	"a_walking_walk_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_walking_walk_cautious_N"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_MP_WALK_MELEE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+	{ event AE_NPC_LEFTFOOT 10 "" }
+	{ event AE_NPC_RIGHTFOOT 28 "" }
+} 
+
+$sequence "M_Raven_Caution_FwRw" "sbravenpm_anims\M_Raven_Caution_FwRw.smd" { // from tests 
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions 
+	origin 0 0 42 
+	LX LY 
+	fudgeloop 
+} 
+$sequence "m_raven_run_l" { 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	"a_walking_walk_cautious_E"  // "a_canterSE" 
+	"a_walking_walk_cautious_E"  // "a_canterE"
+
+	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_M_Raven_Run_L"  // "a_canterN" 
+	"a_M_Raven_Run_L"  // "a_canterNW" 
+
+	"a_walking_walk_cautious_W"  // "a_canterW" 
+	"a_walking_walk_cautious_W"  // "a_canterSW" 
+	"a_walking_walk_cautious_S"  // "a_canterS" 
+	
+	blend "move_yaw" -180 180
+	blendwidth 9
+	fps 30 
+	activity ACT_WALK_STIMULATED 9999 
+	addlayer inverse_proportions 
+	node "walking" 
+	fudgeloop 
+	{ event AE_NPC_LEFTFOOT 10 "" }
+	{ event AE_NPC_RIGHTFOOT 28 "" }
+
+} 
