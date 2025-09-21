@@ -1,0 +1,39 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02"
+	"$bumpmap" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02_normal"
+	"$phongexponenttexture" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02_roughness"
+	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
+	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
+	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
+	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
+	"$EmissiveBlendBaseTexture" 	"models\stellarblade\MI_CH_NPC_Raven_01_Suit02_E"	// this is the glowing texture.vtf
+	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
+	"$EmissiveBlendTint" 			" [ 0 1 1 ] "		
+	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
+
+	"$phong" "1"
+	"$phongexponentfactor" "30"
+//	"$phongexponent" "10" // (controls scattering, higher=less scattering, polished metal or something) 
+	"$phongboost" "1.5" 	// glare control/the higher = the wetter/glare 
+	"$phongfresnelranges" "[0.1 0.5 1]" // strength of the phong, the higher the numbers = whiter and more intense phong 
+//	"$phongalbedotint" "1"  // apply the extra green channel to the base texture, phong (red) + phongalbedo (green) 
+
+	"$rimlight" "1"
+	"$rimlightexponent" "1"     // I don't know, it doesn't work 
+	"$rimlightboost" "1"        // like the phongexponent, it controls the spreading 
+	"$rimmask" "1"				// Uses the alpha channel of the phongexponenttexture as specular (useless if using dxt1 without alpha) 
+
+	"$envmap" "env_cubemap"
+//	"$envmap" "models/alvaroports/shared/cubemaps/replace" 
+	"$normalmapalphaenvmapmask"  1 // (use bumpmap alpha channel as env mask) 
+	"$envmaptint" "[.1 .1 .1]" // (dye, .1 or .05 is ideal)
+
+	"$nodecal" "1"
+	"$nocull" "1"
+	"$color2" "[0.9 0.9 0.9]"
+//	"$allowAlphaToCoverage" 1
+	"$additive" "1"
+
+//	"$blendtintbybasealpha" "1" // apply color2 only to the alpha of the base texture 
+}

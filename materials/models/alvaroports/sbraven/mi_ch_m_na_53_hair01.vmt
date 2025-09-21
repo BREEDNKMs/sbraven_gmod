@@ -1,0 +1,14 @@
+"VertexLitGeneric"
+{
+	"$basetexture"						"models\alvaroports\SBRaven\MI_CH_M_NA_53_Hair01"
+	"$nodecal"							"1"
+	"$translucent"						"0"
+//	$allowAlphaToCoverage				"1"
+	"$nocull"								"1" 
+	"$alphatest"							"1"	
+	"$alphatestreference"		"0.1"
+	"$additive"							"0"	
+	"$distancealpha"							"0"	
+	"$model" "1"
+	"$notint" "1" 
+}

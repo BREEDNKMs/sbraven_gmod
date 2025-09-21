@@ -1,0 +1,37 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02"
+	"$bumpmap" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02_normal"
+	"$phongexponenttexture" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit02_roughness"
+	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
+	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
+	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
+	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
+	"$EmissiveBlendBaseTexture" 	"models\stellarblade\MI_CH_NPC_Raven_01_Suit02_E"	// this is the glowing texture.vtf
+	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
+	"$EmissiveBlendTint" 			" [ 0 1 1 ] "		// RGB glow intensity. Leave at 1 1 1. This can be used to change how strong each color should glow. So instead of using a darker red color, you may use [.5 1 1] to have red glow half as strong.
+	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
+	"$phong" "1"
+	"$phongexponentfactor" "30"
+//	"$phongexponent" "10" // (controla o espalhamento, maior=menos espalhamento, metal polido ou algo assim)
+	"$phongboost" "1.5" 	// controle de reflexo/quanto mais alto = mais molhado/reflexo
+	"$phongfresnelranges" "[0.1 0.5 1]" //força do phong, maior os numeros = phong mais branco e intenso
+//	"$phongalbedotint" "1"  //aplicar o canal verde a mais na textura base, phong (vermelho) + phongalbedo (verde)
+
+	"$rimlight" "1"
+	"$rimlightexponent" "1"     // não sei, não funciona
+	"$rimlightboost" "1"        // igual o phongexponent, controla o espalhamento
+	"$rimmask" "1"				// Usa o alpha channel do phongexponenttexture como specular (inutil se usar dxt1 sem alpha)
+
+	"$envmap" "env_cubemap"
+//	"$envmap" "models/alvaroports/shared/cubemaps/replace"
+	"$normalmapalphaenvmapmask"  1 //(usar alpha channel do bumpmap como mascara env)
+	"$envmaptint" "[.1 .1 .1]" //(tintura, .1 ou .05 é ideal)
+
+	"$nodecal" "1"
+	"$nocull" "1"
+	"$color2" "[.9 .9 .9]"
+//	"$allowAlphaToCoverage" 1
+
+//	"$blendtintbybasealpha" "1" // aplica color2 apenas no alpha da textura base
+}
