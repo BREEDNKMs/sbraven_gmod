@@ -5,7 +5,7 @@ local filedir = "E:/Stellar Blade/Output/Exports/SB/Content/GameDesign/Combat/Be
 
 -- load JSON file into Lua table
 local function load_json(path)
-  local f = assert(io.open(path, "r"))
+  local f = assert(io.open(path, "r")) -- windir.open crashes 
   local content = f:read("*a")
   f:close()
   return json.decode(content)
@@ -62,16 +62,32 @@ local function parse_node(node_map, node_name) -- todo: add normalize_name(str) 
 				entry.Condition[decoName].bInverseCondition = decoNode.Properties.bInverseCondition 
 			elseif decoName:match("^SBBTDecorator_SbCheckStance_%d+$") then -- check for self status. i.e. raven normal or raven phase 2 
 				entry.Condition[decoName].StanceName = decoNode.Properties.StanceName -- M_Raven_Default 
+			elseif decoName:match("^SBBTDecorator_SbCheckActorStat_%d+$") then -- check for self status, generally self health  
+				entry.Condition[decoName].CheckStat = decoNode.Properties.CheckStat -- ESBActorStatType::ActorStatType_HP 
+				entry.Condition[decoName].CheckValue = decoNode.Properties.CheckValue -- 60.0, 
+				entry.Condition[decoName].CompareOP = decoNode.Properties.CompareOP -- ESBCompare::Greater 
+				entry.Condition[decoName].bRateValue = decoNode.Properties.bRateValue or false -- true 
+				entry.Condition[decoName].NodeName = decoNode.Properties.NodeName -- SB_CheckActorStat(HP>60) 
 			elseif decoName:match("^SBBTDecorator_SbDetectResult_%d+$") then -- idk, there is only one example 
-				entry.Condition[decoName].CompareDetectResult = normalize_name(decoNode.Properties.CompareDetectResult) -- AIDetectResult_Detect 
+				entry.Condition[decoName].CompareDetectResult = string.sub(normalize_name(decoNode.Properties.CompareDetectResult),2) -- AIDetectResult_Detect 
 			elseif decoName:match("^SBBTDecorator_SbIsAlive_%d+$") then -- idk, there is only one example 
 				entry.Condition[decoName].ActorType = decoNode.Properties.ActorType 
 				entry.Condition[decoName].CheckType = decoNode.Properties.CheckType 
 				entry.Condition[decoName].FlowAbortMode = decoNode.Properties.FlowAbortMode 
-			elseif decoName:match("^SBBTDecorator_SbIsAlive_%d+$") then -- either self or enemy is alive  
+			elseif decoName:match("^SBBTDecorator_SbBlackboard_%d+$") then -- either self or enemy is alive  
 				entry.Condition[decoName].CheckValue = decoNode.Properties.CheckValue 
 				entry.Condition[decoName].CompareOP = decoNode.Properties.CompareOP 
 				entry.Condition[decoName].RandomRange = decoNode.Properties.RandomRange 
+			elseif decoName:match("^SBBTDecorator_SbTimeLimit_%d+$") then -- either self or enemy is alive  
+				entry.Condition[decoName].TimerName = decoNode.Properties.TimerName -- CautionTimer2 
+				entry.Condition[decoName].LimitTime = decoNode.Properties.LimitTime -- 1.8 
+				entry.Condition[decoName].ReactInterval = decoNode.Properties.ReactInterval -- 55.0 
+			elseif decoName:match("^SBBTDecorator_SbUseableTime_%d+$") then -- either self or enemy is alive  
+				entry.Condition[decoName].KeyName = decoNode.Properties.KeyName -- Timer_NoGuard 
+			elseif decoName:match("^SBBTDecorator_SbRandom_%d+$") then -- either self or enemy is alive  
+				entry.Condition[decoName].RandomRange = decoNode.Properties.RandomRange -- 100 
+				entry.Condition[decoName].CheckValue = decoNode.Properties.CheckValue -- 50 
+				entry.Condition[decoName].CompareOP = decoNode.Properties.CompareOP -- ESBCompare::LessOrEqual 
 			else 
 				entry.Condition[decoName].UNHANDLED = true 
 			end 
@@ -149,6 +165,14 @@ local function parse_node(node_map, node_name) -- todo: add normalize_name(str) 
 				if not entry.StartTask[taskName] then entry.StartTask[taskName] = { } end 
 				entry.StartTask[taskName].bSelfActor = taskNode.Properties.bSelfActor 
 				entry.StartTask[taskName].EffectAlias = taskNode.Properties.EffectAlias 
+			end 
+		
+		elseif taskName:match("^SBBTTask_SbBlackboard_%d+$") then
+			if taskNode and taskNode.Properties then
+				if not entry.StartTask[taskName] then entry.StartTask[taskName] = { } end 
+				entry.StartTask[taskName].bReturnSucceeded = taskNode.Properties.bReturnSucceeded -- true 
+				entry.StartTask[taskName].KeyName = taskNode.Properties.KeyName -- SwordBuffFX,BB2 
+				entry.StartTask[taskName].IntValue = taskNode.Properties.IntValue -- 1 
 			end 
 		
         else
