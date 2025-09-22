@@ -1,4 +1,4 @@
-local jsonfile = "E:/Stellar Blade/Output/Exports/SB/Content/Art/Character/Monster/CH_M_NA_53/Animation/" 
+local jsonfile = "E:/Stellar Blade/Output/Exports/SB/Content/Art/Character/Monster/CH_M_NA_53/Animation/m_raven_slashchaincombo.json" 
 local charsoundsetfile = "E:/Stellar Blade/Output/Exports/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
 local gamepath = "E:/Stellar Blade/Output/Exports/SB/Content" 
 
@@ -44,6 +44,33 @@ sound.PrintOverrides = function()
 		print("    sound = " .. v) 
 		print("}) ") 
 	end 
+end 
+
+local ParseCue = function(dir) 
+	dir = string.sub(dir,6) -- strip off /Game 
+	dir = gamepath..dir -- join both 
+	dir = dir..".json" -- append json 
+	-- print(dir) 
+	-- if there is a single SoundWaveAssetPtr[AssetPathName], create normal sound 
+	-- if there are multiple, create soundscript 
+	local parsingcue,soundstable = false, { } 
+	for line in io.lines(dir) do -- find SoundWaveAssetPtr[AssetPathName] 
+		if string.find(line,"SoundWaveAssetPtr") then 
+			parsingcue = true 
+		elseif string.find(line,"AssetPathName") and parsingcue then 
+			local str = string.Explode('"',line) 
+			for k,v in pairs(str) do 
+				if string.find(v,"Game") then 
+					local returnval = v 
+					returnval = string.StripExtension(returnval) 
+					returnval = string.sub(returnval,13) 
+					returnval = returnval..".wav" 
+					table.insert(soundstable,returnval) 
+				end 
+			end 
+		end 
+	end 
+	return soundstable 
 end 
 
 -- Collect JSON files (single or multiple)
@@ -183,6 +210,7 @@ for _, jsonpath in ipairs(jsonfiles) do
 					local soundkey = targetlinebreakdown[num+2] 
 					soundkey = string.StripExtension(soundkey) 
 					animnotify_charsound[lastSavedKey].dir = string.upper(soundkey) 
+					-- print("key saved:",lastSavedKey,string.upper(soundkey)) 
 					lastSavedKey = nil 
 					targetstringline = 0 
 				end 
@@ -191,43 +219,12 @@ for _, jsonpath in ipairs(jsonfiles) do
 		
 	end 
 
-	-- print("checking animnotify_charsound") 
-
-	local ParseCue = function(dir) 
-		dir = string.sub(dir,6) -- strip off /Game 
-		dir = gamepath..dir -- join both 
-		dir = dir..".json" -- append json 
-		-- print(dir) 
-		-- if there is a single SoundWaveAssetPtr[AssetPathName], create normal sound 
-		-- if there are multiple, create soundscript 
-		local parsingcue,soundstable = false, { } 
-		for line in io.lines(dir) do -- find SoundWaveAssetPtr[AssetPathName] 
-			if string.find(line,"SoundWaveAssetPtr") then 
-				parsingcue = true 
-			elseif string.find(line,"AssetPathName") and parsingcue then 
-				local str = string.Explode('"',line) 
-				for k,v in pairs(str) do 
-					if string.find(v,"Game") then 
-						local returnval = v 
-						returnval = string.StripExtension(returnval) 
-						returnval = string.sub(returnval,13) 
-						returnval = returnval..".wav" 
-						table.insert(soundstable,returnval) 
-					end 
-				end 
-			end 
-		end 
-		return soundstable 
-	end 
-
-	
-
 	for k,v in pairs(animnotifyseconds) do -- v is LinkValue 
 		-- print("seconds for",k,v) 
 		eventframes[k] = math.Round((v / sequenceduration) * (numframes - 1)) 
 	end 
 
-	for k,v in pairs(animnotify_playsound) do
+	for k,v in pairs(animnotify_playsound) do 
 		local soundPath = v.dir
 		if soundPath then
 			-- print("PlaySound cue:", soundPath)
@@ -241,14 +238,16 @@ for _, jsonpath in ipairs(jsonfiles) do
 	end
 
 
-	for k,v in pairs(animnotify_charsound) do
+	for k,v in pairs(animnotify_charsound) do -- SBAnimNotify_CharSESound_21 = { dir = "SKILLLAUGH" } 
+		-- print(v.dir,"is in animnotify_charsound") 
 		local soundKey = v.dir
 		if soundKey then
 			local parsingcue = false
 			for line in io.lines(charsoundsetfile) do
 				if string.find(line, "Key") then
 					local tblStrings = string.Explode('"', line)
-					for _, v3 in pairs(tblStrings) do
+					for _, v3 in pairs(tblStrings) do 
+						v3 = string.upper(v3) 
 						if v3 == soundKey then
 							parsingcue = true -- start capturing until SoundCue found
 						end
@@ -260,17 +259,17 @@ for _, jsonpath in ipairs(jsonfiles) do
 						if string.find(v3, "/Game/") then
 							local parsestring = string.StripExtension(v3)
 
-							local sounds = ParseCue(parsestring)
+							local sounds = ParseCue(parsestring) -- explore cue file to return sound paths in a table 
 							v.sounds = sounds
 							v.cue = parsestring:match(".*/(.+)")
 
-							if sounds and #sounds > 1 then
+							if sounds then
 								sound.Add(v.cue, sounds)
-							end
+							end 
 						end
 					end
 				elseif string.find(line, '"SoundSource": null,') and parsingcue then
-					print("sound source is NULL")
+					-- print("sound source is NULL")
 					parsingcue = false
 				end
 			end
@@ -299,7 +298,7 @@ for _, jsonpath in ipairs(jsonfiles) do
 			local soundtable = animnotify_playsound[k].sounds 
 			local soundcount = #soundtable 
 			local eventid = "1004" 
-			local name = "PlaySound" 
+			local name = "PlaySound" -- if this returns means unhandled definition 
 			if soundcount > 1 then 
 				-- print("PlaySound has multiple sounds") 
 				name = animnotify_playsound[k].cue 
