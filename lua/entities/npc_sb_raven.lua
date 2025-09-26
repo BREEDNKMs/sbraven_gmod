@@ -196,7 +196,7 @@ sound.Add(
 
 
 -- stuff related to health, shield is in CharacterTable.json 
--- skilltable has skill information and the skill tree it starts from skillactivesteptable 
+-- skilltable has skill information and the skill tree it starts from SkillActiveStepTable 
 -- SelectSchedule accesses M_Raven_AI.json and starting from root node "ObjectName": "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_38'" 
 -- checking whether the target & self is alive 
 -- then proceeds to child nodes 
@@ -2450,157 +2450,140 @@ ENT.SBAI_BehaviorTree = {
 -- attack power: 1600 
 -- skill min / max distances and activate cases are in TargetFilterTable.json 
 
-function ENT:SBAI_SelectTask(taskTable, currentIndex) 
+function ENT:SBAI_InitTree()
+    -- Deep clone the master tree into a working stack
+    self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
+end
+
+function ENT:SBAI_SelectTask(taskTable, currentIndex)
     print("***in selecttask", taskTable, currentIndex)
     currentIndex = currentIndex or 1
 
-    if self.ActiveComposite then
-        print("checking self.ActiveComposite")
-        local active = self.ActiveComposite
-        self.ActiveComposite = nil -- Clear immediately to prevent infinite loops
-
-        print("Resuming from active composite. Parent has", #(active.parent), "children. Starting at child index", active.child)
-        
-        -- The active.parent IS the table of children we need to iterate.
-        -- The active.child IS the index we need to start from.
-        -- We simply call ourselves with the restored context.
-        return self:SBAI_SelectTask(active.parent, active.child)
-    end
-    
-    -- This function now processes a single composite node at a time.
-    -- local subTaskTable = taskTable[1] -- We pass tables like {node}
-    -- if !subTaskTable then return false end -- Safety check
-    -- currentIndex helps track priority order in Selector (left to right)
     for subTaskNum, subTaskTable in ipairs(taskTable) do
-        -- detect composite type from the key
-        local objectName = subTaskTable.ObjectName  -- first key string
+        local objectName = subTaskTable.ObjectName
         local isSelector = objectName and objectName:find("BTComposite_Selector")
         local isSequence = objectName and objectName:find("BTComposite_Sequence")
-        print("objectName:", objectName) 
+
+        print("objectName:", objectName)
+
+        -- evaluate decorators
         local allowEntry = true
         local flowAbortMode = nil
-
-        -- Evaluate conditions (decorators)
         if subTaskTable.Condition then
             for subConditionName, subConditionValues in pairs(subTaskTable.Condition) do
                 local flowMode = subConditionValues.FlowAbortMode
                 if flowMode then flowAbortMode = flowMode end
 
-                print("subConditionName", subConditionName) 
-                subConditionName = subConditionName:gsub("^SBBTDecorator_", "") 
-                subConditionName = subConditionName:gsub("_%d+$", "")
-                local conditionPassed = self[subConditionName](self, subConditionValues) 
-                print("Decorator", subConditionName, "returned", conditionPassed) 
-                if not conditionPassed then
+                subConditionName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
+                local passed = self[subConditionName](self, subConditionValues)
+                print("Decorator", subConditionName, "returned", passed)
+                if !passed then
                     allowEntry = false
                     break
                 end
             end
         end
-        print("allowEntry", allowEntry,flowAbortMode) 
+        print("allowEntry", allowEntry, flowAbortMode)
 
-        -- handle FlowAbortMode before executing
-        if flowAbortMode then
-            if flowAbortMode == "Self" then
-                if not allowEntry and self.CurrentBranch == subTaskNum then
-                    self.CurrentBranch = nil
-                    self.CurrentSBTask = nil 
-                    print("abort self branch") 
-                    return nil
-                end
-            elseif flowAbortMode == "LowerPriority" then
-                if allowEntry and currentIndex and subTaskNum < currentIndex then
-                    self.CurrentBranch = subTaskNum
-                    self.CurrentSBTask = objectName 
-					print("FlowAbortMode is in LowerPriority") 
-                    return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
-                end
-            elseif flowAbortMode == "Both" then
-                if not allowEntry and self.CurrentBranch == subTaskNum then
-                    self.CurrentBranch = nil
-                    self.CurrentSBTask = nil 
-                    print("aborting entire flow") 
-                    return nil
-                elseif allowEntry and currentIndex and subTaskNum < currentIndex then
-                    self.CurrentBranch = subTaskNum 
-                    self.CurrentSBTask = objectName 
-                    return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
-                end
+        -- flow abort handling (simplified to stateful version)
+        if flowAbortMode == "Self" and not allowEntry and self.CurrentBranch == subTaskNum then
+            self.CurrentBranch = nil
+            return nil
+        elseif flowAbortMode == "LowerPriority" and allowEntry and currentIndex and subTaskNum < currentIndex then
+            self.CurrentBranch = subTaskNum
+            return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
+        elseif flowAbortMode == "Both" then
+            if not allowEntry and self.CurrentBranch == subTaskNum then
+                self.CurrentBranch = nil
+                return nil
+            elseif allowEntry and currentIndex and subTaskNum < currentIndex then
+                self.CurrentBranch = subTaskNum
+                return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
             end
         end
 
-        -- if entry allowed, execute task or dive deeper
         if allowEntry then
-			if not self.CurrentBranch then self.CurrentBranch = subTaskNum end
+            if not self.CurrentBranch then self.CurrentBranch = subTaskNum end
+
+            -- LEAF TASK
             if subTaskTable.StartTask then
-                print("**in start task")
                 for taskKey, taskData in pairs(subTaskTable.StartTask) do
                     local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
-                    local result = self[cleanTaskKey](self, taskData)
+
+                    -- run/resume logic
+                    if not subTaskTable._running then
+                        subTaskTable._running = true
+                        subTaskTable._startTime = SysTime()
+                    end
+
+                    local result = self[cleanTaskKey](self, taskData, subTaskTable)
                     print(objectName, "returned", result)
 
                     if result == nil then
-                        -- This task is running. Save state and exit.
-                        print("Leaf Saving State: Parent:", taskTable, "Child Index:", i)
-                        self.ActiveComposite = {
-                            parent = taskTable, -- CORRECT: Save the list of siblings
-                            type = "Leaf",
-                            child = i           -- CORRECT: Save our own index in that list
-                        }
+                        -- still running, just return nil (state stays in node)
                         return nil
-                    end
+                    else
+                        -- finished, clear runtime
+                        subTaskTable._running = false
+                        subTaskTable._result = result
 
-                    if result == true then
-                        if isSelector then return true end -- Selector succeeds immediately.
-                        break -- Sequence succeeds, let main loop continue to next task.
-                    end
-                    
-                    if result == false then
-                        if isSequence then return false end -- Sequence fails immediately.
-                        break -- Selector fails, let main loop continue to next sibling.
+                        if result == true then
+                            if isSelector then return true end -- selector succeeds immediately
+                            -- sequence → continue
+                        elseif result == false then
+                            if isSequence then return false end -- sequence fails immediately
+                            -- selector → continue
+                        end
                     end
                 end
-				-- if we reach here, either a StartTask was a check (true without NextTask) and we continue,
-                -- or it failed and selector should try next child - so loop continues.
+
+            -- COMPOSITE TASK
             elseif subTaskTable.NextTask then
-                local result = self:SBAI_SelectTask(subTaskTable.NextTask, 1) -- Recurse into children, always starting them from 1
+                local result = self:SBAI_SelectTask(subTaskTable.NextTask, 1)
 
                 if result == nil then
-                    -- A child branch is running, so we are also running. Save our state and exit.
-                    print("Composite Saving State: Parent:", taskTable, "Child Index:", i)
-                    self.ActiveComposite = {
-                        parent = taskTable, -- CORRECT: Save the list of siblings
-                        type = isSequence and "Sequence" or "Selector",
-                        child = i           -- CORRECT: Save our own index in that list
-                    }
+                    -- child branch is running, mark parent running
+                    subTaskTable._running = true
                     return nil
+                else
+                    subTaskTable._running = false
+                    subTaskTable._result = result
+
+                    if isSelector and result == true then
+                        return true
+                    elseif isSequence and result == false then
+                        return false
+                    end
+                    -- otherwise continue to next sibling
                 end
-
-                if isSelector and result == true then return true end
-                if isSequence and result == false then return false end
-                -- If a sequence child returns true, or a selector child returns false, we let the loop continue.
-
-            end 
+            end
         end
     end
 
-    -- If no child returned success/running, return false
+    print("If no child returned success/running, return false") 
     return false
 end
 
 function ENT:SBAI_RunBehavior()
-	print("RunBehavior start: SysTime:", SysTime()) 
-    
-	local result = self:SBAI_SelectTask(self.SBAI_BehaviorTree)
-	print("BehaviorTree tick finished with result:", result, self.CurrentSBTask)
-    
-	-- If the result is NOT nil, the tree has completed its path for this tick.
-	-- We must clear the active composite to allow a fresh run from the root next time.
-	if result != nil then
-		print("clearing ActiveComposite") 
-		self.ActiveComposite = nil
-	end
-	print("RunBehavior end: SysTime:", SysTime()) 
+    print("RunBehavior start: SysTime:", SysTime()) 
+
+    -- Ensure we have a runtime tree copy
+    if not self.SBAI_CurBehaviorStack then
+        print("Cloning behavior tree...")
+        self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
+    end
+
+    -- Run tick on runtime tree
+    local result = self:SBAI_SelectTask(self.SBAI_CurBehaviorStack) 
+    print("BehaviorTree tick finished with result:", result, self.CurrentSBTask)
+
+    -- If resolved (true/false), discard runtime so next tick restarts fresh
+    if result != nil then
+        print("Clearing runtime behavior stack")
+        self.SBAI_CurBehaviorStack = nil
+    end
+
+    print("RunBehavior end: SysTime:", SysTime()) 
 end 
 
 function ENT:NPC_GetRunActivity( act ) 
@@ -2668,30 +2651,30 @@ function ENT:SbAimMe(tbl) -- doesn't have any additional properties
 end 
 
 function ENT:SbBlackboard(tbl) 
-	if !isbool(tbl.bReturnSucceeded) then -- decorators don't have bReturnSucceeded 
+	if !isbool(tbl.bReturnSucceeded) then -- decorators don't have bReturnSucceeded, attempt to retrieve from blackboard 
 		local CheckValue = tbl.KeyName 
-		local testvalue = tbl.IntValue 
+		local testvalue = tbl.IntValue or 1 -- 1 means true 
 		local CompareOP = tbl.CompareOP or "Equal" 
-		Entity(1):ChatPrint("SBBlackBoard: "..CheckValue.." "..tostring(testvalue).." "..CompareOP) 
-		local testvalue = self.SBAI_BlackBoard[CheckValue] 
+		Entity(1):ChatPrint("retrieving from SBBlackBoard: "..CheckValue.." "..tostring(testvalue).." "..CompareOP) 
+		local lookup = self.SBAI_BlackBoard[CheckValue] or 0 -- do not compare nil 
 		
 		if CompareOP == "Equal" then 
-			result = testvalue == CheckValue 
+			result = testvalue == lookup 
 		elseif CompareOP == "LessOrEqual" then 
-			result = testvalue <= CheckValue 
+			result = testvalue <= lookup 
 		elseif CompareOP == "Greater" then 
-			result = testvalue > CheckValue 
+			result = testvalue > lookup 
 		elseif CompareOP == "GreaterOrEqual" then 
-			result = testvalue >= CheckValue 
+			result = testvalue >= lookup 
 		elseif CompareOP == "Less" then 
-			result = testvalue < CheckValue 
+			result = testvalue < lookup 
 		elseif CompareOP == "NotEqual" then 
-			result = testvalue != CheckValue 
+			result = testvalue != lookup 
 		end 
 	return result 
 	
-	else -- task 
-		Entity(1):ChatPrint("SBBlackBoard: "..tbl.KeyName..tostring(tbl.IntValue)..tbl.CompareOP) 
+	else -- task, save KeyName 
+		Entity(1):ChatPrint("saving to SBBlackBoard: "..tbl.KeyName..tostring(tbl.IntValue)..tbl.CompareOP) 
 		self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
 		return tbl.bReturnSucceeded 
 	end 
@@ -2772,7 +2755,6 @@ function ENT:SbCheckActorEffect(tbl)
 end
 
 function ENT:SbCheckActorStat(tbl) 
-	print("IN SbCheckActorStat") 
 	local CheckStat = tbl.CheckStat -- ActorStatType_AttackSpeed       ActorStatType_StaminaAttackPower        ActorStatType_CriticalPercentage        ActorStatType_HitDefenseLevel   ActorStatType_ShieldIgnorePercentage    ActorStatType_CriticalValueRate ActorStatType_ShieldRegenPerSecond      ActorStatType_AdditiveSkillDamageRate   ActorStatType_ShieldRegenPerSecondRate  ActorStatType_ShieldRegenPerSecondValue ActorStatType_ShieldRegenPerSecondWhenBattleValue       ActorStatType_ShieldRegenPerSecondWhenBattle    ActorStatType_StaminaRegenPerSecond     ActorStatType_ShieldRegenPerSecondWhenBattleRate        ActorStatType_HPRegenPerSecondValue     ActorStatType_HPRegenPerSecond  ActorStatType_SmallWeightTypeDamageAdditiveRate ActorStatType_HPRegenPerSecondRate      ActorStatType_RangeAttackDamageAdditiveRate     ActorStatType_LargeWeightTypeDamageAdditiveRate ActorStatType_RangeAttackDamageReductionRate    ActorStatType_MeleeAttackDamageReductionRate    ActorStatType_GroggyStateDamageAdditiveRate     ActorStatType_DownStateDamageAdditiveRate       ActorStatType_FireAttributeDamageReductionRate  ActorStatType_AirborneStateDamageAdditiveRate   ActorStatType_LightningAttributeDamageReductionRate     ActorStatType_IceAttributeDamageReductionRate   ActorStatType_BetaGaugeAdditiveRate     ActorStatType_PoisonAttributeDamageReductionRate        ActorStatType_LowHpDamageAdditiveRate   ActorStatType_AdditiveFixedDamage       ActorStatType_DOTDamageAdditiveRate     ActorStatType_HighHpDamageAdditiveRate  ActorStatType_TachyGaugeReduceConsumeRate       ActorStatType_TachyGaugeAdditiveGainRate        ActorStatType_FinalShieldDamageReduceRate       ActorStatType_FinalHPDamageReduceRate   ActorStatType_AdditiveSkillDamageGroup1 ActorStatType_Luck      ActorStatType_AdditiveSkillDamageGroup3 ActorStatType_AdditiveSkillDamageGroup2 ActorStatType_AdditiveSkillDamageGroup5 ActorStatType_AdditiveSkillDamageGroup4 ActorStatType_AdditiveSkillDamageGroup7 ActorStatType_AdditiveSkillDamageGroup6 ActorStatType_AdditiveSkillDamageGroup9 ActorStatType_AdditiveSkillDamageGroup8 ActorStatType_DrainHpByAttackPowerRate  ActorStatType_AdditiveSkillDamageGroup10        ActorStatType_SprintableStaminaValue    ActorStatType_DrainHpFixedValue ActorStatType_ItemStackBullet1  ActorStatType_ItemStackRecoveryPotion   ActorStatType_ItemStackBullet3  ActorStatType_ItemStackBullet2  ActorStatType_ItemStackBullet5  ActorStatType_ItemStackBullet4  ActorStatType_ItemStackConsumable1      ActorStatType_ItemStackBullet6  ActorStatType_ItemStackConsumable3      ActorStatType_ItemStackConsumable2      ActorStatType_ItemStackConsumable5      ActorStatType_ItemStackConsumable4      
 	local CheckValue = tbl.CheckValue -- 60.0, 
 	local CompareOP = tbl.CompareOP -- Greater 
@@ -2780,7 +2762,7 @@ function ENT:SbCheckActorStat(tbl)
 	local NodeName = tbl.NodeName -- SB_CheckActorStat(HP>60) 
 	-- handle only ActorStatType_HP for now 
 	local testvalue, result 
-	if CheckStat == ActorStatType_HP then 
+	if CheckStat == "ActorStatType_HP" then 
 		testvalue = self:Health() 
 		testvalue = (testvalue / self:GetMaxHealth()) * 100 
 	else 
@@ -2799,6 +2781,7 @@ function ENT:SbCheckActorStat(tbl)
 	elseif CompareOP == "NotEqual" then 
 		result = testvalue != CheckValue 
 	end 
+	print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
 	return result 
 end 
 
@@ -3016,9 +2999,41 @@ function ENT:SbMoveToTarget(tbl)
 end 
 
 function ENT:SbUseEffect(tbl) end 
+
+-- SbUseSkill 
+-- indices in tbl contain skill names, [1]	=	M_Raven_ParryPreview1 
+-- skill names are looked up from SkillCommandTable.json, "M_Raven_ParryPreview1": {"SkillAlias": "M_Raven_ParryPreview1"} 
+-- looked up skill's SkillAlias is called from SkillTable.json, "M_Raven_ParryPreview1": {
+-- TargetFilterAlias is activated in TargetFilterTable, "TargetFilterAlias": "M_Raven_ParryPreview1_Target", 
+-- FirstSkillActiveAlias is activated in SkillActiveStepTable, "FirstSkillActiveAlias": "M_Raven_ParryPreview1_Cast1"} 
 function ENT:SbUseSkill(tbl) 
 	PrintTable(tbl) 
+	-- [1]	=	M_Raven_ParryPreview1
+	-- ["bUsePostStep"]	=	true
+	-- ["bUseSkillCommand"]	=	true
+	
+	-- temp build to play 
+	self:StopMoving(true) 
+	self:ClearGoal() 
+	if self:GetIdealActivity() != ACT_SPECIAL_ATTACK1 then 
+	for k,v in RandomPairs(tbl) do 
+		if isnumber(k) then -- do not accidentally start variables 
+			-- local bHasActivity = self:LookupSequence(v) 
+			-- if bHasActivity then 
+			
+			-- end 
+			if v == "M_Raven_ParryPreview1" then 
+				self:ResetIdealActivity(ACT_SPECIAL_ATTACK1) 
+			end 
+		end 
+	end 
+	end 
+	if self:GetActivity() == ACT_SPECIAL_ATTACK1 then 
+		if self:IsSequenceFinished() then return true end 
+	end 
+	return nil 
 end 
+
 function ENT:SbUseableTimeReset(tbl)
     local KeyName = tbl.KeyName
     self.SBAI_Timers = self.SBAI_Timers or {}
