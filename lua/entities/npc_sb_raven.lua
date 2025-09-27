@@ -2459,10 +2459,34 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
     print("***in selecttask", taskTable, currentIndex)
     currentIndex = currentIndex or 1
 
-    for subTaskNum, subTaskTable in ipairs(taskTable) do
+    for subTaskNum, subTaskTable in ipairs(taskTable) do 
         local objectName = subTaskTable.ObjectName
         local isSelector = objectName and objectName:find("BTComposite_Selector")
         local isSequence = objectName and objectName:find("BTComposite_Sequence")
+		
+			-- if subTaskTable._running then
+		-- -- Resume the same child without reevaluating decorators or siblings
+		-- if subTaskTable.StartTask then
+			-- local taskKey, taskData = next(subTaskTable.StartTask)
+			-- local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+			-- local result = self[cleanTaskKey](self, taskData, subTaskTable)
+			-- if result == nil then
+				-- return nil -- still running
+			-- else
+				-- subTaskTable._running = false
+				-- subTaskTable._result = result
+				-- if result == true and isSelector then return true end
+				-- if result == false and isSequence then return false end
+			-- end
+		-- elseif subTaskTable.NextTask then
+			-- local result = self:SBAI_SelectTask(subTaskTable.NextTask, subTaskTable._currentChild or 1)
+			-- if result == nil then return nil end
+			-- subTaskTable._running = false
+			-- subTaskTable._result = result
+			-- if result == true and isSelector then return true end
+			-- if result == false and isSequence then return false end
+		-- end
+	-- end
 
         print("objectName:", objectName)
 
@@ -2547,7 +2571,7 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
                     return nil
                 else
                     subTaskTable._running = false
-                    subTaskTable._result = result
+                    subTaskTable._result = result -- true means pass me 
 
                     if isSelector and result == true then
                         return true
@@ -2734,7 +2758,7 @@ function ENT:SbCheckActorEffect(tbl)
         end
 
         -- post check wrapper: if ENT has a function named after the effect alias, call it 
-		print("********* CHECKING EFFECT",eff) 
+		Entity(1):ChatPrint("CHECKING EFFECT "..eff) 
         local fn = self[eff]
         if type(fn) == "function" then
             local ok, override = pcall(fn, self, ent)
@@ -2786,7 +2810,6 @@ function ENT:SbCheckActorStat(tbl)
 end 
 
 function ENT:SbCheckStance(tbl) -- M_Raven_Phase2, M_Raven_Default 
-	Entity(1):ChatPrint("StanceName "..tbl.StanceName)
 	if true then 
 		return "M_Raven_Default" == tbl.StanceName 
 	end 
@@ -2802,7 +2825,7 @@ function ENT:SbDetectResult(tbl)
 end 
 
 function ENT:SbDistanceToTarget(tbl) -- distance to enemy 
-	-- if !self.enemyDist then return false end 
+	if !self.enemyDist then return false end 
 	local dist = tbl.Distance 
 	local operator = tbl.CompareOP -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
 	local FlowAbortMode = tbl.FlowAbortMode or "None" 
@@ -2828,9 +2851,15 @@ function ENT:SbIsAlive(tbl)
 	local ActorType = tbl.ActorType -- Target, Self, SubTarget, Owner. Default: Self 
 	local CheckType = tbl.CheckType -- Coma, Dead, Alive. Default: Alive 
 	-- print("ActorType",ActorType) 
-	local ent = ActorType == "Target" and self:GetEnemy() or ActorType == "Self" and self or ActorType == "Owner" and self:GetOwner() or self 
+	local ent = self 
+	if ActorType == "Target" then 
+		ent = self:GetEnemy() 
+	elseif ActorType == "Self" then 
+		ent = self 
+	elseif ActorType == "Owner" then 
+		ent = self:GetOwner() 
 	-- print(self, "checking ent:",ent) 
-	if ActorType == SubTarget then 
+	elseif ActorType == "SubTarget" then 
 		for _,subent in pairs(self:GetKnownEnemies()) do 
 			if IsValid(subent) then 
 				if IsValid(self:GetEnemy()) then 
@@ -2842,13 +2871,15 @@ function ENT:SbIsAlive(tbl)
 		end 
 	end 
 	
-	-- for now, just return true 
-	if true then return true end 
-	
-	if CheckType == "Coma" then 
-		return ent:GetInternalVariable("m_lifeState") == 1 
-	end 
-	return CheckType == "Alive" and ent:Alive() or !ent:Alive() 
+    if CheckType == "Coma" then
+        return IsValid(ent) and ent:GetInternalVariable("m_lifeState") == 1
+    elseif CheckType == "Dead" then
+        return IsValid(ent) and not ent:Alive()
+    elseif CheckType == "Alive" then
+        return IsValid(ent) and ent:Alive()
+    end
+
+    return false
 end 
 
 function ENT:SbRandom(tbl) 
@@ -2958,6 +2989,7 @@ function ENT:SbCautionToTarget(tbl)
 	-- now delay 
 	local waitTime = tbl.WaitCheckTime or 0
     -- local returnSucceeded = tbl.bReturnSucceeded or false
+	-- if tbl.finished then return true end 
 
     if !tbl.startTime then -- TASKSTATUS_NEW 
         tbl.startTime = SysTime()
@@ -2970,8 +3002,9 @@ function ENT:SbCautionToTarget(tbl)
     if elapsed < waitTime then
         return nil -- still running
     else
+		tbl.finished = true 
 		Entity(1):ChatPrint("SbCautionToTarget: finishing "..tbl.startTime) 
-		tbl.startTime = nil
+		-- tbl.startTime = nil
 		if true then return true end -- temporary: remove this when branch selection issues are solved 
         if returnSucceeded then
             return true  -- wait succeeded
@@ -2993,7 +3026,17 @@ function ENT:SbMoveToTarget(tbl)
 	local DistanceOfApproach = tbl.DistanceOfApproach
 	local bBackgroundTask = tbl.bBackgroundTask
 	local NodeName = tbl.NodeName 
-	
+	if self.CurrentSchedule then 
+		if IsValid(self:GetEnemy()) then 
+			if self.CurrentSchedule.DebugName != "LUASCHED_CHASE_ENEMY" then 
+				self:StartSchedule(LUASCHED_CHASE_ENEMY) 
+			end 
+		else 
+			if self.CurrentSchedule.DebugName != "LUASCHED_PATROL_WALK" then 
+				self:StartSchedule(LUASCHED_PATROL_WALK) 
+			end 
+		end 
+	end 
 	tbl.StartPos = tbl.StartPos or self:GetPos() 
 	if self:GetPos():Distance(tbl.StartPos) > 250 then return true end -- moved away from task start pos by 250 units 
 end 
@@ -3007,7 +3050,7 @@ function ENT:SbUseEffect(tbl) end
 -- TargetFilterAlias is activated in TargetFilterTable, "TargetFilterAlias": "M_Raven_ParryPreview1_Target", 
 -- FirstSkillActiveAlias is activated in SkillActiveStepTable, "FirstSkillActiveAlias": "M_Raven_ParryPreview1_Cast1"} 
 function ENT:SbUseSkill(tbl) 
-	PrintTable(tbl) 
+	-- PrintTable(tbl) 
 	-- [1]	=	M_Raven_ParryPreview1
 	-- ["bUsePostStep"]	=	true
 	-- ["bUseSkillCommand"]	=	true
@@ -3016,20 +3059,26 @@ function ENT:SbUseSkill(tbl)
 	self:StopMoving(true) 
 	self:ClearGoal() 
 	if self:GetIdealActivity() != ACT_SPECIAL_ATTACK1 then 
-	for k,v in RandomPairs(tbl) do 
-		if isnumber(k) then -- do not accidentally start variables 
-			-- local bHasActivity = self:LookupSequence(v) 
-			-- if bHasActivity then 
-			
-			-- end 
-			if v == "M_Raven_ParryPreview1" then 
-				self:ResetIdealActivity(ACT_SPECIAL_ATTACK1) 
+		Entity(1):ChatPrint("starting skill") 
+		for k,v in RandomPairs(tbl) do 
+			if isnumber(k) then -- do not accidentally start variables 
+				-- local bHasActivity = self:LookupSequence(v) 
+				-- if bHasActivity then 
+				-- end 
+				if v == "M_Raven_ParryPreview1" then 
+					-- self:ResetIdealActivity(ACT_SPECIAL_ATTACK1) 
+					self:NPC_StartScriptedActivity("M_Raven_Parry",true) 
+				end 
+				tbl.Started = true 
 			end 
 		end 
 	end 
-	end 
-	if self:GetActivity() == ACT_SPECIAL_ATTACK1 then 
-		if self:IsSequenceFinished() then return true end 
+	if tbl.Started then 
+		if self:IsSequenceFinished() then 
+			Entity(1):ChatPrint("task complete") 
+			self:NPC_StopScriptedActivity() 
+			return true 
+		end 
 	end 
 	return nil 
 end 
@@ -3079,4 +3128,4 @@ function ENT:SbWait(data)
     end
 end
 
-function ENT:Item_Resurrection_Ground(ent) return true end 
+function ENT:Item_Resurrection_Ground(ent) return false end 
