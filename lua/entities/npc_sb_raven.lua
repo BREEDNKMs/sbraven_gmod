@@ -1,9 +1,97 @@
 AddCSLuaFile() 
 
+-- Define the path to your JSON file relative to the "garrysmod" folder.
+print(SysTime()) 
+local filePath = "addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json"
+
+--[[
+    SB_ImportJSON(path) - V2 (Flexible Pathing)
+    By Gemini
+
+    Description:
+    Imports a single .json file or all .json files in a directory into global Lua tables.
+    Now correctly handles both absolute paths (e.g., C:\...) AND GMod-relative paths (e.g., addons/...).
+--]]
+function SB_ImportJSON(path)
+    -- Helper function to process a single JSON file (unchanged).
+    local function ProcessJSONFile(relativePath)
+        local fileName = string.match(relativePath, "([^/]+)%.json$")
+        if not fileName then
+            MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n")
+            return
+        end
+        local globalTableName = "SB_" .. fileName
+
+        if _G[globalTableName] then
+            MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
+            return
+        end
+
+        local jsonString = file.Read(relativePath, "GAME")
+        if not jsonString then
+            ErrorNoHalt(string.format("[SB Importer] Failed to read file for '%s'! Check path: %s\n", globalTableName, relativePath))
+            return
+        end
+
+        local tempTable = util.JSONToTable(jsonString)
+        if not tempTable then
+            ErrorNoHalt(string.format("[SB Importer] Failed to parse JSON for '%s'! File may be malformed: %s\n", globalTableName, relativePath))
+            return
+        end
+
+        _G[globalTableName] = tempTable
+        MsgC(Color(100, 255, 100), "[SB Importer] Successfully loaded '", relativePath, "' into global table '", globalTableName, "'.\n")
+    end
+
+    -- Main function logic starts here.
+    -- First, normalize the path separators from Windows-style '\' to '/'
+    local normalizedPath = string.gsub(path, "\\", "/")
+    local relativePath
+
+    -- NEW, SMARTER PATH HANDLING:
+    -- Try to strip the path as if it's absolute.
+    local strippedPath = string.match(normalizedPath, "/garrysmod/(.+)")
+    if strippedPath then
+        -- If it succeeded, it was an absolute path. Use the stripped version.
+        relativePath = strippedPath
+    else
+        -- If it failed, it's already a relative path. Use it as-is.
+        relativePath = normalizedPath
+    end
+
+    -- The rest of the function proceeds with the correctly determined relativePath.
+    if file.IsDir(relativePath, "GAME") then
+        local filesInDir = file.Find(relativePath .. "/*.json", "GAME")
+        MsgC(Color(255, 255, 100), "[SB Importer] Starting batch import for directory: ", relativePath, "\n")
+
+        if #filesInDir == 0 then
+            MsgC(Color(255, 150, 0), "[SB Importer] No .json files found in ", relativePath, "\n")
+            return
+        end
+
+        for _, fileName in ipairs(filesInDir) do
+            -- Make sure the path has a trailing slash before appending the filename
+            local dirPath = string.sub(relativePath, -1) == "/" and relativePath or (relativePath .. "/")
+            ProcessJSONFile(dirPath .. fileName)
+        end
+    else
+        ProcessJSONFile(relativePath)
+    end
+end
+
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillActiveStepTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillResultTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/EffectTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/TargetFilterTable.json")
+
+print(SysTime()) 
+
 sound.Add( 
 { 
     name = "M_Raven_vo_Cast_S_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_s2_VO.wav"}
@@ -11,7 +99,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Cloth_XL_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Character/SE/SE_Cloth_whoosh_03.wav","Character/SE/SE_Cloth_whoosh_04.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav","Character/SE/SE_Cloth_whoosh_01.wav"}
@@ -19,7 +107,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_ATK_S_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_atk_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_s2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_s4_VO.wav"}
@@ -27,7 +115,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_XL_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XL_layer.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_3.wav"}
@@ -35,7 +123,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_XL_C_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_layer.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_3.wav"}
@@ -43,7 +131,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Cloth_M_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav"}
@@ -51,7 +139,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Cloth_XL3_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/PC/Evade/PC_Evade_Jump_2.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_1.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_2.wav"}
@@ -59,7 +147,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Bodyfall_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Character/SE/KnockDown/NEW/PC_SE_KnockDown_Bodyfall_Dirt_1.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_01.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_L_1.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_L_2.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_02.wav","FootSteps/monster/Mon_Bodyfall_M_Default_1.wav"}
@@ -67,7 +155,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Cloth_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav"}
@@ -75,7 +163,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Bodyfall_S_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"FootSteps/monster/Raven/M_Raven_Bodyfall_S_1.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_S_2.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_01.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_02.wav","FootSteps/monster/Mon_Bodyfall_M_Default_1.wav"}
@@ -83,7 +171,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_P_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
@@ -91,7 +179,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_ATK_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_atk_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l4_VO.wav"}
@@ -99,7 +187,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_S_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_M_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_3.wav"}
@@ -107,7 +195,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_L_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_L_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_L_3.wav"}
@@ -115,7 +203,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Cast_M_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_m1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_m2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_m3_VO.wav"}
@@ -123,7 +211,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "mon_swish_m_cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Character/Skill/Swing_sword_Short_06.wav","Character/Skill/Swing_sword_Short_07.wav","Character/Skill/Swing_sword_Short_08.wav","Character/Skill/Swing_sword_Short_09.wav"}
@@ -131,7 +219,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_XS_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XS_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XS_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XS_3.wav"}
@@ -139,7 +227,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Cloth_XL2_Ce", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_Cloth_XL2_1.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_2.wav"}
@@ -147,7 +235,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_Skill_Stab_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Character/Hit/PCHitSound/CSS_Hit_Hammer_Critical_1.wav","Skill/Monster/Raven/M_Raven_Skill_Stab_1.wav","Character/Hit/PCHitSound/CSS_Hit_Hammer_Critical_3.wav","Skill/Monster/Raven/M_Raven_Skill_Stab_3.wav","Character/Hit/Hit_Sword_Defualt_10.wav","Character/Hit/Hit_Sword_Defualt_11.wav","Character/Hit/Hit_Sword_Defualt_08.wav","Character/Hit/Hit_Sword_Defualt_09.wav","Character/Hit/Hit_Sword_Defualt_07.wav"}
@@ -155,7 +243,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Dmg_S_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s4_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s5_VO.wav"}
@@ -163,7 +251,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_SwordSwish_M_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_M_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_3.wav"}
@@ -171,7 +259,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Cast_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_l2_VO.wav"}
@@ -179,7 +267,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Dmg_L_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
@@ -188,7 +276,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_SkillLaugh_Cue", 
-    channel = CHAN_BODY, 
+    channel = CHAN_AUTO, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_laugh_01_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_laugh_02_VO.wav"}
@@ -218,6 +306,8 @@ ENT.npc_model		= "models/alvaroports/sbraven2.mdl"
 ENT.bHasInnateMelee1 = false 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
+ENT.SBAI_bInBackgroundTask = false 
+ENT.SbEffectAlias = { } 
 
 -- childcomposite = nexttask 
 -- childtask = starttask 
@@ -2443,7 +2533,14 @@ ENT.SBAI_BehaviorTree = {
   }
 }
 
-
+-- function ENT:CustomRunAI() 
+	-- pre check to decide whether to consult Raven's unique BehaviorTree 
+	-- local retval = self:SBAI_RunBehavior() 
+	-- call scripted_ents.Get("npc_unreali_female").CustomRunAI(self) when appropriate to run Lua schedules 
+	-- post check to whether to run base LUASCHED_* tree or Raven's BehaviorTree 
+-- end 
+-- "AISightSenseVerticalDistance": 500.0, -- this means fallback to LUA Behavior if enemy z distance is this high up or down 
+-- "AIDetectCheckDistance": 5000.0, 
 
 -- walkspeed = 150 
 -- default weapon: Raven_Blade 
@@ -2464,62 +2561,71 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
         local isSelector = objectName and objectName:find("BTComposite_Selector")
         local isSequence = objectName and objectName:find("BTComposite_Sequence")
 		
-			-- if subTaskTable._running then
-		-- -- Resume the same child without reevaluating decorators or siblings
-		-- if subTaskTable.StartTask then
-			-- local taskKey, taskData = next(subTaskTable.StartTask)
-			-- local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
-			-- local result = self[cleanTaskKey](self, taskData, subTaskTable)
-			-- if result == nil then
-				-- return nil -- still running
-			-- else
-				-- subTaskTable._running = false
-				-- subTaskTable._result = result
-				-- if result == true and isSelector then return true end
-				-- if result == false and isSequence then return false end
-			-- end
-		-- elseif subTaskTable.NextTask then
-			-- local result = self:SBAI_SelectTask(subTaskTable.NextTask, subTaskTable._currentChild or 1)
-			-- if result == nil then return nil end
-			-- subTaskTable._running = false
-			-- subTaskTable._result = result
-			-- if result == true and isSelector then return true end
-			-- if result == false and isSequence then return false end
-		-- end
-	-- end
+		if skiptasks and subTaskTable._running then
+			-- Resume the same child without reevaluating decorators or siblings
+			if subTaskTable.StartTask then
+				local taskKey, taskData = next(subTaskTable.StartTask)
+				local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+				local result = self[cleanTaskKey](self, taskData, subTaskTable)
+				if result == nil then
+					return nil -- still running
+				else
+					subTaskTable._running = false
+					subTaskTable._result = result
+					if result == true and isSelector then return true end
+					if result == false and isSequence then return false end
+				end
+			elseif subTaskTable.NextTask then
+				local result = self:SBAI_SelectTask(subTaskTable.NextTask, subTaskTable._currentChild or 1)
+				if result == nil then return nil end
+				subTaskTable._running = false
+				subTaskTable._result = result
+				if result == true and isSelector then return true end
+				if result == false and isSequence then return false end
+			end
+		end
 
         print("objectName:", objectName)
-
+		
         -- evaluate decorators
         local allowEntry = true
         local flowAbortMode = nil
         if subTaskTable.Condition then
             for subConditionName, subConditionValues in pairs(subTaskTable.Condition) do
-                local flowMode = subConditionValues.FlowAbortMode
-                if flowMode then flowAbortMode = flowMode end
+				local bPrevReturn = subConditionValues._result
+				
+				if subTaskTable._running and !(subTaskTable.bBackgroundTask or false) and bPrevReturn != nil then 
+					allowEntry = bPrevReturn 
+				else 
+				
+					local flowMode = subConditionValues.FlowAbortMode
+					if flowMode then flowAbortMode = flowMode end
 
-                subConditionName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
-                local passed = self[subConditionName](self, subConditionValues)
-                print("Decorator", subConditionName, "returned", passed)
-                if !passed then
-                    allowEntry = false
-                    break
-                end
+					subConditionName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
+					local passed = self[subConditionName](self, subConditionValues)
+					subConditionValues._result = passed 
+					print("Decorator", subConditionName, "returned", passed)
+					if !passed then
+						allowEntry = false
+						break
+					end
+				end 
             end
         end
+		::postdecorators:: 
         print("allowEntry", allowEntry, flowAbortMode)
 
         -- flow abort handling (simplified to stateful version)
         if flowAbortMode == "Self" and not allowEntry and self.CurrentBranch == subTaskNum then
             self.CurrentBranch = nil
-            return nil
+            return false -- nil 
         elseif flowAbortMode == "LowerPriority" and allowEntry and currentIndex and subTaskNum < currentIndex then
             self.CurrentBranch = subTaskNum
             return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
         elseif flowAbortMode == "Both" then
             if not allowEntry and self.CurrentBranch == subTaskNum then
                 self.CurrentBranch = nil
-                return nil
+                return false -- nil 
             elseif allowEntry and currentIndex and subTaskNum < currentIndex then
                 self.CurrentBranch = subTaskNum
                 return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
@@ -2545,11 +2651,15 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
 
                     if result == nil then
                         -- still running, just return nil (state stays in node)
+						if taskData.bBackgroundTask then -- is task interruptable by decorators while task is still performing. true to mark as interruptable. false to keep. 
+							self.SBAI_bInBackgroundTask = taskData.bBackgroundTask 
+						end 
                         return nil
                     else
                         -- finished, clear runtime
                         subTaskTable._running = false
                         subTaskTable._result = result
+						self.SBAI_bInBackgroundTask = false 
 
                         if result == true then
                             if isSelector then return true end -- selector succeeds immediately
@@ -2592,7 +2702,7 @@ function ENT:SBAI_RunBehavior()
     print("RunBehavior start: SysTime:", SysTime()) 
 
     -- Ensure we have a runtime tree copy
-    if not self.SBAI_CurBehaviorStack then
+    if !self.SBAI_CurBehaviorStack then
         print("Cloning behavior tree...")
         self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     end
@@ -2605,9 +2715,10 @@ function ENT:SBAI_RunBehavior()
     if result != nil then
         print("Clearing runtime behavior stack")
         self.SBAI_CurBehaviorStack = nil
-    end
+    end 
 
     print("RunBehavior end: SysTime:", SysTime()) 
+	return result 
 end 
 
 function ENT:NPC_GetRunActivity( act ) 
@@ -2631,12 +2742,39 @@ function ENT:NPC_TranslateActivity(act)
 	end 
 end 
 
-function ENT:Think() 
-	local retval = scripted_ents.Get("npc_unreali_female").Think(self) 
-	if SERVER then 
-		self:SBAI_RunBehavior() 
+function ENT:NPC_ShouldConductBehaviorTree() 
+	-- likely performing a skill 
+	if self:GetCurrentSchedule() == SCHED_SCENE_GENERIC then -- may be in a skill task 
+		if self.scriptActivity then 
+			return true 
+		end 
 	end 
-	return retval 
+	-- if true then return false end 
+	-- has enemy 
+	if !IsValid(self:GetEnemy()) then return false end 
+	-- horizontal distance not higher than 5000 
+	if !self.enemyDist then return false end 
+	if self.enemyDist > 5000 then return false end 
+	-- vertical distance between 800 
+	local pos = self:WorldToLocal(self:GetEnemy():WorldSpaceCenter()) 
+	if pos.z < -800 or pos.z > 800 then return false end 
+	-- has raven melee weapon 
+	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
+	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
+	return true 
+end 
+
+function ENT:NPC_ShouldBlockRunAI() 
+	if self:NPC_ShouldConductBehaviorTree() then return true end 
+	return scripted_ents.Get("npc_unreali_female").NPC_ShouldBlockRunAI(self) 
+end 
+
+function ENT:CustomRunAI() 
+	if self:NPC_ShouldConductBehaviorTree() then 
+		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
+	end 
+	local retVal = scripted_ents.Get("npc_unreali_female").CustomRunAI(self) 
+	-- self:DoSchedule( self.CurrentSchedule ) 
 end 
 
 -- FlowAbortMode: 
@@ -2656,10 +2794,9 @@ function ENT:SbAggroLevel(tbl)
     end
 
     for _, level in ipairs(arr) do
-        print("Checking AggroLevel:", level)
 
         -- if level == "AIAggroLevel_Peaceful" and self:GetNPCState() < 2 then
-        if level == "AIAggroLevel_Peaceful" and self:GetNPCState() <= 3 then
+        if level == "AIAggroLevel_Peaceful" then
             return true
         elseif level == "AIAggroLevel_Battle" and self:GetNPCState() == NPC_STATE_COMBAT then
             return true
@@ -2713,7 +2850,7 @@ function ENT:SbCheckActorEffect(tbl)
     local bInverseCondition  = tbl.bInverseCondition or false
 
     -- if decorator disabled, always allow
-    if !bActive then return true end
+    -- if !bActive then return true end
 
     -- resolve actor
     local ent
@@ -2805,7 +2942,7 @@ function ENT:SbCheckActorStat(tbl)
 	elseif CompareOP == "NotEqual" then 
 		result = testvalue != CheckValue 
 	end 
-	print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
+	-- print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
 	return result 
 end 
 
@@ -2988,24 +3125,33 @@ function ENT:SbCautionToTarget(tbl)
 	-- set walk type 
 	-- now delay 
 	local waitTime = tbl.WaitCheckTime or 0
-    -- local returnSucceeded = tbl.bReturnSucceeded or false
+    local returnSucceeded = tbl.bReturnSucceeded or false
 	-- if tbl.finished then return true end 
 
     if !tbl.startTime then -- TASKSTATUS_NEW 
-        tbl.startTime = SysTime()
-		self:StartSchedule(LUASCHED_RANDOM_NONAV_GO) 
+        tbl.startTime = CurTime() 
+		-- self:StartSchedule(LUASCHED_RANDOM_NONAV_GO) 
+		-- self.flMaxTasksRun = 10 
+		-- self:DoSchedule(self.CurrentSchedule) 
+		self.bTaskComplete = false 
+		self:TASK_FIND_RANDOM_PATH(500) 
+		self:ChainStartTask("TASK_SET_TOLERANCE_DISTANCE",48) 
+		self:ChainStartTask("TASK_SET_ROUTE_SEARCH_TIME",3) 
+		self:ChainStartTask("TASK_GET_PATH_TO_LASTPOSITION",1) 
+		self:ChainStartTask("TASK_WALK_PATH",48) 
+		self:ResetIdealActivity(ACT_MP_WALK_MELEE) 
     end
 	self:SetMovementActivity(ACT_MP_WALK_MELEE) -- do the cautious move 
-    local elapsed = SysTime() - tbl.startTime
-    print("in SbCautionToTarget", elapsed, waitTime)
+    local elapsed = CurTime() - tbl.startTime
+    -- print("in SbCautionToTarget", elapsed, waitTime)
 
     if elapsed < waitTime then
         return nil -- still running
     else
 		tbl.finished = true 
-		Entity(1):ChatPrint("SbCautionToTarget: finishing "..tbl.startTime) 
+		-- Entity(1):ChatPrint("SbCautionToTarget: finishing "..tbl.startTime) 
 		-- tbl.startTime = nil
-		if true then return true end -- temporary: remove this when branch selection issues are solved 
+		-- if true then return true end -- temporary: remove this when branch selection issues are solved 
         if returnSucceeded then
             return true  -- wait succeeded
         else
@@ -3016,14 +3162,21 @@ end
 
 function ENT:SbDetectTarget(tbl) 
 	local bEnemy, bComa = tbl.bEnemy, tbl.bComa 
+	local EffectAliasArray = tbl.EffectAliasArray 
 	-- right now just return true instead of searching for enemy 
 	-- print("in sbdetecttarget. this will directly return true") 
+	
+	-- "EffectAliasArray": [
+        -- "Check_AttackTachyNPC",
+        -- "Check_Detect"
+      -- ],
+	
 	return IsValid(self:GetEnemy()) 
 end 
 
 function ENT:SbMoveToTarget(tbl) 
 	local MoveState = tbl.MoveState
-	local DistanceOfApproach = tbl.DistanceOfApproach
+	local DistanceOfApproach = tbl.DistanceOfApproach -- i think this means walk until distancetoenemy < 250 
 	local bBackgroundTask = tbl.bBackgroundTask
 	local NodeName = tbl.NodeName 
 	if self.CurrentSchedule then 
@@ -3037,11 +3190,19 @@ function ENT:SbMoveToTarget(tbl)
 			end 
 		end 
 	end 
-	tbl.StartPos = tbl.StartPos or self:GetPos() 
-	if self:GetPos():Distance(tbl.StartPos) > 250 then return true end -- moved away from task start pos by 250 units 
+	tbl.StartPos = tbl.StartPos or self:GetEnemy():GetPos() 
+	if self.enemyDist < 250 then return true end -- moved away from task start pos by 250 units 
 end 
 
-function ENT:SbUseEffect(tbl) end 
+function ENT:SbUseEffect(tbl) -- add effect 
+	local bSelfActor = tbl.bSelfActor 
+	local EffectAlias = tbl.EffectAlias 
+	local target = self:GetEnemy() 
+	if bSelfActor then target = self end 
+	if IsValid(target) then 
+		target.SbEffectAlias[target] = CurTime() 
+	end 
+end 
 
 -- SbUseSkill 
 -- indices in tbl contain skill names, [1]	=	M_Raven_ParryPreview1 
@@ -3049,6 +3210,8 @@ function ENT:SbUseEffect(tbl) end
 -- looked up skill's SkillAlias is called from SkillTable.json, "M_Raven_ParryPreview1": {
 -- TargetFilterAlias is activated in TargetFilterTable, "TargetFilterAlias": "M_Raven_ParryPreview1_Target", 
 -- FirstSkillActiveAlias is activated in SkillActiveStepTable, "FirstSkillActiveAlias": "M_Raven_ParryPreview1_Cast1"} 
+-- FirstSkillActiveAlias contains dir to animation data in FirstSkillActiveAlias, "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_ParryPreview" 
+-- inside anim metadata, actual animation exists in SBShowAnimKey's Properties["AnimResourcePath"] = "/Game/Art/Character/Monster/CH_M_NA_53/Animation/M_Raven_BurstAreaSlashEnd" 
 function ENT:SbUseSkill(tbl) 
 	-- PrintTable(tbl) 
 	-- [1]	=	M_Raven_ParryPreview1
@@ -3058,7 +3221,7 @@ function ENT:SbUseSkill(tbl)
 	-- temp build to play 
 	self:StopMoving(true) 
 	self:ClearGoal() 
-	if self:GetIdealActivity() != ACT_SPECIAL_ATTACK1 then 
+	if !tbl.Started then 
 		Entity(1):ChatPrint("starting skill") 
 		for k,v in RandomPairs(tbl) do 
 			if isnumber(k) then -- do not accidentally start variables 
@@ -3069,6 +3232,12 @@ function ENT:SbUseSkill(tbl)
 					-- self:ResetIdealActivity(ACT_SPECIAL_ATTACK1) 
 					self:NPC_StartScriptedActivity("M_Raven_Parry",true) 
 				end 
+				local SkillCommandTable = SB_SkillCommandTable[1].Rows[v] 
+				local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias 
+				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable] 
+				local SkillNameFromSkillTable = SkillTable.FirstSkillActiveAlias 
+				local FirstSkillActiveAlias = SB_SkillActiveStepTable[1].Rows[SkillNameFromSkillTable] 
+				-- look up skill from SkillCommandTable 
 				tbl.Started = true 
 			end 
 		end 
@@ -3126,6 +3295,21 @@ function ENT:SbWait(data)
             return false -- wait failed
         end
     end
-end
+end 
 
-function ENT:Item_Resurrection_Ground(ent) return false end 
+function ENT:SbMetaAI(data) end -- base AI 
+function ENT:SbMoveToHome(data) 
+	local bUseSpawnPath = data.bUseSpawnPath 
+	local bDetectTarget = data.bDetectTarget 
+	local DetectTargetDelayTime = data.DetectTargetDelayTime 
+	local bEnemy = data.bEnemy 
+end 
+
+function ENT:SB_LookAtTarget(data) end 
+function ENT:SbWaitTimeRandom(data) -- only in tachy ai 
+	local MinTime = data.MinTime 
+	local MaxTime = data.MaxTime 
+	local bReturnSucceeded = data.bReturnSucceeded 
+end 
+
+function ENT:Item_Resurrection_Ground(ent) return true end 
