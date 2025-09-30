@@ -85,6 +85,8 @@ SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillActiveStepT
 SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillResultTable.json")
 SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/EffectTable.json")
 SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/TargetFilterTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterAnimSetTable.json")
+SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterMoveTable.json")
 
 print(SysTime()) 
 
@@ -2531,7 +2533,275 @@ ENT.SBAI_BehaviorTree = {
     },
     ObjectName = "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_32'"
   }
-}
+} 
+
+-- when effects get added, they also apply effects called ShowPath like 
+	-- "ActiveShowPath": "CH_M_NA_53_Raven/Basic/M_Raven_BuffFX",
+        -- "LoopShowPath": "",
+        -- "DeactiveShowPath": "",
+		-- "ActiveTargetFilterAlias": "Self",
+        -- "ActiveTargetEffectAliasArray": [],
+        -- "ActiveTargetResultShowPath": "",
+        -- "bActiveTargetApplyConditionHitMe": false,
+        -- "LoopTargetFilterAlias": "None",
+        -- "LoopTargetEffectAliasArray": [],
+        -- "LoopTargetResultShowPath": "",
+        -- "bLoopTargetApplyConditionHitMe": false,
+        -- "FixedTargetFilterAlias": "None",
+        -- "DeactiveTargetFilterAlias": "None",
+        -- "DeactiveTargetEffectAliasArray": [],
+        -- "DeactiveTargetResultShowPath": "",
+-- they can either be visual fx, and actual animations 
+-- "M_Raven_BetaGrab_HitL": {"ActiveShowPath": "CH_M_NA_53_Raven/LinkSkill/M_Raven_BetaGrabSuccessHitL"} 
+-- M_Raven_BetaGrabSuccessHitL: "AnimResourcePath": "/Game/Art/Character/PC/CH_P_EVE_01/Animation/Hit_Raven_BetaCounterGrabL" 
+
+function ENT:SBAI_AddEffect(strEffect) 
+	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
+	local curEffects = self.SbEffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
+	if !curEffects then self.SbEffectAlias = { } curEffects = self.SbEffectAlias end 
+	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
+		curEffects[strEffect] = true 
+	else 
+		curEffects[strEffect] = CurTime() + EffectTable.LifeTime 
+	end 
+end 
+
+function ENT:SBAI_GetEffectTable(strEffect) 
+	local EffectTable = SB_EffectTable[1].Rows[strEffect] 
+	return EffectTable 
+end 
+
+function ENT:SBAI_CheckEffect(strEffect) -- check existence of effect, return time available 
+	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
+	local curEffects = self.SbEffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
+	-- pre checks before checking for existence of effect 
+	-- EffectLifeType_StanceDependent: check whether npc StanceName equals to EffectTable.StanceAlias 
+	-- EffectLifeType_StepDependent: check whether effect ran out of steps 
+	-- EffectLifeType_BeforeNextSkill 
+	-- EffectLifeType_CharacterGetupTime 
+	-- EffectLifeType_CharacterGroggyEndTime
+	-- EffectLifeType_EquipmentDependent
+	-- EffectLifeType_IndependentTime -- countdown from LifeTime 
+	-- EffectLifeType_Infinite -- once set, it can only be manually worn off 
+	-- EffectLifeType_LevelSequenceDependent
+	-- EffectLifeType_LevelSequenceDependentWithoutPlayable
+	-- EffectLifeType_NextSkillDependent
+	-- EffectLifeType_ProjectileDependent
+	-- EffectLifeType_SkillDependent
+	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
+		return curEffects[strEffect] -- check whether we have specific effect 
+	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
+		return self.StanceName == EffectTable.StanceAlias 
+	-- elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
+	end 
+end 
+
+--==============================================================================
+-- HELPER: Quaternion to Angle Conversion
+--==============================================================================
+--[[
+    Converts a quaternion from the JSON data into a Garry's Mod Angle.
+    This function also handles the conversion from Unreal Engine's left-handed
+    coordinate system to Source Engine's right-handed system. This is typically
+    done by negating the Yaw and Roll.
+
+    @param q A table representing the quaternion, e.g., {X=0, Y=0, Z=0, W=1}.
+    @returns A GMod Angle object.
+]]
+local function QuaternionToAngle(q)
+    if not q then return Angle(0, 0, 0) end
+
+    local w, x, y, z = q.W, q.X, q.Y, q.Z
+
+    -- Roll (x-axis rotation)
+    local t0 = 2.0 * (w * x + y * z)
+    local t1 = 1.0 - 2.0 * (x * x + y * y)
+    local roll = math.atan2(t0, t1)
+
+    -- Pitch (y-axis rotation)
+    local t2 = 2.0 * (w * y - z * x)
+    -- Clamp the value to the valid range for asin [-1, 1]
+    t2 = math.max(-1.0, math.min(1.0, t2))
+    local pitch = math.asin(t2)
+
+    -- Yaw (z-axis rotation)
+    local t3 = 2.0 * (w * z + x * y)
+    local t4 = 1.0 - 2.0 * (y * y + z * z)
+    local yaw = math.atan2(t3, t4)
+
+    -- Convert radians to degrees and create the angle.
+    -- Negate Yaw and Roll for Left-Handed (UE) to Right-Handed (Source) conversion.
+    return Angle(math.deg(pitch), -math.deg(yaw), -math.deg(roll))
+end
+
+
+--==============================================================================
+-- CORE: Get Interpolated Root Motion Transform
+--==============================================================================
+--[[
+    Parses the root motion data to get the interpolated transform at a specific time.
+    It calculates the current frame based on elapsed time and interpolates between
+    the two nearest keyframes to ensure smooth movement.
+
+    @param rootMotionTable The imported JSON table for the animation.
+    @param startTime The CurTime() when the animation started.
+    @returns Vector positionOffset, Angle angleOffset, or nil if data is invalid.
+]]
+function ENT:SBAI_GetRootMotionTransform(rootMotionTable, startTime)
+    -- Ensure the root motion table is valid.
+    if not rootMotionTable or not rootMotionTable[1] or not rootMotionTable[1].Properties then
+        return nil, nil
+    end
+
+    -- The JSON does not seem to contain FrameRate. We'll assume a standard of 30 FPS.
+    -- You may need to adjust this value if the animations look too fast or slow.
+    local frameRate = rootMotionTable[1].Properties.FrameRate or 30
+
+    local dataArray = rootMotionTable[1].Properties.RootMotionDataArray
+    if not dataArray or not dataArray[1] then return nil, nil end
+
+    local transformArray = dataArray[1].TransformArray
+    if not transformArray or #transformArray == 0 then return nil, nil end
+
+    local elapsedTime = CurTime() - startTime
+
+    -- Calculate which frame we are on (can be a float).
+    local currentFrame = elapsedTime * frameRate
+    local frameCount = #transformArray
+
+    -- Determine the two keyframes to interpolate between.
+    local frame1_idx = math.floor(currentFrame) + 1
+    local frame2_idx = frame1_idx + 1
+
+    -- Prevent indexing out of bounds.
+    if frame1_idx > frameCount then frame1_idx = frameCount end
+    if frame2_idx > frameCount then frame2_idx = frameCount end
+
+    -- Get the transform data for both frames.
+    local transform1 = transformArray[frame1_idx]
+    local transform2 = transformArray[frame2_idx]
+
+    if not transform1 or not transform2 then return nil, nil end
+
+    -- Calculate the interpolation alpha (0.0 to 1.0).
+    local alpha = currentFrame - (frame1_idx - 1)
+    alpha = math.Clamp(alpha, 0, 1)
+
+    -- Extract and interpolate position (Translation).
+    -- We negate the Y value to convert from UE's Left-Handed to Source's Right-Handed coordinates.
+    local pos1 = Vector(transform1.Translation.X, -transform1.Translation.Y, transform1.Translation.Z)
+    local pos2 = Vector(transform2.Translation.X, -transform2.Translation.Y, transform2.Translation.Z)
+    local interpolatedPos = LerpVector(alpha, pos1, pos2)
+
+    -- Extract, convert, and interpolate rotation.
+    local ang1 = QuaternionToAngle(transform1.Rotation)
+    local ang2 = QuaternionToAngle(transform2.Rotation)
+    -- LerpAngle provides smooth rotation and is a global function.
+    local interpolatedAngle = LerpAngle(alpha, ang1, ang2)
+
+    return interpolatedPos, interpolatedAngle
+end
+
+function ENT:SBAI_SetMoveTable(strEffect) -- M_Raven_SlashCombo_Move_RM 
+	local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] 
+	if !CharacterMoveTable then print("no move table",strEffect) return false end 
+	-- initialize new move step 
+	self.SBAI_MoveStep = { ["MoveArrayName"] = strEffect, ["StartTime"] = CurTime() } 
+	-- cache move array 
+	local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath 
+	-- "addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json"
+	RootMotionDataPath = string.sub(RootMotionDataPath,6) -- strip out /Game 
+	-- addons/sbraven/data_static/SB/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM.json
+	RootMotionDataPath = "addons/sbraven/data_static/SB/Content"..RootMotionDataPath..".json" 
+	SB_ImportJSON(RootMotionDataPath) -- imports as _G.SB_M_Raven_SlashCombo_RM 
+	-- "RootMotionDataPath": "/Game/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM",
+	    -- "Properties": {
+      -- "RootMotionDataArray": [
+        -- {
+          -- "CharacterMoveAlias": "M_Raven_SlashCombo_Move_RM",
+          -- "TransformArray": [
+            -- {
+              -- "Rotation": {
+                -- "X": 0.0,
+                -- "Y": 0.0,
+                -- "Z": 0.0,
+                -- "W": 1.0,
+                -- "IsNormalized": true,
+                -- "Size": 1.0,
+                -- "SizeSquared": 1.0
+              -- },
+              -- "Translation": {
+                -- "X": 0.0,
+                -- "Y": 0.0,
+                -- "Z": 0.0
+              -- },
+              -- "Scale3D": {
+                -- "X": 1.0,
+                -- "Y": 1.0,
+                -- "Z": 1.0
+              -- }
+            -- },
+            -- {
+              -- "Rotation": {
+                -- "X": 0.0,
+end 
+
+function ENT:OverrideMove(flInterval)
+    if self.SBAI_MoveStep then
+        local name = self.SBAI_MoveStep.MoveArrayName
+        local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
+        local EndTime = CharacterMoveTable.Time
+        local CurEndTime = self.SBAI_MoveStep.StartTime + EndTime
+
+        local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath
+        RootMotionDataPath = string.GetFileFromFilename(RootMotionDataPath)
+        RootMotionDataPath = string.StripExtension(RootMotionDataPath)
+
+        local RootMotion = _G["SB_" .. RootMotionDataPath]
+
+        if RootMotion then
+            -- Get the interpolated transform for the current time
+            local posOffset, angOffset = self:SBAI_GetRootMotionTransform(RootMotion, self.SBAI_MoveStep.StartTime)
+
+            if posOffset and angOffset then
+                -- Initialize previous offsets on the first frame of movement.
+                if not self.SBAI_MoveStep.PrevPosOffset then
+                    self.SBAI_MoveStep.PrevPosOffset = Vector(0, 0, 0)
+                    self.SBAI_MoveStep.PrevAngOffset = Angle(0, 0, 0)
+                end
+
+                -- Calculate the change (delta) from the last frame's offsets.
+                local posDelta = posOffset - self.SBAI_MoveStep.PrevPosOffset
+                local angDelta = angOffset - self.SBAI_MoveStep.PrevAngOffset
+
+                -- Get the entity's current transform, allowing for external changes (e.g., physgun, re-aiming).
+                local currentAng = self:GetLocalAngles()
+                local currentPos = self:GetPos()
+
+                -- Transform the position delta from local animation space to world space based on the entity's current angle.
+                local worldPosDelta = currentAng:Forward() * posDelta.x +
+                                       currentAng:Right() * posDelta.y +
+                                       currentAng:Up() * posDelta.z
+
+                -- Apply the deltas to the current transform.
+                local targetPos = currentPos + worldPosDelta
+                local targetAng = currentAng + angDelta
+
+                self:MoveGroundStep(targetPos)
+                self:SetAngles(targetAng)
+
+                -- Store the current total offsets for the next frame's calculation.
+                self.SBAI_MoveStep.PrevPosOffset = posOffset
+                self.SBAI_MoveStep.PrevAngOffset = angOffset
+            end
+        end
+
+        -- Clear out motion data after it has finished.
+        if CurTime() > CurEndTime then
+            self.SBAI_MoveStep = nil
+        end
+    end
+end
 
 -- function ENT:CustomRunAI() 
 	-- pre check to decide whether to consult Raven's unique BehaviorTree 
@@ -2808,7 +3078,7 @@ function ENT:SbAggroLevel(tbl)
 end
 
 function ENT:SbAimMe(tbl) -- doesn't have any additional properties 
-	return self:NPC_HasCondition(COND.ENEMY_FACING) 
+	return self:NPC_HasCondition(COND.ENEMY_FACING) and self:NPC_IsEnemyAttacking(self:GetEnemy()) 
 end 
 
 function ENT:SbBlackboard(tbl) 
@@ -2846,11 +3116,11 @@ function ENT:SbCheckActorEffect(tbl)
     local ActorType          = tbl.ActorType or "Self"
     local EffectAlias        = tbl.EffectAlias
     local OrCheckArray       = tbl.OrCheck_EffectAliasArray or {}
-    local bActive            = tbl.bActive or false
+    local bActive            = tbl.bActive 
     local bInverseCondition  = tbl.bInverseCondition or false
 
     -- if decorator disabled, always allow
-    -- if !bActive then return true end
+    if bActive == false then return false end
 
     -- resolve actor
     local ent
@@ -2895,7 +3165,6 @@ function ENT:SbCheckActorEffect(tbl)
         end
 
         -- post check wrapper: if ENT has a function named after the effect alias, call it 
-		Entity(1):ChatPrint("CHECKING EFFECT "..eff) 
         local fn = self[eff]
         if type(fn) == "function" then
             local ok, override = pcall(fn, self, ent)
@@ -2909,7 +3178,7 @@ function ENT:SbCheckActorEffect(tbl)
 
     -- apply inverse flag
     if bInverseCondition then
-        return not hasEffect
+        return !hasEffect
     else
         return hasEffect
     end
@@ -3190,7 +3459,7 @@ function ENT:SbMoveToTarget(tbl)
 			end 
 		end 
 	end 
-	tbl.StartPos = tbl.StartPos or self:GetEnemy():GetPos() 
+	-- tbl.StartPos = tbl.StartPos or self:GetEnemyLastKnownPos() 
 	if self.enemyDist < 250 then return true end -- moved away from task start pos by 250 units 
 end 
 
@@ -3312,4 +3581,7 @@ function ENT:SbWaitTimeRandom(data) -- only in tachy ai
 	local bReturnSucceeded = data.bReturnSucceeded 
 end 
 
-function ENT:Item_Resurrection_Ground(ent) return true end 
+function ENT:Item_Resurrection_Ground(ent) return false end 
+function ENT:M_Raven_BetaCounterGrab_HitE(ent) return false end 
+function ENT:LV_FinishQTE_FailDown(ent) return false end 
+
