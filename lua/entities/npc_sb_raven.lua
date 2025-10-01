@@ -2766,6 +2766,37 @@ function ENT:SB_ApplyCurveFloat(curveName, normalizedTime)
     end
 end
 
+-- Map of SB InterpTypes to GMod math.ease functions
+local EasingFunctions = {
+    ["InterpType_Step"] = function(f) return f >= 1 and 1 or 0 end,
+    ["InterpType_Liner"] = function(f) return f end,
+    ["InterpType_SinOut"] = math.ease.OutSine,
+    ["InterpType_SinIn"] = math.ease.InSine,
+    ["InterpType_ExpoIn"] = math.ease.InExpo,
+    ["InterpType_SinInOut"] = math.ease.InOutSine,
+    ["InterpType_ExpoInOut"] = math.ease.InOutExpo,
+    ["InterpType_ExpoOut"] = math.ease.OutExpo,
+    ["InterpType_CircularOut"] = math.ease.OutCirc,
+    ["InterpType_CircularIn"] = math.ease.InCirc,
+    ["InterpType_EaseIn"] = math.ease.InQuad, -- Using Quad as a generic EaseIn
+    ["InterpType_CircularInOut"] = math.ease.InOutCirc,
+    ["InterpType_EaseInOut"] = math.ease.InOutQuad, -- Using Quad as a generic EaseInOut
+    ["InterpType_EaseOut"] = math.ease.OutQuad -- Using Quad as a generic EaseOut
+}
+
+--[[
+    Converts a linear fraction (0-1) into an eased fraction based on the interp type.
+    @param interpType The string identifier from the move table.
+    @param fraction The linear progress, typically normalizedTime.
+    @returns The eased progress.
+]]
+function ENT:SBAI_GetEasedFraction(interpType, fraction)
+    if not interpType then return fraction end
+    local key = interpType:gsub("ESBInterpType::", "")
+    local easeFunc = EasingFunctions[key] or EasingFunctions["InterpType_Liner"]
+    return easeFunc(fraction)
+end
+
 
 --==============================================================================
 -- CORE: Get Interpolated Root Motion Transform
@@ -2914,6 +2945,21 @@ function ENT:SBAI_SetMoveTable(strEffect) -- M_Raven_SlashCombo_Move_RM
                 -- "X": 0.0,
 end 
 
+function ENT:SBAI_ShouldCancelMoveTable() 
+	if self.SBAI_MoveStep then 
+		local name = self.SBAI_MoveStep.MoveArrayName 
+		local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] 
+		if CharacterMoveTable.bStopWhenInvalidTarget then 
+			if !IsValid(enemy) then 
+				return true 
+			end 
+		elseif CharacterMoveTable.bStopWhenInvalidNavigation then 
+			if !self:IsGoalActive() then return true end 
+		end 
+	end 
+	return false 
+end 
+
 function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and not unique to npc_sb_raven so other NPCs can be influenced by Effects 
     if self.SBAI_MoveStep then
         -- Wait until the designated start time (accounts for StartDelayTime).
@@ -2931,6 +2977,23 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
         local currentAng = self:GetLocalAngles()
         local targetPos = currentPos
         local targetAng = currentAng
+		
+		-- Pre-calculate time and easing fractions for all relevant move types
+		local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
+		local moveStartTime = CharacterMoveTable.MoveStartTime or 0
+		local moveEndTime = CharacterMoveTable.MoveEndTime or Time
+		local moveDuration = moveEndTime - moveStartTime
+		
+		local normalizedTime = 0
+		local prevNormalizedTime = 0
+		if moveDuration > 0 then
+			normalizedTime = math.Clamp((elapsedTime - moveStartTime) / moveDuration, 0, 1)
+			prevNormalizedTime = math.Clamp(((elapsedTime - flInterval) - moveStartTime) / moveDuration, 0, 1)
+		end
+		
+		local interpType = CharacterMoveTable.PositionInterpType
+		local easedNow = self:SBAI_GetEasedFraction(interpType, normalizedTime)
+		local easedPrev = self:SBAI_GetEasedFraction(interpType, prevNormalizedTime)
 
         -- Handle different move types
         if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
@@ -2970,9 +3033,6 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
 				targetPos = target:WorldSpaceCenter() 
 				goto theendofmovetransform 
 			end 
-            local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
-            local moveStartTime = CharacterMoveTable.MoveStartTime or 0
-            local moveEndTime = CharacterMoveTable.MoveEndTime or Time
 
             if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
                 local moveDir
@@ -3001,18 +3061,9 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
                 local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
                 local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
 
-                -- Check if this is a curve-driven movement or a linear movement
+                -- Check if this is a curve-driven movement or a linear/eased movement
                 if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
                     -- CURVE-BASED LOGIC
-                    local moveDuration = moveEndTime - moveStartTime
-                    local normalizedTime = 0
-                    local prevNormalizedTime = 0
-
-                    if moveDuration > 0 then
-                        normalizedTime = math.Clamp((elapsedTime - moveStartTime) / moveDuration, 0, 1)
-                        prevNormalizedTime = math.Clamp(((elapsedTime - flInterval) - moveStartTime) / moveDuration, 0, 1)
-                    end
-
                     local posMultiplier = 1.0
                     local prevPosMultiplier = 1.0
                     local zMultiplier = 1.0
@@ -3043,20 +3094,11 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
                     local zDelta = Vector(0, 0, upMove * (zMultiplier - prevZMultiplier))
                     
                     targetPos = currentPos + posDelta + zDelta
-
                 else
-                    -- LINEAR MOVEMENT LOGIC (no curves)
-                    local moveDuration = moveEndTime - moveStartTime
-                    if moveDuration > 0 then
-                        -- Calculate constant velocity based on total distance and duration
-                        local forwardVel = forwardMove / moveDuration
-                        local rightVel = rightMove / moveDuration
-                        local upVel = upMove / moveDuration
-                        
-                        -- Calculate displacement for this frame
-                        local worldPosDelta = (moveDir * forwardVel + rightDir * rightVel + Vector(0,0,1) * upVel) * flInterval
-                        targetPos = currentPos + worldPosDelta
-                    end
+                    -- EASED MOVEMENT LOGIC (no curves)
+					local totalDisplacement = (moveDir * forwardMove) + (rightDir * rightMove) + (Vector(0,0,1) * upMove)
+					local displacementDelta = totalDisplacement * (easedNow - easedPrev)
+					targetPos = currentPos + displacementDelta
                 end
             end
         elseif MoveType == "ESBMoveTransformType::MoveTransformType_None" then
@@ -3072,46 +3114,21 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
         elseif MoveType == "ESBMoveTransformType::MoveTransformType_Airborne" then
             -- To be filled (unused)
 		elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
-            local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
-            local moveStartTime = CharacterMoveTable.MoveStartTime or 0
-            local moveEndTime = CharacterMoveTable.MoveEndTime or Time
-
             if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
-                local forwardVel = CharacterMoveTable.ForwardValue or 0
-                local rightVel = CharacterMoveTable.RightValue or 0
-                local upVel = CharacterMoveTable.UpValue or 0
+                local forwardMove = CharacterMoveTable.ForwardValue or 0
+                local rightMove = CharacterMoveTable.RightValue or 0
+                local upMove = CharacterMoveTable.UpValue or 0
 
-                -- Check for and apply a curve multiplier if it exists
-                local curveMultiplier = 1.0
-                local curvePath = CharacterMoveTable.PositionInterpCurveDataPath
-                if curvePath and curvePath ~= "None" then
-                    -- Extract the curve name from the path (e.g., "MyCurve.MyCurve'")
-                    local extractedPath = string.match(curvePath, "'(.-)'")
-                    if extractedPath then
-                        local fileName = string.GetFileFromFilename(extractedPath)
-                        local curveName = string.StripExtension(fileName)
-                        
-                        local moveDuration = moveEndTime - moveStartTime
-                        if moveDuration > 0 then
-                            -- Calculate how far along the move is (0.0 to 1.0)
-                            local normalizedTime = (elapsedTime - moveStartTime) / moveDuration
-                            curveMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
-                        end
-                    end
-                end
-                
-                -- Apply the curve multiplier to the base velocities
-                forwardVel = forwardVel * curveMultiplier
-                rightVel = rightVel * curveMultiplier
-                upVel = upVel * curveMultiplier
-
-                -- Calculate displacement for this frame
-                local localDisplacement = Vector(forwardVel, rightVel, upVel) * flInterval
+                -- Calculate total potential local displacement
+				local totalLocalDisplacement = Vector(forwardMove, rightMove, upMove)
+				
+				-- Get the displacement delta for this frame based on the eased progress
+				local localDisplacementDelta = totalLocalDisplacement * (easedNow - easedPrev)
 
                 -- Transform local displacement to world space
-                local worldPosDelta = currentAng:Forward() * localDisplacement.x +
-                                       currentAng:Right() * localDisplacement.y +
-                                       currentAng:Up() * localDisplacement.z
+                local worldPosDelta = currentAng:Forward() * localDisplacementDelta.x +
+                                       currentAng:Right() * localDisplacementDelta.y +
+                                       currentAng:Up() * localDisplacementDelta.z
 
                 targetPos = currentPos + worldPosDelta
             end
@@ -3147,7 +3164,7 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
             self:SetAngles(targetAng)
         end
 
-        if CurTime() > CurEndTime then
+        if CurTime() > CurEndTime or self:SBAI_ShouldCancelMoveTable() then
             print("removing motion", name)
             self.SBAI_MoveStep = nil
 			if CharacterMoveTable.bZeroVelocityWhenEnd then 
@@ -3156,6 +3173,9 @@ function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and no
         end
     end
 end
+
+
+
 
 -- function ENT:CustomRunAI() 
 	-- pre check to decide whether to consult Raven's unique BehaviorTree 
