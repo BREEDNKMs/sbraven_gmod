@@ -2,6 +2,7 @@ AddCSLuaFile()
 
 -- Define the path to your JSON file relative to the "garrysmod" folder.
 print(SysTime()) 
+IterativeHybridMoveLimit = include("includes/custommoveprobe.lua") 
 local filePath = "addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json"
 
 --[[
@@ -2634,6 +2635,137 @@ local function QuaternionToAngle(q)
     return Angle(math.deg(pitch), -math.deg(yaw), -math.deg(roll))
 end
 
+--==============================================================================
+-- HELPER: Quaternion SLERP
+--==============================================================================
+-- Performs spherical linear interpolation between two quaternions.
+-- q1, q2 are tables {X, Y, Z, W}
+-- t is interpolation factor [0,1]
+local function QuaternionSlerp(q1, q2, t)
+    -- Compute dot product
+    local dot = q1.X*q2.X + q1.Y*q2.Y + q1.Z*q2.Z + q1.W*q2.W
+
+    -- If dot < 0, negate one quaternion to take the shortest path
+    if dot < 0 then
+        q2 = {X=-q2.X, Y=-q2.Y, Z=-q2.Z, W=-q2.W}
+        dot = -dot
+    end
+
+    local theta0 = math.acos(math.min(dot,1)) -- angle between
+    local sinTheta0 = math.sin(theta0)
+
+    -- If very close, fall back to linear interpolation
+    if sinTheta0 < 1e-6 then
+        return {
+            X = (1-t)*q1.X + t*q2.X,
+            Y = (1-t)*q1.Y + t*q2.Y,
+            Z = (1-t)*q1.Z + t*q2.Z,
+            W = (1-t)*q1.W + t*q2.W
+        }
+    end
+
+    local s1 = math.sin((1-t)*theta0) / sinTheta0
+    local s2 = math.sin(t*theta0) / sinTheta0
+
+    return {
+        X = s1*q1.X + s2*q2.X,
+        Y = s1*q1.Y + s2*q2.Y,
+        Z = s1*q1.Z + s2*q2.Z,
+        W = s1*q1.W + s2*q2.W
+    }
+end
+
+--==============================================================================
+-- HELPER: Curve Loading and Evaluation
+--==============================================================================
+--[[
+    Loads a CurveFloat JSON file by parsing the specific path format from the move tables.
+    @param curveDataPath The raw path string from the CharacterMoveTable.
+]]
+function ENT:SBAI_LoadCurveData(curveDataPath)
+    if not curveDataPath or curveDataPath == "None" then return end
+
+    -- Extract the path between the single quotes, e.g., /Game/GameDesign/...
+    local extractedPath = string.match(curveDataPath, "'(.-)'")
+    if not extractedPath then return end
+
+    -- Strip the duplicate object name at the end, which acts like an extension.
+	extractedPath = string.sub(extractedPath,6) 
+    extractedPath = string.StripExtension(extractedPath)
+
+    -- Construct the final file path.
+    local finalPath = "addons/sbraven/data_static/SB/Content" .. extractedPath .. ".json"
+
+    -- This external function is expected to load the JSON into a global table.
+    SB_ImportJSON(finalPath)
+end
+
+--[[
+    Calculates a value from a loaded CurveFloat table based on a normalized time.
+    Handles both Linear and Cubic interpolation between keys.
+    @param curveName The name of the curve, e.g., "M_Sawshark_DoubleSwingSaw_Curve".
+    @param normalizedTime A value between 0.0 and 1.0 representing the progress.
+    @returns The calculated float value from the curve.
+]]
+function ENT:SB_ApplyCurveFloat(curveName, normalizedTime)
+    local curveTable = _G["SB_" .. curveName]
+    if not curveTable or not curveTable[1] or not curveTable[1].Properties or not curveTable[1].Properties.FloatCurve then
+		print("curveTable not found") 
+        return 0
+    end
+
+    local keys = curveTable[1].Properties.FloatCurve.Keys
+    if not keys or #keys == 0 then return 0 end
+
+    -- If there's only one key, return its value.
+    if #keys == 1 then return keys[1].Value end
+
+    -- Clamp the time to be within the curve's bounds.
+    normalizedTime = math.Clamp(normalizedTime, keys[1].Time, keys[#keys].Time)
+
+    -- Find the two keys to interpolate between.
+    local key1, key2
+    for i = 1, #keys - 1 do
+        if normalizedTime >= keys[i].Time and normalizedTime <= keys[i + 1].Time then
+            key1 = keys[i]
+            key2 = keys[i + 1]
+            break
+        end
+    end
+
+    if not key1 or not key2 then return keys[#keys].Value end
+    if key1.Time == key2.Time then return key1.Value end
+
+    -- Calculate the alpha for interpolation between the two keys.
+    local alpha = (normalizedTime - key1.Time) / (key2.Time - key1.Time)
+
+    if key1.InterpMode == "RCIM_Constant" or key1.InterpMode == "RCIM_None" then
+        -- Constant/None interpolation holds the value of the first key.
+        return key1.Value
+    elseif key1.InterpMode == "RCIM_Linear" then
+        return Lerp(alpha, key1.Value, key2.Value)
+    elseif key1.InterpMode == "RCIM_Cubic" then
+        local t, t2, t3 = alpha, alpha * alpha, alpha * alpha * alpha
+        local p0, p1 = key1.Value, key2.Value
+
+        -- Tangents must be scaled by the time difference between the keys.
+        local timeDiff = key2.Time - key1.Time
+        local m0 = key1.LeaveTangent * timeDiff
+        local m1 = key2.ArriveTangent * timeDiff
+
+        -- Cubic Hermite spline interpolation formula.
+        local h00 = 2 * t3 - 3 * t2 + 1
+        local h10 = t3 - 2 * t2 + t
+        local h01 = -2 * t3 + 3 * t2
+        local h11 = t3 - t2
+
+        return h00 * p0 + h10 * m0 + h01 * p1 + h11 * m1
+    else
+        -- Default to linear interpolation if the mode is unknown.
+        return Lerp(alpha, key1.Value, key2.Value)
+    end
+end
+
 
 --==============================================================================
 -- CORE: Get Interpolated Root Motion Transform
@@ -2653,8 +2785,6 @@ function ENT:SBAI_GetRootMotionTransform(rootMotionTable, startTime)
         return nil, nil
     end
 
-    -- The JSON does not seem to contain FrameRate. We'll assume a standard of 30 FPS.
-    -- You may need to adjust this value if the animations look too fast or slow.
     local frameRate = rootMotionTable[1].Properties.FrameRate or 30
 
     local dataArray = rootMotionTable[1].Properties.RootMotionDataArray
@@ -2693,11 +2823,13 @@ function ENT:SBAI_GetRootMotionTransform(rootMotionTable, startTime)
     local pos2 = Vector(transform2.Translation.X, -transform2.Translation.Y, transform2.Translation.Z)
     local interpolatedPos = LerpVector(alpha, pos1, pos2)
 
-    -- Extract, convert, and interpolate rotation.
-    local ang1 = QuaternionToAngle(transform1.Rotation)
-    local ang2 = QuaternionToAngle(transform2.Rotation)
-    -- LerpAngle provides smooth rotation and is a global function.
-    local interpolatedAngle = LerpAngle(alpha, ang1, ang2)
+       -- Rotation interpolation (now with quaternion slerp)
+    local q1 = transform1.Rotation
+    local q2 = transform2.Rotation
+    local qInterp = QuaternionSlerp(q1, q2, alpha)
+
+    -- Convert final quaternion to Angle once
+    local interpolatedAngle = QuaternionToAngle(qInterp)
 
     return interpolatedPos, interpolatedAngle
 end
@@ -2706,14 +2838,50 @@ function ENT:SBAI_SetMoveTable(strEffect) -- M_Raven_SlashCombo_Move_RM
 	local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] 
 	if !CharacterMoveTable then print("no move table",strEffect) return false end 
 	-- initialize new move step 
-	self.SBAI_MoveStep = { ["MoveArrayName"] = strEffect, ["StartTime"] = CurTime() } 
+	self.SBAI_MoveStep = { ["MoveArrayName"] = strEffect, ["StartTime"] = CurTime() + CharacterMoveTable.StartDelayTime } -- + StartDelayTime 
 	-- cache move array 
 	local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath 
-	-- "addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json"
-	RootMotionDataPath = string.sub(RootMotionDataPath,6) -- strip out /Game 
-	-- addons/sbraven/data_static/SB/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM.json
-	RootMotionDataPath = "addons/sbraven/data_static/SB/Content"..RootMotionDataPath..".json" 
-	SB_ImportJSON(RootMotionDataPath) -- imports as _G.SB_M_Raven_SlashCombo_RM 
+	if RootMotionDataPath != "None" then 
+		-- "addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json"
+		RootMotionDataPath = string.sub(RootMotionDataPath,6) -- strip out /Game 
+		-- addons/sbraven/data_static/SB/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM.json
+		RootMotionDataPath = "addons/sbraven/data_static/SB/Content"..RootMotionDataPath..".json" 
+		SB_ImportJSON(RootMotionDataPath) -- imports as _G.SB_M_Raven_SlashCombo_RM 
+	end 
+	-- if SBAI_LoadCurveData
+	-- load curves if they exist 
+	
+	if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath ~= "None" then
+        self:SBAI_LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
+    end
+
+    if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath ~= "None" then
+        self:SBAI_LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
+    end
+	
+    if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath ~= "None" then
+        self:SBAI_LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
+    end
+	
+    if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath ~= "None" then
+        self:SBAI_LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
+    end
+	
+	if CharacterMoveTable.PositionInterpCurveDataPath != "None" then 
+		print("has PositionInterpCurveDataPath") 
+	end 
+	
+	if CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then 
+		print("has StaticMoveZVAlueCurveDataPath") 
+	end 
+	
+	if CharacterMoveTable.MoveOffsetCurveDataPath != "None" then 
+		print("has MoveOffsetCurveDataPath") 
+	end 
+	
+	if CharacterMoveTable.RotationInterpCurveDataPath != "None" then 
+		print("has RotationInterpCurveDataPath") 
+	end 
 	-- "RootMotionDataPath": "/Game/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM",
 	    -- "Properties": {
       -- "RootMotionDataArray": [
@@ -2746,59 +2914,245 @@ function ENT:SBAI_SetMoveTable(strEffect) -- M_Raven_SlashCombo_Move_RM
                 -- "X": 0.0,
 end 
 
-function ENT:OverrideMove(flInterval)
+function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and not unique to npc_sb_raven so other NPCs can be influenced by Effects 
     if self.SBAI_MoveStep then
+        -- Wait until the designated start time (accounts for StartDelayTime).
+        if CurTime() < self.SBAI_MoveStep.StartTime then return end
+
         local name = self.SBAI_MoveStep.MoveArrayName
         local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
-        local EndTime = CharacterMoveTable.Time
-        local CurEndTime = self.SBAI_MoveStep.StartTime + EndTime
 
-        local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath
-        RootMotionDataPath = string.GetFileFromFilename(RootMotionDataPath)
-        RootMotionDataPath = string.StripExtension(RootMotionDataPath)
+        local Time = CharacterMoveTable.Time
+        local CurEndTime = self.SBAI_MoveStep.StartTime + Time
 
-        local RootMotion = _G["SB_" .. RootMotionDataPath]
+        local MoveType = CharacterMoveTable.MoveType
+		-- Define local tables to hold the final transform
+        local currentPos = self:GetPos()
+        local currentAng = self:GetLocalAngles()
+        local targetPos = currentPos
+        local targetAng = currentAng
 
-        if RootMotion then
-            -- Get the interpolated transform for the current time
-            local posOffset, angOffset = self:SBAI_GetRootMotionTransform(RootMotion, self.SBAI_MoveStep.StartTime)
+        -- Handle different move types
+        if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
+            local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath
+            RootMotionDataPath = string.GetFileFromFilename(RootMotionDataPath)
+            RootMotionDataPath = string.StripExtension(RootMotionDataPath)
+            local RootMotion = _G["SB_" .. RootMotionDataPath]
 
-            if posOffset and angOffset then
-                -- Initialize previous offsets on the first frame of movement.
-                if not self.SBAI_MoveStep.PrevPosOffset then
-                    self.SBAI_MoveStep.PrevPosOffset = Vector(0, 0, 0)
-                    self.SBAI_MoveStep.PrevAngOffset = Angle(0, 0, 0)
+            if RootMotion then
+                local posOffset, angOffset = self:SBAI_GetRootMotionTransform(RootMotion, self.SBAI_MoveStep.StartTime)
+
+                if posOffset and angOffset then
+                    if not self.SBAI_MoveStep.PrevPosOffset then
+                        self.SBAI_MoveStep.PrevPosOffset = Vector(0, 0, 0)
+                        self.SBAI_MoveStep.PrevAngOffset = Angle(0, 0, 0)
+                    end
+
+                    local posDelta = posOffset - self.SBAI_MoveStep.PrevPosOffset
+                    local angDelta = angOffset - self.SBAI_MoveStep.PrevAngOffset
+
+                    local worldPosDelta = currentAng:Forward() * posDelta.x +
+                                           currentAng:Right() * posDelta.y +
+                                           currentAng:Up() * posDelta.z
+
+                    targetPos = currentPos + worldPosDelta
+                    targetAng = currentAng + angDelta
+
+                    self.SBAI_MoveStep.PrevPosOffset = posOffset
+                    self.SBAI_MoveStep.PrevAngOffset = angOffset
                 end
-
-                -- Calculate the change (delta) from the last frame's offsets.
-                local posDelta = posOffset - self.SBAI_MoveStep.PrevPosOffset
-                local angDelta = angOffset - self.SBAI_MoveStep.PrevAngOffset
-
-                -- Get the entity's current transform, allowing for external changes (e.g., physgun, re-aiming).
-                local currentAng = self:GetLocalAngles()
-                local currentPos = self:GetPos()
-
-                -- Transform the position delta from local animation space to world space based on the entity's current angle.
-                local worldPosDelta = currentAng:Forward() * posDelta.x +
-                                       currentAng:Right() * posDelta.y +
-                                       currentAng:Up() * posDelta.z
-
-                -- Apply the deltas to the current transform.
-                local targetPos = currentPos + worldPosDelta
-                local targetAng = currentAng + angDelta
-
-                self:MoveGroundStep(targetPos)
-                self:SetAngles(targetAng)
-
-                -- Store the current total offsets for the next frame's calculation.
-                self.SBAI_MoveStep.PrevPosOffset = posOffset
-                self.SBAI_MoveStep.PrevAngOffset = angOffset
             end
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
+			if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then 
+				local LinkSocketName = CharacterMoveTable.LinkSocketName -- this is not going to result because in gmod none of the objects have such attachment name 
+				-- so we will build up a list about what they are and where they were instead 
+				local target = IsValid(self:GetEnemy()) and self:GetEnemy() or Entity(1) 
+				targetPos = target:WorldSpaceCenter() 
+				goto theendofmovetransform 
+			end 
+            local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
+            local moveStartTime = CharacterMoveTable.MoveStartTime or 0
+            local moveEndTime = CharacterMoveTable.MoveEndTime or Time
+
+            if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
+                local moveDir
+                local directionAxis = CharacterMoveTable.PositionDirectionAxis
+
+                -- Determine movement direction based on the specified axis and cache it
+                if not self.SBAI_MoveStep.MoveDir then
+                    if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then
+                        local enemy = self:GetEnemy()
+                        if not IsValid(enemy) then enemy = Entity(1) end -- for testing
+                        self.SBAI_MoveStep.MoveDir = (enemy:GetPos() - currentPos):GetNormalized()
+                    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Self" then
+                        self.SBAI_MoveStep.MoveDir = currentAng:Forward()
+                    else -- Default to self if undefined
+                        self.SBAI_MoveStep.MoveDir = currentAng:Forward()
+                    end
+                end
+                moveDir = self.SBAI_MoveStep.MoveDir
+                
+                local rightDir = moveDir:Cross(Vector(0, 0, 1)):GetNormalized()
+
+                local forwardMove = CharacterMoveTable.ForwardValue or 0
+                local rightMove = CharacterMoveTable.RightValue or 0
+                local upMove = CharacterMoveTable.UpValue or 0
+                
+                local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
+                local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
+
+                -- Check if this is a curve-driven movement or a linear movement
+                if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
+                    -- CURVE-BASED LOGIC
+                    local moveDuration = moveEndTime - moveStartTime
+                    local normalizedTime = 0
+                    local prevNormalizedTime = 0
+
+                    if moveDuration > 0 then
+                        normalizedTime = math.Clamp((elapsedTime - moveStartTime) / moveDuration, 0, 1)
+                        prevNormalizedTime = math.Clamp(((elapsedTime - flInterval) - moveStartTime) / moveDuration, 0, 1)
+                    end
+
+                    local posMultiplier = 1.0
+                    local prevPosMultiplier = 1.0
+                    local zMultiplier = 1.0
+                    local prevZMultiplier = 1.0
+
+                    if posCurvePath and posCurvePath ~= "None" then
+                        local extractedPath = string.match(posCurvePath, "'(.-)'")
+                        if extractedPath then
+                            local fileName = string.GetFileFromFilename(extractedPath)
+                            local curveName = string.StripExtension(fileName)
+                            posMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
+                            prevPosMultiplier = self:SB_ApplyCurveFloat(curveName, prevNormalizedTime)
+                        end
+                    end
+
+                    if zCurvePath and zCurvePath ~= "None" then
+                        local extractedPath = string.match(zCurvePath, "'(.-)'")
+                        if extractedPath then
+                            local fileName = string.GetFileFromFilename(extractedPath)
+                            local curveName = string.StripExtension(fileName)
+                            zMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
+                            prevZMultiplier = self:SB_ApplyCurveFloat(curveName, prevNormalizedTime)
+                        end
+                    end
+                    
+                    local totalOffset = (moveDir * forwardMove + rightDir * rightMove)
+                    local posDelta = totalOffset * (posMultiplier - prevPosMultiplier)
+                    local zDelta = Vector(0, 0, upMove * (zMultiplier - prevZMultiplier))
+                    
+                    targetPos = currentPos + posDelta + zDelta
+
+                else
+                    -- LINEAR MOVEMENT LOGIC (no curves)
+                    local moveDuration = moveEndTime - moveStartTime
+                    if moveDuration > 0 then
+                        -- Calculate constant velocity based on total distance and duration
+                        local forwardVel = forwardMove / moveDuration
+                        local rightVel = rightMove / moveDuration
+                        local upVel = upMove / moveDuration
+                        
+                        -- Calculate displacement for this frame
+                        local worldPosDelta = (moveDir * forwardVel + rightDir * rightVel + Vector(0,0,1) * upVel) * flInterval
+                        targetPos = currentPos + worldPosDelta
+                    end
+                end
+            end
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_None" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo_Velocity" then
+            -- To be filled (unused)
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_ZeroVelocity" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkFrom" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Airborne" then
+            -- To be filled (unused)
+		elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
+            local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
+            local moveStartTime = CharacterMoveTable.MoveStartTime or 0
+            local moveEndTime = CharacterMoveTable.MoveEndTime or Time
+
+            if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
+                local forwardVel = CharacterMoveTable.ForwardValue or 0
+                local rightVel = CharacterMoveTable.RightValue or 0
+                local upVel = CharacterMoveTable.UpValue or 0
+
+                -- Check for and apply a curve multiplier if it exists
+                local curveMultiplier = 1.0
+                local curvePath = CharacterMoveTable.PositionInterpCurveDataPath
+                if curvePath and curvePath ~= "None" then
+                    -- Extract the curve name from the path (e.g., "MyCurve.MyCurve'")
+                    local extractedPath = string.match(curvePath, "'(.-)'")
+                    if extractedPath then
+                        local fileName = string.GetFileFromFilename(extractedPath)
+                        local curveName = string.StripExtension(fileName)
+                        
+                        local moveDuration = moveEndTime - moveStartTime
+                        if moveDuration > 0 then
+                            -- Calculate how far along the move is (0.0 to 1.0)
+                            local normalizedTime = (elapsedTime - moveStartTime) / moveDuration
+                            curveMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
+                        end
+                    end
+                end
+                
+                -- Apply the curve multiplier to the base velocities
+                forwardVel = forwardVel * curveMultiplier
+                rightVel = rightVel * curveMultiplier
+                upVel = upVel * curveMultiplier
+
+                -- Calculate displacement for this frame
+                local localDisplacement = Vector(forwardVel, rightVel, upVel) * flInterval
+
+                -- Transform local displacement to world space
+                local worldPosDelta = currentAng:Forward() * localDisplacement.x +
+                                       currentAng:Right() * localDisplacement.y +
+                                       currentAng:Up() * localDisplacement.z
+
+                targetPos = currentPos + worldPosDelta
+            end
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fall" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fly" then
+            -- To be filled (unused)
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_PathWay" then
+            -- To be filled
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_TargetAround" then
+            -- To be filled (unused)
+        elseif MoveType == "ESBMoveTransformType::MoveTransformType_SwimmingDash" then
+            -- To be filled
+        end 
+		
+		::theendofmovetransform:: 
+
+        -- Apply the final calculated transformations
+        if targetPos != currentPos then
+			if CharacterMoveTable.bOnGround then -- perform movement on ground only 
+				self:MoveGroundStep(targetPos)
+			else 
+				local oldpos = self:GetPos() 
+				local pos = IterativeHybridMoveLimit(self,self:GetPos(),targetPos).vEndPosition -- allows leaping 
+				-- print("result pos:",pos) 
+				-- print("distance",pos:Distance(oldpos)) 
+				self:SetLocalPos(pos) -- use this instead of SetPos to enable interpolation 
+			end 
+        end
+        if targetAng != currentAng then
+            self:SetAngles(targetAng)
         end
 
-        -- Clear out motion data after it has finished.
         if CurTime() > CurEndTime then
+            print("removing motion", name)
             self.SBAI_MoveStep = nil
+			if CharacterMoveTable.bZeroVelocityWhenEnd then 
+				self:SetLocalVelocity(Vector(0,0,0)) 
+			end 
         end
     end
 end
