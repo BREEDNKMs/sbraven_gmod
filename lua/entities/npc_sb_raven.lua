@@ -2559,6 +2559,11 @@ ENT.SBAI_BehaviorTree = {
 
 function ENT:SBAI_SetSkillStep(strSkill) 
 	self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime() } 
+	local SelfMoveAliasArray = SB_SkillActiveStepTable[1].Rows[strSkill].SelfMoveAliasArray 
+	for _,SelfMoveAlias in pairs(SelfMoveAliasArray) do 
+		self:SBAI_SetMoveTable(SelfMoveAlias) 
+	end 
+	-- activate TargetMoveAliasArray on target 
 end 
 
 function ENT:SBAI_AddEffect(strEffect) 
@@ -3313,6 +3318,7 @@ function ENT:NPC_ShouldBlockRunAI()
 end 
 
 function ENT:CustomRunAI() 
+	self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
 	if self:NPC_ShouldConductBehaviorTree() then 
 		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
 	end 
@@ -3786,9 +3792,8 @@ function ENT:SbUseSkill(tbl)
 		end 
 	end 
 	if tbl.Started then 
-		
 		-- pass through active aliases 
-		
+		self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
 		if self:IsSequenceFinished() then 
 			Entity(1):ChatPrint("task complete") 
 			self:NPC_StopScriptedActivity() 
@@ -3796,6 +3801,23 @@ function ENT:SbUseSkill(tbl)
 		end 
 	end 
 	return nil 
+end 
+
+function ENT:SBAI_ProcessActiveSkill(tbl) 
+	local Name = tbl.Name 
+	if !Name then return end 
+	local Time = tbl.Time 
+	print(Name,Time) 
+	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[Name] 
+	local NextStepAlias = SkillStepTable.NextStepAlias 
+	local Duration = SkillStepTable.Duration 
+	if CurTime() > Time + Duration then 
+		if NextStepAlias and NextStepAlias != "None" then 
+			self:SBAI_SetSkillStep(NextStepAlias) 
+		else 
+			self.SBAI_ActiveSkill = { } 
+		end 
+	end 
 end 
 
 function ENT:SbUseableTimeReset(tbl)
