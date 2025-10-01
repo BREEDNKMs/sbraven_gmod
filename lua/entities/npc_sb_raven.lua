@@ -311,6 +311,7 @@ ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0,
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
 ENT.SbEffectAlias = { } 
+ENT.SBAI_ActiveSkill = { } 
 
 -- childcomposite = nexttask 
 -- childtask = starttask 
@@ -2556,6 +2557,10 @@ ENT.SBAI_BehaviorTree = {
 -- "M_Raven_BetaGrab_HitL": {"ActiveShowPath": "CH_M_NA_53_Raven/LinkSkill/M_Raven_BetaGrabSuccessHitL"} 
 -- M_Raven_BetaGrabSuccessHitL: "AnimResourcePath": "/Game/Art/Character/PC/CH_P_EVE_01/Animation/Hit_Raven_BetaCounterGrabL" 
 
+function ENT:SBAI_SetSkillStep(strSkill) 
+	self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime() } 
+end 
+
 function ENT:SBAI_AddEffect(strEffect) 
 	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
 	local curEffects = self.SbEffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
@@ -2865,311 +2870,205 @@ function ENT:SBAI_GetRootMotionTransform(rootMotionTable, startTime)
     return interpolatedPos, interpolatedAngle
 end
 
-function ENT:SBAI_SetMoveTable(strEffect) -- M_Raven_SlashCombo_Move_RM 
-	local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] 
-	if !CharacterMoveTable then print("no move table",strEffect) return false end 
-	-- initialize new move step 
-	self.SBAI_MoveStep = { ["MoveArrayName"] = strEffect, ["StartTime"] = CurTime() + CharacterMoveTable.StartDelayTime } -- + StartDelayTime 
-	-- cache move array 
-	local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath 
-	if RootMotionDataPath != "None" then 
-		-- "addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json"
-		RootMotionDataPath = string.sub(RootMotionDataPath,6) -- strip out /Game 
-		-- addons/sbraven/data_static/SB/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM.json
-		RootMotionDataPath = "addons/sbraven/data_static/SB/Content"..RootMotionDataPath..".json" 
-		SB_ImportJSON(RootMotionDataPath) -- imports as _G.SB_M_Raven_SlashCombo_RM 
-	end 
-	-- if SBAI_LoadCurveData
-	-- load curves if they exist 
-	
-	if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath ~= "None" then
-        self:SBAI_LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
+function ENT:SBAI_SetMoveTable(strEffect)
+    if not SB_CharacterMoveTable or not SB_CharacterMoveTable[1] or not SB_CharacterMoveTable[1].Rows then
+        print("ERROR: SB_CharacterMoveTable is not available.")
+        return false
     end
 
+    local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect]
+    if not CharacterMoveTable then
+        print("no move table", strEffect)
+        return false
+    end
+
+    if not self.SBAI_MoveStep then
+        self.SBAI_MoveStep = {}
+    end
+
+    local newMoveStep = {
+        ["MoveArrayName"] = strEffect,
+        ["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0)
+    }
+    table.insert(self.SBAI_MoveStep, newMoveStep)
+
+    if CharacterMoveTable.RootMotionDataPath and CharacterMoveTable.RootMotionDataPath ~= "None" then
+        local RootMotionDataPath = string.sub(CharacterMoveTable.RootMotionDataPath, 6)
+        RootMotionDataPath = "addons/sbraven/data_static/SB/Content" .. RootMotionDataPath .. ".json"
+        SB_ImportJSON(RootMotionDataPath)
+    end
+    if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath ~= "None" then
+        self:SBAI_LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
+    end
     if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath ~= "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
     end
-	
     if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath ~= "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
     end
-	
     if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath ~= "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
     end
-	
-	if CharacterMoveTable.PositionInterpCurveDataPath != "None" then 
-		print("has PositionInterpCurveDataPath") 
-	end 
-	
-	if CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then 
-		print("has StaticMoveZVAlueCurveDataPath") 
-	end 
-	
-	if CharacterMoveTable.MoveOffsetCurveDataPath != "None" then 
-		print("has MoveOffsetCurveDataPath") 
-	end 
-	
-	if CharacterMoveTable.RotationInterpCurveDataPath != "None" then 
-		print("has RotationInterpCurveDataPath") 
-	end 
-	-- "RootMotionDataPath": "/Game/Art/Character/Monster/CH_M_NA_53/Animation/RootMotionData/M_Raven_SlashCombo_RM",
-	    -- "Properties": {
-      -- "RootMotionDataArray": [
-        -- {
-          -- "CharacterMoveAlias": "M_Raven_SlashCombo_Move_RM",
-          -- "TransformArray": [
-            -- {
-              -- "Rotation": {
-                -- "X": 0.0,
-                -- "Y": 0.0,
-                -- "Z": 0.0,
-                -- "W": 1.0,
-                -- "IsNormalized": true,
-                -- "Size": 1.0,
-                -- "SizeSquared": 1.0
-              -- },
-              -- "Translation": {
-                -- "X": 0.0,
-                -- "Y": 0.0,
-                -- "Z": 0.0
-              -- },
-              -- "Scale3D": {
-                -- "X": 1.0,
-                -- "Y": 1.0,
-                -- "Z": 1.0
-              -- }
-            -- },
-            -- {
-              -- "Rotation": {
-                -- "X": 0.0,
-end 
 
-function ENT:SBAI_ShouldCancelMoveTable() 
-	if self.SBAI_MoveStep then 
-		local name = self.SBAI_MoveStep.MoveArrayName 
-		local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] 
-		if CharacterMoveTable.bStopWhenInvalidTarget then 
-			if !IsValid(enemy) then 
-				return true 
-			end 
-		elseif CharacterMoveTable.bStopWhenInvalidNavigation then 
-			if !self:IsGoalActive() then return true end 
-		end 
-	end 
-	return false 
-end 
+    return true
+end
 
-function ENT:OverrideMove(flInterval) -- todo: make sb root motion global and not unique to npc_sb_raven so other NPCs can be influenced by Effects 
-    if self.SBAI_MoveStep then
-        -- Wait until the designated start time (accounts for StartDelayTime).
-        if CurTime() < self.SBAI_MoveStep.StartTime then return end
+--[[
+    Checks if the current move should be cancelled based on conditions in the move data.
+]]
+function ENT:SBAI_ShouldCancelMoveTable(moveStep) 
+    if not moveStep then return false end
+    local name = moveStep.MoveArrayName 
+    local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] 
+    if CharacterMoveTable.bStopWhenInvalidTarget and not IsValid(self:GetEnemy()) then 
+        return true 
+    end
+    if CharacterMoveTable.bStopWhenInvalidNavigation and not self:IsGoalActive() then 
+        return true 
+    end
+    return false 
+end
 
-        local name = self.SBAI_MoveStep.MoveArrayName
-        local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
-
-        local Time = CharacterMoveTable.Time
-        local CurEndTime = self.SBAI_MoveStep.StartTime + Time
-
-        local MoveType = CharacterMoveTable.MoveType
-		-- Define local tables to hold the final transform
-        local currentPos = self:GetPos()
+function ENT:OverrideMove(flInterval) 
+    if self.SBAI_MoveStep and #self.SBAI_MoveStep > 0 then
         local currentAng = self:GetLocalAngles()
-        local targetPos = currentPos
-        local targetAng = currentAng
-		
-		-- Pre-calculate time and easing fractions for all relevant move types
-		local elapsedTime = CurTime() - self.SBAI_MoveStep.StartTime
-		local moveStartTime = CharacterMoveTable.MoveStartTime or 0
-		local moveEndTime = CharacterMoveTable.MoveEndTime or Time
-		local moveDuration = moveEndTime - moveStartTime
-		
-		local normalizedTime = 0
-		local prevNormalizedTime = 0
-		if moveDuration > 0 then
-			normalizedTime = math.Clamp((elapsedTime - moveStartTime) / moveDuration, 0, 1)
-			prevNormalizedTime = math.Clamp(((elapsedTime - flInterval) - moveStartTime) / moveDuration, 0, 1)
-		end
-		
-		local interpType = CharacterMoveTable.PositionInterpType
-		local easedNow = self:SBAI_GetEasedFraction(interpType, normalizedTime)
-		local easedPrev = self:SBAI_GetEasedFraction(interpType, prevNormalizedTime)
+        local totalAngDelta = Angle(0, 0, 0)
 
-        -- Handle different move types
-        if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
-            local RootMotionDataPath = CharacterMoveTable.RootMotionDataPath
-            RootMotionDataPath = string.GetFileFromFilename(RootMotionDataPath)
-            RootMotionDataPath = string.StripExtension(RootMotionDataPath)
-            local RootMotion = _G["SB_" .. RootMotionDataPath]
+        -- Iterate backwards for safe removal
+        for i = #self.SBAI_MoveStep, 1, -1 do
+            local moveStep = self.SBAI_MoveStep[i]
 
-            if RootMotion then
-                local posOffset, angOffset = self:SBAI_GetRootMotionTransform(RootMotion, self.SBAI_MoveStep.StartTime)
+            if CurTime() < moveStep.StartTime then continue end
 
-                if posOffset and angOffset then
-                    if not self.SBAI_MoveStep.PrevPosOffset then
-                        self.SBAI_MoveStep.PrevPosOffset = Vector(0, 0, 0)
-                        self.SBAI_MoveStep.PrevAngOffset = Angle(0, 0, 0)
-                    end
-
-                    local posDelta = posOffset - self.SBAI_MoveStep.PrevPosOffset
-                    local angDelta = angOffset - self.SBAI_MoveStep.PrevAngOffset
-
-                    local worldPosDelta = currentAng:Forward() * posDelta.x +
-                                           currentAng:Right() * posDelta.y +
-                                           currentAng:Up() * posDelta.z
-
-                    targetPos = currentPos + worldPosDelta
-                    targetAng = currentAng + angDelta
-
-                    self.SBAI_MoveStep.PrevPosOffset = posOffset
-                    self.SBAI_MoveStep.PrevAngOffset = angOffset
-                end
+            local name = moveStep.MoveArrayName
+            local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
+            local Time = CharacterMoveTable.Time
+            local CurEndTime = moveStep.StartTime + Time
+            
+            local moveStartTime = CharacterMoveTable.MoveStartTime or 0
+            local moveEndTime = CharacterMoveTable.MoveEndTime or Time
+            local moveDuration = moveEndTime - moveStartTime
+            
+            local normalizedTime, prevNormalizedTime = 0, 0
+            if moveDuration > 0 then
+                local elapsedTime = CurTime() - moveStep.StartTime
+                normalizedTime = math.Clamp((elapsedTime - moveStartTime) / moveDuration, 0, 1)
+                prevNormalizedTime = math.Clamp(((elapsedTime - flInterval) - moveStartTime) / moveDuration, 0, 1)
             end
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
-			if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then 
-				local LinkSocketName = CharacterMoveTable.LinkSocketName -- this is not going to result because in gmod none of the objects have such attachment name 
-				-- so we will build up a list about what they are and where they were instead 
-				local target = IsValid(self:GetEnemy()) and self:GetEnemy() or Entity(1) 
-				targetPos = target:WorldSpaceCenter() 
-				goto theendofmovetransform 
-			end 
+            
+            local interpType = CharacterMoveTable.PositionInterpType
+            local easedNow = self:SBAI_GetEasedFraction(interpType, normalizedTime)
+            local easedPrev = self:SBAI_GetEasedFraction(interpType, prevNormalizedTime)
 
-            if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
-                local moveDir
-                local directionAxis = CharacterMoveTable.PositionDirectionAxis
+            local movePosDelta = Vector(0, 0, 0)
+            local moveAngDelta = Angle(0, 0, 0)
+            local MoveType = CharacterMoveTable.MoveType
 
-                -- Determine movement direction based on the specified axis and cache it
-                if not self.SBAI_MoveStep.MoveDir then
-                    if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then
-                        local enemy = self:GetEnemy()
-                        if not IsValid(enemy) then enemy = Entity(1) end -- for testing
-                        self.SBAI_MoveStep.MoveDir = (enemy:GetPos() - currentPos):GetNormalized()
-                    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Self" then
-                        self.SBAI_MoveStep.MoveDir = currentAng:Forward()
-                    else -- Default to self if undefined
-                        self.SBAI_MoveStep.MoveDir = currentAng:Forward()
+            if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
+                local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath))
+                local RootMotion = _G["SB_" .. RootMotionDataPath]
+                if RootMotion then
+                    local posOffset, angOffset = self:SBAI_GetRootMotionTransform(RootMotion, moveStep.StartTime)
+                    if posOffset and angOffset then
+                        if not moveStep.PrevPosOffset then
+                            moveStep.PrevPosOffset = Vector(0, 0, 0)
+                            moveStep.PrevAngOffset = Angle(0, 0, 0)
+                        end
+                        local posDelta = posOffset - moveStep.PrevPosOffset
+                        moveAngDelta = angOffset - moveStep.PrevAngOffset
+                        movePosDelta = currentAng:Forward() * posDelta.x + currentAng:Right() * posDelta.y + currentAng:Up() * posDelta.z
+                        moveStep.PrevPosOffset = posOffset
+                        moveStep.PrevAngOffset = angOffset
                     end
                 end
-                moveDir = self.SBAI_MoveStep.MoveDir
-                
-                local rightDir = moveDir:Cross(Vector(0, 0, 1)):GetNormalized()
-
-                local forwardMove = CharacterMoveTable.ForwardValue or 0
-                local rightMove = CharacterMoveTable.RightValue or 0
-                local upMove = CharacterMoveTable.UpValue or 0
-                
-                local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
-                local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
-
-                -- Check if this is a curve-driven movement or a linear/eased movement
-                if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
-                    -- CURVE-BASED LOGIC
-                    local posMultiplier = 1.0
-                    local prevPosMultiplier = 1.0
-                    local zMultiplier = 1.0
-                    local prevZMultiplier = 1.0
-
-                    if posCurvePath and posCurvePath ~= "None" then
-                        local extractedPath = string.match(posCurvePath, "'(.-)'")
-                        if extractedPath then
-                            local fileName = string.GetFileFromFilename(extractedPath)
-                            local curveName = string.StripExtension(fileName)
+            elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
+                 if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then 
+                    local target = IsValid(self:GetEnemy()) and self:GetEnemy() or Entity(1) 
+                    movePosDelta = target:WorldSpaceCenter() - self:GetPos()
+                else
+                    if not moveStep.MoveDir then
+                        local directionAxis = CharacterMoveTable.PositionDirectionAxis
+                        if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then
+                            local enemy = IsValid(self:GetEnemy()) and self:GetEnemy() or Entity(1)
+                            moveStep.MoveDir = (enemy:GetPos() - self:GetPos()):GetNormalized()
+                        else
+                            moveStep.MoveDir = self:GetAngles():Forward()
+                        end
+                    end
+                    local rightDir = moveStep.MoveDir:Cross(Vector(0, 0, 1)):GetNormalized()
+                    local forwardMove = CharacterMoveTable.ForwardValue or 0
+                    local rightMove = CharacterMoveTable.RightValue or 0
+                    local upMove = CharacterMoveTable.UpValue or 0
+                    local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
+                    local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
+                    if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
+                        local posMultiplier, prevPosMultiplier, zMultiplier, prevZMultiplier = 1, 1, 1, 1
+                        if posCurvePath and posCurvePath ~= "None" then
+                            local curveName = string.StripExtension(string.GetFileFromFilename(string.match(posCurvePath, "'(.-)'")))
                             posMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
                             prevPosMultiplier = self:SB_ApplyCurveFloat(curveName, prevNormalizedTime)
                         end
-                    end
-
-                    if zCurvePath and zCurvePath ~= "None" then
-                        local extractedPath = string.match(zCurvePath, "'(.-)'")
-                        if extractedPath then
-                            local fileName = string.GetFileFromFilename(extractedPath)
-                            local curveName = string.StripExtension(fileName)
+                        if zCurvePath and zCurvePath ~= "None" then
+                           local curveName = string.StripExtension(string.GetFileFromFilename(string.match(zCurvePath, "'(.-)'")))
                             zMultiplier = self:SB_ApplyCurveFloat(curveName, normalizedTime)
                             prevZMultiplier = self:SB_ApplyCurveFloat(curveName, prevNormalizedTime)
                         end
+                        local totalOffset = (moveStep.MoveDir * forwardMove + rightDir * rightMove)
+                        local curvePosDelta = totalOffset * (posMultiplier - prevPosMultiplier)
+                        local zDelta = Vector(0, 0, upMove * (zMultiplier - prevZMultiplier))
+                        movePosDelta = curvePosDelta + zDelta
+                    else
+                        local totalDisplacement = (moveStep.MoveDir * forwardMove) + (rightDir * rightMove) + (Vector(0,0,1) * upMove)
+                        movePosDelta = totalDisplacement * (easedNow - easedPrev)
                     end
-                    
-                    local totalOffset = (moveDir * forwardMove + rightDir * rightMove)
-                    local posDelta = totalOffset * (posMultiplier - prevPosMultiplier)
-                    local zDelta = Vector(0, 0, upMove * (zMultiplier - prevZMultiplier))
-                    
-                    targetPos = currentPos + posDelta + zDelta
-                else
-                    -- EASED MOVEMENT LOGIC (no curves)
-					local totalDisplacement = (moveDir * forwardMove) + (rightDir * rightMove) + (Vector(0,0,1) * upMove)
-					local displacementDelta = totalDisplacement * (easedNow - easedPrev)
-					targetPos = currentPos + displacementDelta
                 end
-            end
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_None" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo_Velocity" then
-            -- To be filled (unused)
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_ZeroVelocity" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkFrom" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Airborne" then
-            -- To be filled (unused)
-		elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
-            if elapsedTime >= moveStartTime and elapsedTime <= moveEndTime then
+            elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
                 local forwardMove = CharacterMoveTable.ForwardValue or 0
                 local rightMove = CharacterMoveTable.RightValue or 0
                 local upMove = CharacterMoveTable.UpValue or 0
-
-                -- Calculate total potential local displacement
-				local totalLocalDisplacement = Vector(forwardMove, rightMove, upMove)
-				
-				-- Get the displacement delta for this frame based on the eased progress
-				local localDisplacementDelta = totalLocalDisplacement * (easedNow - easedPrev)
-
-                -- Transform local displacement to world space
-                local worldPosDelta = currentAng:Forward() * localDisplacementDelta.x +
-                                       currentAng:Right() * localDisplacementDelta.y +
-                                       currentAng:Up() * localDisplacementDelta.z
-
-                targetPos = currentPos + worldPosDelta
+                local totalLocalDisplacement = Vector(forwardMove, rightMove, upMove)
+                local localDisplacementDelta = totalLocalDisplacement * (easedNow - easedPrev)
+                movePosDelta = self:GetAngles():Forward() * localDisplacementDelta.x + self:GetAngles():Right() * localDisplacementDelta.y + self:GetAngles():Up() * localDisplacementDelta.z
             end
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fall" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fly" then
-            -- To be filled (unused)
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_PathWay" then
-            -- To be filled
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_TargetAround" then
-            -- To be filled (unused)
-        elseif MoveType == "ESBMoveTransformType::MoveTransformType_SwimmingDash" then
-            -- To be filled
-        end 
-		
-		::theendofmovetransform:: 
 
-        -- Apply the final calculated transformations
-        if targetPos != currentPos then
-			if CharacterMoveTable.bOnGround then -- perform movement on ground only 
-				self:MoveGroundStep(targetPos)
-			else 
-				local oldpos = self:GetPos() 
-				local pos = IterativeHybridMoveLimit(self,self:GetPos(),targetPos).vEndPosition -- allows leaping 
-				-- print("result pos:",pos) 
-				-- print("distance",pos:Distance(oldpos)) 
-				self:SetLocalPos(pos) -- use this instead of SetPos to enable interpolation 
-			end 
-        end
-        if targetAng != currentAng then
-            self:SetAngles(targetAng)
+            -- Apply this move's delta and check for collision failure
+            local collisionFailed = false
+            if movePosDelta:LengthSqr() > 0.001 then
+                local moveSuccess = true
+                local targetPosForThisMove = self:GetPos() + movePosDelta
+
+                if CharacterMoveTable.bOnGround then
+                    if self:MoveGroundStep(targetPosForThisMove) == 0 then moveSuccess = false end
+                else
+                    local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
+                    self:SetLocalPos(moveResult.vEndPosition)
+                    if moveResult.fStatus ~= "OK" then moveSuccess = false end
+                end
+
+                if not moveSuccess and CharacterMoveTable.bStopWhenCollision then
+                    print("removing motion due to collision for", name)
+                    table.remove(self.SBAI_MoveStep, i)
+                    collisionFailed = true
+                end
+            end
+
+            -- Only process expiration and add angle delta if the move wasn't removed for collision
+            if not collisionFailed then
+                totalAngDelta = totalAngDelta + moveAngDelta
+                
+                if CurTime() > CurEndTime or self:SBAI_ShouldCancelMoveTable(moveStep) then
+                    if CharacterMoveTable.bZeroVelocityWhenEnd then
+                        self:SetLocalVelocity(Vector(0,0,0))
+                    end
+                    table.remove(self.SBAI_MoveStep, i)
+                end
+            end
         end
 
-        if CurTime() > CurEndTime or self:SBAI_ShouldCancelMoveTable() then
-            print("removing motion", name)
-            self.SBAI_MoveStep = nil
-			if CharacterMoveTable.bZeroVelocityWhenEnd then 
-				self:SetLocalVelocity(Vector(0,0,0)) 
-			end 
+        -- Apply total accumulated angle delta at the end
+        local targetAng = currentAng + totalAngDelta
+        if targetAng ~= currentAng then
+            self:SetLocalAngles(targetAng)
         end
     end
 end
@@ -3880,12 +3779,16 @@ function ENT:SbUseSkill(tbl)
 				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable] 
 				local SkillNameFromSkillTable = SkillTable.FirstSkillActiveAlias 
 				local FirstSkillActiveAlias = SB_SkillActiveStepTable[1].Rows[SkillNameFromSkillTable] 
+				self:SBAI_SetSkillStep(FirstSkillActiveAlias) -- M_Raven_Slash_Cast1
 				-- look up skill from SkillCommandTable 
 				tbl.Started = true 
 			end 
 		end 
 	end 
 	if tbl.Started then 
+		
+		-- pass through active aliases 
+		
 		if self:IsSequenceFinished() then 
 			Entity(1):ChatPrint("task complete") 
 			self:NPC_StopScriptedActivity() 
