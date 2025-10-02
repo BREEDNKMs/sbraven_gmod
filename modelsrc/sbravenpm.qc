@@ -1683,7 +1683,8 @@ $sequence "ragdoll" {
 	fps 30
 } 
 
-$include "sbravenpm_anims.qci" 
+//$include "sbravenpm_anims.qci" 
+$include "sbravenpm_anims_rootmotion.qci" 
 //$include "sbravenpm_testposes.qci" 
 
 $includemodel "f_anm.mdl"
