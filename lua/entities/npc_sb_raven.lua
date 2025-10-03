@@ -306,12 +306,14 @@ ENT.NPC_PainSound 	= "M_Raven_vo_Dmg_L_Cue"
 ENT.NPC_PainSoundWater 	= "Unreali_Female.HurtUnderWater" 
 ENT.npc_health 		= 248304 -- "MaxHP": 248304, "MaxShield": 4805, 
 ENT.npc_model		= "models/alvaroports/sbraven2.mdl" 
+ENT.PhysicAttackPower = 1600  
 ENT.bHasInnateMelee1 = false 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
 ENT.SbEffectAlias = { } 
 ENT.SBAI_ActiveSkill = { } 
+ENT.SBAI_SkillTimers = { } 
 
 -- childcomposite = nexttask 
 -- childtask = starttask 
@@ -2558,12 +2560,80 @@ ENT.SBAI_BehaviorTree = {
 -- M_Raven_BetaGrabSuccessHitL: "AnimResourcePath": "/Game/Art/Character/PC/CH_P_EVE_01/Animation/Hit_Raven_BetaCounterGrabL" 
 
 function ENT:SBAI_SetSkillStep(strSkill) 
-	self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime() } 
-	local SelfMoveAliasArray = SB_SkillActiveStepTable[1].Rows[strSkill].SelfMoveAliasArray 
-	for _,SelfMoveAlias in pairs(SelfMoveAliasArray) do 
-		self:SBAI_SetMoveTable(SelfMoveAlias) 
-	end 
+	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
+    if not SkillStepTable then
+        self.SBAI_ActiveSkill = {} -- Clear active skill if the next step is invalid
+        return
+    end
+
+    -- Store the current skill step's data
+    self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime(), Data = SkillStepTable }
+
+    -- [NEW] Handle `bRetargeting`: Lock onto the current target if false
+    if SkillStepTable.bRetargeting == false then
+        self.SBAI_ActiveSkill.LockedTarget = self:GetEnemy()
+    else
+        -- If retargeting is allowed, ensure no previous target is locked
+        self.SBAI_ActiveSkill.LockedTarget = nil
+    end
+
+    -- [NEW] Handle `StopSelfMove`: Stop the NPC from moving if true
+    if SkillStepTable.StopSelfMove then
+        self:StopMoving(true)
+        self:ClearGoal()
+    end
+
+    -- [NEW] Handle initial `bLookAtTarget`: Turn to face the target at the start of the step
+    if SkillStepTable.bLookAtTarget then
+        local target = self.SBAI_ActiveSkill.LockedTarget or self:GetEnemy()
+        if IsValid(target) then
+            local angleToTarget = (target:GetPos() - self:GetPos()):Angle().y
+            self:SetIdealYawAndUpdate(angleToTarget, -1) -- -1 for automatic turn speed
+        end
+    end
+
+    -- Apply the animation/movement for this step
+    local SelfMoveAliasArray = SkillStepTable.SelfMoveAliasArray
+    for _, SelfMoveAlias in pairs(SelfMoveAliasArray) do
+        self:SBAI_SetMoveTable(SelfMoveAlias)
+    end
 	-- activate TargetMoveAliasArray on target 
+	
+	-- activate ShowPath "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_Slash", 
+	if SkillStepTable.ShowPath != "None" then 
+		local showpath = "addons/sbraven/data_static/SB/Content/Art/Show/" 
+		showpath = showpath..SkillStepTable.ShowPath..".json" 
+		SB_ImportJSON(showpath) 
+		local showname = string.GetFileFromFilename( showpath ) 
+		showname = string.StripExtension(showname) 
+		showname = "SB_"..showname 
+		for _,animpaths in pairs(_G[showname]) do 
+			if animpaths.Type == "SBShowAnimKey" then 
+				local Target = animpaths.Properties.Target 
+				if !Target then -- may not preexist 
+					Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
+				end 
+				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+					print(animpaths) 
+					local anim = animpaths.Properties.AnimResourcePath 
+					anim = string.GetFileFromFilename(anim) 
+					self:NPC_StartScriptedActivity(anim,true) 
+				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
+					-- play interaction, not handled yet 
+					-- because target entity most likely doesn't have any of those anims 
+				end 
+			end 
+		end 
+		print("showname:",showname) 
+	end 
+	if #SkillStepTable.UsableTargetProjectileAliasArray > 0 then 
+		for i = 1,#SkillStepTable.UsableTargetProjectileAliasArray do 
+			local event,etime,cycle,types,options 
+			self:NPC_RangedAttack(event,etime,cycle,types,options) 
+		end 
+	end 
+	-- play animations stored as SBShowAnimKey_0 
+	
 end 
 
 function ENT:SBAI_AddEffect(strEffect) 
@@ -2604,6 +2674,101 @@ function ENT:SBAI_CheckEffect(strEffect) -- check existence of effect, return ti
 	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
 		return self.StanceName == EffectTable.StanceAlias 
 	-- elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
+	end 
+end 
+
+function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck) 
+	local ID = SkillStepTable.ID 
+	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and deal damage 
+	-- for now, do default damage action 
+	local event,etime,cycle,types,options = util.GetAnimEventIDByName("EVENT_WEAPON_MELEE_HIT"), CurTime(), self:GetCycle(), 0, self.PhysicAttackPower 
+	-- adjust melee damage depending on step options 
+	options = options * SkillStepTable.SkillAttackDamageRate
+	local enemy = self:GetEnemy() 
+	if !IsValid(self:GetEnemy()) then -- pick random enemy 
+		if #self:GetKnownEnemies() > 0 then 
+			enemy = self:GetKnownEnemies()[1] 
+		end 
+	end 
+	local tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
+	for k,v in pairs(tableofhittargets) do 
+		if IsValid(v) and v != self then 
+			local Disposition = self:Disposition(v) 
+			if Disposition == D_HT or Disposition == D_FR then 
+				if SkillStepTable.SkillResultAlias then -- applied on self and target 
+					-- self:SBAI_SetSkillStep() 
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenParry != "None" then -- player blocked your attack 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenPerfectParry != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenSuperParry != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenGuard != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenBreakGuard != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenCancel != "None" then -- when player wins the interaction 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenPerfectHit != "None" then -- unused 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenHoldRelease != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenHoldAndDualSenseTriggerEffectWeaponFired != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenAttacked != "None" then -- when the target is hit during skill 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenNoTarget != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenLinkBreak != "None" then -- same as NextStepAliasWhenCancel 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenInvalidItemConsume != "None" then 
+				
+				end 
+				
+				if SkillStepTable.NextStepAliasWhenHit != "None" then 
+					self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenHit)
+				end 
+			end 
+		end 
+	end 
+	if bEveryFrameHitCheck then 
+		timer.Simple(0.01,function() 
+			if IsValid(self) then 
+				local NextStepTable = self.SBAI_ActiveSkill.Name -- check to see whether Name has changed 
+				print("next step is:",NextStepTable) 
+				if !NextStepTable or NextStepTable == "None" then return end 
+				NextStepTable = SB_SkillActiveStepTable[1].Rows[NextStepTable] 
+				if ID == NextStepTable.ID then -- maintain loop as long as ID is same 
+					self:SBAI_CheckSkillHit(SkillStepTable,true) 
+				end 
+			end 
+		end) 
 	end 
 end 
 
@@ -2902,16 +3067,16 @@ function ENT:SBAI_SetMoveTable(strEffect)
         RootMotionDataPath = "addons/sbraven/data_static/SB/Content" .. RootMotionDataPath .. ".json"
         SB_ImportJSON(RootMotionDataPath)
     end
-    if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath ~= "None" then
+    if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath != "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
     end
-    if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath ~= "None" then
+    if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
     end
-    if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath ~= "None" then
+    if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath != "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
     end
-    if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath ~= "None" then
+    if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath != "None" then
         self:SBAI_LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
     end
 
@@ -2932,7 +3097,12 @@ function ENT:SBAI_ShouldCancelMoveTable(moveStep)
         return true 
     end
     return false 
-end
+end 
+
+function ENT:SBAI_GetSkillAnimData(name) 
+	local data = _G["SB_"..name] 
+	if data then return data else MsgC(Color(0,255,0),"SBAI_GetSkillAnimData: "..name.." not precached\n") end 
+end 
 
 function ENT:OverrideMove(flInterval) 
     if self.SBAI_MoveStep and #self.SBAI_MoveStep > 0 then
@@ -3042,9 +3212,9 @@ function ENT:OverrideMove(flInterval)
                 local moveSuccess = true
                 local targetPosForThisMove = self:GetPos() + movePosDelta
 
-                if CharacterMoveTable.bOnGround then
-                    if self:MoveGroundStep(targetPosForThisMove) == 0 then moveSuccess = false end
-                else
+                if CharacterMoveTable.bOnGround then 
+                    if self:MoveGroundStep(targetPosForThisMove) == 0 then moveSuccess = false end 
+                else 
                     local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
                     self:SetLocalPos(moveResult.vEndPosition)
                     if moveResult.fStatus ~= "OK" then moveSuccess = false end
@@ -3072,7 +3242,7 @@ function ENT:OverrideMove(flInterval)
 
         -- Apply total accumulated angle delta at the end
         local targetAng = currentAng + totalAngDelta
-        if targetAng ~= currentAng then
+        if targetAng != currentAng then
             self:SetLocalAngles(targetAng)
         end
     end
@@ -3101,14 +3271,14 @@ function ENT:SBAI_InitTree()
 end
 
 function ENT:SBAI_SelectTask(taskTable, currentIndex)
-    print("***in selecttask", taskTable, currentIndex)
+    -- print("***in selecttask", taskTable, currentIndex)
     currentIndex = currentIndex or 1
 
     for subTaskNum, subTaskTable in ipairs(taskTable) do 
         local objectName = subTaskTable.ObjectName
         local isSelector = objectName and objectName:find("BTComposite_Selector")
         local isSequence = objectName and objectName:find("BTComposite_Sequence")
-		
+		local skiptasks = true 
 		if skiptasks and subTaskTable._running then
 			-- Resume the same child without reevaluating decorators or siblings
 			if subTaskTable.StartTask then
@@ -3132,7 +3302,6 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
 				if result == false and isSequence then return false end
 			end
 		end
-
         print("objectName:", objectName)
 		
         -- evaluate decorators
@@ -3247,25 +3416,25 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
 end
 
 function ENT:SBAI_RunBehavior()
-    print("RunBehavior start: SysTime:", SysTime()) 
+    -- print("RunBehavior start: SysTime:", SysTime()) 
 
     -- Ensure we have a runtime tree copy
     if !self.SBAI_CurBehaviorStack then
-        print("Cloning behavior tree...")
+        -- print("Cloning behavior tree...")
         self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     end
 
     -- Run tick on runtime tree
     local result = self:SBAI_SelectTask(self.SBAI_CurBehaviorStack) 
-    print("BehaviorTree tick finished with result:", result, self.CurrentSBTask)
+    -- print("BehaviorTree tick finished with result:", result, self.CurrentSBTask)
 
     -- If resolved (true/false), discard runtime so next tick restarts fresh
     if result != nil then
-        print("Clearing runtime behavior stack")
+        -- print("Clearing runtime behavior stack")
         self.SBAI_CurBehaviorStack = nil
     end 
 
-    print("RunBehavior end: SysTime:", SysTime()) 
+    -- print("RunBehavior end: SysTime:", SysTime()) 
 	return result 
 end 
 
@@ -3365,7 +3534,6 @@ function ENT:SbBlackboard(tbl)
 		local CheckValue = tbl.KeyName 
 		local testvalue = tbl.IntValue or 1 -- 1 means true 
 		local CompareOP = tbl.CompareOP or "Equal" 
-		Entity(1):ChatPrint("retrieving from SBBlackBoard: "..CheckValue.." "..tostring(testvalue).." "..CompareOP) 
 		local lookup = self.SBAI_BlackBoard[CheckValue] or 0 -- do not compare nil 
 		
 		if CompareOP == "Equal" then 
@@ -3417,7 +3585,9 @@ function ENT:SbCheckActorEffect(tbl)
             end
         end
     end
-    if !IsValid(ent) then return false end
+    if !IsValid(ent) then return bInverseCondition end 
+	-- debug 
+	if math.random() > 0.5 then return true else return false end 
 
     -- gather effects to check
     local effectsToCheck = {}
@@ -3490,6 +3660,7 @@ function ENT:SbCheckActorStat(tbl)
 	elseif CompareOP == "NotEqual" then 
 		result = testvalue != CheckValue 
 	end 
+	Entity(1):ChatPrint("CheckStat: "..CheckStat.." CheckValue: "..tostring(CheckValue).. "..CompareOP:"..CompareOP.." "..tostring(result)) 
 	-- print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
 	return result 
 end 
@@ -3739,7 +3910,8 @@ function ENT:SbMoveToTarget(tbl)
 		end 
 	end 
 	-- tbl.StartPos = tbl.StartPos or self:GetEnemyLastKnownPos() 
-	if self.enemyDist < 250 then return true end -- moved away from task start pos by 250 units 
+	local enemyDist = self.enemyDist or 9999 
+	if enemyDist < 250 then return true end -- moved away from task start pos by 250 units 
 end 
 
 function ENT:SbUseEffect(tbl) -- add effect 
@@ -3760,65 +3932,139 @@ end
 -- FirstSkillActiveAlias is activated in SkillActiveStepTable, "FirstSkillActiveAlias": "M_Raven_ParryPreview1_Cast1"} 
 -- FirstSkillActiveAlias contains dir to animation data in FirstSkillActiveAlias, "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_ParryPreview" 
 -- inside anim metadata, actual animation exists in SBShowAnimKey's Properties["AnimResourcePath"] = "/Game/Art/Character/Monster/CH_M_NA_53/Animation/M_Raven_BurstAreaSlashEnd" 
-function ENT:SbUseSkill(tbl) 
-	-- PrintTable(tbl) 
-	-- [1]	=	M_Raven_ParryPreview1
-	-- ["bUsePostStep"]	=	true
-	-- ["bUseSkillCommand"]	=	true
+function ENT:SbUseSkill(tbl)
+    -- This function is now simplified, as setup logic has moved to SetSkillStep. 
 	
-	-- temp build to play 
-	self:StopMoving(true) 
-	self:ClearGoal() 
-	if !tbl.Started then 
-		Entity(1):ChatPrint("starting skill") 
-		for k,v in RandomPairs(tbl) do 
-			if isnumber(k) then -- do not accidentally start variables 
-				-- local bHasActivity = self:LookupSequence(v) 
-				-- if bHasActivity then 
-				-- end 
-				if v == "M_Raven_ParryPreview1" then 
-					-- self:ResetIdealActivity(ACT_SPECIAL_ATTACK1) 
-					self:NPC_StartScriptedActivity("M_Raven_Parry",true) 
+    if !tbl.Started then
+        Entity(1):ChatPrint("starting skill")
+        for k, v in RandomPairs(tbl) do
+            if isnumber(k) then -- do not accidentally start variables
+				local CheckCooldown = self.SBAI_SkillTimers[v] -- returns Time, ["M_Raven_SlashChain"] = 216 
+				local SkillCommandTable = SB_SkillCommandTable[1].Rows[v]
+				local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias
+				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable]
+				if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then 
+					-- This logic correctly finds the *first* skill step to execute
+					if SkillCommandTable then
+						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias
+						-- This now correctly handles all the data-driven setup for the first step
+						self:SBAI_SetSkillStep(FirstSkillActiveAlias)
+						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
+						Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
+						tbl.Started = true
+						break -- Start with the first valid skill found 
+					else -- do not use SkillCommandTable, directly refer to SkillTable 
+					
+					end 
+				else 
+					Entity(1):ChatPrint(v.." is in cooldown. "..tostring(CurTime()).." "..tostring(CheckCooldown)) 
 				end 
-				local SkillCommandTable = SB_SkillCommandTable[1].Rows[v] 
-				local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias 
-				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable] 
-				local SkillNameFromSkillTable = SkillTable.FirstSkillActiveAlias 
-				local FirstSkillActiveAlias = SB_SkillActiveStepTable[1].Rows[SkillNameFromSkillTable] 
-				self:SBAI_SetSkillStep(FirstSkillActiveAlias) -- M_Raven_Slash_Cast1
-				-- look up skill from SkillCommandTable 
-				tbl.Started = true 
 			end 
 		end 
 	end 
-	if tbl.Started then 
-		-- pass through active aliases 
-		self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
-		if self:IsSequenceFinished() then 
-			Entity(1):ChatPrint("task complete") 
-			self:NPC_StopScriptedActivity() 
-			return true 
-		end 
-	end 
-	return nil 
-end 
 
-function ENT:SBAI_ProcessActiveSkill(tbl) 
-	local Name = tbl.Name 
-	if !Name then return end 
-	local Time = tbl.Time 
-	print(Name,Time) 
-	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[Name] 
-	local NextStepAlias = SkillStepTable.NextStepAlias 
+    if tbl.Started then
+        -- Process the currently active skill step
+        self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill)
+
+        -- If the active skill was cleared (e.g., skill finished or target died), the task is complete
+        if not self.SBAI_ActiveSkill or not self.SBAI_ActiveSkill.Name then
+             Entity(1):ChatPrint("task complete")
+             self:NPC_StopScriptedActivity()
+             return true
+        end
+
+        -- Check if the animation sequence itself has finished
+        if self:IsSequenceFinished() then
+            -- This condition might be too simple, as some skills might end based on
+            -- duration rather than the animation finishing. We rely on the duration check for now.
+        end
+    else -- no skill activated, maybe all of them are in cooldown 
+		return true -- to continue the procedure 
+	end 
+
+    return nil -- Task is still running
+end
+
+-- This function is called every tick to process the active skill step.
+-- It handles timed events, continuous actions, and transitioning to the next step.
+function ENT:SBAI_ProcessActiveSkill(tbl)
+    local Name = tbl.Name
+    if not Name then return end
+
+    local SkillStepTable = tbl.Data
+    if not SkillStepTable then return end
 	local Duration = SkillStepTable.Duration 
-	if CurTime() > Time + Duration then 
-		if NextStepAlias and NextStepAlias != "None" then 
-			self:SBAI_SetSkillStep(NextStepAlias) 
+    -- Determine the current target. Prioritize the locked target if it exists and is valid.
+    local currentTarget = nil
+    if IsValid(tbl.LockedTarget) then
+        if tbl.LockedTarget:Alive() then
+            currentTarget = tbl.LockedTarget
+        else
+            -- [NEW] Failsafe: If the locked target is dead, end the skill immediately.
+            Entity(1):ChatPrint("Locked target died. Ending skill.")
+            self.SBAI_ActiveSkill = {}
+            return
+        end
+    else
+        -- If there's no locked target, use the NPC's current enemy.
+        currentTarget = self:GetEnemy()
+    end
+
+    -- [NEW] Handle persistent "bLookAtTarget": Keep looking at the target during the step
+	local bLookAtTarget = true 
+	-- local bLookAtTarget = SkillStepTable.bLookAtTarget 
+    if bLookAtTarget and IsValid(currentTarget) then
+        local angleToTarget = (currentTarget:GetPos() - self:GetPos()):Angle().y
+        self:SetIdealYawAndUpdate(angleToTarget, -1)
+    end 
+	
+	local Type = SkillStepTable.Type 
+	-- get skill step type 
+	
+	if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then -- parries incoming attack, used by eve, raven and some other npcs 
+	-- to be filled 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+		local bEveryFrameHitCheck = SkillStepTable.bEveryFrameHitCheck 
+		if bEveryFrameHitCheck then 
+			if !self.SBAI_ActiveSkill.bEveryFrameHitCheck then 
+				self.SBAI_ActiveSkill.bEveryFrameHitCheck = true 
+				timer.Simple(0.01,function() 
+					if IsValid(self) then 
+						self:SBAI_CheckSkillHit(SkillStepTable,true) 
+					end 
+				end) 
+			end 
 		else 
-			self.SBAI_ActiveSkill = { } 
+			self:SBAI_CheckSkillHit(SkillStepTable) 
+		end 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hold" then -- unused 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_SuperParry" then -- unused 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Item" then -- eve only: use item 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Guard" then -- eve only: put sword / wings in front to parry 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then -- default action 
+	
+	end 
+
+    -- Check if the duration for the current step has elapsed
+    local Time = tbl.Time 
+    if CurTime() > Time + Duration then
+        local NextStepAlias = SkillStepTable.NextStepAlias
+        if NextStepAlias and NextStepAlias != "None" then
+            -- Transition to the next skill step
+            self:SBAI_SetSkillStep(NextStepAlias)
+        else
+            -- No next step, so the skill is finished
+            self.SBAI_ActiveSkill = {}
+        end
+    else 
+		local GetAnimTimeInterval = self:GetAnimTimeInterval() 
+		GetAnimTimeInterval = GetAnimTimeInterval > 0.1 and GetAnimTimeInterval or 0.1 -- by default it can't be lesser than 0.1 so we will assume 0.1 is original think rate 
+		if Duration < self:GetAnimTimeInterval() then 
+			self:NextThink(CurTime()+Duration) -- run activities in lesser gaps with high frequency 
 		end 
 	end 
-end 
+end
 
 function ENT:SbUseableTimeReset(tbl)
     local KeyName = tbl.KeyName
