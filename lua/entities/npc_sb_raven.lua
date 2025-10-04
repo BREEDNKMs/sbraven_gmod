@@ -3,6 +3,8 @@ AddCSLuaFile()
 -- Define the path to your JSON file relative to the "garrysmod" folder.
 print(SysTime()) 
 IterativeHybridMoveLimit = include("includes/custommoveprobe.lua") 
+include("includes/raven_soundscripts.lua") 
+include("includes/curframe.lua") 
 local filePath = "addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json"
 
 --[[
@@ -91,199 +93,7 @@ SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterMoveTab
 
 print(SysTime()) 
 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_Cast_S_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_s2_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Cloth_XL_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Character/SE/SE_Cloth_whoosh_03.wav","Character/SE/SE_Cloth_whoosh_04.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav","Character/SE/SE_Cloth_whoosh_01.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_ATK_S_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_atk_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_s2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_s4_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_XL_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XL_layer.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_XL_C_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_layer.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XL_C_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Cloth_M_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Cloth_XL3_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/PC/Evade/PC_Evade_Jump_2.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_1.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_2.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Bodyfall_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Character/SE/KnockDown/NEW/PC_SE_KnockDown_Bodyfall_Dirt_1.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_01.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_L_1.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_L_2.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_02.wav","FootSteps/monster/Mon_Bodyfall_M_Default_1.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Cloth_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_Cloth_L_1.wav","Skill/Monster/Raven/M_Raven_Cloth_L_2.wav","Skill/Monster/Raven/M_Raven_Cloth_L_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Bodyfall_S_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"FootSteps/monster/Raven/M_Raven_Bodyfall_S_1.wav","FootSteps/monster/Raven/M_Raven_Bodyfall_S_2.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_01.wav","MON/Statue/SE_Move_Rock_Debris_bodyfall_02.wav","FootSteps/monster/Mon_Bodyfall_M_Default_1.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_P_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_ATK_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_atk_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_atk_l4_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_S_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_M_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_L_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_L_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_L_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_Cast_M_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_m1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_m2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_m3_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "mon_swish_m_cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Character/Skill/Swing_sword_Short_06.wav","Character/Skill/Swing_sword_Short_07.wav","Character/Skill/Swing_sword_Short_08.wav","Character/Skill/Swing_sword_Short_09.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_XS_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_XS_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XS_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_XS_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Cloth_XL2_Ce", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_Cloth_XL2_1.wav","Skill/Monster/Raven/M_Raven_Cloth_XL2_2.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_Skill_Stab_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Character/Hit/PCHitSound/CSS_Hit_Hammer_Critical_1.wav","Skill/Monster/Raven/M_Raven_Skill_Stab_1.wav","Character/Hit/PCHitSound/CSS_Hit_Hammer_Critical_3.wav","Skill/Monster/Raven/M_Raven_Skill_Stab_3.wav","Character/Hit/Hit_Sword_Defualt_10.wav","Character/Hit/Hit_Sword_Defualt_11.wav","Character/Hit/Hit_Sword_Defualt_08.wav","Character/Hit/Hit_Sword_Defualt_09.wav","Character/Hit/Hit_Sword_Defualt_07.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_Dmg_S_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s4_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s5_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_SwordSwish_M_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Skill/Monster/Raven/M_Raven_SwordSwish_M_1.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_2.wav","Skill/Monster/Raven/M_Raven_SwordSwish_M_3.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_Cast_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_cast_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_cast_l2_VO.wav"}
-}) 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_Dmg_L_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
-}) 
 
-sound.Add( 
-{ 
-    name = "M_Raven_vo_SkillLaugh_Cue", 
-    channel = CHAN_AUTO, 
-    volume = 1, 
-    soundlevel = 100, 
-    sound = {"Dialogue/ActionVoice/Raven/vo_Raven_laugh_01_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_laugh_02_VO.wav"}
-}) 
 
 
 -- stuff related to health, shield is in CharacterTable.json 
@@ -313,6 +123,7 @@ ENT.SBAI_BlackBoard = { }
 ENT.SBAI_bInBackgroundTask = false 
 ENT.SbEffectAlias = { } 
 ENT.SBAI_ActiveSkill = { } 
+ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
 
 -- childcomposite = nexttask 
@@ -2603,28 +2414,29 @@ function ENT:SBAI_SetSkillStep(strSkill)
 	if SkillStepTable.ShowPath != "None" then 
 		local showpath = "addons/sbraven/data_static/SB/Content/Art/Show/" 
 		showpath = showpath..SkillStepTable.ShowPath..".json" 
-		SB_ImportJSON(showpath) 
-		local showname = string.GetFileFromFilename( showpath ) 
-		showname = string.StripExtension(showname) 
-		showname = "SB_"..showname 
-		for _,animpaths in pairs(_G[showname]) do 
-			if animpaths.Type == "SBShowAnimKey" then 
-				local Target = animpaths.Properties.Target 
-				if !Target then -- may not preexist 
-					Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
-				end 
-				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
-					print(animpaths) 
-					local anim = animpaths.Properties.AnimResourcePath 
-					anim = string.GetFileFromFilename(anim) 
-					self:NPC_StartScriptedActivity(anim,true) 
-				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
-					-- play interaction, not handled yet 
-					-- because target entity most likely doesn't have any of those anims 
-				end 
-			end 
-		end 
-		print("showname:",showname) 
+		-- SB_ImportJSON(showpath) 
+		-- local showname = string.GetFileFromFilename( showpath ) 
+		-- showname = string.StripExtension(showname) 
+		-- showname = "SB_"..showname 
+		-- for _,animpaths in pairs(_G[showname]) do 
+			-- if animpaths.Type == "SBShowAnimKey" then 
+				-- local Target = animpaths.Properties.Target 
+				-- if !Target then -- may not preexist 
+					-- Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
+				-- end 
+				-- if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+					-- print(animpaths) 
+					-- local anim = animpaths.Properties.AnimResourcePath 
+					-- anim = string.GetFileFromFilename(anim) 
+					-- self:NPC_StartScriptedActivity(anim,true) 
+				-- elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
+					-- -- play interaction, not handled yet 
+					-- -- because target entity most likely doesn't have any of those anims 
+				-- end 
+			-- end 
+		-- end 
+		-- print("showname:",showname) 
+		self:SBAI_SetShow(showpath) 
 	end 
 	if #SkillStepTable.UsableTargetProjectileAliasArray > 0 then 
 		for i = 1,#SkillStepTable.UsableTargetProjectileAliasArray do 
@@ -2634,6 +2446,145 @@ function ENT:SBAI_SetSkillStep(strSkill)
 	end 
 	-- play animations stored as SBShowAnimKey_0 
 	
+end 
+
+function ENT:SBAI_SetShow(showpath) 
+	SB_ImportJSON(showpath) 
+	self.SBAI_ActiveShow = {["Time"] = CurTime()} 
+	self.SBAI_ActiveShow.Dir = showpath 
+	local showname = string.GetFileFromFilename( showpath ) 
+	showname = string.StripExtension(showname) 
+	self.SBAI_ActiveShow.Name = showname 
+	self.SBAI_ActiveShow.Frame = 0 
+	self.SBAI_ActiveShow.Stopped = false 
+	showname = "SB_"..showname 
+	self:SBAI_MaintainShow2() 
+	-- for _,animpaths in pairs(_G[showname]) do 
+		-- if animpaths.Type == "SBShowAnimKey" then 
+			-- local Target = animpaths.Properties.Target 
+			-- if !Target then -- may not preexist 
+				-- Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
+			-- end 
+			-- if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+				-- print(animpaths) 
+				-- local anim = animpaths.Properties.AnimResourcePath 
+				-- anim = string.GetFileFromFilename(anim) 
+				-- self:NPC_StartScriptedActivity(anim,true) 
+			-- elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
+				-- -- play interaction, not handled yet 
+				-- -- because target entity most likely doesn't have any of those anims 
+			-- end 
+		-- end 
+	-- end 
+	return showname -- return true on animation play, false on not play 
+end 
+
+function ENT:SBAI_MaintainShow2()
+	if not self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
+	if !self.SBAI_ActiveShow.Name then return end -- table not ready 
+	local showname = "SB_" .. self.SBAI_ActiveShow.Name
+	local showdata = _G[showname]
+	if not showdata then return end
+
+	-- Find SBShowData entry
+	local showEntry
+	for _, data in pairs(showdata) do
+		if data.Type == "SBShowData" then
+			showEntry = data
+			break
+		end
+	end
+	if not showEntry then return end
+
+	local props = showEntry.Properties
+	local endTime = props.EndTime or 0
+	if endTime <= 0 then return end
+
+	-- Find max key (defines last frame index)
+	local maxKey = 0
+	for _, container in ipairs(props.KeyContanerMap or {}) do
+		local k = tonumber(container.Key) or 0
+		if k > maxKey then
+			maxKey = k
+		end
+	end
+	if maxKey <= 0 then return end
+
+	-- Progress time by interval
+	self.SBAI_ActiveShow.Elapsed = (self.SBAI_ActiveShow.Elapsed or 0) + self:GetAnimTimeInterval()
+
+	-- Auto-stop if exceeded duration
+	if self.SBAI_ActiveShow.Elapsed >= endTime then
+		self.SBAI_ActiveShow.Stopped = true
+		return
+	end
+
+	-- Normalize to cycle [0..1]
+	local cycle = math.Clamp(self.SBAI_ActiveShow.Elapsed / endTime, 0, 1)
+
+
+	-- Convert cycle to frame index (0..maxKey)
+	local currentFrame = math.floor(cycle * maxKey)
+
+	-- Get previous frame
+	local prevFrame = self.SBAI_ActiveShow.Frame or -1
+	-- If frame didn’t advance, do nothing
+	if currentFrame <= prevFrame then return end
+
+	-- Update to current frame
+	self.SBAI_ActiveShow.Frame = currentFrame
+
+	-- Iterate through skipped frames (inclusive)
+	for f = prevFrame + 1, currentFrame do
+		for _, container in ipairs(props.KeyContanerMap or {}) do
+			local keyIndex = tonumber(container.Key)
+			if keyIndex and keyIndex == f then
+				local val = container.Value
+				if val and val.Keys then
+					for _, k in ipairs(val.Keys) do
+						if k.ObjectName then
+							local short = k.ObjectName:match(":(.-)'?$") or k.ObjectName
+							Entity(1):ChatPrint("[SBAI-ShowData] Triggered Key: " .. short .. " at frame " .. f)
+
+							-- resolve this ObjectName to its actual data table from showdata
+							local targetKey
+							for _, data in ipairs(showdata) do
+								if data.Name == short then
+									targetKey = data
+									break
+								end
+							end
+
+							-- if found, act based on its Type
+							if targetKey and targetKey.Type == "SBShowAnimKey" then
+								local Target = targetKey.Properties.Target 
+								if not Target then 
+									Target = "ESBShowActorTarget::ShowActorTarget_MainActor"
+								end
+
+								if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then
+									local anim = targetKey.Properties.AnimResourcePath 
+									anim = string.GetFileFromFilename(anim)
+									self:NPC_StartScriptedActivity(anim, true)
+								elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then
+									-- handle interaction case
+									print("[SBAI-ShowData] OtherActor anim:", targetKey.Properties.AnimResourcePath)
+									-- leave for you to implement
+								end
+							elseif targetKey and targetKey.Type == "SBShowSoundKey" then 
+								-- targetKey.Properties.SoundSoftObject.AssetPathName = "/Game/Sound/Skill/Monster/Raven/M_Raven_Cloth_XL3_Cue.M_Raven_Cloth_XL3_Cue"
+							end 
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function ENT:Think() 
+	self:SBAI_MaintainShow2() 
+	return scripted_ents.Get("npc_unreali_female").Think(self) 
 end 
 
 function ENT:SBAI_AddEffect(strEffect) 
@@ -3552,7 +3503,7 @@ function ENT:SbBlackboard(tbl)
 	return result 
 	
 	else -- task, save KeyName 
-		Entity(1):ChatPrint("saving to SBBlackBoard: "..tbl.KeyName..tostring(tbl.IntValue)..tbl.CompareOP) 
+		-- Entity(1):ChatPrint("saving to SBBlackBoard: "..tbl.KeyName..tostring(tbl.IntValue)..tbl.CompareOP) 
 		self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
 		return tbl.bReturnSucceeded 
 	end 
@@ -3660,7 +3611,7 @@ function ENT:SbCheckActorStat(tbl)
 	elseif CompareOP == "NotEqual" then 
 		result = testvalue != CheckValue 
 	end 
-	Entity(1):ChatPrint("CheckStat: "..CheckStat.." CheckValue: "..tostring(CheckValue).. "..CompareOP:"..CompareOP.." "..tostring(result)) 
+	-- Entity(1):ChatPrint("CheckStat: "..CheckStat.." CheckValue: "..tostring(CheckValue).. "..CompareOP:"..CompareOP.." "..tostring(result)) 
 	-- print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
 	return result 
 end 
@@ -3950,14 +3901,14 @@ function ENT:SbUseSkill(tbl)
 						-- This now correctly handles all the data-driven setup for the first step
 						self:SBAI_SetSkillStep(FirstSkillActiveAlias)
 						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
-						Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
+						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
 						tbl.Started = true
 						break -- Start with the first valid skill found 
 					else -- do not use SkillCommandTable, directly refer to SkillTable 
 					
 					end 
 				else 
-					Entity(1):ChatPrint(v.." is in cooldown. "..tostring(CurTime()).." "..tostring(CheckCooldown)) 
+					-- Entity(1):ChatPrint(v.." is in cooldown. "..tostring(CurTime()).." "..tostring(CheckCooldown)) 
 				end 
 			end 
 		end 
@@ -4002,7 +3953,7 @@ function ENT:SBAI_ProcessActiveSkill(tbl)
             currentTarget = tbl.LockedTarget
         else
             -- [NEW] Failsafe: If the locked target is dead, end the skill immediately.
-            Entity(1):ChatPrint("Locked target died. Ending skill.")
+            -- Entity(1):ChatPrint("Locked target died. Ending skill.")
             self.SBAI_ActiveSkill = {}
             return
         end
