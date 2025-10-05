@@ -27,7 +27,7 @@ function SB_ImportJSON(path)
 
         if _G[globalTableName] then
             MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
-            return
+            return _G[globalTableName] 
         end
 
         local jsonString = file.Read(relativePath, "GAME")
@@ -36,7 +36,7 @@ function SB_ImportJSON(path)
             return
         end
 
-        local tempTable = util.JSONToTable(jsonString)
+        local tempTable = util.JSONToTable(jsonString,false)
         if not tempTable then
             ErrorNoHalt(string.format("[SB Importer] Failed to parse JSON for '%s'! File may be malformed: %s\n", globalTableName, relativePath))
             return
@@ -44,6 +44,7 @@ function SB_ImportJSON(path)
 
         _G[globalTableName] = tempTable
         MsgC(Color(100, 255, 100), "[SB Importer] Successfully loaded '", relativePath, "' into global table '", globalTableName, "'.\n")
+		return tempTable 
     end
 
     -- Main function logic starts here.
@@ -78,7 +79,7 @@ function SB_ImportJSON(path)
             ProcessJSONFile(dirPath .. fileName)
         end
     else
-        ProcessJSONFile(relativePath)
+        return ProcessJSONFile(relativePath)
     end
 end
 
@@ -92,9 +93,6 @@ SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterAnimSet
 SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterMoveTable.json")
 
 print(SysTime()) 
-
-
-
 
 -- stuff related to health, shield is in CharacterTable.json 
 -- skilltable has skill information and the skill tree it starts from SkillActiveStepTable 
@@ -125,6 +123,8 @@ ENT.SbEffectAlias = { }
 ENT.SBAI_ActiveSkill = { } 
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
+ENT.CharacterSoundSetPath = "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
+SB_ImportJSON(ENT.CharacterSoundSetPath) 
 
 -- childcomposite = nexttask 
 -- childtask = starttask 
@@ -2449,6 +2449,7 @@ function ENT:SBAI_SetSkillStep(strSkill)
 end 
 
 function ENT:SBAI_SetShow(showpath) 
+	print("showpath:",showpath) 
 	SB_ImportJSON(showpath) 
 	self.SBAI_ActiveShow = {["Time"] = CurTime()} 
 	self.SBAI_ActiveShow.Dir = showpath 
@@ -2480,7 +2481,7 @@ function ENT:SBAI_SetShow(showpath)
 end 
 
 function ENT:SBAI_MaintainShow2()
-	if not self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
+	if !self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
 	if !self.SBAI_ActiveShow.Name then return end -- table not ready 
 	local showname = "SB_" .. self.SBAI_ActiveShow.Name
 	local showdata = _G[showname]
@@ -2513,23 +2514,20 @@ function ENT:SBAI_MaintainShow2()
 	-- Progress time by interval
 	self.SBAI_ActiveShow.Elapsed = (self.SBAI_ActiveShow.Elapsed or 0) + self:GetAnimTimeInterval()
 
-	-- Auto-stop if exceeded duration
-	if self.SBAI_ActiveShow.Elapsed >= endTime then
-		self.SBAI_ActiveShow.Stopped = true
-		return
-	end
-
 	-- Normalize to cycle [0..1]
 	local cycle = math.Clamp(self.SBAI_ActiveShow.Elapsed / endTime, 0, 1)
 
-
 	-- Convert cycle to frame index (0..maxKey)
-	local currentFrame = math.floor(cycle * maxKey)
+	local currentFrame = math.max(1, math.floor(cycle * maxKey + 0.5))
 
 	-- Get previous frame
 	local prevFrame = self.SBAI_ActiveShow.Frame or -1
 	-- If frame didn’t advance, do nothing
-	if currentFrame <= prevFrame then return end
+	if currentFrame <= prevFrame then 
+		if maxKey != 1 then 
+			return 
+		end 
+	end 
 
 	-- Update to current frame
 	self.SBAI_ActiveShow.Frame = currentFrame
@@ -2571,8 +2569,44 @@ function ENT:SBAI_MaintainShow2()
 									print("[SBAI-ShowData] OtherActor anim:", targetKey.Properties.AnimResourcePath)
 									-- leave for you to implement
 								end
-							elseif targetKey and targetKey.Type == "SBShowSoundKey" then 
+							elseif targetKey and (targetKey.Type == "SBShowSoundKey" or targetKey.Type == "SBShowCharSESoundKey") then 
+								-- initialize template soundscript 
+								local CuePath 
+								
+								if targetKey.Type == "SBShowCharSESoundKey" then 
+									print("looking up:",targetKey.Properties.CharacterReactKey) 
+									local key = targetKey.Properties.CharacterReactKey or targetKey.Properties.CharacterVoiceKey 
+									PrintTable(targetKey) 
+									CuePath = self:SBAI_LookupCharacterSound(key) 
+									print(CuePath) 
+									CuePath = CuePath.ObjectPath 
+									CuePath = string.gsub(CuePath,"/L10N/[^/]+", "")
+								else 
+									CuePath = targetKey.Properties.SoundSoftObject 
+									if CuePath then 
+										CuePath = CuePath.AssetPathName 
+									else -- property may be named "Sound" 
+										CuePath = targetKey.Properties.Sound 
+										CuePath = CuePath.ObjectPath 
+									end 
+								end 
+								print("CuePath:",CuePath,"TargetKey:",targetKey.Type) 
+								CuePath = string.sub(CuePath,6) 
+								CuePath = "addons/sbraven/data_static/SB/Content"..CuePath 
+								CuePath = string.StripExtension(CuePath) 
+								CuePath = CuePath..".json" 
+								local SoundScript = self:SBAI_BuildSoundScript(CuePath) 
+								-- print("got soundscript") 
+								PrintTable(SoundScript) 
+								if SoundScript.Delay and SoundScript.Delay != 0 then 
+									timer.Simple(SoundScript.Delay,function() self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) end) 
+								else 
+									self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) 
+								end 
 								-- targetKey.Properties.SoundSoftObject.AssetPathName = "/Game/Sound/Skill/Monster/Raven/M_Raven_Cloth_XL3_Cue.M_Raven_Cloth_XL3_Cue"
+								-- send to cue file handler 
+								-- handler will navigate through items and fill a table formed like soundscript 
+								-- and return the filled table here 
 							end 
 						end
 					end
@@ -2580,7 +2614,307 @@ function ENT:SBAI_MaintainShow2()
 			end
 		end
 	end
+	-- Auto-stop if exceeded duration
+	if self.SBAI_ActiveShow.Elapsed >= endTime then
+		self.SBAI_ActiveShow.Stopped = true
+		return
+	end
+end 
+
+function ENT:SBAI_LookupCharacterSound(key) 
+	key = string.upper(key) 
+	local CharacterSoundSet = string.GetFileFromFilename(string.StripExtension(self.CharacterSoundSetPath)) 
+	CharacterSoundSet = _G["SB_"..CharacterSoundSet] -- the CharacterSoundSet imported from JSON is now a Lua table 
+	if !CharacterSoundSet or !CharacterSoundSet[1].Properties then return nil end
+    -- search through all sound categories
+    local categories = { "HitSounds", "ReactSounds", "EnvHitSounds", "VoiceSounds" }
+    for _, category in ipairs(categories) do
+        local sounds = CharacterSoundSet[1].Properties[category]
+        if sounds then
+            for _, entry in ipairs(sounds) do
+				local parsingKey = string.upper(entry.Key) 
+                if parsingKey == key then
+                    local value = entry.Value
+                    local soundData = {}
+
+                    -- handle nested HitTypeArray (like in HitSounds)
+                    if value.HitTypeArray then
+                        for _, hit in ipairs(value.HitTypeArray) do
+                            if hit.HitSound then
+                                soundData = hit.HitSound
+                                break
+                            end
+                        end
+                    else
+                        soundData = value
+                    end
+
+                    -- flatten SoundSource.ObjectPath into top-level
+                    if soundData.SoundSource then
+                        soundData.ObjectName = soundData.SoundSource.ObjectName
+                        soundData.ObjectPath = soundData.SoundSource.ObjectPath
+                    end
+
+                    return soundData
+                end
+            end
+        end
+    end
+
+    return nil
+end 
+
+function ENT:SBAI_BuildSoundScript(parsedjson)
+	if not istable(parsedjson) then
+		parsedjson = SB_ImportJSON(parsedjson)
+	end
+
+	local SoundScript = {
+		Entity = self,
+		Pos = vector_origin,
+		Volume = 1,
+		Pitch = 100,
+		SoundPath = Sound(""),
+		RawSoundPath = "",
+		Channel = CHAN_AUTO,
+		Delay = 0,
+		-- optional fields that may be filled from cue properties:
+		MaxDistance = nil,
+		Duration = nil,
+		Attenuation = nil,
+		SoundClass = nil,
+		Concurrency = nil,
+		Priority = nil
+	}
+
+	local function randBetween(a, b)
+		a = tonumber(a) or 0
+		b = tonumber(b) or a
+		if a == b then return a end
+		-- prefer math.Rand if available (GMod), else fallback
+		if math.Rand then return math.Rand(a, b) end
+		return a + math.random() * (b - a)
+	end
+
+	local function weightedChoice(weights)
+		if not weights or #weights == 0 then return math.random(1, 1) end
+		local total = 0
+		for i = 1, #weights do total = total + (weights[i] or 0) end
+		if total <= 0 then return math.random(1, #weights) end
+		local pick = math.random() * total
+		local cum = 0
+		for i = 1, #weights do
+			cum = cum + (weights[i] or 0)
+			if pick <= cum then return i end
+		end
+		return #weights
+	end
+
+	-- convert ObjectName string or table to node name (e.g. "SoundNodeMixer_0")
+	local function nodeNameFromObject(obj)
+		if not obj then return nil end
+		local s = (type(obj) == "table" and (obj.ObjectName or obj.ObjectPath) ) or tostring(obj)
+		-- try :NAME' pattern
+		local m = s:match(":([^']+)'")
+		if m and #m > 0 then return m end
+		-- trailing 'NAME' pattern
+		m = s:match("([^']+)'$")
+		if m and #m > 0 then return m end
+		-- fallback: if it contains a dot index or path, pick last segment after dot/slash
+		m = s:match("[^/%.%:]+$")
+		if m and #m > 0 then return m end
+		return s
+	end
+
+	-- convert Unreal asset path to game-file style:
+	-- 1) remove leading "/Game/"
+	-- 2) remove "L10N/<locale>/" if present
+	-- 3) strip trailing ".Name" suffix
+	local function unrealToGamePath(asset)
+		if not asset then return nil end
+		asset = tostring(asset)
+		-- strip surrounding whitespace
+		asset = asset:match("^%s*(.-)%s*$")
+		-- strip trailing ".Name" portion if present
+		asset = asset:gsub("%.[^%.%/]+$", "")
+		-- remove leading /Game/
+		asset = asset:gsub("^/Game/", "")
+		-- remove localization prefix like "L10N/it/" or "L10N/de/"
+		asset = asset:gsub("^L10N/[^/]+/", "")
+		-- Also if localization appears after an initial folder (rare), remove any "/L10N/<loc>/" occurrences
+		asset = asset:gsub("/L10N/[^/]+/", "/")
+		-- final clean
+		asset = asset:gsub("^/+", ""):gsub("/+", "/") 
+		asset = asset..".wav"
+		asset = string.sub(asset,7) 
+		return asset
+	end
+
+	-- build lookup table
+	local nodes = {}
+	for _, node in ipairs(parsedjson) do
+		if node and node.Name then nodes[node.Name] = node end
+	end
+
+	-- find SoundCue root
+	local cue
+	for _, node in ipairs(parsedjson) do
+		if node.Type == "SoundCue" then cue = node; break end
+	end
+	if not cue or not cue.Properties or not cue.Properties.FirstNode then
+		return SoundScript
+	end
+
+	-- populate SoundScript with cue-level properties if available
+	local cprops = cue.Properties or {}
+	if cprops.MaxDistance then SoundScript.MaxDistance = tonumber(cprops.MaxDistance) end
+	if cprops.Duration then SoundScript.Duration = tonumber(cprops.Duration) end
+	if cprops.AttenuationSettings then
+		SoundScript.Attenuation = cprops.AttenuationSettings.ObjectPath or cprops.AttenuationSettings.ObjectName or cprops.AttenuationSettings
+	end
+	if cprops.SoundClassObject then
+		SoundScript.SoundClass = cprops.SoundClassObject.ObjectPath or cprops.SoundClassObject.ObjectName or cprops.SoundClassObject
+	end
+	if cprops.ConcurrencySet then
+		SoundScript.Concurrency = cprops.ConcurrencySet
+	end
+	if cprops.ConcurrencyOverrides then
+		SoundScript.Concurrency = cprops.ConcurrencyOverrides
+	end
+	if cprops.Priority then SoundScript.Priority = tonumber(cprops.Priority) end
+	-- cue-level volume multiplier (used as initial volume)
+	local cueVolMul = tonumber(cprops.VolumeMultiplier or cprops.Volume or 1) or 1
+
+	-- recursive traversal function
+	local function TraverseNodeByName(nodeName, curVolume, curPitch, curDelay)
+		if not nodeName then return nil end
+		local node = nodes[nodeName]
+		if not node or not node.Type then return nil end
+		local props = node.Properties or {}
+
+		curVolume = tonumber(curVolume) or 1
+		curPitch = tonumber(curPitch) or 1
+		curDelay = tonumber(curDelay) or 0
+
+		if node.Type == "SoundNodeModulator" then
+			local vmin = props.VolumeMin or props.Volume or props.VolumeMultiplier
+			local vmax = props.VolumeMax or props.Volume or props.VolumeMultiplier or vmin
+			local pmin = props.PitchMin or props.Pitch or props.PitchMultiplier
+			local pmax = props.PitchMax or props.Pitch or props.PitchMultiplier or pmin
+			if not vmin then vmin = 1 end
+			if not vmax then vmax = vmin end
+			if not pmin then pmin = 1 end
+			if not pmax then pmax = pmin end
+			local chosenVol = randBetween(vmin, vmax)
+			local chosenPitch = randBetween(pmin, pmax)
+			local child = props.ChildNodes and props.ChildNodes[1]
+			if child then
+				local childName = nodeNameFromObject(child)
+				return TraverseNodeByName(childName, curVolume * chosenVol, curPitch * chosenPitch, curDelay)
+			end
+			return nil
+
+		elseif node.Type == "SoundNodeDelay" then
+			local dmin = props.DelayMin or props.Delay or 0
+			local dmax = props.DelayMax or props.Delay or dmin
+			local chosenDelay = randBetween(dmin, dmax)
+			local child = props.ChildNodes and props.ChildNodes[1]
+			if child then
+				local childName = nodeNameFromObject(child)
+				return TraverseNodeByName(childName, curVolume, curPitch, curDelay + chosenDelay)
+			end
+			return nil
+
+		elseif node.Type == "SoundNodeRandom" then
+			local children = props.ChildNodes or {}
+			local weights = props.Weights or {}
+			if #children == 0 then return nil end
+			local idx = weightedChoice(weights)
+			if idx < 1 then idx = 1 end
+			if idx > #children then idx = #children end
+			local chosen = children[idx]
+			local childName = nodeNameFromObject(chosen)
+			return TraverseNodeByName(childName, curVolume, curPitch, curDelay)
+
+		elseif node.Type == "SoundNodeMixer" then
+			local children = props.ChildNodes or {}
+			local inputVolume = props.InputVolume or {}
+			if #children == 0 then return nil end
+			local idx = math.random(1, #children)
+			local volMul = 1
+			if #inputVolume == #children then
+				volMul = tonumber(inputVolume[idx]) or volMul
+			elseif #inputVolume == 2 then
+				volMul = randBetween(inputVolume[1], inputVolume[2])
+			elseif #inputVolume >= 1 then
+				volMul = tonumber(inputVolume[1]) or volMul
+			end
+			local chosen = children[idx]
+			local childName = nodeNameFromObject(chosen)
+			return TraverseNodeByName(childName, curVolume * volMul, curPitch, curDelay)
+
+		elseif node.Type == "SoundNodeWavePlayer" then
+			local asset = nil
+			if props.SoundWaveAssetPtr and props.SoundWaveAssetPtr.AssetPathName then
+				asset = props.SoundWaveAssetPtr.AssetPathName
+			elseif node.SoundWave and node.SoundWave.ObjectPath then
+				asset = node.SoundWave.ObjectPath
+			end
+			if asset and asset ~= "" then
+				-- convert to game-file path according to your rules
+				local gamePath = unrealToGamePath(asset)
+				if gamePath and gamePath ~= "" then
+					-- store both raw converted path and Sound() object if available
+					local ok, s = pcall(function() return Sound(gamePath) end)
+					local looping = false
+					if props.bLooping ~= nil then
+						looping = (props.bLooping == true)
+					elseif node.SoundWave and node.SoundWave.bLooping ~= nil then
+						looping = (node.SoundWave.bLooping == true)
+					end
+
+					return {
+						SoundPath = (ok and s) or gamePath,
+						Raw = gamePath,
+						Volume = curVolume,
+						Pitch = curPitch * 100,
+						Delay = curDelay,
+						Looping = looping,          -- <-- new field added
+					}
+				end
+			end
+			return nil
+
+		else
+			-- unknown node: attempt to follow first child
+			local child = props.ChildNodes and props.ChildNodes[1]
+			if child then
+				local childName = nodeNameFromObject(child)
+				return TraverseNodeByName(childName, curVolume, curPitch, curDelay)
+			end
+			return nil
+		end
+	end
+
+	-- start traversal
+	local firstObj = cue.Properties.FirstNode
+	local startNodeName = nodeNameFromObject(firstObj)
+	local result = TraverseNodeByName(startNodeName, cueVolMul, 1, 0)
+
+	if result then
+		SoundScript.Volume = tonumber(result.Volume) or SoundScript.Volume
+		SoundScript.Pitch = tonumber(result.Pitch) or SoundScript.Pitch
+		SoundScript.Delay = tonumber(result.Delay) or SoundScript.Delay
+		-- RawSoundPath (converted)
+		SoundScript.RawSoundPath = result.Raw or tostring(result.SoundPath or "")
+		-- SoundPath as Sound() object if conversion succeeded above
+		pcall(function() SoundScript.SoundPath = result.SoundPath end)
+	end
+
+	return SoundScript
 end
+
+
 
 function ENT:Think() 
 	self:SBAI_MaintainShow2() 
