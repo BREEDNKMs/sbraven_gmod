@@ -110,7 +110,7 @@ ENT.NPC_AlertSound	= ""
 ENT.NPC_IdleSound 	= "" 
 ENT.NPC_GroupIdleSound 	= "" 
 ENT.NPC_MeleeHitSound = "Unreali_Nali.MeleeHit" 
-ENT.NPC_PainSound 	= "M_Raven_vo_Dmg_L_Cue" 
+ENT.NPC_PainSound 	= "NPC_Raven.PainSound" 
 ENT.NPC_PainSoundWater 	= "Unreali_Female.HurtUnderWater" 
 ENT.npc_health 		= 248304 -- "MaxHP": 248304, "MaxShield": 4805, 
 ENT.npc_model		= "models/alvaroports/sbraven2.mdl" 
@@ -2452,6 +2452,7 @@ function ENT:SBAI_SetShow(showpath)
 	print("showpath:",showpath) 
 	SB_ImportJSON(showpath) 
 	self.SBAI_ActiveShow = {["Time"] = CurTime()} 
+	self.SBAI_ActiveShow = {["RunTime"] = CurTime()} 
 	self.SBAI_ActiveShow.Dir = showpath 
 	local showname = string.GetFileFromFilename( showpath ) 
 	showname = string.StripExtension(showname) 
@@ -2511,8 +2512,10 @@ function ENT:SBAI_MaintainShow2()
 	end
 	if maxKey <= 0 then return end
 
-	-- Progress time by interval
-	self.SBAI_ActiveShow.Elapsed = (self.SBAI_ActiveShow.Elapsed or 0) + self:GetAnimTimeInterval()
+	-- Progress time by interval 
+	local Elapsed = CurTime() - self.SBAI_ActiveShow.RunTime 
+	self.SBAI_ActiveShow.Elapsed = (self.SBAI_ActiveShow.Elapsed or 0) + Elapsed -- or self:GetAnimTimeInterval() once efficiency issues are solved  
+	self.SBAI_ActiveShow.RunTime = CurTime() 
 
 	-- Normalize to cycle [0..1]
 	local cycle = math.Clamp(self.SBAI_ActiveShow.Elapsed / endTime, 0, 1)
@@ -2975,7 +2978,53 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 			enemy = self:GetKnownEnemies()[1] 
 		end 
 	end 
-	local tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
+	local tableofhittargets 
+	if IsValid(enemy) then 
+		local curHealth = enemy:Health()
+		tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options)
+		local newHealth = enemy:Health() -- will have decreased if damage is applied
+
+		--- START: Added Damage Check Logic ---
+
+		local bDamageBlocked = false -- Initialize the variable to false.
+
+		-- Proceed only if the intended enemy was actually in the list of entities hit by the attack.
+		if tableofhittargets and table.HasValue(tableofhittargets, enemy) then
+			local intendedDamage = options
+			local actualDamageDealt = curHealth - newHealth
+			local damagePercentage = 0
+
+			-- Avoid division by zero if the skill was not meant to do damage.
+			if intendedDamage > 0 then
+				damagePercentage = actualDamageDealt / intendedDamage
+			end
+
+			-- Check various conditions to see if damage was blocked or prevented.
+			-- We set bDamageBlocked to true if ANY of these conditions are met.
+
+			-- Condition 1: The enemy is a player and the GM:PlayerShouldTakeDamage hook returns false.
+			local playerHookBlocked = enemy:IsPlayer() and hook.Run("GM:PlayerShouldTakeDamage", enemy, self) == false
+			local ai_block_damage = enemy:IsNPC() and cvars.Bool("ai_block_damage") 
+
+			-- Condition 2: The enemy has God Mode enabled.
+			local isGodMode = enemy:IsFlagSet(FL_GODMODE)
+
+			-- Condition 3: The enemy's internal takedamage variable is set to 0 (D_HT_NO) or less.
+			-- (or 1) is a safeguard in case the variable is missing, defaulting to a state that takes damage.
+			local takeDamageDisabled = (enemy:GetInternalVariable("m_takedamage") or 1) < 1
+
+			-- Condition 4: The actual damage applied was less than 10% of what was intended.
+			local lowDamage = damagePercentage < 0.1
+
+			if playerHookBlocked or isGodMode or takeDamageDisabled or lowDamage or ai_block_damage then
+				bDamageBlocked = true
+			end
+		end
+	else 
+		tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
+	end 
+    --- END: Added Damage Check Logic ---
+
 	for k,v in pairs(tableofhittargets) do 
 		if IsValid(v) and v != self then 
 			local Disposition = self:Disposition(v) 
@@ -2984,12 +3033,19 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 					-- self:SBAI_SetSkillStep() 
 				end 
 				
-				if SkillStepTable.NextStepAliasWhenParry != "None" then -- player blocked your attack 
-				
+				if SkillStepTable.NextStepAliasWhenParry != "None" then -- player blocked your attack. 
+				-- this will be reinterpreted as: trace attack to GetEnemy hit something else 
 				end 
 				
-				if SkillStepTable.NextStepAliasWhenPerfectParry != "None" then 
+				if SkillStepTable.NextStepAliasWhenParryJust != "None" then -- interpret as: getenemy is invincible or total damage is lesser than %10 
+					if bDamageBlocked then 
+						self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenParryJust) 
+					end 
+				end 
 				
+				if SkillStepTable.NextStepAliasWhenPerfectParry != "None" then -- player performed parry right at HitTime 
+				-- this will be reinterpreted as: GetEnemy damaged us right at hit event 
+				-- implemented in ON_LIGHT_DAMAGE 
 				end 
 				
 				if SkillStepTable.NextStepAliasWhenSuperParry != "None" then 
@@ -3020,8 +3076,8 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 				
 				end 
 				
-				if SkillStepTable.NextStepAliasWhenAttacked != "None" then -- when the target is hit during skill 
-				
+				if SkillStepTable.NextStepAliasWhenAttacked != "None" then -- when the target is hit during skill, implemented in ON_LIGHT_DAMAGE 
+					
 				end 
 				
 				if SkillStepTable.NextStepAliasWhenNoTarget != "None" then 
@@ -3763,6 +3819,7 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	-- has raven melee weapon 
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
 	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
+	if self:NPC_HasCondition(COND.ENEMY_OCCLUDED) then return false end 
 	return true 
 end 
 
@@ -3951,6 +4008,7 @@ function ENT:SbCheckActorStat(tbl)
 end 
 
 function ENT:SbCheckStance(tbl) -- M_Raven_Phase2, M_Raven_Default 
+	if true then return true end 
 	if true then 
 		return "M_Raven_Default" == tbl.StanceName 
 	end 
@@ -4019,6 +4077,7 @@ function ENT:SbIsAlive(tbl)
     elseif CheckType == "Alive" then
         return IsValid(ent) and ent:Alive()
     end
+	
 
     return false
 end 
@@ -4255,7 +4314,8 @@ function ENT:SbUseSkill(tbl)
         -- If the active skill was cleared (e.g., skill finished or target died), the task is complete
         if not self.SBAI_ActiveSkill or not self.SBAI_ActiveSkill.Name then
              Entity(1):ChatPrint("task complete")
-             self:NPC_StopScriptedActivity()
+             self:NPC_StopScriptedActivity() 
+			 self:ResetIdealActivity(ACT_RESET) 
              return true
         end
 
@@ -4415,3 +4475,23 @@ function ENT:Item_Resurrection_Ground(ent) return false end
 function ENT:M_Raven_BetaCounterGrab_HitE(ent) return false end 
 function ENT:LV_FinishQTE_FailDown(ent) return false end 
 
+function ENT:ON_LIGHT_DAMAGE() 
+	-- get current skill step if available and see whether NextStepAliasWhenAttacked is set 
+	local SkillStepTable = self.SBAI_ActiveSkill 
+	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
+	if !SkillStepTable.Name then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
+	SkillStepTable = SB_SkillActiveStepTable[1].Rows[SkillStepTable] 
+	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
+	if SkillStepTable.NextStepAliasWhenAttacked and SkillStepTable.NextStepAliasWhenAttacked != "None" then 
+		self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenAttacked) 
+	elseif SkillStepTable.NextStepAliasWhenPerfectParry != "None" then 
+		local enemy = self:GetEnemy() 
+		if IsValid(self:GetEnemy()) then 
+			local DamageTime = self:GetLastTimeTookDamageFromEnemy() 
+			if DamageTime + 0.02 > CurTime() then 
+				self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenPerfectParry) 
+			end 
+		end 
+	end 
+	return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) 
+end 
