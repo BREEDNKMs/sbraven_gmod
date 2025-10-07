@@ -99,6 +99,7 @@ print(SysTime())
 -- SelectSchedule accesses M_Raven_AI.json and starting from root node "ObjectName": "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_38'" 
 -- checking whether the target & self is alive 
 -- then proceeds to child nodes 
+local flRescale = 0.42 
 ENT.Base = "npc_unreali_female" 
 ENT.Type 			= "ai" 
 ENT.Spawnable = false 
@@ -2451,8 +2452,7 @@ end
 function ENT:SBAI_SetShow(showpath) 
 	print("showpath:",showpath) 
 	SB_ImportJSON(showpath) 
-	self.SBAI_ActiveShow = {["Time"] = CurTime()} 
-	self.SBAI_ActiveShow = {["RunTime"] = CurTime()} 
+	self.SBAI_ActiveShow = {["Time"] = CurTime(),["RunTime"] = CurTime()} 
 	self.SBAI_ActiveShow.Dir = showpath 
 	local showname = string.GetFileFromFilename( showpath ) 
 	showname = string.StripExtension(showname) 
@@ -2526,6 +2526,7 @@ function ENT:SBAI_MaintainShow()
 
 		-- Mark as triggered
 		self.SBAI_ActiveShow.TriggeredKeys[data.Name] = true
+		Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - self.SBAI_ActiveShow.Time)) 
 
 		-- === Handle key types ===
 		if data.Type == "SBShowAnimKey" then
@@ -2626,7 +2627,64 @@ function ENT:SBAI_MaintainShow()
 				end
 			end
 		end
-	end
+	elseif data.Type == "SBShowActorAnimKey" then -- used for Eve in Menu mode, for her facial expressions 
+	elseif data.Type == "SBShowActorCompVisibleKey" then -- used to draw or hide actors and children in Menu mode 
+	elseif data.Type == "SBShowActorEventNotificationKey" then -- fires Properties.EventName in Menu mode 
+	elseif data.Type == "SBShowAnimBPSetValueKey" then 
+	elseif data.Type == "SBShowAnimBlendSpaceKey" then 
+	elseif data.Type == "SBShowAnimByMeshSlotKey" then 
+	elseif data.Type == "SBShowAnimNodeGroundCollisionKey" then 
+	elseif data.Type == "SBShowAnimTransitKey" then 
+	elseif data.Type == "SBShowCableKey" then 
+	elseif data.Type == "SBShowCamAnimKey" then 
+	elseif data.Type == "SBShowCamShakeKey" then 
+	elseif data.Type == "SBShowChangeAttachTo" then 
+	elseif data.Type == "SBShowClientEventKey" then 
+	elseif data.Type == "SBShowControlCamLagSpeedKey" then 
+	elseif data.Type == "SBShowControlCameraVolumeKey" then 
+	elseif data.Type == "SBShowControlLockOnTargetBoneKey" then 
+	elseif data.Type == "SBShowCreateDestructibleKey" then 
+	elseif data.Type == "SBShowCreateStaticMeshKey" then 
+	elseif data.Type == "SBShowData" then 
+	elseif data.Type == "SBShowDeactiveParticleKey" then 
+	elseif data.Type == "SBShowDecalKey" then 
+	elseif data.Type == "SBShowDynamicPhysicBStopKey" then 
+	elseif data.Type == "SBShowDynamicPhysicBonesKey" then 
+	elseif data.Type == "SBShowEffectKey" then 
+	elseif data.Type == "SBShowFlyKey" then 
+	elseif data.Type == "SBShowHitReactionKey" then 
+	elseif data.Type == "SBShowLockOnTargetKey" then 
+	elseif data.Type == "SBShowMaterialChangeKey" then 
+	elseif data.Type == "SBShowMaterialCollectionParamKey" then 
+	elseif data.Type == "SBShowMaterialParamKey" then 
+	elseif data.Type == "SBShowMeshVertexShakeKey" then 
+	elseif data.Type == "SBShowNiagaraKey" then 
+	elseif data.Type == "SBShowNotifyEventKey" then 
+	elseif data.Type == "SBShowParticleKey" then 
+	elseif data.Type == "SBShowPlayShowKey" then 
+	elseif data.Type == "SBShowPlayTheaterKey" then 
+	elseif data.Type == "SBShowPoseSnapshotKey" then 
+	elseif data.Type == "SBShowPostProcessKey" then 
+	elseif data.Type == "SBShowPostProcessMaterialKey" then 
+	elseif data.Type == "SBShowProjectileKey" then 
+	elseif data.Type == "SBShowRadialForceKey" then 
+	elseif data.Type == "SBShowRagdollKey" then -- has ability to fade between ragdoll status and become normal again. right now just become ragdoll. 
+		self:BecomeRagdoll() -- fades at Properties.Duration 
+	elseif data.Type == "SBShowRuleMoveKey" then 
+	elseif data.Type == "SBShowSetAIDecoratorKey" then 
+	elseif data.Type == "SBShowSkillResultKey" then 
+	elseif data.Type == "SBShowSoundAdjusterKey" then 
+	elseif data.Type == "SBShowSoundEventKey" then 
+	elseif data.Type == "SBShowTimeScaleKey" then 
+	elseif data.Type == "SBShowTrailKey" then 
+	elseif data.Type == "SBShowUIStudioSequenceKey" then 
+	elseif data.Type == "SBShowVibrationKey" then 
+	elseif data.Type == "SBShowVisibilityKey" then 
+	elseif data.Type == "SBShowWindVolumeKey" then 
+	
+	else -- unhandled Key 
+	
+	end 
 
 	-- Auto-stop at end
 	if self.SBAI_ActiveShow.Elapsed >= endTime then
