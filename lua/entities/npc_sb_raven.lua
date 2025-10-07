@@ -2460,7 +2460,7 @@ function ENT:SBAI_SetShow(showpath)
 	self.SBAI_ActiveShow.Frame = 0 
 	self.SBAI_ActiveShow.Stopped = false 
 	showname = "SB_"..showname 
-	self:SBAI_MaintainShow2() 
+	self:SBAI_MaintainShow() 
 	-- for _,animpaths in pairs(_G[showname]) do 
 		-- if animpaths.Type == "SBShowAnimKey" then 
 			-- local Target = animpaths.Properties.Target 
@@ -2480,6 +2480,163 @@ function ENT:SBAI_SetShow(showpath)
 	-- end 
 	return showname -- return true on animation play, false on not play 
 end 
+
+function ENT:SBAI_MaintainShow()
+	if not self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
+	if not self.SBAI_ActiveShow.Name then return end
+
+	local showname = "SB_" .. self.SBAI_ActiveShow.Name
+	local showdata = _G[showname]
+	if not showdata then return end
+
+	-- Find SBShowData entry
+	local showEntry
+	for _, data in pairs(showdata) do
+		if data.Type == "SBShowData" then
+			showEntry = data
+			break
+		end
+	end
+	if not showEntry then return end
+
+	local props = showEntry.Properties
+	local endTime = props.EndTime or 0
+	if endTime <= 0 then return end
+
+	-- Advance elapsed time
+	local Elapsed = CurTime() - (self.SBAI_ActiveShow.RunTime or CurTime())
+	self.SBAI_ActiveShow.Elapsed = (self.SBAI_ActiveShow.Elapsed or 0) + Elapsed
+	self.SBAI_ActiveShow.RunTime = CurTime()
+
+	-- Create triggered list if not yet present
+	self.SBAI_ActiveShow.TriggeredKeys = self.SBAI_ActiveShow.TriggeredKeys or {}
+
+	-- Iterate all entries (SBShowAnimKey, SBShowActorKey, SBShowSoundKey, etc.)
+	for _, data in ipairs(showdata) do
+		local props = data.Properties or {}
+		local startTime = props.StartTime or 0
+
+		-- Skip if not reached yet or already triggered
+		if self.SBAI_ActiveShow.Elapsed < startTime then
+			continue
+		end
+		if self.SBAI_ActiveShow.TriggeredKeys[data.Name] then
+			continue
+		end
+
+		-- Mark as triggered
+		self.SBAI_ActiveShow.TriggeredKeys[data.Name] = true
+
+		-- === Handle key types ===
+		if data.Type == "SBShowAnimKey" then
+			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor"
+			local anim = props.AnimResourcePath and string.GetFileFromFilename(props.AnimResourcePath)
+			if anim then
+				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then
+					self:NPC_StartScriptedActivity(anim, true)
+				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then
+					-- Optional: handle other actor animations
+				end
+			end
+
+		elseif data.Type == "SBShowActorKey" then
+			local hidden = props.bUseActorHidden or false
+
+			-- Helper: apply render state recursively
+			local function ApplyRenderState(ent, hide)
+				if not IsValid(ent) then return end
+
+				if hide then
+					ent:SetRenderMode(RENDERMODE_NONE)
+					ent:SetColor(Color(255, 255, 255, 0))
+				else
+					ent:SetRenderMode(RENDERMODE_TRANSCOLOR)
+					ent:SetColor(Color(255, 255, 255, 255))
+				end
+
+				-- Include weapon and children
+				local wep = ent.GetActiveWeapon and ent:GetActiveWeapon()
+				if IsValid(wep) then
+					if hide then
+						wep:SetRenderMode(RENDERMODE_NONE)
+						wep:SetColor(Color(255, 255, 255, 0))
+					else
+						wep:SetRenderMode(RENDERMODE_TRANSCOLOR)
+						wep:SetColor(Color(255, 255, 255, 255))
+					end
+				end
+
+				for _, child in ipairs(ent:GetChildren()) do
+					if IsValid(child) then
+						if hide then
+							child:SetRenderMode(RENDERMODE_NONE)
+							child:SetColor(Color(255, 255, 255, 0))
+						else
+							child:SetRenderMode(RENDERMODE_TRANSCOLOR)
+							child:SetColor(Color(255, 255, 255, 255))
+						end
+					end
+				end
+			end
+
+			-- Apply immediately
+			ApplyRenderState(self, hidden)
+
+			-- Auto-revert after Duration
+			if props.Duration and props.Duration > 0 then
+				timer.Simple(props.Duration, function()
+					if IsValid(self) then
+						ApplyRenderState(self, not hidden)
+					end
+				end)
+			end
+
+		elseif data.Type == "SBShowSoundKey" or data.Type == "SBShowCharSESoundKey" then
+			local CuePath
+			if data.Type == "SBShowCharSESoundKey" then
+				local key = props.CharacterReactKey or props.CharacterVoiceKey
+				local lookup = self:SBAI_LookupCharacterSound(key)
+				CuePath = lookup and lookup.ObjectPath
+				if CuePath then
+					CuePath = string.gsub(CuePath, "/L10N/[^/]+", "")
+				end
+			else
+				CuePath = props.SoundSoftObject and props.SoundSoftObject.AssetPathName
+				if not CuePath and props.Sound then
+					CuePath = props.Sound.ObjectPath
+				end
+			end
+
+			if CuePath then
+				CuePath = string.sub(CuePath, 6)
+				CuePath = "addons/sbraven/data_static/SB/Content" .. CuePath
+				CuePath = string.StripExtension(CuePath) .. ".json"
+
+				local SoundScript = self:SBAI_BuildSoundScript(CuePath)
+				if SoundScript then
+					if SoundScript.Delay and SoundScript.Delay ~= 0 then
+						timer.Simple(SoundScript.Delay, function()
+							if IsValid(self) then
+								self:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume)
+							end
+						end)
+					else
+						self:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume)
+					end
+				end
+			end
+		end
+	end
+
+	-- Auto-stop at end
+	if self.SBAI_ActiveShow.Elapsed >= endTime then
+		self.SBAI_ActiveShow.Stopped = true
+		-- Optional: cleanup or callback here 
+		-- self:SetNoDraw(false) 
+		return
+	end
+end
+
 
 function ENT:SBAI_MaintainShow2()
 	if !self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
@@ -2569,9 +2726,10 @@ function ENT:SBAI_MaintainShow2()
 									self:NPC_StartScriptedActivity(anim, true)
 								elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then
 									-- handle interaction case
-									print("[SBAI-ShowData] OtherActor anim:", targetKey.Properties.AnimResourcePath)
+									-- print("[SBAI-ShowData] OtherActor anim:", targetKey.Properties.AnimResourcePath)
 									-- leave for you to implement
 								end
+								if targetKey.StartTime then Entity(1):ChatPrint(short.." in frame "..f.." has StartTime but not handled. Handle it.") end 
 							elseif targetKey and (targetKey.Type == "SBShowSoundKey" or targetKey.Type == "SBShowCharSESoundKey") then 
 								-- initialize template soundscript 
 								local CuePath 
@@ -2579,9 +2737,7 @@ function ENT:SBAI_MaintainShow2()
 								if targetKey.Type == "SBShowCharSESoundKey" then 
 									print("looking up:",targetKey.Properties.CharacterReactKey) 
 									local key = targetKey.Properties.CharacterReactKey or targetKey.Properties.CharacterVoiceKey 
-									PrintTable(targetKey) 
 									CuePath = self:SBAI_LookupCharacterSound(key) 
-									print(CuePath) 
 									CuePath = CuePath.ObjectPath 
 									CuePath = string.gsub(CuePath,"/L10N/[^/]+", "")
 								else 
@@ -2593,23 +2749,35 @@ function ENT:SBAI_MaintainShow2()
 										CuePath = CuePath.ObjectPath 
 									end 
 								end 
-								print("CuePath:",CuePath,"TargetKey:",targetKey.Type) 
 								CuePath = string.sub(CuePath,6) 
 								CuePath = "addons/sbraven/data_static/SB/Content"..CuePath 
 								CuePath = string.StripExtension(CuePath) 
 								CuePath = CuePath..".json" 
 								local SoundScript = self:SBAI_BuildSoundScript(CuePath) 
 								-- print("got soundscript") 
-								PrintTable(SoundScript) 
-								if SoundScript.Delay and SoundScript.Delay != 0 then 
-									timer.Simple(SoundScript.Delay,function() self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) end) 
+								
+								local StartTime = targetKey.Properties 
+								StartTime = StartTime and StartTime.StartTime 
+								StartTime = nil -- uncomment to handle that timer 
+								if StartTime and StartTime != 0 then 
+									Entity(1):ChatPrint("delay for "..short.." is: "..StartTime) 
+									timer.Simple(StartTime,function() 
+										if IsValid(self) then 
+											if SoundScript.Delay and SoundScript.Delay != 0 then 
+												timer.Simple(SoundScript.Delay,function() self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) end) 
+											else 
+												self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) 
+											end 
+										end 
+									end) 
 								else 
-									self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) 
+									if SoundScript.Delay and SoundScript.Delay != 0 then 
+										timer.Simple(SoundScript.Delay,function() self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) end) 
+									else 
+										self:EmitSound(SoundScript.SoundPath,100,SoundScript.Pitch,SoundScript.Volume) 
+									end 
 								end 
-								-- targetKey.Properties.SoundSoftObject.AssetPathName = "/Game/Sound/Skill/Monster/Raven/M_Raven_Cloth_XL3_Cue.M_Raven_Cloth_XL3_Cue"
-								-- send to cue file handler 
-								-- handler will navigate through items and fill a table formed like soundscript 
-								-- and return the filled table here 
+								
 							end 
 						end
 					end
@@ -2620,6 +2788,7 @@ function ENT:SBAI_MaintainShow2()
 	-- Auto-stop if exceeded duration
 	if self.SBAI_ActiveShow.Elapsed >= endTime then
 		self.SBAI_ActiveShow.Stopped = true
+		-- call on stop behavior 
 		return
 	end
 end 
@@ -2920,7 +3089,7 @@ end
 
 
 function ENT:Think() 
-	self:SBAI_MaintainShow2() 
+	self:SBAI_MaintainShow() 
 	return scripted_ents.Get("npc_unreali_female").Think(self) 
 end 
 
@@ -3040,6 +3209,7 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 				if SkillStepTable.NextStepAliasWhenParryJust != "None" then -- interpret as: getenemy is invincible or total damage is lesser than %10 
 					if bDamageBlocked then 
 						self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenParryJust) 
+						Entity(1):ChatPrint("Enemy in JustParry, calling "..SkillStepTable.NextStepAliasWhenParryJust) 
 					end 
 				end 
 				
@@ -3606,140 +3776,230 @@ end
 -- attack power: 1600 
 -- skill min / max distances and activate cases are in TargetFilterTable.json 
 
+-- Initialize a working copy of the master tree
 function ENT:SBAI_InitTree()
-    -- Deep clone the master tree into a working stack
     self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
+    self.CurrentBranch = nil
+    self.SBAI_bInBackgroundTask = false
 end
 
-function ENT:SBAI_SelectTask(taskTable, currentIndex)
-    -- print("***in selecttask", taskTable, currentIndex)
-    currentIndex = currentIndex or 1
-
-    for subTaskNum, subTaskTable in ipairs(taskTable) do 
-        local objectName = subTaskTable.ObjectName
-        local isSelector = objectName and objectName:find("BTComposite_Selector")
-        local isSequence = objectName and objectName:find("BTComposite_Sequence")
-		local skiptasks = true 
-		if skiptasks and subTaskTable._running then
-			-- Resume the same child without reevaluating decorators or siblings
-			if subTaskTable.StartTask then
-				local taskKey, taskData = next(subTaskTable.StartTask)
-				local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
-				local result = self[cleanTaskKey](self, taskData, subTaskTable)
-				if result == nil then
-					return nil -- still running
-				else
-					subTaskTable._running = false
-					subTaskTable._result = result
-					if result == true and isSelector then return true end
-					if result == false and isSequence then return false end
-				end
-			elseif subTaskTable.NextTask then
-				local result = self:SBAI_SelectTask(subTaskTable.NextTask, subTaskTable._currentChild or 1)
-				if result == nil then return nil end
-				subTaskTable._running = false
-				subTaskTable._result = result
-				if result == true and isSelector then return true end
-				if result == false and isSequence then return false end
-			end
-		end
-        print("objectName:", objectName)
-		
-        -- evaluate decorators
-        local allowEntry = true
-        local flowAbortMode = nil
-        if subTaskTable.Condition then
-            for subConditionName, subConditionValues in pairs(subTaskTable.Condition) do
-				local bPrevReturn = subConditionValues._result
-				
-				if subTaskTable._running and !(subTaskTable.bBackgroundTask or false) and bPrevReturn != nil then 
-					allowEntry = bPrevReturn 
-				else 
-				
-					local flowMode = subConditionValues.FlowAbortMode
-					if flowMode then flowAbortMode = flowMode end
-
-					subConditionName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
-					local passed = self[subConditionName](self, subConditionValues)
-					subConditionValues._result = passed 
-					print("Decorator", subConditionName, "returned", passed)
-					if !passed then
-						allowEntry = false
-						break
-					end
-				end 
-            end
+-- Recursively clear running state in a subtree (used by flow-abort)
+function ENT:SBAI_ClearRunning(node)
+    if not node then return end
+    node._running = false
+    node._result = nil
+    node._startTime = nil
+    node._currentChild = nil
+    if node.NextTask then
+        for _, child in ipairs(node.NextTask) do
+            self:SBAI_ClearRunning(child)
         end
-		::postdecorators:: 
-        print("allowEntry", allowEntry, flowAbortMode)
+    end
+end
 
-        -- flow abort handling (simplified to stateful version)
-        if flowAbortMode == "Self" and not allowEntry and self.CurrentBranch == subTaskNum then
-            self.CurrentBranch = nil
-            return false -- nil 
-        elseif flowAbortMode == "LowerPriority" and allowEntry and currentIndex and subTaskNum < currentIndex then
-            self.CurrentBranch = subTaskNum
-            return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
-        elseif flowAbortMode == "Both" then
-            if not allowEntry and self.CurrentBranch == subTaskNum then
-                self.CurrentBranch = nil
-                return false -- nil 
-            elseif allowEntry and currentIndex and subTaskNum < currentIndex then
-                self.CurrentBranch = subTaskNum
-                return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
-            end
-        end
+-- Main selector for an array of sibling nodes.
+-- taskTable: array of node tables
+-- startIndex: index to start scanning from (optional)
+function ENT:SBAI_SelectTask(taskTable, startIndex)
+    startIndex = startIndex or 1
+    if not taskTable or #taskTable == 0 then return false end
 
-        if allowEntry then
-            if not self.CurrentBranch then self.CurrentBranch = subTaskNum end
+    for i = startIndex, #taskTable do
+        local sub = taskTable[i]
+        local objectName = sub.ObjectName or ""
+		print("objectName:",objectName) 
+        local isSelector = objectName:find("BTComposite_Selector")
+        local isSequence = objectName:find("BTComposite_Sequence")
 
-            -- LEAF TASK
-            if subTaskTable.StartTask then
-                for taskKey, taskData in pairs(subTaskTable.StartTask) do
-                    local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
-
-                    -- run/resume logic
-                    if not subTaskTable._running then
-                        subTaskTable._running = true
-                        subTaskTable._startTime = SysTime()
-                    end
-
-                    local result = self[cleanTaskKey](self, taskData, subTaskTable)
-                    print(objectName, "returned", result)
-
+        -- If this node was already running: resume it without re-evaluating decorators
+        if sub._running then
+            if sub.StartTask then
+                -- leaf task resume
+                local taskKey, taskData = next(sub.StartTask)
+                local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+                local handler = self[cleanTaskKey]
+                if handler then
+                    local result = handler(self, taskData, sub)
                     if result == nil then
-                        -- still running, just return nil (state stays in node)
-						if taskData.bBackgroundTask then -- is task interruptable by decorators while task is still performing. true to mark as interruptable. false to keep. 
-							self.SBAI_bInBackgroundTask = taskData.bBackgroundTask 
-						end 
+                        -- still running
+                        if taskData.bBackgroundTask then
+                            self.SBAI_bInBackgroundTask = true
+                        end
                         return nil
                     else
-                        -- finished, clear runtime
-                        subTaskTable._running = false
-                        subTaskTable._result = result
-						self.SBAI_bInBackgroundTask = false 
+                        -- finished
+                        sub._running = false
+                        sub._result = result
+                        self.SBAI_bInBackgroundTask = false
+                        if result == true and isSelector then return true end
+                        if result == false and isSequence then return false end
+                        -- otherwise continue to next sibling
+                    end
+                else
+                    -- missing handler: abort node
+                    print("SBAI_SelectTask: missing task handler", cleanTaskKey)
+                    sub._running = false
+                    sub._result = false
+                    if isSequence then return false end
+                end
+
+            elseif sub.NextTask then
+                -- composite: resume its children
+                local childStart = sub._currentChild or 1
+                local result = self:SBAI_SelectTask(sub.NextTask, childStart)
+                if result == nil then
+                    -- child still running; keep parent marked running
+                    sub._running = true
+                    sub._currentChild = childStart
+                    return nil
+                else
+                    sub._running = false
+                    sub._result = result
+                    sub._currentChild = nil
+                    if result == true and isSelector then return true end
+                    if result == false and isSequence then return false end
+                    -- otherwise continue to next sibling
+                end
+            end
+        end
+
+        -- Evaluate decorators (unless we resumed above)
+        local allowEntry = true
+        local flowAbortMode = nil
+
+        if sub.Condition then
+            for subConditionName, subConditionValues in pairs(sub.Condition) do
+                -- cached previous result optimization:
+                local prev = subConditionValues._result
+                local passed
+
+                if sub._running and not (sub.bBackgroundTask or false) and prev ~= nil then
+                    -- If node is running (and not background), reuse previous decorator result when available
+                    passed = prev
+                else
+                    -- record flow abort mode if present (we only need one, prefer first seen)
+                    if not flowAbortMode and subConditionValues.FlowAbortMode then
+                        flowAbortMode = subConditionValues.FlowAbortMode
+                    end
+
+                    -- call decorator handler on self if it exists
+                    local decoName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
+                    local decoHandler = self[decoName]
+                    if decoHandler then
+                        passed = decoHandler(self, subConditionValues)
+                    else
+                        -- unknown decorator: assume true (change to false if you prefer conservative behaviour)
+                        passed = true
+                        print("SBAI_SelectTask: unknown decorator handler", decoName, "-> assuming true")
+                    end
+
+                    -- cache result for possible reuse while running
+                    subConditionValues._result = passed
+                end
+
+                -- if any decorator fails, prevent entering this node
+                if not passed then
+                    allowEntry = false
+                    break
+                end
+            end
+        end
+
+        -- Flow-abort handling
+        if flowAbortMode == "Self" and not allowEntry and self.CurrentBranch == i then
+            -- abort current node and clear running subtree
+            self.CurrentBranch = nil
+            self:SBAI_ClearRunning(sub)
+            return false
+        end
+
+        if flowAbortMode == "LowerPriority" and allowEntry and startIndex and i < startIndex then
+            -- a higher-priority node became valid -> preempt lower-priority
+            self.CurrentBranch = i
+            return self:SBAI_SelectTask(taskTable, i)
+        end
+
+        if flowAbortMode == "Both" then
+            if not allowEntry and self.CurrentBranch == i then
+                self.CurrentBranch = nil
+                self:SBAI_ClearRunning(sub)
+                return false
+            elseif allowEntry and startIndex and i < startIndex then
+                self.CurrentBranch = i
+                return self:SBAI_SelectTask(taskTable, i)
+            end
+        end
+
+        -- If decorators allow entry, execute this node
+        if allowEntry then
+            if not self.CurrentBranch then
+                self.CurrentBranch = i
+            end
+
+            -- LEAF TASK
+            if sub.StartTask then
+                for taskKey, taskData in pairs(sub.StartTask) do
+                    local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+
+                    -- start the task if not running
+                    if not sub._running then
+                        sub._running = true
+                        sub._startTime = SysTime()
+                    end
+
+                    local handler = self[cleanTaskKey]
+                    if not handler then
+                        print("SBAI_SelectTask: missing task handler", cleanTaskKey)
+                        sub._running = false
+                        sub._result = false
+                        if isSequence then return false end
+                        break
+                    end
+
+                    local result = handler(self, taskData, sub)
+                    -- print(objectName, "task", cleanTaskKey, "returned", result)
+
+                    if result == nil then
+                        -- still running; if background, mark flag but keep running
+                        if taskData.bBackgroundTask then
+                            self.SBAI_bInBackgroundTask = true
+                        end
+                        return nil
+                    else
+                        -- finished
+                        sub._running = false
+                        sub._result = result
+                        self.SBAI_bInBackgroundTask = false
 
                         if result == true then
-                            if isSelector then return true end -- selector succeeds immediately
-                            -- sequence → continue
+                            if isSelector then
+                                return true
+                            end
+                            -- if sequence, continue to next sibling
                         elseif result == false then
-                            if isSequence then return false end -- sequence fails immediately
-                            -- selector → continue
+                            if isSequence then
+                                return false
+                            end
+                            -- if selector, continue to next sibling
                         end
                     end
                 end
 
-            -- COMPOSITE TASK
-            elseif subTaskTable.NextTask then
-                local result = self:SBAI_SelectTask(subTaskTable.NextTask, 1)
+            -- COMPOSITE NODE
+            elseif sub.NextTask then
+                local childStart = sub._currentChild or 1
+                local result = self:SBAI_SelectTask(sub.NextTask, childStart)
 
                 if result == nil then
-                    -- child branch is running, mark parent running
-                    subTaskTable._running = true
+                    -- child branch is running -> mark parent running and propagate nil
+                    sub._running = true
+                    sub._currentChild = childStart
                     return nil
                 else
-                    subTaskTable._running = false
-                    subTaskTable._result = result -- true means pass me 
+                    -- child finished
+                    sub._running = false
+                    sub._result = result
+                    sub._currentChild = nil
 
                     if isSelector and result == true then
                         return true
@@ -3750,34 +4010,29 @@ function ENT:SBAI_SelectTask(taskTable, currentIndex)
                 end
             end
         end
+        -- else: decorator prevented entry -> continue to next sibling
     end
 
-    print("If no child returned success/running, return false") 
+    -- If no child returned success/running, return false.
     return false
 end
 
+-- Tick the runtime tree
 function ENT:SBAI_RunBehavior()
-    -- print("RunBehavior start: SysTime:", SysTime()) 
-
-    -- Ensure we have a runtime tree copy
-    if !self.SBAI_CurBehaviorStack then
-        -- print("Cloning behavior tree...")
+    if not self.SBAI_CurBehaviorStack then
         self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     end
 
-    -- Run tick on runtime tree
-    local result = self:SBAI_SelectTask(self.SBAI_CurBehaviorStack) 
-    -- print("BehaviorTree tick finished with result:", result, self.CurrentSBTask)
+    local result = self:SBAI_SelectTask(self.SBAI_CurBehaviorStack)
 
-    -- If resolved (true/false), discard runtime so next tick restarts fresh
-    if result != nil then
-        -- print("Clearing runtime behavior stack")
+    if result ~= nil then
+        -- resolved this tick; clear runtime copy so next tick starts fresh
         self.SBAI_CurBehaviorStack = nil
-    end 
+        self.CurrentBranch = nil
+    end
 
-    -- print("RunBehavior end: SysTime:", SysTime()) 
-	return result 
-end 
+    return result
+end
 
 function ENT:NPC_GetRunActivity( act ) 
 	act = act or ACT_MP_WALK_MELEE 
@@ -4280,7 +4535,6 @@ function ENT:SbUseSkill(tbl)
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
 	
     if !tbl.Started then
-        Entity(1):ChatPrint("starting skill")
         for k, v in RandomPairs(tbl) do
             if isnumber(k) then -- do not accidentally start variables
 				local CheckCooldown = self.SBAI_SkillTimers[v] -- returns Time, ["M_Raven_SlashChain"] = 216 
@@ -4294,6 +4548,7 @@ function ENT:SbUseSkill(tbl)
 						-- This now correctly handles all the data-driven setup for the first step
 						self:SBAI_SetSkillStep(FirstSkillActiveAlias)
 						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
+						Entity(1):ChatPrint("starting "..v.." at CurTime:"..tostring(CurTime())) 
 						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
 						tbl.Started = true
 						break -- Start with the first valid skill found 
