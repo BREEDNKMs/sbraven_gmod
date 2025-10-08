@@ -129,38 +129,51 @@ StellarBlade = StellarBlade or {}
 
 StellarBlade.TargetFilter = function(ent, filter)
     local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
-    if not IsValid(ent) or not TargetFilterTable then return {} end
+	if !IsValid(ent) then error("Expected Entity, got NULL Entity!") return end 
+	if !filter then print("input a filter") end 
+    if !TargetFilterTable then return {ent:GetEnemy()} end
 
     -- Base vectors
-    local origin = ent:GetPos()
-    local forward = ent:GetAimVector()
+    local origin = ent:GetPos() 
+    local forward = ent:GetAimVector() 
+	
+	local ShapeForwardDistance = TargetFilterTable.ShapeForwardDistance * flRescale 
+	local ShapeRightDistance = TargetFilterTable.ShapeRightDistance * flRescale 
+	local ShapeUpDistance = TargetFilterTable.ShapeUpDistance * flRescale 
+	
+	local TargetCheckValue1 = TargetFilterTable.TargetCheckValue1 * flRescale 
+	local TargetCheckValue2 = TargetFilterTable.TargetCheckValue2 * flRescale 
+	local TargetCheckValue3 = TargetFilterTable.TargetCheckValue3 * flRescale 
+	
+	local FarDistance = TargetFilterTable.FarDistance * flRescale 
+	local NearDistance = TargetFilterTable.NearDistance * flRescale 
 
     -- Shape offsets
     local offsetOrigin = origin
-        + forward * (TargetFilterTable.ShapeForwardDistance or 0)
-        + ent:GetRight() * (TargetFilterTable.ShapeRightDistance or 0)
-        + ent:GetUp() * (TargetFilterTable.ShapeUpDistance or 0)
+        + forward * (ShapeForwardDistance or 0)
+        + ent:GetRight() * (ShapeRightDistance or 0)
+        + ent:GetUp() * (ShapeUpDistance or 0)
 
     local candidates = {}
 
     -- Step 1: Candidate pool
     local shape = TargetFilterTable.TargetCheckShape or ""
     if shape == "ESBCheckShape::CheckShape_3DArc" then
-        local range = TargetFilterTable.FarDistance or 0
+        local range = FarDistance or 0
         local angle = math.max(0, math.min(TargetFilterTable.TargetCheckValue1 or 0, 180))
         local angle_cos = math.cos(math.rad(angle))
         candidates = ents.FindInCone(offsetOrigin, forward, range, angle_cos)
     elseif shape == "ESBCheckShape::CheckShape_3DCircle" then
-        local radius = TargetFilterTable.TargetCheckValue1 or (TargetFilterTable.FarDistance or 0)
+        local radius = TargetCheckValue1 or (FarDistance or 0)
         candidates = ents.FindInSphere(offsetOrigin, radius)
 	elseif shape == "ESBCheckShape::CheckShape_3DBox" then
-		local val1 = TargetFilterTable.TargetCheckValue1 or 0 -- half-size X (right)
-		local val2 = TargetFilterTable.TargetCheckValue2 or 0 -- half-size Y (forward)
-		local val3 = TargetFilterTable.TargetCheckValue3 or 0 -- half-size Z (up)
+		local val1 = TargetCheckValue1 or 0 -- half-size X (right)
+		local val2 = TargetCheckValue2 or 0 -- half-size Y (forward)
+		local val3 = TargetCheckValue3 or 0 -- half-size Z (up)
 
 		-- Define the oriented box in world space
 		local start = origin
-		local endpos = origin + forward * (TargetFilterTable.ShapeForwardDistance or 0)
+		local endpos = origin + forward * (ShapeForwardDistance or 0)
 
 		-- Define local AABB extents in actor’s local basis
 		local localMins = Vector(-val1, -val2, -val3)
@@ -216,14 +229,15 @@ StellarBlade.TargetFilter = function(ent, filter)
 				and !target:IsFlagSet(FL_DONTTOUCH)
 				and target:Alive() 
 			then
+				-- print("candidates at step 2:",target) 
 				table.insert(filtered, target)
 			end
 		end 
 	end 
 
     -- Step 3: Distance check
-    local nearDist = TargetFilterTable.NearDistance or 0
-    local farDist  = TargetFilterTable.FarDistance or 999999
+    local nearDist = NearDistance or 0
+    local farDist  = FarDistance or math.huge 
     local distFiltered = {}
     for _, target in ipairs(filtered) do
         local distSqr = offsetOrigin:DistToSqr(target:GetPos())
@@ -231,25 +245,38 @@ StellarBlade.TargetFilter = function(ent, filter)
             table.insert(distFiltered, target)
         end
     end
+	-- print("past dist check") 
 
     -- Step 4: Shape checks (2D circle / 3D cylinder)
-    local val1  = TargetFilterTable.TargetCheckValue1 or 0
-    local val2  = TargetFilterTable.TargetCheckValue2 or 0
+    local val1  = TargetCheckValue1 or 0
+    local val2  = TargetCheckValue2 or 0
     local tmp = {}
+	
+	print("shape check is:",shape) 
+	if shape == "ESBCheckShape::CheckShape_2DCircle" then
+		local radius = TargetCheckValue1
+		if radius == 0 or not radius then
+			radius = FarDistance or 0
+		end
+		print("circle radius:",radius) 
+		local radiusSqr = radius * radius
+		local tmp = {}
 
-    if shape == "ESBCheckShape::CheckShape_2DCircle" then
-        local radiusSqr = val1 * val1
-        for _, target in ipairs(distFiltered) do
-            local tpos = target:GetPos()
-            local d2d = Vector(tpos.x, tpos.y, offsetOrigin.z):DistToSqr(offsetOrigin) -- i think DistToSqr is not a cylinder 
-            if d2d <= radiusSqr then
-                table.insert(tmp, target)
-            end
-        end
-        distFiltered = tmp
+		for _, target in ipairs(distFiltered) do
+			local tpos = target:GetPos()
+			local d2d = Vector(tpos.x, tpos.y, offsetOrigin.z):DistToSqr(offsetOrigin)
+			if d2d <= radiusSqr then
+				table.insert(tmp, target)
+			end
+		end
+		distFiltered = tmp
 
     elseif shape == "ESBCheckShape::CheckShape_3DCylinder" then
-        local radiusSqr = val1 * val1
+		local radius = TargetCheckValue1
+		if radius == 0 or not radius then
+			radius = FarDistance or 0
+		end
+        local radiusSqr = radius * radius -- val1 * val1 
         for _, target in ipairs(distFiltered) do
             local tpos = target:GetPos()
             local horizDist = Vector(tpos.x, tpos.y, offsetOrigin.z):DistToSqr(offsetOrigin)
@@ -260,6 +287,7 @@ StellarBlade.TargetFilter = function(ent, filter)
         end
         distFiltered = tmp
     end
+	-- print("past custom filters:") 
 
     -- Step 4b: Line of sight check
     if not TargetFilterTable.bDisableBlockingCheck then
@@ -276,8 +304,7 @@ StellarBlade.TargetFilter = function(ent, filter)
                 collisiongroup = COLLISION_GROUP_PROJECTILE,
                 mask = MASK_SHOT
             })
-
-            if tr.Entity == candidate then
+            if tr.Entity == candidate or tr.Fraction >= 1 then
                 table.insert(losFiltered, candidate)
             end
         end
@@ -310,7 +337,8 @@ StellarBlade.TargetFilter = function(ent, filter)
             return offsetOrigin:DistToSqr(a:GetPos()) < offsetOrigin:DistToSqr(b:GetPos()) -- default to distance check 
         end)
     end
-
+	
+	-- print("multiple targets:",TargetFilterTable.bMultipleTargets) 
     -- Step 6: Multiple vs single target
     if TargetFilterTable.bMultipleTargets then
         return distFiltered
@@ -319,10 +347,151 @@ StellarBlade.TargetFilter = function(ent, filter)
     end
 
     return {}
+end 
+
+--[[
+    Checks weapon collision for a given entity.
+    Uses the active weapon’s collision bounds and the owner's right-hand bone
+    to cast a rotated FindAlongRay.
+    Only entities within the provided entityList are kept.
+]]
+function StellarBlade.CheckWeaponCollision(owner, entityList)
+    if not IsValid(owner) then return {} end
+
+    local wep = owner:GetActiveWeapon()
+    if not IsValid(wep) then return {} end
+
+    local mins, maxs = wep:GetCollisionBounds()
+    if not mins or not maxs then return {} end
+
+    -- Get the right-hand bone transform
+    local boneIndex = owner:LookupBone("ValveBiped.Bip01_R_Hand")
+    if not boneIndex then return {} end
+
+    local bonePos, boneAng = owner:GetBonePosition(boneIndex)
+    if not bonePos or not boneAng then return {} end
+
+    -- Base direction vectors
+    local forward = boneAng:Forward()
+    local right   = boneAng:Right()
+    local up      = boneAng:Up()
+
+    -- Extend ray roughly along the weapon’s forward axis
+    local reach = maxs:Length() * 1.5
+    local startPos = bonePos
+    local endPos = bonePos + forward * reach
+
+    -- Convert mins/maxs into world-space oriented bounding box corners
+    -- by applying the bone’s rotation
+    local worldMins, worldMaxs = LocalToWorld(mins, Angle(), vector_origin, boneAng)
+    local worldMins2, worldMaxs2 = LocalToWorld(maxs, Angle(), vector_origin, boneAng)
+
+    -- Because LocalToWorld rotates each vector around origin, we must find the
+    -- actual numeric min/max bounds after rotation.
+    local orientedMins = Vector(
+        math.min(worldMins.x, worldMaxs.x, worldMins2.x, worldMaxs2.x),
+        math.min(worldMins.y, worldMaxs.y, worldMins2.y, worldMaxs2.y),
+        math.min(worldMins.z, worldMaxs.z, worldMins2.z, worldMaxs2.z)
+    )
+    local orientedMaxs = Vector(
+        math.max(worldMins.x, worldMaxs.x, worldMins2.x, worldMaxs2.x),
+        math.max(worldMins.y, worldMaxs.y, worldMins2.y, worldMaxs2.y),
+        math.max(worldMins.z, worldMaxs.z, worldMins2.z, worldMaxs2.z)
+    )
+
+    -- Perform the oriented trace
+    local hitEnts = ents.FindAlongRay(startPos, endPos, orientedMins, orientedMaxs)
+
+    -- Filter to include only given entity list members
+    local filtered = {}
+    for _, ent in ipairs(hitEnts) do
+        if IsValid(ent) and table.HasValue(entityList, ent) then
+            table.insert(filtered, ent)
+        end
+    end
+
+    -- Optional debug visualization
+    -- debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
+    -- debugoverlay.Box(startPos, orientedMins, orientedMaxs, 0.1, Color(255, 0, 0, 5))
+
+    return filtered
 end
 
 
-StellarBlade.IsInParry = function(ent) 
+--[[
+    Checks whether a given entity’s specified hitbox collides with any entities in entityList.
+    @param owner      (Entity) The entity whose hitbox will be checked.
+    @param entityList (table)  List of entities to test against.
+    @param hitboxID   (number|string) Hitbox index or bone name.
+    @param hitboxSet  (number) Optional: hitbox set index (default = 0).
+    @return table     List of entities intersecting this hitbox.
+]]
+function StellarBlade.CheckHitboxCollision(owner, entityList, hitboxID, hitboxSet)
+    if not IsValid(owner) or not istable(entityList) then return {} end
+    hitboxSet = hitboxSet or 0
+
+    -- Convert bone name → hitbox ID if string was given
+    if isstring(hitboxID) then
+        local numHitBoxes = owner:GetHitBoxCount(hitboxSet)
+        for i = 0, numHitBoxes - 1 do
+            local boneIndex = owner:GetHitBoxBone(i, hitboxSet)
+            local boneName = owner:GetBoneName(boneIndex)
+            if boneName == hitboxID then
+                hitboxID = i
+                break
+            end
+        end
+    end
+
+    if not isnumber(hitboxID) then return {} end
+
+    -- Fetch hitbox bounds in world space
+    local mins, maxs = owner:GetHitBoxBounds(hitboxID, hitboxSet)
+    if not mins or not maxs then return {} end
+
+    -- Fetch hitbox orientation
+    local boneIndex = owner:GetHitBoxBone(hitboxID, hitboxSet)
+    if not boneIndex then return {} end
+
+    local bonePos, boneAng = owner:GetBonePosition(boneIndex)
+    if not bonePos or not boneAng then return {} end
+
+    -- Optionally visualize the hitbox for debugging
+    -- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(0, 255, 0, 8))
+
+    -- Build a list of entities intersecting this hitbox
+    local collided = {}
+    for _, target in ipairs(entityList) do
+        if IsValid(target) and target ~= owner then
+            -- Check a few sample points around the target’s bounding box
+            local tmins, tmaxs = target:OBBMins(), target:OBBMaxs()
+            local corners = {
+                target:LocalToWorld(tmins),
+                target:LocalToWorld(tmaxs),
+                target:LocalToWorld(Vector(tmins.x, tmaxs.y, tmins.z)),
+                target:LocalToWorld(Vector(tmaxs.x, tmins.y, tmaxs.z)),
+                target:LocalToWorld(Vector(tmaxs.x, tmaxs.y, tmins.z)),
+                target:LocalToWorld(Vector(tmins.x, tmins.y, tmaxs.z)),
+                target:LocalToWorld(Vector(tmins.x, tmaxs.y, tmaxs.z)),
+                target:LocalToWorld(Vector(tmaxs.x, tmins.y, tmins.z)),
+            }
+
+            -- If any corner is inside this hitbox’s OBB, we count it as a hit
+            for _, point in ipairs(corners) do
+                -- Fast built-in Garry's Mod OBB test
+                if owner:IsPointInBounds(point) then
+                    table.insert(collided, target)
+                    break
+                end
+            end
+        end
+    end
+
+    return collided
+end
+
+
+StellarBlade.IsInJustParry = function(ent) 
 	--- START: Added Damage Check Logic ---
 
 	local bDamageBlocked = false -- Initialize the variable to false.
@@ -337,10 +506,9 @@ StellarBlade.IsInParry = function(ent)
 	-- Condition 2: The ent has God Mode enabled.
 	local isGodMode = ent:IsFlagSet(FL_GODMODE)
 
-	-- Condition 3: The ent's internal takedamage variable is set to 0 (D_HT_NO) or less.
-	-- (or 1) is a safeguard in case the variable is missing, defaulting to a state that takes damage.
+	-- Condition 3: The ent's internal takedamage variable is set to 0 (DAMAGE_NO) or less.
+	-- (or 1) is a safeguard in case the variable is missing, defaulting to DAMAGE_EVENTS_ONLY.
 	local takeDamageDisabled = (ent:GetInternalVariable("m_takedamage") or 1) < 1
-
 
 	if playerHookBlocked or isGodMode or takeDamageDisabled or ai_block_damage then
 		bDamageBlocked = true
@@ -530,13 +698,13 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
             local moveAngDelta = Angle(0, 0, 0)
             local MoveType = CharacterMoveTable.MoveType
 			local directionAxis = CharacterMoveTable.PositionDirectionAxis 
-			local vecMoveDirection = self:GetForward() 
+			local vecMoveDirection = self:GetAimVector() 
 			local enemy = self.GetEnemy and self:GetEnemy() 
 			if !self.GetEnemy then 
 				enemy = scripted_ents.Get("proj_unreali_skaarjprojectile").PickTarget(self,0, 9999, self:GetAimVector(), self:GetShootPos()) 
 			end 
 			if !IsValid(enemy) then 
-				enemy = Entity(1) 
+				enemy = Entity(0) 
 			end 
 			if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Self" then 
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Target" then 
@@ -579,7 +747,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                         moveStep.PrevAngOffset = angOffset
                     end
                 end
-				movePosDelta = movePosDelta * (easedNow - easedPrev) 
+				-- movePosDelta = movePosDelta * (easedNow - easedPrev) -- is the RootMotion influenced from interptype? 
             elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
 				if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then -- TargetSocket used only by eve, static 
                     local target = IsValid(self:GetEnemy()) and self:GetEnemy() or Entity(1) 
@@ -616,7 +784,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                         local curvePosDelta = totalOffset * (posMultiplier - prevPosMultiplier)
                         local zDelta = Vector(0, 0, upMove * (zMultiplier - prevZMultiplier))
                         movePosDelta = curvePosDelta + zDelta
-						movePosDelta = movePosDelta * (easedNow - easedPrev) 
+						-- movePosDelta = movePosDelta * (easedNow - easedPrev) 
                     else
                         local totalDisplacement = (vecMoveDirection * forwardMove) + (rightDir * rightMove) + (Vector(0,0,1) * upMove)
                         movePosDelta = totalDisplacement * (easedNow - easedPrev)
@@ -635,10 +803,10 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 				movePosDelta = movePosDelta * (easedNow - easedPrev) 
 				movePosDelta = targetPos -- lerp to targetPos using PositionInterpType 
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_None" then 
-			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo" then 
-			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo_Velocity" then 
-			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkFrom" then 
-			elseif MoveType == "ESBMoveTransformType::MoveTransformType_ZeroVelocity" then 
+			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo" then -- link to attachment, used 
+			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkTo_Velocity" then -- unused 
+			elseif MoveType == "ESBMoveTransformType::MoveTransformType_LinkFrom" then -- used 
+			elseif MoveType == "ESBMoveTransformType::MoveTransformType_ZeroVelocity" then -- stop velocity, used only once 
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_Airborne" then 
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fly" then 
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_Fall" then 
@@ -647,7 +815,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_SwimmingDash" then 
 			end 
 			-- movePosDelta = movePosDelta * (easedNow - easedPrev)
-			print(easedNow,easedPrev) 
+			-- print(easedNow,easedPrev) 
 			movePosDelta = movePosDelta * flRescale 
 			-- print(movePosDelta) 
 
@@ -657,7 +825,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                 local moveSuccess = true
                 local targetPosForThisMove = self:GetPos() + movePosDelta
 
-                if CharacterMoveTable.bOnGround then 
+                if CharacterMoveTable.bOnGround and self.MoveGroundStep then 
                     if self:MoveGroundStep(targetPosForThisMove) == 0 then moveSuccess = false end 
                 else 
                     local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
