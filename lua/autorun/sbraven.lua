@@ -355,7 +355,7 @@ end
     to cast a rotated FindAlongRay.
     Only entities within the provided entityList are kept.
 ]]
-function StellarBlade.CheckWeaponCollision(owner, entityList)
+StellarBlade.CheckWeaponCollision = function(owner, entityList)
     if not IsValid(owner) then return {} end
 
     local wep = owner:GetActiveWeapon()
@@ -426,7 +426,7 @@ end
     @param hitboxSet  (number) Optional: hitbox set index (default = 0).
     @return table     List of entities intersecting this hitbox.
 ]]
-function StellarBlade.CheckHitboxCollision(owner, entityList, hitboxID, hitboxSet)
+StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitboxSet)
     if not IsValid(owner) or not istable(entityList) then return {} end
     hitboxSet = hitboxSet or 0
 
