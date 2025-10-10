@@ -789,60 +789,60 @@ $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchains
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
-	walkframe 6 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 24 LX LY LZ LM
-	walkframe 30 LX LY LZ LM
-	walkframe 36 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 48 LX LY LZ LM
-	walkframe 54 LX LY LZ LM
-	walkframe 60 LX LY LZ LM
-	walkframe 66 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 78 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 90 LX LY LZ LM
-	walkframe 96 LX LY LZ LM
-	walkframe 102 LX LY LZ LM
-	walkframe 108 LX LY LZ LM
-	walkframe 114 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 132 LX LY LZ LM
-	walkframe 138 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 150 LX LY LZ LM
-	walkframe 156 LX LY LZ LM
-	walkframe 162 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 174 LX LY LZ LM
-	walkframe 180 LX LY LZ LM
-	walkframe 186 LX LY LZ LM
-	walkframe 192 LX LY LZ LM
-	walkframe 198 LX LY LZ LM
-	walkframe 204 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 216 LX LY LZ LM
-	walkframe 222 LX LY LZ LM
-	walkframe 228 LX LY LZ LM
-	walkframe 234 LX LY LZ LM
-	walkframe 240 LX LY LZ LM
-	walkframe 246 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 258 LX LY LZ LM
-	walkframe 264 LX LY LZ LM
-	walkframe 270 LX LY LZ LM
-	walkframe 276 LX LY LZ LM
-	walkframe 282 LX LY LZ LM
-	walkframe 288 LX LY LZ LM
-	walkframe 294 LX LY LZ LM
-	walkframe 300 LX LY LZ LM
-	walkframe 306 LX LY LZ LM
-	walkframe 312 LX LY LZ LM
-	walkframe 318 LX LY LZ LM
-	walkframe 322 LX LY LZ LM
+	walkframe 6 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 222 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 246 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 258 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 282 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 318 LX LY LM
+	walkframe 322 LX LY LM
 	
 	{event AE_NPC_LEFTFOOT 	233.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
@@ -861,60 +861,60 @@ $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabchainsucces
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
-	walkframe 6 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 24 LX LY LZ LM
-	walkframe 30 LX LY LZ LM
-	walkframe 36 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 48 LX LY LZ LM
-	walkframe 54 LX LY LZ LM
-	walkframe 60 LX LY LZ LM
-	walkframe 66 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 78 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 90 LX LY LZ LM
-	walkframe 96 LX LY LZ LM
-	walkframe 102 LX LY LZ LM
-	walkframe 108 LX LY LZ LM
-	walkframe 114 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 132 LX LY LZ LM
-	walkframe 138 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 150 LX LY LZ LM
-	walkframe 156 LX LY LZ LM
-	walkframe 162 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 174 LX LY LZ LM
-	walkframe 180 LX LY LZ LM
-	walkframe 186 LX LY LZ LM
-	walkframe 192 LX LY LZ LM
-	walkframe 198 LX LY LZ LM
-	walkframe 204 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 216 LX LY LZ LM
-	walkframe 222 LX LY LZ LM
-	walkframe 228 LX LY LZ LM
-	walkframe 234 LX LY LZ LM
-	walkframe 240 LX LY LZ LM
-	walkframe 246 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 258 LX LY LZ LM
-	walkframe 264 LX LY LZ LM
-	walkframe 270 LX LY LZ LM
-	walkframe 276 LX LY LZ LM
-	walkframe 282 LX LY LZ LM
-	walkframe 288 LX LY LZ LM
-	walkframe 294 LX LY LZ LM
-	walkframe 300 LX LY LZ LM
-	walkframe 306 LX LY LZ LM
-	walkframe 312 LX LY LZ LM
-	walkframe 318 LX LY LZ LM
-	walkframe 322 LX LY LZ LM
+	walkframe 6 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 222 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 246 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 258 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 282 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 318 LX LY LM
+	walkframe 322 LX LY LM
 	
 	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
@@ -1148,65 +1148,65 @@ $sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
-	walkframe 3 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 21 LX LY LZ LM
-	walkframe 24 LX LY LZ LM
-	walkframe 27 LX LY LZ LM
-	walkframe 30 LX LY LZ LM
-	walkframe 33 LX LY LZ LM
-	walkframe 36 LX LY LZ LM
-	walkframe 39 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 45 LX LY LZ LM
-	walkframe 48 LX LY LZ LM
-	walkframe 51 LX LY LZ LM
-	walkframe 54 LX LY LZ LM
-	walkframe 57 LX LY LZ LM
-	walkframe 60 LX LY LZ LM
-	walkframe 63 LX LY LZ LM
-	walkframe 66 LX LY LZ LM
-	walkframe 69 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 75 LX LY LZ LM
-	walkframe 78 LX LY LZ LM
-	walkframe 81 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 87 LX LY LZ LM
-	walkframe 90 LX LY LZ LM
-	walkframe 93 LX LY LZ LM
-	walkframe 96 LX LY LZ LM
-	walkframe 99 LX LY LZ LM
-	walkframe 102 LX LY LZ LM
-	walkframe 105 LX LY LZ LM
-	walkframe 108 LX LY LZ LM
-	walkframe 111 LX LY LZ LM
-	walkframe 114 LX LY LZ LM
-	walkframe 117 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 123 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 129 LX LY LZ LM
-	walkframe 132 LX LY LZ LM
-	walkframe 135 LX LY LZ LM
-	walkframe 138 LX LY LZ LM
-	walkframe 141 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 147 LX LY LZ LM
-	walkframe 150 LX LY LZ LM
-	walkframe 153 LX LY LZ LM
-	walkframe 156 LX LY LZ LM
-	walkframe 159 LX LY LZ LM
-	walkframe 162 LX LY LZ LM
-	walkframe 165 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 171 LX LY LZ LM
-	walkframe 174 LX LY LZ LM
-	walkframe 177 LX LY LZ LM
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 171 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 177 LX LY LM
 	
 	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_SwordSwish_XL_C_Cue" }
 	{event AE_NPC_RIGHTFOOT 	127.0	 "" }
@@ -1851,63 +1851,63 @@ $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsucces
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
-	walkframe 8 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 24 LX LY LZ LM
-	walkframe 32 LX LY LZ LM
-	walkframe 40 LX LY LZ LM
-	walkframe 48 LX LY LZ LM
-	walkframe 56 LX LY LZ LM
-	walkframe 64 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 80 LX LY LZ LM
-	walkframe 88 LX LY LZ LM
-	walkframe 96 LX LY LZ LM
-	walkframe 104 LX LY LZ LM
-	walkframe 112 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 128 LX LY LZ LM
-	walkframe 136 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 152 LX LY LZ LM
-	walkframe 160 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 176 LX LY LZ LM
-	walkframe 184 LX LY LZ LM
-	walkframe 192 LX LY LZ LM
-	walkframe 200 LX LY LZ LM
-	walkframe 208 LX LY LZ LM
-	walkframe 216 LX LY LZ LM
-	walkframe 224 LX LY LZ LM
-	walkframe 232 LX LY LZ LM
-	walkframe 240 LX LY LZ LM
-	walkframe 248 LX LY LZ LM
-	walkframe 256 LX LY LZ LM
-	walkframe 264 LX LY LZ LM
-	walkframe 272 LX LY LZ LM
-	walkframe 280 LX LY LZ LM
-	walkframe 288 LX LY LZ LM
-	walkframe 296 LX LY LZ LM
-	walkframe 304 LX LY LZ LM
-	walkframe 312 LX LY LZ LM
-	walkframe 320 LX LY LZ LM
-	walkframe 328 LX LY LZ LM
-	walkframe 336 LX LY LZ LM
-	walkframe 344 LX LY LZ LM
-	walkframe 352 LX LY LZ LM
-	walkframe 360 LX LY LZ LM
-	walkframe 368 LX LY LZ LM
-	walkframe 376 LX LY LZ LM
-	walkframe 384 LX LY LZ LM
-	walkframe 392 LX LY LZ LM
-	walkframe 400 LX LY LZ LM
-	walkframe 408 LX LY LZ LM
-	walkframe 416 LX LY LZ LM
-	walkframe 424 LX LY LZ LM
-	walkframe 432 LX LY LZ LM
-	walkframe 440 LX LY LZ LM
-	walkframe 448 LX LY LZ LM
-	walkframe 454 LX LY LZ LM
+	walkframe 8 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 208 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 232 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 248 LX LY LM
+	walkframe 256 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 272 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 296 LX LY LM
+	walkframe 304 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 320 LX LY LM
+	walkframe 328 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 344 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 368 LX LY LM
+	walkframe 376 LX LY LM
+	walkframe 384 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 400 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 416 LX LY LM
+	walkframe 424 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 454 LX LY LM
 	
 	{event AE_NPC_LEFTFOOT 	361.0	 "" }
 	{event AE_SV_PLAYSOUND 	120.0	 "M_Raven_Bodyfall_S_Cue" }
@@ -6621,7 +6621,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_a" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 496 LX LY LZ LM
 	walkframe 498 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0.587173 197.810440 42 
 	//alignto "raven_base" 
 } 
 
@@ -6694,7 +6694,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_b" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 567 LX LY LZ LM
 	walkframe 576 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 5.019701 -9.089646 42 
 	//alignto "raven_base" 
 } 
 
@@ -6764,7 +6764,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_c" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 300 LX LY LZ LM
 	walkframe 305 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 4.264258 -0.467035 42 
 	//alignto "raven_base" 
 } 
 
@@ -6829,7 +6829,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_d" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 385 LX LY LZ LM
 	walkframe 391 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 2.331455 -0.752453 42 
 	//alignto "raven_base" 
 } 
 
@@ -6898,7 +6898,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_e" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 236 LX LY LZ LM
 	walkframe 238 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 4.651924 -13.288348 42 
 	//alignto "raven_base" 
 } 
 
@@ -6965,7 +6965,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_g" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 342 LX LY LZ LM
 	walkframe 344 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 1.477752 -6.236661 42 
 	//alignto "raven_base" 
 } 
 
@@ -7033,7 +7033,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_h" "sbravenpm_anims\MV_Xion06_RavenAppe
 	walkframe 464 LX LY LZ LM
 	walkframe 465 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 3.069741 -1.637067 42 
 	//alignto "raven_base" 
 } 
 
@@ -7464,8 +7464,7 @@ $sequence "MV_Nest_Intro_eve_A" "sbravenpm_anims\MV_Nest_Intro_eve_A.smd" { // f
 	walkframe 756 LX LY LZ LM
 	walkframe 760 LX LY LZ LM
 	
-	origin 0 0 42 
-	//alignto "raven_base" 
+	origin 0 147.415268 42 
 } 
 
 $sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { // frames 1317
@@ -7609,7 +7608,7 @@ $sequence "MV_Nest_Intro_eve_C" "sbravenpm_anims\MV_Nest_Intro_eve_C.smd" { // f
 	walkframe 693 LX LY LZ LM
 	walkframe 700 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0 95.815002 42 
 	//alignto "raven_base" 
 } 
 
@@ -7747,7 +7746,7 @@ $sequence "MV_Nest_Intro_eve_H" "sbravenpm_anims\MV_Nest_Intro_eve_H.smd" { // f
 	walkframe 464 LX LY LZ LM
 	walkframe 467 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 65.460342 -45.464058 42 
 	//alignto "raven_base" 
 } 
 
@@ -7755,70 +7754,70 @@ $sequence "MV_Nest_Intro_raven_A" "sbravenpm_anims\MV_Nest_Intro_raven_A.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 14 LX LY LZ LM
-	walkframe 28 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 56 LX LY LZ LM
-	walkframe 70 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 98 LX LY LZ LM
-	walkframe 112 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 140 LX LY LZ LM
-	walkframe 154 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 182 LX LY LZ LM
-	walkframe 196 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 224 LX LY LZ LM
-	walkframe 238 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 266 LX LY LZ LM
-	walkframe 280 LX LY LZ LM
-	walkframe 294 LX LY LZ LM
-	walkframe 308 LX LY LZ LM
-	walkframe 322 LX LY LZ LM
-	walkframe 336 LX LY LZ LM
-	walkframe 350 LX LY LZ LM
-	walkframe 364 LX LY LZ LM
-	walkframe 378 LX LY LZ LM
-	walkframe 392 LX LY LZ LM
-	walkframe 406 LX LY LZ LM
-	walkframe 420 LX LY LZ LM
-	walkframe 434 LX LY LZ LM
-	walkframe 448 LX LY LZ LM
-	walkframe 462 LX LY LZ LM
-	walkframe 476 LX LY LZ LM
-	walkframe 490 LX LY LZ LM
-	walkframe 504 LX LY LZ LM
-	walkframe 518 LX LY LZ LM
-	walkframe 532 LX LY LZ LM
-	walkframe 546 LX LY LZ LM
-	walkframe 560 LX LY LZ LM
-	walkframe 574 LX LY LZ LM
-	walkframe 588 LX LY LZ LM
-	walkframe 602 LX LY LZ LM
-	walkframe 616 LX LY LZ LM
-	walkframe 630 LX LY LZ LM
-	walkframe 644 LX LY LZ LM
-	walkframe 658 LX LY LZ LM
-	walkframe 672 LX LY LZ LM
-	walkframe 686 LX LY LZ LM
-	walkframe 700 LX LY LZ LM
-	walkframe 714 LX LY LZ LM
-	walkframe 728 LX LY LZ LM
-	walkframe 742 LX LY LZ LM
-	walkframe 756 LX LY LZ LM
-	walkframe 770 LX LY LZ LM
-	walkframe 784 LX LY LZ LM
-	walkframe 798 LX LY LZ LM
-	walkframe 812 LX LY LZ LM
-	walkframe 826 LX LY LZ LM
-	walkframe 840 LX LY LZ LM
-	walkframe 854 LX LY LZ LM
-	walkframe 860 LX LY LZ LM
+	walkframe 14 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 406 LX LY LM
+	walkframe 420 LX LY LM
+	walkframe 434 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 462 LX LY LM
+	walkframe 476 LX LY LM
+	walkframe 490 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 518 LX LY LM
+	walkframe 532 LX LY LM
+	walkframe 546 LX LY LM
+	walkframe 560 LX LY LM
+	walkframe 574 LX LY LM
+	walkframe 588 LX LY LM
+	walkframe 602 LX LY LM
+	walkframe 616 LX LY LM
+	walkframe 630 LX LY LM
+	walkframe 644 LX LY LM
+	walkframe 658 LX LY LM
+	walkframe 672 LX LY LM
+	walkframe 686 LX LY LM
+	walkframe 700 LX LY LM
+	walkframe 714 LX LY LM
+	walkframe 728 LX LY LM
+	walkframe 742 LX LY LM
+	walkframe 756 LX LY LM
+	walkframe 770 LX LY LM
+	walkframe 784 LX LY LM
+	walkframe 798 LX LY LM
+	walkframe 812 LX LY LM
+	walkframe 826 LX LY LM
+	walkframe 840 LX LY LM
+	walkframe 854 LX LY LM
+	walkframe 860 LX LY LM
 	
-	origin 0 0 42 
+	origin 3.331127 7.098311 42 
 	//alignto "raven_base" 
 } 
 
@@ -7891,7 +7890,7 @@ $sequence "MV_Nest_Intro_raven_B" "sbravenpm_anims\MV_Nest_Intro_raven_B.smd" { 
 	walkframe 1197 LX LY LZ LM
 	walkframe 1200 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 1.558364 -8.170131 42 
 	//alignto "raven_base" 
 } 
 
@@ -8107,7 +8106,7 @@ $sequence "MV_Nest_Intro_raven_E" "sbravenpm_anims\MV_Nest_Intro_raven_E.smd" { 
 	walkframe 1798 LX LY LZ LM
 	walkframe 1822 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -1.996812 12.896779 42 
 	//alignto "raven_base" 
 } 
 
@@ -8184,68 +8183,68 @@ $sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 17 LX LY LZ LM
-	walkframe 34 LX LY LZ LM
-	walkframe 51 LX LY LZ LM
-	walkframe 68 LX LY LZ LM
-	walkframe 85 LX LY LZ LM
-	walkframe 102 LX LY LZ LM
-	walkframe 119 LX LY LZ LM
-	walkframe 136 LX LY LZ LM
-	walkframe 153 LX LY LZ LM
-	walkframe 170 LX LY LZ LM
-	walkframe 187 LX LY LZ LM
-	walkframe 204 LX LY LZ LM
-	walkframe 221 LX LY LZ LM
-	walkframe 238 LX LY LZ LM
-	walkframe 255 LX LY LZ LM
-	walkframe 272 LX LY LZ LM
-	walkframe 289 LX LY LZ LM
-	walkframe 306 LX LY LZ LM
-	walkframe 323 LX LY LZ LM
-	walkframe 340 LX LY LZ LM
-	walkframe 357 LX LY LZ LM
-	walkframe 374 LX LY LZ LM
-	walkframe 391 LX LY LZ LM
-	walkframe 408 LX LY LZ LM
-	walkframe 425 LX LY LZ LM
-	walkframe 442 LX LY LZ LM
-	walkframe 459 LX LY LZ LM
-	walkframe 476 LX LY LZ LM
-	walkframe 493 LX LY LZ LM
-	walkframe 510 LX LY LZ LM
-	walkframe 527 LX LY LZ LM
-	walkframe 544 LX LY LZ LM
-	walkframe 561 LX LY LZ LM
-	walkframe 578 LX LY LZ LM
-	walkframe 595 LX LY LZ LM
-	walkframe 612 LX LY LZ LM
-	walkframe 629 LX LY LZ LM
-	walkframe 646 LX LY LZ LM
-	walkframe 663 LX LY LZ LM
-	walkframe 680 LX LY LZ LM
-	walkframe 697 LX LY LZ LM
-	walkframe 714 LX LY LZ LM
-	walkframe 731 LX LY LZ LM
-	walkframe 748 LX LY LZ LM
-	walkframe 765 LX LY LZ LM
-	walkframe 782 LX LY LZ LM
-	walkframe 799 LX LY LZ LM
-	walkframe 816 LX LY LZ LM
-	walkframe 833 LX LY LZ LM
-	walkframe 850 LX LY LZ LM
-	walkframe 867 LX LY LZ LM
-	walkframe 884 LX LY LZ LM
-	walkframe 901 LX LY LZ LM
-	walkframe 918 LX LY LZ LM
-	walkframe 935 LX LY LZ LM
-	walkframe 952 LX LY LZ LM
-	walkframe 969 LX LY LZ LM
-	walkframe 986 LX LY LZ LM
-	walkframe 1003 LX LY LZ LM
-	walkframe 1020 LX LY LZ LM
-	walkframe 1037 LX LY LZ LM
-	walkframe 1052 LX LY LZ LM
+	walkframe 17 LX LY LM
+	walkframe 34 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 119 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 187 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 221 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 272 LX LY LM
+	walkframe 289 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 323 LX LY LM
+	walkframe 340 LX LY LM
+	walkframe 357 LX LY LM
+	walkframe 374 LX LY LM
+	walkframe 391 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 425 LX LY LM
+	walkframe 442 LX LY LM
+	walkframe 459 LX LY LM
+	walkframe 476 LX LY LM
+	walkframe 493 LX LY LM
+	walkframe 510 LX LY LM
+	walkframe 527 LX LY LM
+	walkframe 544 LX LY LM
+	walkframe 561 LX LY LM
+	walkframe 578 LX LY LM
+	walkframe 595 LX LY LM
+	walkframe 612 LX LY LM
+	walkframe 629 LX LY LM
+	walkframe 646 LX LY LM
+	walkframe 663 LX LY LM
+	walkframe 680 LX LY LM
+	walkframe 697 LX LY LM
+	walkframe 714 LX LY LM
+	walkframe 731 LX LY LM
+	walkframe 748 LX LY LM
+	walkframe 765 LX LY LM
+	walkframe 782 LX LY LM
+	walkframe 799 LX LY LM
+	walkframe 816 LX LY LM
+	walkframe 833 LX LY LM
+	walkframe 850 LX LY LM
+	walkframe 867 LX LY LM
+	walkframe 884 LX LY LM
+	walkframe 901 LX LY LM
+	walkframe 918 LX LY LM
+	walkframe 935 LX LY LM
+	walkframe 952 LX LY LM
+	walkframe 969 LX LY LM
+	walkframe 986 LX LY LM
+	walkframe 1003 LX LY LM
+	walkframe 1020 LX LY LM
+	walkframe 1037 LX LY LM
+	walkframe 1052 LX LY LM
 	
 	origin 0 0 42 
 	//alignto "raven_base" 
@@ -8314,7 +8313,7 @@ $sequence "MV_Nest_Intro_raven_H" "sbravenpm_anims\MV_Nest_Intro_raven_H.smd" { 
 	walkframe 513 LX LY LZ LM
 	walkframe 516 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 126.951439 -51.846161 42 
 	//alignto "raven_base" 
 } 
 
@@ -8383,7 +8382,7 @@ $sequence "MV_Nest_Intro_raven_I" "sbravenpm_anims\MV_Nest_Intro_raven_I.smd" { 
 	walkframe 472 LX LY LZ LM
 	walkframe 480 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 56.209332 12.471107 42 
 	//alignto "raven_base" 
 } 
 
@@ -8391,72 +8390,72 @@ $sequence "MV_Nest_RavenBattle_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_eve_A
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 12 LX LY LZ LM
-	walkframe 24 LX LY LZ LM
-	walkframe 36 LX LY LZ LM
-	walkframe 48 LX LY LZ LM
-	walkframe 60 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 96 LX LY LZ LM
-	walkframe 108 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 132 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 156 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 180 LX LY LZ LM
-	walkframe 192 LX LY LZ LM
-	walkframe 204 LX LY LZ LM
-	walkframe 216 LX LY LZ LM
-	walkframe 228 LX LY LZ LM
-	walkframe 240 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 264 LX LY LZ LM
-	walkframe 276 LX LY LZ LM
-	walkframe 288 LX LY LZ LM
-	walkframe 300 LX LY LZ LM
-	walkframe 312 LX LY LZ LM
-	walkframe 324 LX LY LZ LM
-	walkframe 336 LX LY LZ LM
-	walkframe 348 LX LY LZ LM
-	walkframe 360 LX LY LZ LM
-	walkframe 372 LX LY LZ LM
-	walkframe 384 LX LY LZ LM
-	walkframe 396 LX LY LZ LM
-	walkframe 408 LX LY LZ LM
-	walkframe 420 LX LY LZ LM
-	walkframe 432 LX LY LZ LM
-	walkframe 444 LX LY LZ LM
-	walkframe 456 LX LY LZ LM
-	walkframe 468 LX LY LZ LM
-	walkframe 480 LX LY LZ LM
-	walkframe 492 LX LY LZ LM
-	walkframe 504 LX LY LZ LM
-	walkframe 516 LX LY LZ LM
-	walkframe 528 LX LY LZ LM
-	walkframe 540 LX LY LZ LM
-	walkframe 552 LX LY LZ LM
-	walkframe 564 LX LY LZ LM
-	walkframe 576 LX LY LZ LM
-	walkframe 588 LX LY LZ LM
-	walkframe 600 LX LY LZ LM
-	walkframe 612 LX LY LZ LM
-	walkframe 624 LX LY LZ LM
-	walkframe 636 LX LY LZ LM
-	walkframe 648 LX LY LZ LM
-	walkframe 660 LX LY LZ LM
-	walkframe 672 LX LY LZ LM
-	walkframe 684 LX LY LZ LM
-	walkframe 696 LX LY LZ LM
-	walkframe 708 LX LY LZ LM
-	walkframe 720 LX LY LZ LM
-	walkframe 732 LX LY LZ LM
-	walkframe 744 LX LY LZ LM
-	walkframe 756 LX LY LZ LM
-	walkframe 762 LX LY LZ LM
+	walkframe 12 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 348 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 372 LX LY LM
+	walkframe 384 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 420 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 444 LX LY LM
+	walkframe 456 LX LY LM
+	walkframe 468 LX LY LM
+	walkframe 480 LX LY LM
+	walkframe 492 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 516 LX LY LM
+	walkframe 528 LX LY LM
+	walkframe 540 LX LY LM
+	walkframe 552 LX LY LM
+	walkframe 564 LX LY LM
+	walkframe 576 LX LY LM
+	walkframe 588 LX LY LM
+	walkframe 600 LX LY LM
+	walkframe 612 LX LY LM
+	walkframe 624 LX LY LM
+	walkframe 636 LX LY LM
+	walkframe 648 LX LY LM
+	walkframe 660 LX LY LM
+	walkframe 672 LX LY LM
+	walkframe 684 LX LY LM
+	walkframe 696 LX LY LM
+	walkframe 708 LX LY LM
+	walkframe 720 LX LY LM
+	walkframe 732 LX LY LM
+	walkframe 744 LX LY LM
+	walkframe 756 LX LY LM
+	walkframe 762 LX LY LM
 	
-	origin 0 0 42 
+	origin 58.984613 -750.003479 42 
 	//alignto "raven_base" 
 } 
 
@@ -8464,68 +8463,68 @@ $sequence "MV_Nest_RavenBattle_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_eve_B
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 10 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
-	walkframe 30 LX LY LZ LM
-	walkframe 40 LX LY LZ LM
-	walkframe 50 LX LY LZ LM
-	walkframe 60 LX LY LZ LM
-	walkframe 70 LX LY LZ LM
-	walkframe 80 LX LY LZ LM
-	walkframe 90 LX LY LZ LM
-	walkframe 100 LX LY LZ LM
-	walkframe 110 LX LY LZ LM
-	walkframe 120 LX LY LZ LM
-	walkframe 130 LX LY LZ LM
-	walkframe 140 LX LY LZ LM
-	walkframe 150 LX LY LZ LM
-	walkframe 160 LX LY LZ LM
-	walkframe 170 LX LY LZ LM
-	walkframe 180 LX LY LZ LM
-	walkframe 190 LX LY LZ LM
-	walkframe 200 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 220 LX LY LZ LM
-	walkframe 230 LX LY LZ LM
-	walkframe 240 LX LY LZ LM
-	walkframe 250 LX LY LZ LM
-	walkframe 260 LX LY LZ LM
-	walkframe 270 LX LY LZ LM
-	walkframe 280 LX LY LZ LM
-	walkframe 290 LX LY LZ LM
-	walkframe 300 LX LY LZ LM
-	walkframe 310 LX LY LZ LM
-	walkframe 320 LX LY LZ LM
-	walkframe 330 LX LY LZ LM
-	walkframe 340 LX LY LZ LM
-	walkframe 350 LX LY LZ LM
-	walkframe 360 LX LY LZ LM
-	walkframe 370 LX LY LZ LM
-	walkframe 380 LX LY LZ LM
-	walkframe 390 LX LY LZ LM
-	walkframe 400 LX LY LZ LM
-	walkframe 410 LX LY LZ LM
-	walkframe 420 LX LY LZ LM
-	walkframe 430 LX LY LZ LM
-	walkframe 440 LX LY LZ LM
-	walkframe 450 LX LY LZ LM
-	walkframe 460 LX LY LZ LM
-	walkframe 470 LX LY LZ LM
-	walkframe 480 LX LY LZ LM
-	walkframe 490 LX LY LZ LM
-	walkframe 500 LX LY LZ LM
-	walkframe 510 LX LY LZ LM
-	walkframe 520 LX LY LZ LM
-	walkframe 530 LX LY LZ LM
-	walkframe 540 LX LY LZ LM
-	walkframe 550 LX LY LZ LM
-	walkframe 560 LX LY LZ LM
-	walkframe 570 LX LY LZ LM
-	walkframe 580 LX LY LZ LM
-	walkframe 590 LX LY LZ LM
-	walkframe 591 LX LY LZ LM
+	walkframe 10 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 290 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 310 LX LY LM
+	walkframe 320 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 340 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 370 LX LY LM
+	walkframe 380 LX LY LM
+	walkframe 390 LX LY LM
+	walkframe 400 LX LY LM
+	walkframe 410 LX LY LM
+	walkframe 420 LX LY LM
+	walkframe 430 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 450 LX LY LM
+	walkframe 460 LX LY LM
+	walkframe 470 LX LY LM
+	walkframe 480 LX LY LM
+	walkframe 490 LX LY LM
+	walkframe 500 LX LY LM
+	walkframe 510 LX LY LM
+	walkframe 520 LX LY LM
+	walkframe 530 LX LY LM
+	walkframe 540 LX LY LM
+	walkframe 550 LX LY LM
+	walkframe 560 LX LY LM
+	walkframe 570 LX LY LM
+	walkframe 580 LX LY LM
+	walkframe 590 LX LY LM
+	walkframe 591 LX LY LM
 	
-	origin 0 0 42 
+	origin 37.130135 -16.063265 42 
 	//alignto "raven_base" 
 } 
 
@@ -8533,69 +8532,69 @@ $sequence "MV_Nest_RavenBattle_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_eve_C
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 9 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 27 LX LY LZ LM
-	walkframe 36 LX LY LZ LM
-	walkframe 45 LX LY LZ LM
-	walkframe 54 LX LY LZ LM
-	walkframe 63 LX LY LZ LM
-	walkframe 72 LX LY LZ LM
-	walkframe 81 LX LY LZ LM
-	walkframe 90 LX LY LZ LM
-	walkframe 99 LX LY LZ LM
-	walkframe 108 LX LY LZ LM
-	walkframe 117 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 135 LX LY LZ LM
-	walkframe 144 LX LY LZ LM
-	walkframe 153 LX LY LZ LM
-	walkframe 162 LX LY LZ LM
-	walkframe 171 LX LY LZ LM
-	walkframe 180 LX LY LZ LM
-	walkframe 189 LX LY LZ LM
-	walkframe 198 LX LY LZ LM
-	walkframe 207 LX LY LZ LM
-	walkframe 216 LX LY LZ LM
-	walkframe 225 LX LY LZ LM
-	walkframe 234 LX LY LZ LM
-	walkframe 243 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 261 LX LY LZ LM
-	walkframe 270 LX LY LZ LM
-	walkframe 279 LX LY LZ LM
-	walkframe 288 LX LY LZ LM
-	walkframe 297 LX LY LZ LM
-	walkframe 306 LX LY LZ LM
-	walkframe 315 LX LY LZ LM
-	walkframe 324 LX LY LZ LM
-	walkframe 333 LX LY LZ LM
-	walkframe 342 LX LY LZ LM
-	walkframe 351 LX LY LZ LM
-	walkframe 360 LX LY LZ LM
-	walkframe 369 LX LY LZ LM
-	walkframe 378 LX LY LZ LM
-	walkframe 387 LX LY LZ LM
-	walkframe 396 LX LY LZ LM
-	walkframe 405 LX LY LZ LM
-	walkframe 414 LX LY LZ LM
-	walkframe 423 LX LY LZ LM
-	walkframe 432 LX LY LZ LM
-	walkframe 441 LX LY LZ LM
-	walkframe 450 LX LY LZ LM
-	walkframe 459 LX LY LZ LM
-	walkframe 468 LX LY LZ LM
-	walkframe 477 LX LY LZ LM
-	walkframe 486 LX LY LZ LM
-	walkframe 495 LX LY LZ LM
-	walkframe 504 LX LY LZ LM
-	walkframe 513 LX LY LZ LM
-	walkframe 522 LX LY LZ LM
-	walkframe 531 LX LY LZ LM
-	walkframe 540 LX LY LZ LM
-	walkframe 541 LX LY LZ LM
+	walkframe 9 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 171 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 207 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 243 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 261 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 279 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 297 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 315 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 333 LX LY LM
+	walkframe 342 LX LY LM
+	walkframe 351 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 369 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 387 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 405 LX LY LM
+	walkframe 414 LX LY LM
+	walkframe 423 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 441 LX LY LM
+	walkframe 450 LX LY LM
+	walkframe 459 LX LY LM
+	walkframe 468 LX LY LM
+	walkframe 477 LX LY LM
+	walkframe 486 LX LY LM
+	walkframe 495 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 513 LX LY LM
+	walkframe 522 LX LY LM
+	walkframe 531 LX LY LM
+	walkframe 540 LX LY LM
+	walkframe 541 LX LY LM
 	
-	origin 0 0 42 
+	origin -0.143175 -6.559021 42 
 	//alignto "raven_base" 
 } 
 
@@ -8603,72 +8602,72 @@ $sequence "MV_Nest_RavenBattle_eve_D" "sbravenpm_anims\MV_Nest_RavenBattle_eve_D
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 7 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 21 LX LY LZ LM
-	walkframe 28 LX LY LZ LM
-	walkframe 35 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 49 LX LY LZ LM
-	walkframe 56 LX LY LZ LM
-	walkframe 63 LX LY LZ LM
-	walkframe 70 LX LY LZ LM
-	walkframe 77 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 91 LX LY LZ LM
-	walkframe 98 LX LY LZ LM
-	walkframe 105 LX LY LZ LM
-	walkframe 112 LX LY LZ LM
-	walkframe 119 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 133 LX LY LZ LM
-	walkframe 140 LX LY LZ LM
-	walkframe 147 LX LY LZ LM
-	walkframe 154 LX LY LZ LM
-	walkframe 161 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 175 LX LY LZ LM
-	walkframe 182 LX LY LZ LM
-	walkframe 189 LX LY LZ LM
-	walkframe 196 LX LY LZ LM
-	walkframe 203 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 217 LX LY LZ LM
-	walkframe 224 LX LY LZ LM
-	walkframe 231 LX LY LZ LM
-	walkframe 238 LX LY LZ LM
-	walkframe 245 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 259 LX LY LZ LM
-	walkframe 266 LX LY LZ LM
-	walkframe 273 LX LY LZ LM
-	walkframe 280 LX LY LZ LM
-	walkframe 287 LX LY LZ LM
-	walkframe 294 LX LY LZ LM
-	walkframe 301 LX LY LZ LM
-	walkframe 308 LX LY LZ LM
-	walkframe 315 LX LY LZ LM
-	walkframe 322 LX LY LZ LM
-	walkframe 329 LX LY LZ LM
-	walkframe 336 LX LY LZ LM
-	walkframe 343 LX LY LZ LM
-	walkframe 350 LX LY LZ LM
-	walkframe 357 LX LY LZ LM
-	walkframe 364 LX LY LZ LM
-	walkframe 371 LX LY LZ LM
-	walkframe 378 LX LY LZ LM
-	walkframe 385 LX LY LZ LM
-	walkframe 392 LX LY LZ LM
-	walkframe 399 LX LY LZ LM
-	walkframe 406 LX LY LZ LM
-	walkframe 413 LX LY LZ LM
-	walkframe 420 LX LY LZ LM
-	walkframe 427 LX LY LZ LM
-	walkframe 434 LX LY LZ LM
-	walkframe 441 LX LY LZ LM
-	walkframe 448 LX LY LZ LM
+	walkframe 7 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 49 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 77 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 91 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 119 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 133 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 161 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 203 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 217 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 231 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 259 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 273 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 287 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 301 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 315 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 329 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 343 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 357 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 371 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 385 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 399 LX LY LM
+	walkframe 406 LX LY LM
+	walkframe 413 LX LY LM
+	walkframe 420 LX LY LM
+	walkframe 427 LX LY LM
+	walkframe 434 LX LY LM
+	walkframe 441 LX LY LM
+	walkframe 448 LX LY LM
 	
-	origin 0 0 42 
+	origin -8.931605 -0.656090 42 
 	//alignto "raven_base" 
 } 
 
@@ -8869,7 +8868,7 @@ $sequence "MV_Nest_RavenBattle_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	walkframe 144 LX LY LZ LM
 	walkframe 146 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 1.615422 -84.460457 42 
 	//alignto "raven_base" 
 } 
 
@@ -9219,7 +9218,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 610 LX LY LZ LM
 	walkframe 615 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -0.038189 15.397950 42 
 	//alignto "raven_base" 
 } 
 
@@ -9290,7 +9289,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 1769 LX LY LZ LM
 	walkframe 1797 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 8.886222 -19.776474 42 
 	//alignto "raven_base" 
 } 
 
@@ -9363,7 +9362,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 819 LX LY LZ LM
 	walkframe 822 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -2.284756 -226.516129 42 
 	//alignto "raven_base" 
 } 
 
@@ -9434,7 +9433,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 976 LX LY LZ LM
 	walkframe 980 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 11.148173 -1336.633667 42 
 	//alignto "raven_base" 
 } 
 
@@ -9507,7 +9506,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 819 LX LY LZ LM
 	walkframe 828 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0.563528 -350.070099 42 
 	//alignto "raven_base" 
 } 
 
@@ -9554,7 +9553,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 74 LX LY LZ LM
 	walkframe 76 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0.765323 -165.633530 42 
 	//alignto "raven_base" 
 } 
 
@@ -9623,7 +9622,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 649 LX LY LZ LM
 	walkframe 656 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 3.042477 13.064351 42 
 	//alignto "raven_base" 
 } 
 
@@ -9662,7 +9661,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_C_idle" "sbravenpm_anims\MV_Nest_RavenB
 	walkframe 29 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 3.042477 13.064351 42 
 	//alignto "raven_base" 
 } 
 
@@ -9799,7 +9798,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 531 LX LY LZ LM
 	walkframe 540 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 10.928791 -44.414268 42 
 	//alignto "raven_base" 
 } 
 
@@ -9865,7 +9864,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_c" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 336 LX LY LZ LM
 	walkframe 340 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 1.956861 0.597031 42 
 	//alignto "raven_base" 
 } 
 
@@ -9937,7 +9936,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 1054 LX LY LZ LM
 	walkframe 1057 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 2.114425 51.145416 42 
 	//alignto "raven_base" 
 } 
 
@@ -10004,7 +10003,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 513 LX LY LZ LM
 	walkframe 521 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -1.674140 -2.230550 42 
 	//alignto "raven_base" 
 } 
 
@@ -10074,7 +10073,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_F_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 840 LX LY LZ LM
 	walkframe 850 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0.805680 -5.457447 42 
 	//alignto "raven_base" 
 } 
 
@@ -10141,7 +10140,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_G" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 342 LX LY LZ LM
 	walkframe 346 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -0.519928 -76.187897 42 
 	//alignto "raven_base" 
 } 
 
@@ -10205,7 +10204,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle
 	walkframe 162 LX LY LZ LM
 	walkframe 163 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -0.000004 41.999981 42 
 	//alignto "raven_base" 
 } 
 
@@ -10278,7 +10277,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 1953 LX LY LZ LM
 	walkframe 1968 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -34.081276 423.399475 42 
 	//alignto "raven_base" 
 } 
 
@@ -10351,7 +10350,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_a" "sbravenpm_anims\MV_Nest_RavenBa
 	walkframe 1449 LX LY LZ LM
 	walkframe 1454 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -0.544783 0.103922 42 
 	//alignto "raven_base" 
 } 
 
@@ -10422,7 +10421,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_b" "sbravenpm_anims\MV_Nest_RavenBa
 	walkframe 915 LX LY LZ LM
 	walkframe 921 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 0.356998 0.104999 42 
 	//alignto "raven_base" 
 } 
 
@@ -10493,7 +10492,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_Ch" "sbravenpm_anims\MV_Nest_RavenB
 	walkframe 915 LX LY LZ LM
 	walkframe 919 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 40.024986 476.185394 42 
 	//alignto "raven_base" 
 } 
 
@@ -10564,7 +10563,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_B" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 1037 LX LY LZ LM
 	walkframe 1051 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin 2.056061 -1311.927124 42 
 	//alignto "raven_base" 
 } 
 
@@ -10631,7 +10630,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_B_a" "sbravenpm_anims\MV_Nest_RavenBa
 	walkframe 342 LX LY LZ LM
 	walkframe 347 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -48.779922 54.813564 42 
 	//alignto "raven_base" 
 } 
 
@@ -10704,7 +10703,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_C" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 1575 LX LY LZ LM
 	walkframe 1581 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -0.936284 -25.612911 42 
 	//alignto "raven_base" 
 } 
 
@@ -10773,7 +10772,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_C_a" "sbravenpm_anims\MV_Nest_RavenBa
 	walkframe 472 LX LY LZ LM
 	walkframe 478 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -50.059147 32.358536 42 
 	//alignto "raven_base" 
 } 
 
@@ -10781,70 +10780,70 @@ $sequence "MV_Nest_RavenBattle_After_raven_D" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 22 LX LY LZ LM
-	walkframe 44 LX LY LZ LM
-	walkframe 66 LX LY LZ LM
-	walkframe 88 LX LY LZ LM
-	walkframe 110 LX LY LZ LM
-	walkframe 132 LX LY LZ LM
-	walkframe 154 LX LY LZ LM
-	walkframe 176 LX LY LZ LM
-	walkframe 198 LX LY LZ LM
-	walkframe 220 LX LY LZ LM
-	walkframe 242 LX LY LZ LM
-	walkframe 264 LX LY LZ LM
-	walkframe 286 LX LY LZ LM
-	walkframe 308 LX LY LZ LM
-	walkframe 330 LX LY LZ LM
-	walkframe 352 LX LY LZ LM
-	walkframe 374 LX LY LZ LM
-	walkframe 396 LX LY LZ LM
-	walkframe 418 LX LY LZ LM
-	walkframe 440 LX LY LZ LM
-	walkframe 462 LX LY LZ LM
-	walkframe 484 LX LY LZ LM
-	walkframe 506 LX LY LZ LM
-	walkframe 528 LX LY LZ LM
-	walkframe 550 LX LY LZ LM
-	walkframe 572 LX LY LZ LM
-	walkframe 594 LX LY LZ LM
-	walkframe 616 LX LY LZ LM
-	walkframe 638 LX LY LZ LM
-	walkframe 660 LX LY LZ LM
-	walkframe 682 LX LY LZ LM
-	walkframe 704 LX LY LZ LM
-	walkframe 726 LX LY LZ LM
-	walkframe 748 LX LY LZ LM
-	walkframe 770 LX LY LZ LM
-	walkframe 792 LX LY LZ LM
-	walkframe 814 LX LY LZ LM
-	walkframe 836 LX LY LZ LM
-	walkframe 858 LX LY LZ LM
-	walkframe 880 LX LY LZ LM
-	walkframe 902 LX LY LZ LM
-	walkframe 924 LX LY LZ LM
-	walkframe 946 LX LY LZ LM
-	walkframe 968 LX LY LZ LM
-	walkframe 990 LX LY LZ LM
-	walkframe 1012 LX LY LZ LM
-	walkframe 1034 LX LY LZ LM
-	walkframe 1056 LX LY LZ LM
-	walkframe 1078 LX LY LZ LM
-	walkframe 1100 LX LY LZ LM
-	walkframe 1122 LX LY LZ LM
-	walkframe 1144 LX LY LZ LM
-	walkframe 1166 LX LY LZ LM
-	walkframe 1188 LX LY LZ LM
-	walkframe 1210 LX LY LZ LM
-	walkframe 1232 LX LY LZ LM
-	walkframe 1254 LX LY LZ LM
-	walkframe 1276 LX LY LZ LM
-	walkframe 1298 LX LY LZ LM
-	walkframe 1320 LX LY LZ LM
-	walkframe 1342 LX LY LZ LM
-	walkframe 1351 LX LY LZ LM
+	walkframe 22 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 242 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 286 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 374 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 418 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 462 LX LY LM
+	walkframe 484 LX LY LM
+	walkframe 506 LX LY LM
+	walkframe 528 LX LY LM
+	walkframe 550 LX LY LM
+	walkframe 572 LX LY LM
+	walkframe 594 LX LY LM
+	walkframe 616 LX LY LM
+	walkframe 638 LX LY LM
+	walkframe 660 LX LY LM
+	walkframe 682 LX LY LM
+	walkframe 704 LX LY LM
+	walkframe 726 LX LY LM
+	walkframe 748 LX LY LM
+	walkframe 770 LX LY LM
+	walkframe 792 LX LY LM
+	walkframe 814 LX LY LM
+	walkframe 836 LX LY LM
+	walkframe 858 LX LY LM
+	walkframe 880 LX LY LM
+	walkframe 902 LX LY LM
+	walkframe 924 LX LY LM
+	walkframe 946 LX LY LM
+	walkframe 968 LX LY LM
+	walkframe 990 LX LY LM
+	walkframe 1012 LX LY LM
+	walkframe 1034 LX LY LM
+	walkframe 1056 LX LY LM
+	walkframe 1078 LX LY LM
+	walkframe 1100 LX LY LM
+	walkframe 1122 LX LY LM
+	walkframe 1144 LX LY LM
+	walkframe 1166 LX LY LM
+	walkframe 1188 LX LY LM
+	walkframe 1210 LX LY LM
+	walkframe 1232 LX LY LM
+	walkframe 1254 LX LY LM
+	walkframe 1276 LX LY LM
+	walkframe 1298 LX LY LM
+	walkframe 1320 LX LY LM
+	walkframe 1342 LX LY LM
+	walkframe 1351 LX LY LM
 	
-	origin 0 0 42 
+	origin -50.205891 32.575527 42 
 	//alignto "raven_base" 
 } 
 
@@ -10917,7 +10916,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_E" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 504 LX LY LZ LM
 	walkframe 509 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -59.977722 0.786110 42 
 	//alignto "raven_base" 
 } 
 
@@ -10983,7 +10982,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_F" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 280 LX LY LZ LM
 	walkframe 283 LX LY LZ LM
 	
-	origin 0 0 42 
+	origin -48.779919 54.813557 42 
 	//alignto "raven_base" 
 } 
 
@@ -10991,62 +10990,67 @@ $sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
-	walkframe 7 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 21 LX LY LZ LM
-	walkframe 28 LX LY LZ LM
-	walkframe 35 LX LY LZ LM
-	walkframe 42 LX LY LZ LM
-	walkframe 49 LX LY LZ LM
-	walkframe 56 LX LY LZ LM
-	walkframe 63 LX LY LZ LM
-	walkframe 70 LX LY LZ LM
-	walkframe 77 LX LY LZ LM
-	walkframe 84 LX LY LZ LM
-	walkframe 91 LX LY LZ LM
-	walkframe 98 LX LY LZ LM
-	walkframe 105 LX LY LZ LM
-	walkframe 112 LX LY LZ LM
-	walkframe 119 LX LY LZ LM
-	walkframe 126 LX LY LZ LM
-	walkframe 133 LX LY LZ LM
-	walkframe 140 LX LY LZ LM
-	walkframe 147 LX LY LZ LM
-	walkframe 154 LX LY LZ LM
-	walkframe 161 LX LY LZ LM
-	walkframe 168 LX LY LZ LM
-	walkframe 175 LX LY LZ LM
-	walkframe 182 LX LY LZ LM
-	walkframe 189 LX LY LZ LM
-	walkframe 196 LX LY LZ LM
-	walkframe 203 LX LY LZ LM
-	walkframe 210 LX LY LZ LM
-	walkframe 217 LX LY LZ LM
-	walkframe 224 LX LY LZ LM
-	walkframe 231 LX LY LZ LM
-	walkframe 238 LX LY LZ LM
-	walkframe 245 LX LY LZ LM
-	walkframe 252 LX LY LZ LM
-	walkframe 259 LX LY LZ LM
-	walkframe 266 LX LY LZ LM
-	walkframe 273 LX LY LZ LM
-	walkframe 280 LX LY LZ LM
-	walkframe 287 LX LY LZ LM
-	walkframe 294 LX LY LZ LM
-	walkframe 301 LX LY LZ LM
-	walkframe 308 LX LY LZ LM
-	walkframe 315 LX LY LZ LM
-	walkframe 322 LX LY LZ LM
-	walkframe 329 LX LY LZ LM
-	walkframe 336 LX LY LZ LM
-	walkframe 343 LX LY LZ LM
-	walkframe 350 LX LY LZ LM
-	walkframe 357 LX LY LZ LM
-	walkframe 364 LX LY LZ LM
-	walkframe 371 LX LY LZ LM
-	walkframe 378 LX LY LZ LM
-	walkframe 385 LX LY LZ LM
-	walkframe 392 LX LY LZ LM
+	walkframe 2 LX LY LM 
+	walkframe 3 LX LY LM 
+	walkframe 4 LX LY LM 
+	walkframe 5 LX LY LM 
+	walkframe 6 LX LY LM 
+	walkframe 7 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 49 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 77 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 91 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 119 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 133 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 161 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 203 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 217 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 231 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 259 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 273 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 287 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 301 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 315 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 329 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 343 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 357 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 371 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 385 LX LY LM
+	walkframe 392 LX LY LM
 	
 	origin 0 0 42 
 	//alignto "raven_base" 
@@ -11056,27 +11060,6 @@ $sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
 	fps 60 
 	activity ACT_RESET 1 
 	addlayer inverse_proportions
-	walkframe 1 LX LY LZ LM
-	walkframe 2 LX LY LZ LM
-	walkframe 3 LX LY LZ LM
-	walkframe 4 LX LY LZ LM
-	walkframe 5 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 7 LX LY LZ LM
-	walkframe 8 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 10 LX LY LZ LM
-	walkframe 11 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 13 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 17 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 19 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
-	
 	origin 0 0 42 
 } 
 
