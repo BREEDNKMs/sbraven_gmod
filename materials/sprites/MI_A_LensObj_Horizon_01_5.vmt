@@ -1,0 +1,29 @@
+"UnlitGeneric"
+{
+    "$basetexture"    "sprites/T_A_HorizonFlare_05"
+    "$additive"       "1"
+    "$translucent"    "1"
+//    "$ignorez"        "1"
+    "$vertexalpha"    "1"
+    "$vertexcolor"    "1"
+
+    // Simulate desaturation = 0.7
+    "$color"          "[0.7 0.7 0.7]"
+    
+    // Core glow control
+    "$selfillum"      "1"
+    "$selfillumtint"  "[1 1 1]"
+    "$selfillumfresnel" "1"
+    "$selfillumfresnelminmaxexp" "[0.25 1.0 3.0]"
+
+    // Distance-based scale (handled in Lua)
+    "Proxies"
+    {
+        "TextureScroll"
+        {
+            "texturescrollvar" "$basetexturetransform"
+            "texturescrollrate" "0.0"
+            "texturescrollangle" "0.0"
+        }
+    }
+}

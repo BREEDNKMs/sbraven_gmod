@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "sprites/T_A_BaseNoise_04"
+	"$additive" "1"
+	"$translucent" "1"
+	"$vertexcolor" "1"
+}

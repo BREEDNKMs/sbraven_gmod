@@ -1,0 +1,40 @@
+"VertexLitGeneric"
+{
+	// --- Base properties ---
+	"$basetexture" "trails/T_C_AnimTrail_02"
+	"$additive" 1
+	"$vertexcolor" 1
+	"$vertexalpha" 1
+	"$nocull" 1
+	"$color2" "[0 1 1]"
+
+	// --- Emissive Flow Section ---
+	"$emissiveblendenabled" 1
+
+	// Mask for emissive pattern containment (defines trail shape)
+	"$emissiveblendbasetexture" "trails/T_C_AnimTrail_02"
+
+	// Flowing glowing layer (dynamic streak texture)
+	"$emissiveblendtexture" "trails/T_A_StreakNoise_07"
+
+	// Flowmap that warps the emissive texture for motion and distortion
+	"$emissiveblendflowtexture" "trails/T_A_NoiseRGB_01"
+
+	// Sets glowing color (HDR cyan tint)
+	"$emissiveblendtint" "[0.0 3.0 4.5]"
+
+	// Controls the intensity of emissive effect (1.0–2.0 typical)
+	"$emissiveblendstrength" 1.5
+
+	// Multiplies emissive by vertex color (so LUA alpha fades work)
+	"$emissiveblendusevertexcolor" 1
+
+	// Base scroll vector (direction and speed of streak flow)
+	"$emissiveblendscrollvector" "[1.2 2.1]"
+
+	// Optional: additional distortion amount for flowmap warping
+	"$emissiveblendflowstrength" 1.0
+
+	// Optional: for better bloom in HDR scenes
+	"$selfillum" 1
+}

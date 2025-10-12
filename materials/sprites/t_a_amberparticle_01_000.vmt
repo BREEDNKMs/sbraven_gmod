@@ -1,0 +1,44 @@
+"UnlitGeneric"
+{
+	// Base sprite texture (SubUV sheet / single frame)
+	"$basetexture" "sprites/t_a_amberparticle_01_000"
+
+	// Particle blending: translucent (alpha) rather than additive by default.
+	// Set "$additive" 1 if you want pure additive bloom instead.
+	"$additive" 1
+
+	// Let the particle system (Lua / engine) drive color & alpha per-vertex/particle
+	"$vertexcolor" 1
+	"$vertexalpha" 0
+
+	// Render both sides (particles should be visible from any angle)
+	"$nocull" 1
+
+	// Unlit/self-illuminated look (matches Unreal's UnlitReactive)
+	"$selfillum" 0
+	"$detail" "sprites/edge_t_a_amberparticle_01_000" 
+	"$detailscale" 1        // scales the detail texture to same size as diffuse texture.
+    "$detailblendmode" 2        // Multiply
+    "$detailblendfactor" 3.0    // Boost edges (acts like EdgeSaturation)
+
+	// Self-illumination tint — map of MI's ColorTest (approx normalized).
+	// Original MI used ColorTest = (5.0, 2.5, 0.5) (HDR). Source clamps color channels,
+	// so we normalize to keep the amber hue while staying within [0..1].
+	"$selfillumtint" "[1 1 1]"
+
+	// Optionally bias translucency / soften edges (alpha tweak)
+	"$alphatest" "0"  // not used; keep full translucent blending
+
+	// If your particle system uses SubUV / sprite sheets, the engine-side
+	// particle renderer will handle UV selection. The VMT only needs the base texture.
+	// If you want extra bloom, enable additive in your particle render code or set $additive 1.
+
+	// Texture sampling / quality hints (optional)
+	"$ignorez" 0
+	"$depthblend" 0
+
+	// Helpful debugging comment:
+	// - ColorTest → $selfillumtint (approx)
+	// - EdgeSaturation → tuned in the material; we can't directly map it to a VMT scalar,
+	//   but increasing $selfillumtint's contrast or using an additive blend will emulate it.
+}

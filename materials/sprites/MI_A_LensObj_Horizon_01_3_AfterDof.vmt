@@ -1,0 +1,30 @@
+"UnlitGeneric"
+{
+    "$basetexture"    "sprites/T_A_HorizonFlare_02"
+    "$additive"       "1"
+    "$translucent"    "1"
+//    "$ignorez"        "1"
+    "$vertexalpha"    "1"
+    "$vertexcolor"    "1"
+    
+    // Stronger desaturation and edge saturation
+    "$color"          "[1.0 1.0 1.0]"
+    
+    // Harder glow
+    "$selfillum"      "1"
+    "$selfillumtint"  "[1 1 1]"
+    "$selfillumfresnel" "1"
+    "$selfillumfresnelminmaxexp" "[0.5 1.0 4.0]"
+
+    "Proxies"
+    {
+        // Optional soft pulsation to simulate flickering
+        "Sine"
+        {
+            "resultvar" "$selfillumtint"
+            "sinemin" "0.85"
+            "sinemax" "1.15"
+            "sineperiod" "2.0"
+        }
+    }
+}

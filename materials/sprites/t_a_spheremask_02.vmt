@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "sprites/t_a_spheremask_02"
+	"$additive" "1"
+	"$translucent" "1"
+	"$vertexcolor" "1"
+}
