@@ -1,234 +1,384 @@
--- ============================================================
--- Raven Weapon Buff Trail Sparks (Looping)
--- File: effects/mi_a_gpusparks_01.lua
--- Derived from NS_D_RavenHuman_WPBuffTrail_01 / NE_SpriteM
--- ============================================================
+AddCSLuaFile() 
 
-EFFECT.MatFrames = {
-    Material("sprites/t_a_amberparticle_01_000"),
-    Material("sprites/t_a_amberparticle_01_001"),
-    Material("sprites/t_a_amberparticle_01_002"),
-    Material("sprites/t_a_amberparticle_01_003")
+SWEP.Base = "weapon_ut99_base" 
+SWEP.Category = "Other" 
+SWEP.PrintName = "Raven Blade" 
+SWEP.Author = "DevilHawk" 
+SWEP.Purpose = "Samurai sword that teleports holder with right click." 
+SWEP.Spawnable = true 
+
+SWEP.Slot = 1 
+SWEP.SlotPos = 2 
+SWEP.RenderGroup = RENDERGROUP_BOTH 
+SWEP.DeploySound = "unreali/blade1s.wav" 
+
+SWEP.HoldType			= "knife" 
+SWEP.UseHands = true 
+SWEP.ViewModel = Model( "models/stellarblade/c_raven_blade.mdl" ) 
+SWEP.WorldModel = Model( "models/stellarblade/ch_m_na_53_weapon.mdl" ) 
+SWEP.ViewModelFOV = 60 
+SWEP.ViewModelFlip = false 
+
+SWEP.Primary.Animation = ACT_VM_PRIMARYATTACK 
+SWEP.Primary.Automatic = true 
+SWEP.Primary.ClipSize = -1 
+SWEP.Primary.Damage = 1000 
+SWEP.Primary.DefaultClip = -1 
+SWEP.Primary.Delay			= 0		-- additive after sequenceduration  
+SWEP.Primary.Playback_Rate 	= 1 -- determine anim play speed 
+SWEP.Primary.Projectile_Class	=	"proj_u4et_tomshell" 
+SWEP.Primary.Sound			= Sound("unreali/swing1t.wav") 
+
+SWEP.Secondary.Animation = ACT_VM_SECONDARYATTACK 
+SWEP.Secondary.Automatic = true 
+SWEP.Secondary.Delay			= 0		-- additive after sequenceduration  
+SWEP.Secondary.Playback_Rate 	= 1 -- determine anim play speed 
+SWEP.Secondary.Sound			= Sound("") 
+SWEP.Melee_HitSound	=	Sound("unreali/clawhit1s.wav") 
+
+function SWEP:CanPrimaryAttack() return self:GetHolsterDelay() == 0 and self:GetActivity() != ACT_VM_HOLSTER end 
+function SWEP:CanBePickedUpByNPCs() return false end 
+function SWEP:SpecialThink() 
+	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
+	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
+end 
+function SWEP:Deploy() return weapons.Get("weapon_ugold_automag").Deploy(self) end 
+function SWEP:ShouldDropOnDie() return true end 
+function SWEP:PrimaryAttack() 
+	-- determine next attack time, relative with anim play rate 
+	if !self:CanPrimaryAttack() then return false end 
+	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
+	local seq = vm:SelectWeightedSequence( self.Primary.Animation ) 
+	local Delay = vm:SequenceDuration(seq) 
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay + (Delay / self.Primary.Playback_Rate)) 
+	self:SetNextSecondaryFire(math.max(CurTime() + self.Primary.Delay + (Delay / self.Primary.Playback_Rate)),self:GetNextSecondaryFire()) 
+	-- do the attack 
+	if self:GetActivity() != self.Primary.Animation then self:SendWeaponAnim(self.Primary.Animation) end 
+	vm:SetPlaybackRate(self.Primary.Playback_Rate) 
+	self:UTRecoil() 
+	-- self:EmitSound(self.Primary.Sound, 100, 100) 
+	self:UDSound() 
+	self:DisableHolster() 
+	self:GetOwner():SetAnimation( PLAYER_ATTACK1 ) 
+	-- self:GetOwner():AnimRestartGesture(GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_HL2MP_GESTURE_RANGE_ATTACK_MELEE, true) 
+	-- self:TakeAmmo() 
+	self:SetIdleDelay(CurTime() + self.Primary.Delay + (Delay / self.Primary.Playback_Rate)) 
+end 
+
+function SWEP:SecondaryAttack() 
+	-- if not self:CanSecondaryAttack() then return end
+	-- determine next attack time, relative with anim play rate 
+	if !self:CanPrimaryAttack() then return false end 
+	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
+	local seq = vm:SelectWeightedSequence( self.Secondary.Animation ) -- play ACT_VM_MISSCENTER if secondary attack missed 
+	local Delay = vm:SequenceDuration(seq) 
+	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
+	self:SetNextSecondaryFire(math.max(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)),self:GetNextSecondaryFire()) 
+	-- do the attack 
+	if self:GetActivity() != self.Secondary.Animation then self:SendWeaponAnim(self.Secondary.Animation) end 
+	vm:SetPlaybackRate(self.Secondary.Playback_Rate) 
+	self:UTRecoil() 
+	-- self:EmitSound(self.Primary.Sound, 100, 100) 
+	self:UDSound() 
+	self:DisableHolster() 
+	self:GetOwner():SetAnimation( PLAYER_ATTACK1 ) 
+	-- self:TakeAmmo() 
+	self:SetIdleDelay(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
+end 
+
+-- ============================================================
+-- Niagara-style looping flare + lens object renderer
+-- ============================================================
+local flareLayers = {
+    {
+        mat = Material("sprites/t_a_shineflare_02"),
+        size = 30,
+        color = Color(140, 255, 255),
+        hardness = 1.2
+    },
+    {
+        mat = Material("sprites/t_a_spheremask_02"),
+        size = 14,
+        color = Color(80, 255, 255),
+        hardness = 0.9
+    },
+    {
+        mat = Material("sprites/t_a_shineflare_02"),
+        size = 20,
+        color = Color(255, 255, 255),
+        hardness = 0.7
+    }
 }
 
-EFFECT.NumFrames  = #EFFECT.MatFrames
-EFFECT.FrameRate  = 4
-EFFECT.ScaleConst = 1
-EFFECT.NumSpots   = 6
-EFFECT.ColorTint  = Vector(0, 88, 255)
--- EFFECT.ColorTint  = Vector(255, 128, 26)
-EFFECT.ParticleLife = 0.6
-EFFECT.VelocityScale = 100
-EFFECT.LengthScale = 3.5
-EFFECT.Width = 60
-EFFECT.CurlStrength = 80
-EFFECT.OrbitSpeed = 2.5
-EFFECT.DebugDraw = false
-
-EFFECT.BakedOffsets = {
-	Vector(  0,   0,  30),
-	Vector( 25,  10,  10),
-	Vector(-25,  10,  10),
-	Vector( 15, -15,  -5),
-	Vector(-15, -15,  -5),
-	Vector(  0,   0, -20)
+-- Lens object layers (Horizon 03 and 05)
+local lensObjLayers = {
+    {
+        mat = Material("sprites/MI_A_LensObj_Horizon_01_5"),   -- Horizon 05, wider
+        baseSize = 180,
+        color = Color(200, 255, 255),
+        desat = 0.7,
+        flickerSpeed = 1.6,
+        hardness = 0.8
+    },
+    {
+        mat = Material("sprites/MI_A_LensObj_Horizon_01_3_AfterDof"), -- Horizon 03, strong
+        baseSize = 120,
+        color = Color(255, 255, 255),
+        desat = 1.0,
+        flickerSpeed = 2.3,
+        hardness = 1.0
+    }
 }
 
--- ============================================================
--- Utility Curves / Noise
--- ============================================================
-local function BrightnessCurve(frac)
-	if frac < 0.3 then
-		return Lerp(frac / 0.3, 0.0, 1.0)
-	else
-		return Lerp((frac - 0.3) / 0.7, 1.0, 0.0)
-	end
+-- Cache of active flare particles
+SWEP.NiagaraFlares = SWEP.NiagaraFlares or {}
+SWEP.NiagaraLensObjs = SWEP.NiagaraLensObjs or {}
+
+function SWEP:ViewModelDrawn(vm)
+    weapons.Get("weapon_ut99_base").ViewModelDrawn(self, vm)
+    local boneID = vm:LookupBone("v_weapon.Knife_Handle")
+    if not boneID then return end
+
+    local matrix = vm:GetBoneMatrix(boneID)
+    if not matrix then return end
+
+    local pos = matrix:GetTranslation()
+    local ang = matrix:GetAngles()
+    local forward = ang:Up() * 7
+    pos = pos + forward
+
+    local view = EyePos()
+    local distSqr = pos:DistToSqr(view)
+    local dist = math.sqrt(distSqr)
+
+    -- Niagara-style distance emissive scaling
+    local maxRange = 4096
+    local fade = math.Clamp(dist / maxRange, 0, 1)
+    local intensity = Lerp(1 - math.sqrt(fade), 1.0, 2.5)
+
+    -- ============================================================
+    -- === Flares ===
+    -- ============================================================
+    if not self.NextFlareSpawn or CurTime() > self.NextFlareSpawn then
+        self.NextFlareSpawn = CurTime() + 0.05
+        table.insert(self.NiagaraFlares, {
+            pos = pos,
+            life = 0,
+            maxlife = 0.4 + math.Rand(0.2, 0.4),
+            scale = math.Rand(0.4, 0.5),
+            seed = math.Rand(0, 100)
+        })
+    end
+
+    for i = #self.NiagaraFlares, 1, -1 do
+        local p = self.NiagaraFlares[i]
+        p.life = p.life + FrameTime()
+        local frac = p.life / p.maxlife
+
+        if frac >= 1 then
+            table.remove(self.NiagaraFlares, i)
+        else
+            local fadeIn = math.Clamp(frac / 0.2, 0, 1)
+            local fadeOut = 1 - math.Clamp((frac - 0.8) / 0.2, 0, 1)
+            local alphaMul = fadeIn * fadeOut
+
+            local flicker = 1 + (math.sin(CurTime() * 17.3 + p.seed) + math.sin(CurTime() * 11.8 + p.seed)) * 0.02
+            local pulse = 1 + math.sin(CurTime() * 6 + p.seed) * 0.05
+
+            local lifeScale = p.scale * pulse * flicker
+            local brightness = alphaMul * intensity
+
+            for _, layer in ipairs(flareLayers) do
+                render.SetMaterial(layer.mat)
+                local col = layer.color
+                local size = layer.size * lifeScale
+                render.DrawSprite(
+                    pos,
+                    size,
+                    size,
+                    Color(
+                        col.r * brightness * layer.hardness,
+                        col.g * brightness * layer.hardness,
+                        col.b * brightness * layer.hardness,
+                        255 * brightness
+                    )
+                )
+            end
+        end
+    end
+
+    -- ============================================================
+    -- === Lens Objects ===
+    -- ============================================================
+    if not self.NextLensSpawn or CurTime() > self.NextLensSpawn then
+        self.NextLensSpawn = CurTime() + 0.12
+        table.insert(self.NiagaraLensObjs, {
+            pos = pos,
+            life = 0,
+            maxlife = 0.8 + math.Rand(0.5, 1.2),
+            scale = 1.0,
+            seed = math.Rand(0, 100)
+        })
+    end
+
+    for i = #self.NiagaraLensObjs, 1, -1 do
+        local p = self.NiagaraLensObjs[i]
+        p.life = p.life + FrameTime()
+        local frac = p.life / p.maxlife
+
+        if frac >= 1 then
+            table.remove(self.NiagaraLensObjs, i)
+        else
+            -- Slower flicker and expansion over distance
+            local flicker = 1.0 + math.sin(CurTime() * 1.5 + p.seed) * 0.08
+            local distScale = math.Clamp(dist / 512, 0.4, 2.5)
+            local scale = p.scale * distScale * flicker
+            local brightness = Lerp(1 - frac, 1.4, 0.8) * intensity
+
+            for _, layer in ipairs(lensObjLayers) do
+                render.SetMaterial(layer.mat)
+                local col = layer.color
+                local size = layer.baseSize * scale
+                local flicker2 = 1 + math.sin(CurTime() * layer.flickerSpeed + p.seed) * 0.05
+                render.DrawSprite(
+                    pos,
+                    (size * flicker2) * 0.10,
+                    (size * flicker2) * 0.15,
+                    Color(
+                        col.r * brightness * layer.hardness,
+                        col.g * brightness * layer.hardness,
+                        col.b * brightness * layer.hardness,
+                        255 * brightness
+                    )
+                )
+            end
+        end
+    end
 end
 
-local function AlphaCurve(frac)
-	if frac < 0.2 then
-		return Lerp(frac / 0.2, 0.0, 1.0)
-	else
-		return Lerp((frac - 0.2) / 0.8, 1.0, 0.0)
-	end
-end
 
-local function CurlNoise(pos, t, scale)
-	local x = pos.x * 0.05 + t * 0.8
-	local y = pos.y * 0.05 + t * 0.8
-	local z = pos.z * 0.05 + t * 0.8
-	return Vector(
-		math.sin(y + z) - math.cos(y - z),
-		math.sin(z + x) - math.cos(z - x),
-		math.sin(x + y) - math.cos(x - y)
-	):GetNormalized() * scale
-end
-
-
--- ============================================================
--- Init
--- ============================================================
-function EFFECT:Init(data)
-	self.Ent = data:GetEntity()
-	if !IsValid(self.Ent) then return end
-	print("created effect",self,data:GetFlags()) 
-
-	-- Flag = 1  →  kill effect on same entity
-	if data:GetFlags() == 1 then
-		for _, fx in ipairs(ents.GetAll()) do
-			if fx:GetClass() == "class CLuaEffect" and fx.Ent == self.Ent then
-				SafeRemoveEntity(fx)
-			end
-		end
-		SafeRemoveEntity(self)
-		return
-	end
-	local cleanup = { } -- necessary because some number ends up in inherited Lua tables, I don't know why 
-	for k,v in ipairs(self.MatFrames) do 
-		if type(v) == "IMaterial" then 
-			table.insert(cleanup,v) 
-		end 
-	end 
-	print("progressing") 
-	self.MatFrames = cleanup 
-	self.NumFrames = #self.MatFrames 
-	-- self.DieTime = CurTime() + self.LifeTime
-	self.Origin = self.Ent:WorldSpaceCenter()
-	self.Emitter = ParticleEmitter(self.Origin, true)
-	self.Emitter:SetNearClip(16, 128)
-	self.NextEmit = 0
-	self.EmitInterval = 0.05 -- 20 Hz check
-	PrintTable(self.MatFrames) 
-	print(#self.MatFrames) 
-
-	for i = 1, self.NumSpots do
-		local offset = self.BakedOffsets[i]
-		if offset then
-			self:SpawnSparkParticle(offset)
-		else
-			-- fallback if not enough baked offsets
-			self:SpawnSparkParticle(VectorRand() * 20)
-		end
-	end
-end
-
--- ============================================================
--- Spawn Particle
--- ============================================================
-function EFFECT:SpawnSparkParticle(localOffset)
-	if not self.Emitter then return end
-
-	-- Scale Unreal → Source
-	local offset = localOffset * self.ScaleConst
-	local spawnPos = self.Origin + offset
-
-	local dir = offset:GetNormalized()
-	local vel = dir * (self.VelocityScale * self.ScaleConst) + VectorRand() * 10
-
-	local p = self.Emitter:Add(self.MatFrames[1], spawnPos)
-	if not p then return end
-	print("spawnPos",p,spawnPos) 
-
-	p:SetVelocity(vel)
-	p:SetDieTime(self.ParticleLife + math.Rand(-0.2, 0.2))
-	p:SetStartAlpha(0)
-	p:SetEndAlpha(0)
-	p:SetStartSize(self.Width)
-	p:SetEndSize(0)
-	p:SetAirResistance(6)
-	p:SetGravity(Vector(0, 0, 0))
-	p:SetLighting(false)
-	p:SetCollide(false)
-
-	p:SetRoll(math.Rand(0, 360))
-	p:SetRollDelta(0)
-
-	local col = self.ColorTint * 255
-	p:SetColor(col.x, col.y, col.z)
-
-	p.BaseOffset = offset
-	p.RavenVel = vel
-
-	-- Particle self-thinking
-	p:SetThinkFunction(function(part)
-		local frac = 1 - (part:GetLifeTime() / part:GetDieTime())
-		local bright = BrightnessCurve(frac)
-		local alpha = AlphaCurve(frac)
-		local curPos = part:GetPos()
-		local dt = FrameTime()
-
-		-- Curl noise turbulence
-		local curl = CurlNoise(curPos, CurTime(), self.CurlStrength * self.ScaleConst)
-		local vel = part:GetVelocity()
-		vel:Add(curl * dt * 20)
-
-		-- Orbit around base offset (acts like AttractorPoint)
-		local orbitCenter = self.Origin + part.BaseOffset
-		local toCenter = (orbitCenter - curPos)
-		local dist = toCenter:Length()
-		if dist > 0.01 then
-			local tangent = Vector(-toCenter.y, toCenter.x, 0):GetNormalized()
-			local orbitForce = tangent * self.OrbitSpeed * 80 * self.ScaleConst
-			vel:Add(orbitForce * dt)
-		end
-
-		part:SetVelocity(vel)
-
-		-- Align to velocity (VelocityAligned)
-		local ang = vel:Angle()
-		part:SetAngles(ang)
-
-		-- local len = math.Clamp(vel:Length() * self.LengthScale, 6, 56)
-		-- print("SetStartSize in Think:",len,"CurTime()",CurTime()) 
-		-- part:SetStartSize(len) -- let 
-		part:SetEndSize(0)
-
-		local tint = self.ColorTint * bright * 255
-		part:SetColor(tint.x, tint.y, tint.z)
-		part:SetStartAlpha(alpha * 255)
-		
-		local age = p:GetLifeTime()
-		local life = p:GetDieTime()
-
-		local lifeFrac = age / life
-		local frame = math.floor(lifeFrac * (self.NumFrames - 0.001)) + 1
-
-		-- Safety clamp
-		frame = math.Clamp(frame, 1, self.NumFrames)
-		p:SetMaterial(self.MatFrames[frame])
-
-		part:SetNextThink(CurTime() + FrameTime())
-	end)
-	p:SetNextThink(CurTime() + FrameTime())
-
-	if self.DebugDraw then
-		debugoverlay.Cross(spawnPos, 3, 1, Color(0, 255, 255))
-	end
-end
-
--- ============================================================
--- Think / Render
--- ============================================================
-function EFFECT:Think()
-	if not IsValid(self.Ent) or not self.Ent:Alive() then return false end
-	if not self.Emitter or not self.Emitter:IsValid() then return false end
-
-	self.Origin = self.Ent:WorldSpaceCenter()
-
-	-- Periodically emit new sparks if pool below target
-	if CurTime() > self.NextEmit then
-		self.NextEmit = CurTime() + self.EmitInterval
-		if self.Emitter:GetNumActiveParticles() < self.NumSpots then
-			for i = 1, self.NumSpots - self.Emitter:GetNumActiveParticles() do
-				local offset = self.BakedOffsets[math.random(1, #self.BakedOffsets)]
-				self:SpawnSparkParticle(offset)
-			end
-		end
+function SWEP:DrawWorldModelTranslucent(flags) 
+	local base = weapons.Get("weapon_ut99_base")
+	if base and base.DrawWorldModelTranslucent then
+		base.DrawWorldModelTranslucent(self, flags)
+		return 
 	end
 
-	return true
-end
+	local handBone = self:LookupBone("ValveBiped.Bip01_R_Hand")
+	if not handBone then return end
 
-function EFFECT:Render()
-	-- handled by emitter
+	local matrix = self:GetBoneMatrix(handBone)
+	if not matrix then return end
+
+	local pos = matrix:GetTranslation()
+	local ang = matrix:GetAngles()
+	pos = pos - ang:Up() * 9
+
+    local view = EyePos()
+    local distSqr = pos:DistToSqr(view)
+    local dist = math.sqrt(distSqr)
+
+    -- Niagara-style distance emissive scaling
+    local maxRange = 4096
+    local fade = math.Clamp(dist / maxRange, 0, 1)
+    local intensity = Lerp(1 - math.sqrt(fade), 1.0, 2.5)
+
+    -- ============================================================
+    -- === Flares ===
+    -- ============================================================
+    if not self.NextFlareSpawn or CurTime() > self.NextFlareSpawn then
+        self.NextFlareSpawn = CurTime() + 0.05
+        table.insert(self.NiagaraFlares, {
+            pos = pos,
+            life = 0,
+            maxlife = 0.4 + math.Rand(0.2, 0.4),
+            scale = math.Rand(1.3, 1.5),
+            seed = math.Rand(0, 100)
+        })
+    end
+
+    for i = #self.NiagaraFlares, 1, -1 do
+        local p = self.NiagaraFlares[i]
+        p.life = p.life + FrameTime()
+        local frac = p.life / p.maxlife
+
+        if frac >= 1 then
+            table.remove(self.NiagaraFlares, i)
+        else
+            local fadeIn = math.Clamp(frac / 0.2, 0, 1)
+            local fadeOut = 1 - math.Clamp((frac - 0.8) / 0.2, 0, 1)
+            local alphaMul = fadeIn * fadeOut
+
+            local flicker = 1 + (math.sin(CurTime() * 17.3 + p.seed) + math.sin(CurTime() * 11.8 + p.seed)) * 0.02
+            local pulse = 1 + math.sin(CurTime() * 6 + p.seed) * 0.05
+
+            local lifeScale = p.scale * pulse * flicker
+            local brightness = alphaMul * intensity
+
+            for _, layer in ipairs(flareLayers) do
+                render.SetMaterial(layer.mat)
+                local col = layer.color
+                local size = layer.size * lifeScale
+                render.DrawSprite(
+                    pos,
+                    size,
+                    size,
+                    Color(
+                        col.r * brightness * layer.hardness,
+                        col.g * brightness * layer.hardness,
+                        col.b * brightness * layer.hardness,
+                        255 * brightness
+                    )
+                )
+            end
+        end
+    end
+
+    -- ============================================================
+    -- === Lens Objects ===
+    -- ============================================================
+    if not self.NextLensSpawn or CurTime() > self.NextLensSpawn then
+        self.NextLensSpawn = CurTime() + 0.12
+        table.insert(self.NiagaraLensObjs, {
+            pos = pos,
+            life = 0,
+            maxlife = 0.8 + math.Rand(0.5, 1.2),
+            scale = 1.0,
+            seed = math.Rand(0, 100)
+        })
+    end
+
+    for i = #self.NiagaraLensObjs, 1, -1 do
+        local p = self.NiagaraLensObjs[i]
+        p.life = p.life + FrameTime()
+        local frac = p.life / p.maxlife
+
+        if frac >= 1 then
+            table.remove(self.NiagaraLensObjs, i)
+        else
+            -- Slower flicker and expansion over distance
+            local flicker = 1.0 + math.sin(CurTime() * 1.5 + p.seed) * 0.08
+            local distScale = math.Clamp(dist / 512, 0.4, 2.5)
+            local scale = p.scale * distScale * flicker
+            local brightness = Lerp(1 - frac, 1.4, 0.8) * intensity
+
+            for _, layer in ipairs(lensObjLayers) do
+                render.SetMaterial(layer.mat)
+                local col = layer.color
+                local size = layer.baseSize * scale
+                local flicker2 = 1 + math.sin(CurTime() * layer.flickerSpeed + p.seed) * 0.05
+                render.DrawSprite(
+                    pos,
+                    (size * flicker2) * 0.10,
+                    (size * flicker2) * 0.15,
+                    Color(
+                        col.r * brightness * layer.hardness,
+                        col.g * brightness * layer.hardness,
+                        col.b * brightness * layer.hardness,
+                        255 * brightness
+                    )
+                )
+            end
+        end
+    end
 end
