@@ -256,12 +256,21 @@ function SWEP:ViewModelDrawn(vm)
     end
 end
 
+function SWEP:Initialize() 
+	weapons.Get("weapon_ut99_base").Initialize(self) 
+	local ef = EffectData() 
+	ef:SetEntity(self) 
+	ef:SetScale(0) -- sets time. 0 to make looping 
+	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
+	util.Effect("mi_a_gpusparks_01",ef) 
+	util.Effect("MI_A_Flares_01_23",ef) 
+	util.Effect("ne_ribbonm",ef) 
+end 
 
 function SWEP:DrawWorldModelTranslucent(flags) 
 	local base = weapons.Get("weapon_ut99_base")
 	if base and base.DrawWorldModelTranslucent then
 		base.DrawWorldModelTranslucent(self, flags)
-		return 
 	end
 
 	local handBone = self:LookupBone("ValveBiped.Bip01_R_Hand")
