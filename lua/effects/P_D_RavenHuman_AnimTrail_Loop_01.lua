@@ -20,7 +20,7 @@ function EFFECT:Init(data)
     -- print("raven trail created", self, self.Entity)
 	self:SetPos(self.Entity:GetPos()) 
     self:SetParent(self.Entity)
-    self:SetModel(self.Entity:GetModel()) -- to enable rendering. don't touch 
+    -- self:SetModel(self.Entity:GetModel()) -- to enable rendering. don't touch 
 	-- PrintTable(self:GetTable()) 
 
     -- self.Attachment1 = self.Entity:LookupAttachment("ValveBiped.Bip01_L_Hand")
@@ -103,6 +103,7 @@ end
 
 function EFFECT:Think()
 	if !IsValid(self.Entity) then return false end 
+	self:SetLocalPos(self.Entity:GetLocalPos()) 
 	if self.DieTime > 0 then 
 		if CurTime() > self.DieTime then return false end 
 	end 

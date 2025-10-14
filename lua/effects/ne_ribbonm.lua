@@ -65,7 +65,7 @@ function EFFECT:Init(data)
 end
 
 function EFFECT:GetTrailPos()
-    if not IsValid(self.Entity) then return end
+    if !IsValid(self.Entity) then return vector_origin end
     local att = self.Entity:GetAttachment(self.AttachmentID)
     return att and att.Pos
 end
