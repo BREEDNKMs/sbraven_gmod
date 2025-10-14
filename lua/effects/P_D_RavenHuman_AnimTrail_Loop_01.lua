@@ -1,20 +1,27 @@
 -- P_D_RavenHuman_AnimTrail_Loop_01 
 EFFECT.Mat = Material("trails/t_c_animtrail_02") 
+EFFECT.SegmentLifetime = 0.4 
 function EFFECT:Init(data)
     self.Entity = data:GetEntity()
+	self.Scale = data:GetScale() -- LifeTime 
+	-- print("scale:",self.Scale) 
+	self.Attachment = data:GetAttachment() -- hand attachment 
+	self.DieTime = CurTime() + self.Scale 
+	if !self.Attachment or self.Attachment == 0 then self.Attachment = 1 end 
 	-- Unreal SBShowTrailKey Duration
-    self.DieTime = CurTime() + 40.5 -- temporarily. don't touch. 
-    self.SegmentLifetime = 0.4
+    -- self.DieTime = CurTime() + self.DieTime -- append dietime 
+	if data:GetScale() <= 0 then self.DieTime = -1 end -- infinite 
 	self.CumulativeLengths = {}      -- optional: cumulative length at each insertion
+	-- print(CurTime(),self.DieTime) 
 
     self.TrailPoints = {}
-    if not IsValid(self.Entity) then return end
+    if !IsValid(self.Entity) then return end
 
-    print("raven trail created", self, self.Entity)
+    -- print("raven trail created", self, self.Entity)
 	self:SetPos(self.Entity:GetPos()) 
     self:SetParent(self.Entity)
     self:SetModel(self.Entity:GetModel()) -- to enable rendering. don't touch 
-	
+	-- PrintTable(self:GetTable()) 
 
     -- self.Attachment1 = self.Entity:LookupAttachment("ValveBiped.Bip01_L_Hand")
     -- self.Attachment2 = self.Entity:LookupAttachment("ValveBiped.Bip01_R_Hand")
@@ -29,8 +36,8 @@ function EFFECT:Init(data)
     self.LastPos1, self.LastPos2 = pos1, pos2
     self:AddSegment(pos1, pos2)
     self:SetRenderBounds(Vector(-256, -256, -256), Vector(256, 256, 256))
-	print("render bounds set") 
-	print(self:GetPos()) 
+	-- print("render bounds set") 
+	-- print(self:GetPos()) 
 end
 
 -- Prefer real attachments if the model has them. Fallback to bone + offset.
@@ -95,7 +102,10 @@ function EFFECT:PruneSegments()
 end
 
 function EFFECT:Think()
-    if not IsValid(self.Entity) or CurTime() > self.DieTime then return false end
+	if !IsValid(self.Entity) then return false end 
+	if self.DieTime > 0 then 
+		if CurTime() > self.DieTime then return false end 
+	end 
 
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
