@@ -25,7 +25,12 @@ NPC = {
 	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = 5 }
 } 
 
-list.Set( "NPC", "CH_M_NA_53_ent", NPC ) 
+list.Set( "NPC", "CH_M_NA_53_enemy", NPC ) 
+
+game.AddParticles( "particles/raven.pcf" ) 
+PrecacheParticleSystem("ravencoreglow_2") 
+PrecacheParticleSystem("ravencoreglow_4") 
+PrecacheParticleSystem("ravencoreglow_8") 
 
 --==============================================================================
 -- HELPER: Quaternion to Angle Conversion
@@ -355,7 +360,8 @@ end
     to cast a rotated FindAlongRay.
     Only entities within the provided entityList are kept.
 ]]
-StellarBlade.CheckWeaponCollision = function(owner, entityList)
+StellarBlade.CheckWeaponCollision = function(owner, entityList) 
+	-- print(owner) 
     if not IsValid(owner) then return {} end
 
     local wep = owner:GetActiveWeapon()
@@ -411,8 +417,8 @@ StellarBlade.CheckWeaponCollision = function(owner, entityList)
     end
 
     -- Optional debug visualization
-    -- debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
-    -- debugoverlay.Box(startPos, orientedMins, orientedMaxs, 0.1, Color(255, 0, 0, 5))
+    debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
+    debugoverlay.Box(startPos, orientedMins, orientedMaxs, 0.1, Color(255, 0, 0, 5))
 
     return filtered
 end
@@ -425,7 +431,7 @@ end
     @param hitboxID   (number|string) Hitbox index or bone name.
     @param hitboxSet  (number) Optional: hitbox set index (default = 0).
     @return table     List of entities intersecting this hitbox.
-]]
+]]-- 
 StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitboxSet)
     if not IsValid(owner) or not istable(entityList) then return {} end
     hitboxSet = hitboxSet or 0
