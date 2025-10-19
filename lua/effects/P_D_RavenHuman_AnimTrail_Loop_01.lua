@@ -99,6 +99,54 @@ function EFFECT:PruneSegments()
     end
     -- subtract removed length from total so cumulative stays consistent
     self.TotalLength = math.max(0, (self.TotalLength or 0) - removedLen)
+end 
+
+function EFFECT:UpdateRenderBounds()
+    -- Don't try to calculate bounds if there are no points
+    if not self.TrailPoints or #self.TrailPoints == 0 then
+        return
+    end
+
+    -- Initialize mins and maxs with the first point of the first segment
+    -- We must :Copy() to avoid modifying the vector in the table
+    local mins = Vector(self.TrailPoints[1].pos1)
+    local maxs = Vector(self.TrailPoints[1].pos1)
+
+    -- Iterate through all segments to expand the bounds
+    for i = 1, #self.TrailPoints do
+        local seg = self.TrailPoints[i]
+
+		--- Expand the AABB to include this segment's pos1 ---
+        -- Compare and set minimums
+        mins.x = math.min(mins.x, seg.pos1.x)
+        mins.y = math.min(mins.y, seg.pos1.y)
+        mins.z = math.min(mins.z, seg.pos1.z)
+
+        -- Compare and set maximums
+        maxs.x = math.max(maxs.x, seg.pos1.x)
+        maxs.y = math.max(maxs.y, seg.pos1.y)
+        maxs.z = math.max(maxs.z, seg.pos1.z)
+
+        -- --- Expand the AABB to include this segment's pos2 ---
+        -- Compare and set minimums
+        mins.x = math.min(mins.x, seg.pos2.x)
+        mins.y = math.min(mins.y, seg.pos2.y)
+        mins.z = math.min(mins.z, seg.pos2.z)
+
+        -- Compare and set maximums
+        maxs.x = math.max(maxs.x, seg.pos2.x)
+        maxs.y = math.max(maxs.y, seg.pos2.y)
+        maxs.z = math.max(maxs.z, seg.pos2.z)
+    end
+
+    -- Add a small amount of padding (e.g., 16 units)
+    -- This helps prevent the trail from being culled if it's
+    -- right at the edge of the screen or view.
+    local padding = Vector(16, 16, 16)
+
+    -- Set the world-space render bounds as requested
+    -- self:SetRenderBoundsWS( mins, maxs, add )
+    self:SetRenderBoundsWS(mins, maxs, padding)
 end
 
 function EFFECT:Think()
@@ -120,7 +168,8 @@ function EFFECT:Think()
         self.LastPos1, self.LastPos2 = pos1, pos2
     end
 
-    self:PruneSegments()
+    self:PruneSegments() 
+	self:UpdateRenderBounds()
     return true
 end
 
