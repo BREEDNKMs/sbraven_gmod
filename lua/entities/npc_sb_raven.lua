@@ -120,8 +120,8 @@ ENT.bHasInnateMelee1 = false
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
-ENT.SbEffectAlias = { } 
-ENT.SBAI_ActiveSkill = { } 
+ENT.SB_EffectAlias = { } 
+ENT.SBAI_ActiveSkill = { } -- SkillStepTable 
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
 ENT.CharacterSoundSetPath = "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
@@ -2379,7 +2379,16 @@ function ENT:SBAI_SetSkillStep(strSkill)
     end
 
     -- Store the current skill step's data
-    self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime(), Data = SkillStepTable }
+    self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime(), Data = SkillStepTable } 
+	
+	-- clear out old step effects 
+	for EffectAlias, EffectStatus in pairs(self.SB_EffectAlias) do 
+		-- lookup original effect fade type 
+		local LifeType = SB_EffectTable[1].Rows[EffectAlias] 
+		if LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then 
+			if EffectStatus != strSkill then self.SB_EffectAlias[EffectAlias] = nil end -- effect aliases that don't pair with skill step name strSkill 
+		end 
+	end 
 
     -- [NEW] Handle `bRetargeting`: Lock onto the current target if false
     if SkillStepTable.bRetargeting == false then
@@ -2511,10 +2520,10 @@ function ENT:SBAI_MaintainShow()
 	-- Iterate all entries (SBShowAnimKey, SBShowActorKey, SBShowSoundKey, etc.)
 	for _, data in ipairs(showdata) do
 		local props = data.Properties or {}
-		local startTime = props.StartTime or 0
+		local StartTime = props.StartTime or 0
 
 		-- Skip if not reached yet or already triggered
-		if self.SBAI_ActiveShow.Elapsed < startTime then
+		if self.SBAI_ActiveShow.Elapsed < StartTime then
 			continue
 		end
 		if self.SBAI_ActiveShow.TriggeredKeys[data.Name] then
@@ -2524,7 +2533,18 @@ function ENT:SBAI_MaintainShow()
 		-- Mark as triggered
 		self.SBAI_ActiveShow.TriggeredKeys[data.Name] = true
 		Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - self.SBAI_ActiveShow.Time)) 
-
+		
+		local CheckShowKeyTag = data.Properties.CheckShowKeyTag 
+		-- static_assert(offsetof(USBShowKey, CheckShowKeyTag) == 0x000028, "Member 'USBShowKey::CheckShowKeyTag' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, CheckNoneShowKeyTag) == 0x000038, "Member 'USBShowKey::CheckNoneShowKeyTag' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, IsBattle) == 0x000048, "Member 'USBShowKey::IsBattle' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, StartTime) == 0x00004C, "Member 'USBShowKey::StartTime' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, bKeepPlaying) == 0x000050, "Member 'USBShowKey::bKeepPlaying' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, bCheckHitLevel) == 0x000051, "Member 'USBShowKey::bCheckHitLevel' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, bEnable) == 0x000052, "Member 'USBShowKey::bEnable' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, bNeedsExecutionKey) == 0x000053, "Member 'USBShowKey::bNeedsExecutionKey' has a wrong offset!");
+		-- static_assert(offsetof(USBShowKey, Duration) == 0x000054, "Member 'USBShowKey::Duration' has a wrong offset!");
+		
 		-- === Handle key types ===
 		if data.Type == "SBShowAnimKey" then
 			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor"
@@ -2694,11 +2714,11 @@ function ENT:SBAI_MaintainShow()
 
 							local startVal = value
 							local endVal = animData.RecoverValue
-							local startTime = SysTime()
+							local StartTime = SysTime()
 
 							local function RecoverStep()
 								if not IsValid(self) or not IsValid(targetEnt) then return end
-								local rElapsed = SysTime() - startTime
+								local rElapsed = SysTime() - StartTime
 								local rNorm = math.Clamp(rElapsed / (animData.RecoverTime or 0.5), 0, 1)
 								local v = Lerp(rNorm, startVal, endVal)
 								ApplyValue(targetEnt, animData.Name, v)
@@ -2743,7 +2763,6 @@ function ENT:SBAI_MaintainShow()
 			local props = data.Properties
 			if not props then continue end
 
-			local startTime = props.StartTime or 0
 			local duration = props.Duration or (props.CameraShakeParams and props.CameraShakeParams.OscillationDuration) or 0.3
 			local scale = props.ShakeScale or 1
 			local params = props.CameraShakeParams or {}
@@ -2776,7 +2795,7 @@ function ENT:SBAI_MaintainShow()
 			local filter = nil
 			util.ScreenShake(pos, amplitude, frequency, duration, radius, airshake, filter)
 			-- Debug print
-			Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f, start=%.2f", amplitude, frequency, duration, startTime))
+			Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f ", amplitude, frequency, duration))
 
 		elseif data.Type == "SBShowChangeAttachTo" then -- call function with named parameter after passing some conditions 
 		elseif data.Type == "SBShowClientEventKey" then 
@@ -2816,30 +2835,44 @@ function ENT:SBAI_MaintainShow()
 				local ParticleScale = data.Properties.ParticleScale 
 				local bUseTargetEquipment = data.Properties.bUseTargetEquipment 
 				local RelativeLocation = data.Properties.RelativeLocation 
+				local RelativeAngle = data.Properties.RelativeAngle 
 				
 				ParticleScale = ParticleScale and ParticleScale * 10 or 10 
 				if RelativeLocation then -- convert to proper Vector table 
 					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * 1 
+				end 
+				if RelativeAngle then -- convert to proper Angle table 
+					RelativeAngle = Angle(RelativeLocation.Pitch,RelativeLocation.Yaw,RelativeLocation.Roll) 
 				end 
 				
 				local ef = EffectData() 
 				local EffectEntity = bUseTargetEquipment and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self 
 				local Pos, Ang = EffectEntity:WorldSpaceCenter(), EffectEntity:GetLocalAngles() 
 				
-				ef:SetEntity(EffectEntity) 
 				if SocketName and EffectEntity:LookupAttachment(SocketName) != 0 then 
 					Pos = EffectEntity:GetAttachment(EffectEntity:LookupAttachment(SocketName)) -- Pos.Pos, Pos.Ang 
 					Pos, Ang = Pos.Pos, Pos.Ang 
-					ef:SetAttachment(EffectEntity:LookupAttachment(SocketName)) 
+					ef:SetAttachment(EffectEntity:LookupAttachment(SocketName)) -- if the effect supports, they are parented to given attachment 
 				end 
 				if RelativeLocation then 
-					Pos, Ang = LocalToWorld(RelativeLocation,angle_zero,Pos,Ang) -- todo: also consider local angles of attachment 
-				end 
+					Pos, Ang = LocalToWorld(RelativeLocation,RelativeAngle or angle_zero,Pos,Ang) -- todo: also consider local angles of attachment 
+				end -- RelativeLocation is now global 
+				-- "RelativeRotation": {
+				-- "Pitch": 110.0,
+				-- "Yaw": -30.0,
+				-- "Roll": 0.0
+			  -- }, 
 				ef:SetAngles(Ang) 
-				ef:SetOrigin(Pos) 
-				ef:SetScale(ParticleScale) 
+				ef:SetEntity(EffectEntity) 
+				ef:SetMagnitude(data.Properties.Duration or 0) -- use as effect timer 
+				ef:SetOrigin(Pos) -- contains finalized position 
+				ef:SetScale(ParticleScale) -- scale 
 				util.Effect(AssetName,ef) 
 				-- debugoverlay.Cross(Pos,10,5) 
+			elseif data.Properties.bUsePhysParticle then 
+				local PhysParticleSet = data.Properties.PhysParticleSet 
+				local bPlayPhysParticleOnHitLocation = data.Properties.bPlayPhysParticleOnHitLocation 
+				PhysParticleSet = PhysParticleSet.ObjectName 
 			else 
 				print("AssetName not found for "..data.Type) 
 			end 
@@ -2942,7 +2975,7 @@ function ENT:SBAI_MaintainShow()
 		-- }
 	  -- },
 		elseif data.Type == "SBShowSoundEventKey" then -- start labeled soundevent 
-		elseif data.Type == "SBShowTimeScaleKey" then
+		elseif data.Type == "SBShowTimeScaleKey" then -- slow down game time. ignore for now. 
 			if not data.Properties then continue end
 			local bEnable = false 
 			if !bEnable then continue end 
@@ -3038,7 +3071,7 @@ function ENT:SBAI_MaintainShow()
 					end
 				end)
 			end)
-		elseif data.Type == "SBShowTrailKey" then -- create train on given attachment for given duration, uses ParticleSystem 
+		elseif data.Type == "SBShowTrailKey" then -- create train on given attachment for given duration, uses Niagara ParticleSystem 
 		elseif data.Type == "SBShowUIStudioSequenceKey" then -- testing stuff 
 		elseif data.Type == "SBShowVibrationKey" then -- vibration on playstation console 
 		elseif data.Type == "SBShowVisibilityKey" then 
@@ -3372,8 +3405,8 @@ end
 	-- EffectLifeType_MAX                       = 13,
 function ENT:SBAI_AddEffect(strEffect,overrideValue) 
 	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
-	local curEffects = self.SbEffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
-	if !curEffects then self.SbEffectAlias = { } curEffects = self.SbEffectAlias end 
+	local curEffects = self.SB_EffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
+	if !curEffects then self.SB_EffectAlias = { } curEffects = self.SB_EffectAlias end 
 	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
 		curEffects[strEffect] = true 
 	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then 
@@ -3400,7 +3433,7 @@ end
 
 function ENT:SBAI_CheckEffect(strEffect) -- check existence of effect, return time available 
 	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
-	local curEffects = self.SbEffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
+	local curEffects = self.SB_EffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
 	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
 		return curEffects[strEffect] -- check whether we have specific effect 
 	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
@@ -3415,13 +3448,17 @@ end
     Excludes any entities not intersecting the ray volume.
 ]]
 function ENT:SB_CheckWeaponCollision(entityList)
+	local debugColor = Color(255,0,0,5) 
     if not IsValid(self) then return {} end
 
     local wep = self:GetActiveWeapon()
     if not IsValid(wep) then return {} end
 
-    local mins, maxs = wep:GetCollisionBounds()
-    if not mins or not maxs then return {} end
+    local mins, maxs = wep:GetCollisionBounds() 
+	if wep:GetClass() == "raven_blade" then 
+		mins = mins * -1 
+		maxs = maxs * -1 
+	end 
 
     -- Get the right-hand bone transform
     local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
@@ -3436,9 +3473,9 @@ function ENT:SB_CheckWeaponCollision(entityList)
     local up      = boneAng:Up()
 
     -- Extend ray roughly along the weapon’s forward axis
-    local reach = maxs:Length() * 1.5
+    local reach = maxs:Length() * 0
     local startPos = bonePos
-    local endPos = bonePos + forward * reach
+    local endPos = bonePos + up * -reach
 
     -- Convert mins/maxs into world-space oriented bounding box corners
     -- by applying the bone’s rotation
@@ -3465,12 +3502,13 @@ function ENT:SB_CheckWeaponCollision(entityList)
     local filtered = {}
     for _, ent in ipairs(hitEnts) do
         if IsValid(ent) and table.HasValue(entityList, ent) then
+			debugColor = Color(0,255,0,5) 
             table.insert(filtered, ent)
         end
     end
 
     -- Optional debug visualization
-	-- debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 5))
+	-- debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor)
 	-- debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
 
     return filtered
@@ -3497,7 +3535,11 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 		local curHealth = enemy:Health()
 		-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
 		-- print("invoking TargetFilter with filtername:",SkillStepTable.OverrideTargetFilterAlias) 
-		tableofhittargets = StellarBlade.TargetFilter(self,SkillStepTable.OverrideTargetFilterAlias) 
+		local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
+		if !TargetFilterAlias or TargetFilterAlias == "None" then 
+			if self.SBAI_SkillTable then TargetFilterAlias = self.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
+		end 
+		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias) 
 		if string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_Weapon") then 
 			tableofhittargets = self:SB_CheckWeaponCollision(tableofhittargets) 
 		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"LegL") then 
@@ -3572,7 +3614,7 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 	else 
 		tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
 	end 
-    --- END: Added Damage Check Logic ---
+    --- END: Added Damage Check Logic --
 
 	for k,v in pairs(tableofhittargets) do 
 		if IsValid(v) and v != self then 
@@ -3643,7 +3685,9 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 				end 
 				
 				if SkillStepTable.NextStepAliasWhenHit != "None" then 
-					self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenHit)
+					if v == self:GetEnemy() then 
+						self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenHit)
+					end 
 				end 
 			end 
 		end 
@@ -4122,7 +4166,7 @@ function ENT:SbCheckActorEffect(tbl)
     local hasEffect = false
     for _, eff in ipairs(effectsToCheck) do
         -- normal alias checks
-        if ent.SbEffectAlias and ent.SbEffectAlias[eff] then
+        if ent.SB_EffectAlias and ent.SB_EffectAlias[eff] then
             hasEffect = true
         elseif ent.EffectAliasArray then
             for _, eff2 in ipairs(ent.EffectAliasArray) do
@@ -4442,7 +4486,7 @@ function ENT:SbUseEffect(tbl) -- add effect
 	local target = self:GetEnemy() 
 	if bSelfActor then target = self end 
 	if IsValid(target) then 
-		target.SbEffectAlias[target] = CurTime() 
+		target.SB_EffectAlias[target] = CurTime() 
 	end 
 end 
 
@@ -4454,6 +4498,7 @@ end
 -- FirstSkillActiveAlias is activated in SkillActiveStepTable, "FirstSkillActiveAlias": "M_Raven_ParryPreview1_Cast1"} 
 -- FirstSkillActiveAlias contains dir to animation data in FirstSkillActiveAlias, "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_ParryPreview" 
 -- inside anim metadata, actual animation exists in SBShowAnimKey's Properties["AnimResourcePath"] = "/Game/Art/Character/Monster/CH_M_NA_53/Animation/M_Raven_BurstAreaSlashEnd" 
+
 function ENT:SbUseSkill(tbl)
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
 	
@@ -4465,7 +4510,21 @@ function ENT:SbUseSkill(tbl)
 				local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias
 				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable]
 				if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then 
-					-- This logic correctly finds the *first* skill step to execute
+					-- This logic correctly finds the *first* skill step to execute 
+					-- clear out old skill effects 
+					
+					for EffectAlias, EffectStatus in pairs(self.SB_EffectAlias) do 
+						-- lookup original effect fade type 
+						local LifeType = SB_EffectTable[1].Rows[EffectAlias] 
+						if LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then 
+							if EffectStatus != v then self.SB_EffectAlias[EffectAlias] = nil end -- effect aliases that don't pair with skill step name strSkill 
+						end 
+					end 
+					
+					self.SBAI_SkillTable = SkillTable 
+					
+					-- add effects from SkillTable 
+					
 					if SkillCommandTable then
 						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias
 						-- This now correctly handles all the data-driven setup for the first step
@@ -4475,7 +4534,7 @@ function ENT:SbUseSkill(tbl)
 						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
 						tbl.Started = true
 						break -- Start with the first valid skill found 
-					else -- do not use SkillCommandTable, directly refer to SkillTable 
+					else -- does not use SkillCommandTable, directly refer to SkillTable 
 					
 					end 
 				else 
@@ -4491,9 +4550,10 @@ function ENT:SbUseSkill(tbl)
 
         -- If the active skill was cleared (e.g., skill finished or target died), the task is complete
         if not self.SBAI_ActiveSkill or not self.SBAI_ActiveSkill.Name then
-             Entity(1):ChatPrint("task complete")
+             -- Entity(1):ChatPrint("task complete")
              self:NPC_StopScriptedActivity() 
-			 self:ResetIdealActivity(ACT_RESET) 
+			 self:ResetIdealActivity(ACT_IDLE) 
+			 self.SBAI_SkillTable = nil  
              return true
         end
 
