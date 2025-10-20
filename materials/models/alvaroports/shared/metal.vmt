@@ -1,0 +1,9 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/alvaroports/shared/metal"
+	"$bumpmap"	   "dev/dev_normal"
+    "$phong" "1"
+    "$phongboost" "7"
+    "$phongfresnelranges" "[1 1 1]"
+    "$phongalbedotint" "1"
+}

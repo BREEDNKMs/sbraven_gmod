@@ -1,0 +1,23 @@
+VertexLitGeneric
+{
+	$basetexture 			"models/alvaroports/shared/gold"
+	"$bumpmap"				"dev/flat_normal"
+	"$phongexponenttexture" "models/alvaroports/shared/exponent"
+	"$phongwarptexture" 	"models/alvaroports/shared/lightwarp_metallic"
+	"$lightwarptexture" 	"models/alvaroports/shared/gold_lightwarp"
+	
+	"$phong"				"1"
+	"$phongboost"			"3"
+	"$phongfresnelranges"	"[.06 .41 2.5]"
+	"$phongexponentfactor" 	"30"
+	"$phongexponent"		"10"
+	"$phongalbedotint" 		"1"
+
+	"$rimlight"				"1"
+	"$rimlightboost"		"2"
+	"$rimlightexponent"		"1"
+	
+	"$diffuseexp"			6
+	"$halflambert"			0
+	"$nodecal"				1
+}

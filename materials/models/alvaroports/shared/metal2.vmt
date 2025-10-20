@@ -1,0 +1,20 @@
+VertexLitGeneric
+{
+	"$basetexture" "models/alvaroports/shared/metal2"
+	"$bumpmap"	   "dev/dev_normal"
+	"$phong" "1"
+	"$phongexponentfactor" "30"
+	"$phongexponent" "8" 					 // 
+	"$phongboost" "5" 					 // controle de reflexo/quanto mais alto = mais molhado/reflexo
+//	"$phongtint" "[.8 .8 .8]" 				 // controla a luz (.8 .8 .8 luz menor e mais natural )
+	"$phongfresnelranges" "[1 1 1]" 	 // força do phong, maior os numeros = phong mais branco e intenso
+
+	"$envmap" "env_cubemap"
+	"$normalmapalphaenvmapmask"  1 
+	"$envmaptint" "[.1 .1 .1]" 
+	
+	"$rimlight" "1"
+	"$rimlightexponent" "1"     // não sei, não funciona
+	"$rimlightboost" "1"        // igual o phongexponent, controla o espalhamento
+	"$rimmask" "1"				// Usa o alpha channel do phongexponenttexture como specular (inutil se usar dxt1 sem alpha)
+}
