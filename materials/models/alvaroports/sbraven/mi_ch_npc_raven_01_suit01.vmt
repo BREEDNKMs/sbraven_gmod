@@ -8,7 +8,7 @@
 	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
 	"$EmissiveBlendBaseTexture" 	"models\stellarblade\CH_NPC_Raven_01_Suit01_E"	// this is the glowing texture.vtf
 	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
-	"$EmissiveBlendTint" 			" [ 0 1 1 ] "		// RGB glow intensity. Leave at 1 1 1. This can be used to change how strong each color should glow. So instead of using a darker red color, you may use [.5 1 1] to have red glow half as strong.
+	"$EmissiveBlendTint" 			" [ 0 5 5 ] "		// RGB glow intensity. Leave at 1 1 1. This can be used to change how strong each color should glow. So instead of using a darker red color, you may use [.5 1 1] to have red glow half as strong.
 	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
 	"$detail" "models/alvaroports/SBRaven/CH_NPC_Raven_DetailMask" // working 
 	"$detailscale" "1"
