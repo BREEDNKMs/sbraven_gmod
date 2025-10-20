@@ -13,9 +13,9 @@
 	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
 	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
 	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
-	"$EmissiveBlendBaseTexture" 	"models\stellarblade\ch_m_na_53_weapon_e"	// this is the glowing texture.vtf
+	"$EmissiveBlendBaseTexture" 	"models\stellarblade\ch_m_na_53_weapon_e2"	// this is the glowing texture.vtf
 	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
-	"$EmissiveBlendTint" 			" [ 0 1 1 ] "		// RGB glow intensity. Leave at 1 1 1. 
+	"$EmissiveBlendTint" 			" [ 0 10 10 ] "		// RGB glow intensity. Leave at 1 1 1. 
 	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. 
 	// Phong Shading
     "$phong" "1"
@@ -26,9 +26,9 @@
     "$phongfresnelranges"			"[0.1 0.8 1.0]"           // tweak for a stronger fresnel/glint effect 
 	"$normalmapalphaenvmapmask" "1"             // allows bump alpha to control reflection mask
 	
-	"$envmap"						"env_cubemap"
+	"$envmap"						"env_cubemap" // $envmapmask will not work with materials using $bumpmap in most situations
 	"$envmaptint"					"[0.1 0.1 0.1]"
 	"$envmapcontrast"				1.0
-	"$envmapmask"					"models/stellarblade/CH_M_NA_53_Weapon_envmap"
+//	"$envmapmask"					"models/stellarblade/CH_M_NA_53_Weapon_envmap" // $envmapmask will not work with materials using $phong, at all. 
 	"$envmapfresnel"				1 
 } 
