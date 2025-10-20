@@ -1,0 +1,15 @@
+"UnlitGeneric"
+{
+	"$basetexture" "sprites/t_a_electricsequence_02"
+	"$additive" 1
+	"$basetexturetransform" "center .5 .5 scale 1 1 rotate 90 translate 0 0"
+	"Proxies"
+	{
+		"AnimatedTexture"
+		{
+			"animatedTextureVar" "$basetexture"
+			"animatedTextureFrameNumVar" "$frame"
+			"animatedTextureFrameRate" "30"
+		}
+	}
+}

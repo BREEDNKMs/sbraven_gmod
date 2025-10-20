@@ -1,0 +1,31 @@
+"UnlitGeneric"
+{
+    "$basetexture" "sprites/T_E_Diamond_001"
+    "$additive" "1"
+    "$nocull" "1"
+    "$ignorez" "1"
+    "$translucent" "1"
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+
+    // === Emissive Blend System ===
+    "$emissiveblendenabled" "1"
+    "$emissiveblendbasetexture" "sprites/T_A_Gradient_Vertical_08"    // gradient mask
+    "$emissiveblendtexture"       "sprites/T_A_NoiseTurbulence_04"     // glowing noise layer
+    "$emissiveblendflowtexture"   "sprites/T_E_Diamond_001"            // flow direction map (can reuse base)
+    "$emissiveblendtint"          "[1.0 1.0 1.0]"                      // neutral color
+    "$emissiveblendstrength"      "1.0"
+    "$emissiveblendscrollvector"  "[0.1 0.0]"                          // horizontal shimmer
+
+    // === Base Light Parameters ===
+//    "$selfillum" "0"
+//    "$selfillumtint" "[1.0 0.97 1.05]"
+//    "$selfillumtint" "[0 0 0]"
+    "$color" "[1.0 0.98 1.05]"
+    "$softedges" "1"
+    "$edgesoftnessstart" "0.25"
+    "$edgesoftnessend" "1.0"
+
+    // === UV Transform (TileX/Y = -1) ===
+    "$basetexturetransform" "center 0.5 0.5 scale -1 -1 rotate 0 translate 0 0"
+}

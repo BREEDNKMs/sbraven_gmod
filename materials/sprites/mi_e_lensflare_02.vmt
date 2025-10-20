@@ -1,0 +1,37 @@
+"UnlitGeneric"
+{
+    // Primary cross-shaped chromatic lensburst
+    "$basetexture" "sprites/chromaCross"
+    "$additive" "1"
+    "$ignorez" "1"
+    "$translucent" "1"
+    "$vertexalpha" "1"
+    "$vertexcolor" "1"
+    "$nocull" "1"
+
+    // HDR brightening similar to BaseBright (S)
+    "$hdrbasetextureboost" "2.5"
+
+    // Soft radial bloom overlay (simulates T_Flare_Bokeh_05)
+    "$detail" "sprites/T_Flare_Bokeh_05"
+    "$detailscale" "1.0"
+    "$detailblendmode" "7"              // Screen blend for soft overlay
+    "$detailblendfactor" "1.0"
+
+    // Subtle emissive tint – warm white with light color edge saturation
+    "$color" "[1.3 1.15 1.0]"
+    "$selfillum" "1"
+    "$selfillumtint" "[1.25 1.2 1.1]"
+    "$selfillumfresnel" "1"
+    "$selfillumfresnelminmaxexp" "[0.0 1.0 5.0]"
+
+    // Simulate edge saturation and spiral blur glow
+    "$softedges" "1"
+    "$edgecolor" "[1.2 1.1 1.0]"
+    "$edgesoftnessstart" "0.3"
+    "$edgesoftnessend" "1.0"
+
+    // Depthless rendering
+    "$alphatest" "0"
+    "$depthblend" "0"
+}

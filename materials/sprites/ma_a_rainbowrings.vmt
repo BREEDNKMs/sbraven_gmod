@@ -1,0 +1,24 @@
+"VertexLitGeneric"
+{
+    "$emissiveblendenabled" "0"
+    "$emissiveblendtexture" "sprites/T_A_rainbowRamp"       // T_A_rainbowRamp
+    "$emissiveblendbasetexture" "sprites/T_A_GrungeNoise_01"   // T_A_GrungeNoise_01
+    "$emissiveblendflowtexture" "sprites/T_A_WaterFlowNoise_03_N"     // optional normal/flowmap
+    "$emissiveblendtint" "[1.0 1.0 1.0]"
+    "$emissiveblendstrength" "1.0"
+    "$emissiveblendscrollvector" "[0.1 0.1]"             // slow horizontal flow
+
+    "$additive" "1"
+    "$ignorez" "1"
+    "$translucent" "1"
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+
+    "$selfillum" "1"
+    "$nocull" "1"
+
+    "$softedges" "1"
+    "$edgesoftnessstart" "0.2"
+    "$edgesoftnessend" "1.0"
+    "$hdrbasetextureboost" "2.0"
+}

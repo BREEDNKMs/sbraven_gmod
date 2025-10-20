@@ -1,0 +1,29 @@
+// Shader used for simple, unlit geometry and sprites.
+"Sprite"
+{
+    // Specifies the path to the main texture file (VTF).
+    // The T_B_Glow_01.vtf would be a texture file converted from your original asset.
+    "$basetexture" "sprites/t_a_shineflare_02"
+
+    // Sets the rendering mode to an additive glow, making it bright and transparent.
+    // This mimics the emissive nature of a flare.
+    "$spriterendermode" "5"
+
+    // Ensures the sprite always faces the camera. This is the standard
+    // behavior for particle billboards in both Unreal and Source.
+    "$spriteorientation" "vp_parallel"
+
+    // Allows the color of the material to be controlled by the particle system (via Lua script).
+    // This corresponds to the 'ColorBinding' in your Niagara properties.
+    "$vertexcolor" "1"
+
+    // Allows the alpha (transparency) of the material to be controlled by the particle system.
+    "$vertexalpha" "1"
+
+    // Disables Z-buffer writing, making the particle ignore depth.
+    // This helps prevent visual artifacts where the flare might clip through other objects.
+    "$ignorez" "0"
+
+    // Makes the material fully luminous and unaffected by in-game lighting.
+    "$nolod" "1"
+}

@@ -1,0 +1,38 @@
+// materials/sprites/mesh_shockwv_01_2.vmt
+"VertexLitGeneric"
+{
+    // Core lighting + cull/translucency to mimic UE4 Unlit, Translucent, TwoSided
+    "$basetexture" "vgui/black"        // Underlay stays dark; glow comes from emissiveblend
+    "$selfillum" 1
+    "$nocull" 1
+    "$translucent" 1
+    "$additive" 1
+
+    // Emissive blend block (must specify all but strength)
+    "$emissiveblendenabled" 1
+    "$emissiveblend" 1
+
+    // The glow texture that flows (UE4 RampTex -> T_A_StreakLiquid_03)
+    // Suggest exporting as VTF to: materials/sprites/t_a_streakliquid_03.vtf
+    "$emissiveblendtexture" "sprites/t_a_streakliquid_03"
+
+    // The stationary mask (UE4 MaskTex_1 -> T_A_Gradient_Vertical_04)
+    // Suggest exporting to: materials/sprites/t_a_gradient_vertical_04.vtf
+    "$emissiveblendbasetexture" "sprites/t_a_gradient_vertical_04"
+
+    // Flowmap (UE4 UvNoiseTex01 -> T_B_NoiseTurbulence_01 used as flow)
+    // Suggest exporting to: materials/sprites/t_b_noiseturbulence_01.vtf
+    "$emissiveblendflowtexture" "sprites/t_b_noiseturbulence_01"
+
+    // Tint from UE4 HighlightColor (white)
+    "$emissiveblendtint" "[4.0 5.0 20.0]"
+	"$emissiveblendstrength" "1"
+
+    // Scroll vector: UE4 instance sets Ramp_PannY = 0.0 and no Ramp_PannX override.
+    // To match the instance, keep flow controlled by the flowmap only (no global scroll).
+    "$emissiveblendscrollvector" "[0 0]"
+
+    // Optional: sprite-like soft edges and sorting hints (can be removed if undesired)
+    "$alphatest" 0
+    "$nodecal" 1
+}

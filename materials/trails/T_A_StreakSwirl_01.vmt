@@ -1,0 +1,61 @@
+// Shader used for unlit, glowing, and dynamic effects like trails and ribbons.
+"VertexLitGeneric"
+{
+    // PARAMETER: $basetexture
+    // Defines the core shape and opacity of the ribbon using its alpha channel.
+    // "$basetexture" "trails/T_A_StreakSwirl_01"
+    "$basetexture" "trails/T_B_StreakNoise_02"
+
+    // --- Core Rendering Properties ---
+
+    // Sets the material to use an additive blend mode. This creates a bright,
+    // glowing effect perfect for energy trails. It's more performant than translucent.
+    "$additive" "1"
+
+    // Allows the ribbon's color and alpha to be controlled by the particle system (Lua).
+    // This is essential for dynamic fading and color shifts.
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+	"$color2" "[1 1 1]"
+
+	"$nocull" "1"
+    
+    // --- Advanced Emissive Flow Effect ---
+    // This entire block recreates the flowing noise and distortion from the original material.
+    
+    // Enables the emissive blend effect.
+    "$emissiveblendenabled" "1"
+
+    // PARAMETER: $emissiveblendbasetexture
+    // The mask that 'contains' the flowing effect. We use the same streak texture
+    // to ensure the flow happens only within the bounds of the ribbon's shape.
+    // "$emissiveblendbasetexture" "trails/T_A_StreakSwirl_01"
+    "$emissiveblendbasetexture" "trails/T_B_StreakNoise_02"
+
+    // PARAMETER: $emissiveblendtexture
+    // The actual glowing texture that scrolls. The swirly noise provides the
+    // chaotic, energetic detail seen within the trail.
+    // "$emissiveblendtexture" "trails/T_A_SwirlNoise_03_N"
+    "$emissiveblendtexture" "trails/T_A_BaseNoise_01_N"
+
+    // PARAMETER: $emissiveblendflowtexture
+    // The flowmap that controls the direction of the scroll. This texture's
+    // color channels tell the swirly noise above which way to move, creating
+    // a liquid-like, turbulent motion instead of a simple, straight scroll.
+    "$emissiveblendflowtexture" "trails/T_A_BaseNoise_01_N"
+
+    // Tints the flowing effect. Default is white [1 1 1]. This can be
+    // overridden by the $vertexcolor property from the Lua script.
+    "$emissiveblendtint" "[1 1 1]"
+
+    // A slow, constant upward scroll vector that adds a base movement to the
+    // flowmap, giving the trail a sense of direction.
+    // "$emissiveblendscrollvector" "[0 0.15]"
+    "$emissiveblendscrollvector" "[-0.1 0.0]"
+    
+    // Sets the effect to full visibility.
+    "$emissiveblendstrength" "1.0"
+	"$softedges" "1"
+	"$softedgefactor" "0.7"  // approximates EdgeThickness/Min fade
+
+}

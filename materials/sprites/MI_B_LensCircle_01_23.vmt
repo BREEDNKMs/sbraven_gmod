@@ -1,0 +1,44 @@
+"UnlitGeneric"
+{
+    // Core additive lens flare setup
+    "$additive" "1"
+    "$translucent" "1"
+    "$ignorez" "0"                // this enables particles to be seen through walls. do not use for depth test 
+    "$vertexcolor" "1"            // allow per-particle color modulation
+    "$vertexalpha" "1"            // allow per-particle alpha fade
+
+    // Base circular mask (SphereMask_02 equivalent)
+    "$basetexture" "sprites/T_A_SphereMask_02"
+
+    // Secondary color flare overlay (Circle_02_color)
+    "$detail" "sprites/T_Flare_Circle_02_color"
+    "$detailscale" "1"
+    "$detailblendmode" "8"        // additive blend
+    "$detailblendfactor" "1"
+
+    // Optional bokeh overlay (Bokeh_05)
+    "$envmapmask" "sprites/T_Flare_Bokeh_05"
+
+    // Color controls (approximating UE scalar params)
+    "$selfillum" "1"
+    "$selfillumtint" "[1 1 1]"    // driven by particle color binding
+    "$selfillumfresnel" "1"
+
+    // Hardness / mask sharpness approximation
+    "$softedges" "1"
+    "$softedgestart" "0.7"
+    "$softedgeend" "1.0"
+
+    // Simulated RGB split (approximation)
+    // Source doesn’t support per-channel offset natively,
+    // but we can fake it with a detail texture shift
+    "$detailtint" "[1 0.95 1]"    // subtle magenta/green split
+
+    // Radial blur approximation (SpiralBlur in UE)
+    // Source doesn’t support dynamic spiral blur, but we can fake
+    // with a blurred mask variant if authored
+    // "$basetexture" "sprites/T_A_SphereMask_02_blur"
+
+    // Sorting hint (like SortOrderHint=4 in Niagara)
+    "%keywords" "flare blink lens"
+}

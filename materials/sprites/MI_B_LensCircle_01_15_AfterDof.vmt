@@ -1,0 +1,23 @@
+"UnlitGeneric"
+{
+    // Core additive lens flare setup
+    "$additive" "1"
+    "$translucent" "1"
+    "$ignorez" "0"                
+    "$vertexcolor" "1"            // allow per-particle color modulation
+    "$vertexalpha" "1"            // allow per-particle alpha fade
+
+    // Base chroma cross texture
+    "$basetexture" "sprites/chromaCross"
+
+    // Edge hardness (sharp falloff)
+    "$softedges" "1"
+    "$softedgestart" "0.95"
+    "$softedgeend" "1.0"
+
+    // No blur (UseBlur = false)
+    // No RGB split (not defined in this instance)
+
+    // Sorting keywords
+    "%keywords" "flare lens afterdof"
+}

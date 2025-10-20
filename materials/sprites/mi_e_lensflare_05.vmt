@@ -1,0 +1,41 @@
+"UnlitGeneric"
+{
+    // Base circular shape with alpha
+    "$basetexture" "sprites/T_E_Circle_001"
+    "$additive" "1"
+    "$ignorez" "1"
+    "$alphatest" "0"
+    "$alphatestreference" "0.5"
+    "$allowalphatocoverage" "1"
+    "$vertexalpha" "1"
+    "$vertexcolor" "1"
+    "$nocull" "1"
+
+    // Emissive control (soft halo / bokeh overlay) 
+	// I swapped shader from VertexLitGeneric to UnlitGeneric so emissiveblend is gone 
+	// It wasn't functional anyway 
+    "$emissiveblendenabled" "1"
+    "$emissiveblendtexture"       "sprites/T_Flare_Bokeh_05"     // soft radial overlay
+    "$emissiveblendbasetexture"   "sprites/T_A_CubeMask_01"      // mask to confine glow
+    "$emissiveblendtint"          "[1.15 1.05 1.0]"              // slight warm tint
+    "$emissiveblendstrength"      "1.0"
+    "$emissiveblendscrollvector"  "[0.0 0.0]"                    // no flow for this layer (static)
+
+    // Simulate Unreal's edge saturation intensity
+//    "$selfillum" "1"
+//    "$selfillumtint" "[1.2 1.1 1.0]"
+    "$hdrbasetextureboost" "2.0"
+//    "$selfillumfresnel" "1"
+//    "$selfillumfresnelminmaxexp" "[0.0 1.0 3.0]"
+
+    // Overlay color tint
+    "$detail" "sprites/T_Flare_Circle_02_color"
+    "$detailscale" "1.0"
+    "$detailblendmode" "0"       
+    "$detailblendfactor" "0.6"
+
+    // Soft edges for extra falloff
+    "$softedges" "1"
+    "$edgesoftnessstart" "0.25"
+    "$edgesoftnessend" "1.0"
+}

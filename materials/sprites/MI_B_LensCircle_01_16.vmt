@@ -1,0 +1,30 @@
+"UnlitGeneric"
+{
+    // Core additive lens flare setup
+    "$additive" "1"
+    "$translucent" "1"
+    "$vertexcolor" "1"            // allow per-particle color modulation
+    "$vertexalpha" "1"            // allow per-particle alpha fade
+	"$color" "[1.2 1.2 1.2]"
+
+    // Base chroma cross texture
+    "$basetexture" "sprites/chromaCross"
+
+    // Edge hardness (sharp falloff)
+    "$softedges" "1"
+    "$softedgestart" "0.85"
+    "$softedgeend" "1.0"
+
+    // Blur enabled (UseBlur = true)
+    "$detail" "sprites/T_Flare_Bokeh_05"
+    "$detailscale" "1"
+    "$detailblendmode" "2"        // additive blend
+    "$detailblendfactor" "0.5"    // subtle blur overlay
+
+    // Secondary color flare overlay
+	"$envmap" "env_cubemap" 
+    "$envmapmask" "sprites/T_Flare_Circle_02_color"
+
+    // Sorting keywords
+    "%keywords" "flare lens chromacross blur NE_FlareM002_3"
+}

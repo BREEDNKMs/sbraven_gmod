@@ -1,0 +1,42 @@
+"UnlitGeneric"
+{
+	// Base crystal texture
+	"$basetexture" "sprites/T_A_BreakCrystal_01_7"
+
+	// --- Blending / transparency ---
+	// Additive produces glowing overlays; black pixels stay transparent.
+	"$additive" "1"
+
+	// Let the engine set per-particle tint & alpha.
+	"$vertexcolor" "1"
+	"$vertexalpha" "1"
+
+	// Two-sided so particle quads are visible from both sides.
+	"$nocull" "1"
+
+	// Keep maximum quality for particles (no LOD baked in).
+	"$nolod" "1"
+
+	// Keep depth testing on by default (change to 1 to force ignore Z if you want sprites to always draw)
+	"$ignorez" "0"
+
+	// Small, safe default color (white). Niagara's per-particle vertex color will multiply this.
+	"$color" "[1.6 1.2 1.0]"   // multiply the sampled color by these values
+
+	// Alpha fallback (1.0). Particle alpha normally comes from vertex alpha / material.
+	"$alpha" "1"
+
+	// If you want to alpha test to mask opaque bits, enable and tweak the reference.
+	"$alphatest" "0"
+	"$alphatestreference" "0.33"
+
+	// Optional: keeps the sprite strongly self-illuminated on older Source builds.
+	// UnlitGeneric is already fullbright; this is harmless on engines that accept it.
+	"$selfillum" "1"
+
+	// Comments:
+	// - Per-particle color is controlled by the engine's vertex color (Niagara / GMod particle color).
+	// - Use the particle's RGBA to express both tint and intensity (e.g., Color(200,180,255) for a pale purple).
+	// - If you need particles to be brighter than usual, raise the per-particle color values in your emitter,
+	//   or switch to a material that supports emissive multiply in the shader.
+}

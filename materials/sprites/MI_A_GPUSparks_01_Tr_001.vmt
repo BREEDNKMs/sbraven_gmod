@@ -1,0 +1,41 @@
+"UnlitGeneric"
+{
+    "$basetexture"       "sprites/t_a_amberparticle_01_001"       // corresponds to Texture2D'T_A_AmberParticle_01'
+    "$translucent"       "1"
+    "$additive"          "1"                                 // Unreal: BLEND_Translucent + emissive → additive style
+    "$vertexcolor"       "1"                                 // allow per-particle tinting via color modulation
+    "$vertexalpha"       "1"
+    "$nocull"            "1"
+    "$selfillum"         "1"                                 // emulate MSM_UnlitReactive
+    "$selfillumtint"     "[5.0 2.5 0.5]"                     // VectorParameterValues → ColorTest
+    "$selfillumstrength" "1.0"
+
+    // ============================================
+    // 🔶 Optional refraction / depth bias stub
+    // Unreal had RefractionDepthBias=0.0
+    // ============================================
+    "$refractamount"     "0.0"
+
+    // ============================================
+    // 🔶 Edge fade / saturation control (MF_EdgeSaturationControl)
+    // These control smooth fading on sprite edges.
+    // Unreal parameters: EdgeSaturation=0.0, SaturationHardness=1.0
+    // ============================================
+    "$softedges"         "1"
+    "$softedgescale"     "1.0"
+    "$softedge"          "1"
+
+    // ============================================
+    // 🔶 Brightness & exposure control
+    // Unreal's MF_FXEmissiveControl gives a strong HDR boost
+    // ============================================
+    "$hdrcolorscale"     "3.0"
+
+    // ============================================
+    // 🔶 Fallbacks & lighting
+    // ============================================
+    "$lightwarptexture"  "models/effects/flatlightwarp"
+    "$ambientocclusion"  "0"
+    "$phong"             "0"
+    "$halflambert"       "1"
+}

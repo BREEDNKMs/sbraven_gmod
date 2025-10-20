@@ -1,0 +1,32 @@
+"UnlitGeneric"
+{
+    // Core additive flare setup
+    "$additive" "1"
+    "$translucent" "1"
+    "$selfillum" "1"
+    "$vertexcolor" "1"         // allow per-particle color from NS_A_Blink bindings
+    "$vertexalpha" "1"         // normalized age fades
+    "$ignorez" "1"             // consistent pop over motion (approx UE fast translucent pass)
+
+    // Base flare texture
+    "$basetexture" "sprites/T_A_LensFlare_01"
+
+    // Edge saturation approximation (strong rim brightness)
+    "$selfillumfresnel" "1"
+    "$selfillumfresnelmin" "0.0"
+    "$selfillumfresnelmax" "1.0"
+    "$selfillumfresnelexp" "4.0"   // boosts rim; tuned toward EdgeSaturationValue ≈ 1.5
+
+    // Hardness (sharper silhouette / falloff)
+    "$softedges" "1"
+    "$softedgestart" "0.85"
+    "$softedgeend" "1.0"           // tight soft edge to emulate FlareHardness = 1.75
+
+    // Optional slight intensity lift to mirror strong emission
+    "$selfillumtint" "[1 1 1]"
+
+    // Authoring notes:
+    // - If the source texture is single-channel (R), keep it in RGB; VMT lacks per-channel mask selection.
+    // - Per-particle size/rotation comes from the particle system (SpriteSize/SpriteRotation in Niagara).
+    // - If overdraw is too high, relax fresnel exp to ~3.0 and widen softedgestart to ~0.8.
+}

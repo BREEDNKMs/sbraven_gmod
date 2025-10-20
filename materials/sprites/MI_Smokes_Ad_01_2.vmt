@@ -1,0 +1,53 @@
+"UnlitGeneric"
+{
+    // Core smoke setup
+    "$basetexture" "sprites/T_B_SwirlSmoke_01"
+    "$bumpmap"     "sprites/T_B_SwirlSmoke_01_N"
+	
+	"$animatedtexture"   "1"
+    "$frame"             "0"
+
+    "$translucent" "1"
+    "$additive"    "1"
+    "$nocull"      "1"
+
+    // Allow per-particle tinting and alpha fades
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+
+    // Brightness / contrast approximation
+    "$intensity" "1.0"           // base intensity
+    "$overbrightfactor" "1.0"    // can be tuned to match ContrastPower
+    "$selfillum" "1"
+
+    // Soft edges to avoid hard cutouts
+    "$softedges" "1"
+    "$edgesoftnessstart" "0.7"
+    "$edgesoftnessend"   "1.0"
+
+    // Distance fade approximation
+    "$maxdistance" "2000"
+    "$farfadeinterval" "400"
+
+    // Normal map lighting response
+    "$normalmapalphaenvmapmask" "1"
+    "$envmap" "env_cubemap"
+    "$envmaptint" "[0.07 0.068 0.066]"   // matches reflactionColor
+    "$envmapcontrast" "1"
+    "$envmapsaturation" "1"
+
+    // Notes:
+    // - Lua will handle UV subdivision for animated frames.
+    // - ContrastPower = 1.0 is neutral, so left at defaults.
+    // - ReflactionColor mapped to envmap tint for subtle shading.
+	
+	"Proxies"
+    {
+        "AnimatedTexture"
+        {
+            "animatedtexturevar" "$basetexture"
+            "animatedtextureframenumvar" "$frame"
+            "animatedtextureframerate" "30"
+        }
+    }
+}
