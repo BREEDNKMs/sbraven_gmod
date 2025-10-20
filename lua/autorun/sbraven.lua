@@ -27,6 +27,23 @@ NPC = {
 
 list.Set( "NPC", "CH_M_NA_53_enemy", NPC ) 
 
+hook.Add("PostPlayerDraw","sbravenpm_coreglow",function(ply) 
+	if !IsValid(ply) then return end 
+	if !ply:Alive() then return end 
+	local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
+	for attachmentname, scale in pairs(attachment) do 
+		local attachmentid = ply:LookupAttachment(attachmentname) 
+		if attachmentid > 0 then 
+			local Pos = ply:GetAttachment(attachmentid).Pos -- Pos will be used 
+			local Material = Material("sprites/t_a_shineflare_02") 
+			render.SetMaterial(Material) 
+			for i = 1,math.random(1,3) do 
+				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
+			end 
+		end 
+	end 
+end) 
+
 game.AddParticles( "particles/raven.pcf" ) 
 PrecacheParticleSystem("ravencoreglow_2") 
 PrecacheParticleSystem("ravencoreglow_4") 
@@ -1020,3 +1037,4 @@ hook.Add("Think","SB_MaintainMoveTable", function()
 		StellarBlade.MaintainMoveTable(ent) 
 	end 
 end) 
+
