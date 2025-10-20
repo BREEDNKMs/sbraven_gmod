@@ -3,6 +3,7 @@ $sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkA
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -82,6 +83,7 @@ $sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_Lin
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -148,6 +150,7 @@ $sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_Lin
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -213,6 +216,7 @@ $sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  {
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -291,6 +295,7 @@ $sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -377,6 +382,7 @@ $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -444,6 +450,7 @@ $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacounterg
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -517,6 +524,7 @@ $sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  {
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -583,6 +591,7 @@ $sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd" 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -649,6 +658,7 @@ $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -719,6 +729,7 @@ $sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  {
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -789,6 +800,7 @@ $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchains
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LM
 	walkframe 12 LX LY LM
 	walkframe 18 LX LY LM
@@ -861,6 +873,7 @@ $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabchainsucces
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LM
 	walkframe 12 LX LY LM
 	walkframe 18 LX LY LM
@@ -932,6 +945,7 @@ $sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd" 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -1010,6 +1024,7 @@ $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.s
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -1096,6 +1111,7 @@ $sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd" 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -1148,6 +1164,7 @@ $sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LM
 	walkframe 6 LX LY LM
 	walkframe 9 LX LY LM
@@ -1218,6 +1235,7 @@ $sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd" 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -1300,6 +1318,7 @@ $sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -1346,6 +1365,7 @@ $sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -1414,6 +1434,7 @@ $sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -1460,6 +1481,7 @@ $sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -1506,6 +1528,7 @@ $sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -1552,6 +1575,7 @@ $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.s
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -1628,6 +1652,7 @@ $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -1698,6 +1723,7 @@ $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // fram
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -1775,6 +1801,7 @@ $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.s
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -1851,6 +1878,7 @@ $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsucces
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LM
 	walkframe 16 LX LY LM
 	walkframe 24 LX LY LM
@@ -1925,6 +1953,7 @@ $sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { // fram
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -1982,6 +2011,7 @@ $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  {
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -2060,6 +2090,7 @@ $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordau
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -2134,6 +2165,7 @@ $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // fram
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -2188,6 +2220,7 @@ $sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { // fr
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -2244,6 +2277,7 @@ $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd" 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -2327,6 +2361,7 @@ $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // fram
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -2402,6 +2437,7 @@ $sequence "m_raven_parry" "sbravenpm_anims\m_raven_parry.smd"  { // frames 120
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -2476,6 +2512,7 @@ $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -2543,6 +2580,7 @@ $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -2617,6 +2655,7 @@ $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycount
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -2695,6 +2734,7 @@ $sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  {
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -2746,6 +2786,7 @@ $sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { // frames 30
 	activity ACT_TRANSITION 1 
 	origin 0 0 42 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -2786,6 +2827,7 @@ $sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { // frames 15
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -2811,6 +2853,7 @@ $sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakerc
 	fps 32 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -2892,6 +2935,7 @@ $sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { // frames 180
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -2968,6 +3012,7 @@ $sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { // fra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -3038,6 +3083,7 @@ $sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
@@ -3137,6 +3183,7 @@ $sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { // fra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -3229,6 +3276,7 @@ $sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -3301,6 +3349,7 @@ $sequence "result_hit_add_light_fw_dw" "sbravenpm_anims\result_hit_add_light_fw_
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3330,6 +3379,7 @@ $sequence "result_hit_add_light_fw_lw" "sbravenpm_anims\result_hit_add_light_fw_
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3359,6 +3409,7 @@ $sequence "result_hit_add_light_fw_rw" "sbravenpm_anims\result_hit_add_light_fw_
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3388,6 +3439,7 @@ $sequence "result_hit_add_light_fw_uw" "sbravenpm_anims\result_hit_add_light_fw_
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3417,6 +3469,7 @@ $sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { //
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3472,6 +3525,7 @@ $sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw
 	fps 30 
 	activity ACT_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3544,6 +3598,7 @@ $sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3609,6 +3664,7 @@ $sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3674,6 +3730,7 @@ $sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3739,6 +3796,7 @@ $sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3804,6 +3862,7 @@ $sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3875,6 +3934,7 @@ $sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -3946,6 +4006,7 @@ $sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4014,6 +4075,7 @@ $sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { 
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4085,6 +4147,7 @@ $sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { 
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -4141,6 +4204,7 @@ $sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { 
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4195,6 +4259,7 @@ $sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.s
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4266,6 +4331,7 @@ $sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.s
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4335,6 +4401,7 @@ $sequence "result_state_knockdown_s_bw" "sbravenpm_anims\result_state_knockdown_
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4406,6 +4473,7 @@ $sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_
 	fps 30 
 	activity ACT_TRANSITION 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4479,6 +4547,7 @@ $sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { // frames 38
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4527,6 +4596,7 @@ $sequence "Hit_Raven_BetaCounterGrabE" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4586,6 +4656,7 @@ $sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	
 	origin 0 0 42 
@@ -4595,6 +4666,7 @@ $sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -4663,6 +4735,7 @@ $sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.s
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4722,6 +4795,7 @@ $sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.s
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	
 	origin 0 0 42 
@@ -4731,6 +4805,7 @@ $sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.s
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -4799,6 +4874,7 @@ $sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { // f
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -4858,6 +4934,7 @@ $sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { // f
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	
 	origin 0 0 42 
@@ -4867,6 +4944,7 @@ $sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { // f
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -4935,6 +5013,7 @@ $sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCount
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -5003,6 +5082,7 @@ $sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { // f
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -5070,6 +5150,7 @@ $sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryC
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -5135,6 +5216,7 @@ $sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBrea
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -5201,6 +5283,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_No
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -5271,6 +5354,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -5333,6 +5417,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5401,6 +5486,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Swo
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -5466,6 +5552,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_S
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -5523,6 +5610,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_S
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -5586,6 +5674,7 @@ $sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5639,6 +5728,7 @@ $sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frame
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -5700,6 +5790,7 @@ $sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { // fra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5758,6 +5849,7 @@ $sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { // frames 1
 	fps 60 
 	activity ACT_GLIDE 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	
 	origin 0 0 42 
@@ -5767,6 +5859,7 @@ $sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { // frames 1
 	fps 60 
 	activity ACT_GLIDE 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	
 	origin 0 0 42 
@@ -5776,6 +5869,7 @@ $sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frame
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -5810,10 +5904,32 @@ $sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frame
 	origin 0 0 42 
 } 
 
+$sequence "Proto_Guard_idle" "sbravenpm_anims\Proto_Guard_idle.smd" { // frames 129
+	fps 30 
+	activity ACT_COVER 9999 
+	addlayer inverse_proportions
+	addlayer raven_proportions
+	walkframe 10 LX LY LZ LM
+	walkframe 20 LX LY LZ LM
+	walkframe 30 LX LY LZ LM
+	walkframe 40 LX LY LZ LM
+	walkframe 50 LX LY LZ LM
+	walkframe 60 LX LY LZ LM
+	walkframe 70 LX LY LZ LM
+	walkframe 80 LX LY LZ LM
+	walkframe 90 LX LY LZ LM
+	walkframe 100 LX LY LZ LM
+	walkframe 110 LX LY LZ LM
+	walkframe 120 LX LY LZ LM
+	LX LY LZ LM 
+	origin 0 0 42 
+} 
+
 $sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
 	fps 60 
 	activity ACT_IDLE 100000 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5886,6 +6002,7 @@ $sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5958,6 +6075,7 @@ $sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	origin 0 0 42 
 } 
@@ -5966,6 +6084,7 @@ $sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	origin 0 0 42 
 } 
@@ -5974,6 +6093,7 @@ $sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	origin 0 0 42 
 } 
@@ -5982,6 +6102,7 @@ $sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frame
 	fps 60 
 	activity ACT_IDLE 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 13 LX LY LZ LM
 	walkframe 26 LX LY LZ LM
 	walkframe 39 LX LY LZ LM
@@ -6051,6 +6172,7 @@ $sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { // frame
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6119,6 +6241,7 @@ $sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // fra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6187,6 +6310,7 @@ $sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // fra
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6255,6 +6379,7 @@ $sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -6308,6 +6433,7 @@ $sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6343,6 +6469,7 @@ $sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { //
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6381,6 +6508,7 @@ $sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { // frames 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6419,6 +6547,7 @@ $sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { // frame
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6457,6 +6586,7 @@ $sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { // frame
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6495,6 +6625,7 @@ $sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6539,6 +6670,7 @@ $sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { // frames 1
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	origin 0 0 42 
 	//alignto "raven_base" 
@@ -6548,6 +6680,7 @@ $sequence "mann_fix_down_idle" "sbravenpm_anims\mann_fix_down_idle.smd" { // fra
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	origin 0 0 42 
 	//alignto "raven_base" 
@@ -6557,6 +6690,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_a" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -6629,6 +6763,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_b" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
@@ -6702,6 +6837,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_c" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -6772,6 +6908,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_d" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -6837,6 +6974,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_e" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -6906,6 +7044,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_g" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -6973,6 +7112,7 @@ $sequence "MV_Xion06_RavenAppearance_eve_h" "sbravenpm_anims\MV_Xion06_RavenAppe
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -7041,6 +7181,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01" "sbravenpm_anims\Xion01_Legacy2_Hol
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 57 LX LY LZ LM
 	walkframe 114 LX LY LZ LM
 	walkframe 171 LX LY LZ LM
@@ -7113,6 +7254,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01_1" "sbravenpm_anims\Xion01_Legacy2_H
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 4 LX LY LZ LM
 	walkframe 8 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
@@ -7181,6 +7323,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01_2" "sbravenpm_anims\Xion01_Legacy2_H
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 43 LX LY LZ LM
 	walkframe 86 LX LY LZ LM
 	walkframe 129 LX LY LZ LM
@@ -7254,6 +7397,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_02" "sbravenpm_anims\Xion01_Legacy2_Hol
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -7326,6 +7470,7 @@ $sequence "MV_WLA10_Legacy4_Hologram_Raven_01" "sbravenpm_anims\MV_WLA10_Legacy4
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 49 LX LY LZ LM
 	walkframe 98 LX LY LZ LM
 	walkframe 147 LX LY LZ LM
@@ -7399,6 +7544,7 @@ $sequence "MV_Nest_Intro_eve_A" "sbravenpm_anims\MV_Nest_Intro_eve_A.smd" { // f
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 12 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
@@ -7471,6 +7617,7 @@ $sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { // f
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 21 LX LY LZ LM
 	walkframe 42 LX LY LZ LM
 	walkframe 63 LX LY LZ LM
@@ -7543,6 +7690,7 @@ $sequence "MV_Nest_Intro_eve_C" "sbravenpm_anims\MV_Nest_Intro_eve_C.smd" { // f
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 11 LX LY LZ LM
 	walkframe 22 LX LY LZ LM
 	walkframe 33 LX LY LZ LM
@@ -7616,6 +7764,7 @@ $sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { // f
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -7686,6 +7835,7 @@ $sequence "MV_Nest_Intro_eve_H" "sbravenpm_anims\MV_Nest_Intro_eve_H.smd" { // f
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -7754,6 +7904,7 @@ $sequence "MV_Nest_Intro_raven_A" "sbravenpm_anims\MV_Nest_Intro_raven_A.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 14 LX LY LM
 	walkframe 28 LX LY LM
 	walkframe 42 LX LY LM
@@ -7825,6 +7976,7 @@ $sequence "MV_Nest_Intro_raven_B" "sbravenpm_anims\MV_Nest_Intro_raven_B.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 19 LX LY LZ LM
 	walkframe 38 LX LY LZ LM
 	walkframe 57 LX LY LZ LM
@@ -7898,6 +8050,7 @@ $sequence "MV_Nest_Intro_raven_C" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 19 LX LY LZ LM
 	walkframe 38 LX LY LZ LM
 	walkframe 57 LX LY LZ LM
@@ -7969,6 +8122,7 @@ $sequence "MV_Nest_Intro_raven_D" "sbravenpm_anims\MV_Nest_Intro_raven_D.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 15 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
 	walkframe 45 LX LY LZ LM
@@ -8042,6 +8196,7 @@ $sequence "MV_Nest_Intro_raven_E" "sbravenpm_anims\MV_Nest_Intro_raven_E.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 29 LX LY LZ LM
 	walkframe 58 LX LY LZ LM
 	walkframe 87 LX LY LZ LM
@@ -8114,6 +8269,7 @@ $sequence "MV_Nest_Intro_raven_F" "sbravenpm_anims\MV_Nest_Intro_raven_F.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LZ LM
 	walkframe 14 LX LY LZ LM
 	walkframe 21 LX LY LZ LM
@@ -8183,6 +8339,7 @@ $sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 17 LX LY LM
 	walkframe 34 LX LY LM
 	walkframe 51 LX LY LM
@@ -8254,6 +8411,7 @@ $sequence "MV_Nest_Intro_raven_H" "sbravenpm_anims\MV_Nest_Intro_raven_H.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
@@ -8321,6 +8479,7 @@ $sequence "MV_Nest_Intro_raven_I" "sbravenpm_anims\MV_Nest_Intro_raven_I.smd" { 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -8390,6 +8549,7 @@ $sequence "MV_Nest_RavenBattle_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_eve_A
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 12 LX LY LM
 	walkframe 24 LX LY LM
 	walkframe 36 LX LY LM
@@ -8463,6 +8623,7 @@ $sequence "MV_Nest_RavenBattle_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_eve_B
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 10 LX LY LM
 	walkframe 20 LX LY LM
 	walkframe 30 LX LY LM
@@ -8532,6 +8693,7 @@ $sequence "MV_Nest_RavenBattle_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_eve_C
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LM
 	walkframe 18 LX LY LM
 	walkframe 27 LX LY LM
@@ -8602,6 +8764,7 @@ $sequence "MV_Nest_RavenBattle_eve_D" "sbravenpm_anims\MV_Nest_RavenBattle_eve_D
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 7 LX LY LM
 	walkframe 14 LX LY LM
 	walkframe 21 LX LY LM
@@ -8675,6 +8838,7 @@ $sequence "MV_Nest_RavenBattle_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_eve_E
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 12 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
@@ -8745,6 +8909,7 @@ $sequence "MV_Nest_RavenBattle_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_eve_F
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 12 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
@@ -8818,6 +8983,7 @@ $sequence "MV_Nest_RavenBattle_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -8876,6 +9042,7 @@ $sequence "MV_Nest_RavenBattle_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 11 LX LY LZ LM
 	walkframe 22 LX LY LZ LM
 	walkframe 33 LX LY LZ LM
@@ -8944,6 +9111,7 @@ $sequence "MV_Nest_RavenBattle_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 22 LX LY LZ LM
 	walkframe 44 LX LY LZ LM
 	walkframe 66 LX LY LZ LM
@@ -9016,6 +9184,7 @@ $sequence "MV_Nest_RavenBattle_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 30 LX LY LZ LM
 	walkframe 60 LX LY LZ LM
 	walkframe 90 LX LY LZ LM
@@ -9088,6 +9257,7 @@ $sequence "MV_Nest_RavenBattle_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -9155,6 +9325,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 10 LX LY LZ LM
 	walkframe 20 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
@@ -9226,6 +9397,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 29 LX LY LZ LM
 	walkframe 58 LX LY LZ LM
 	walkframe 87 LX LY LZ LM
@@ -9297,6 +9469,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_A_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 13 LX LY LZ LM
 	walkframe 26 LX LY LZ LM
 	walkframe 39 LX LY LZ LM
@@ -9370,6 +9543,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 16 LX LY LZ LM
 	walkframe 32 LX LY LZ LM
 	walkframe 48 LX LY LZ LM
@@ -9441,6 +9615,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 13 LX LY LZ LM
 	walkframe 26 LX LY LZ LM
 	walkframe 39 LX LY LZ LM
@@ -9514,6 +9689,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_B_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -9561,6 +9737,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 11 LX LY LZ LM
 	walkframe 22 LX LY LZ LM
 	walkframe 33 LX LY LZ LM
@@ -9630,6 +9807,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_C_idle" "sbravenpm_anims\MV_Nest_RavenB
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -9669,6 +9847,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -9737,6 +9916,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_b" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
@@ -9806,6 +9986,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_c" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -9872,6 +10053,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 17 LX LY LZ LM
 	walkframe 34 LX LY LZ LM
 	walkframe 51 LX LY LZ LM
@@ -9944,6 +10126,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 9 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
@@ -10011,6 +10194,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_F_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 14 LX LY LZ LM
 	walkframe 28 LX LY LZ LM
 	walkframe 42 LX LY LZ LM
@@ -10081,6 +10265,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_G" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -10148,6 +10333,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 3 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
 	walkframe 9 LX LY LZ LM
@@ -10211,7 +10397,8 @@ $sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle
 $sequence "MV_Nest_RavenBattle_After_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A.smd" { // frames 1968
 	fps 60 // originally 1920 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions // actually has 19681 frames, this must last 10.25 seconds 
+	addlayer inverse_proportions
+	addlayer raven_proportions // actually has 19681 frames, this must last 10.25 seconds 
 	walkframe 31 LX LY LZ LM
 	walkframe 62 LX LY LZ LM
 	walkframe 93 LX LY LZ LM
@@ -10285,6 +10472,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_a" "sbravenpm_anims\MV_Nest_RavenBa
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 23 LX LY LZ LM
 	walkframe 46 LX LY LZ LM
 	walkframe 69 LX LY LZ LM
@@ -10358,6 +10546,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_b" "sbravenpm_anims\MV_Nest_RavenBa
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 15 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
 	walkframe 45 LX LY LZ LM
@@ -10429,6 +10618,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_A_Ch" "sbravenpm_anims\MV_Nest_RavenB
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 15 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
 	walkframe 45 LX LY LZ LM
@@ -10500,6 +10690,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_B" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 17 LX LY LZ LM
 	walkframe 34 LX LY LZ LM
 	walkframe 51 LX LY LZ LM
@@ -10571,6 +10762,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_B_a" "sbravenpm_anims\MV_Nest_RavenBa
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 6 LX LY LZ LM
 	walkframe 12 LX LY LZ LM
 	walkframe 18 LX LY LZ LM
@@ -10638,6 +10830,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_C" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 25 LX LY LZ LM
 	walkframe 50 LX LY LZ LM
 	walkframe 75 LX LY LZ LM
@@ -10711,6 +10904,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_C_a" "sbravenpm_anims\MV_Nest_RavenBa
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -10780,6 +10974,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_D" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 22 LX LY LM
 	walkframe 44 LX LY LM
 	walkframe 66 LX LY LM
@@ -10851,6 +11046,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_E" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 8 LX LY LZ LM
 	walkframe 16 LX LY LZ LM
 	walkframe 24 LX LY LZ LM
@@ -10924,6 +11120,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_F" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 5 LX LY LZ LM
 	walkframe 10 LX LY LZ LM
 	walkframe 15 LX LY LZ LM
@@ -10990,6 +11187,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBatt
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	walkframe 2 LX LY LM 
 	walkframe 3 LX LY LM 
 	walkframe 4 LX LY LM 
@@ -11060,6 +11258,7 @@ $sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
 	fps 60 
 	activity ACT_RESET 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	origin 0 0 42 
 } 
 
@@ -11071,6 +11270,7 @@ $sequence "m_raven_battleidle01" "sbravenpm_anims\m_raven_battleidle01.smd" {
 	fadeout 0.6 
 	cmdlist lockfeet
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	fudgeloop 
 } 
 
@@ -11078,6 +11278,7 @@ $sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" {
 	fps 1 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	
 	origin 0 0 42 
 	frames 73 74 
@@ -11087,6 +11288,7 @@ $sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" {
 	fps 1 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	
 	origin 0 0 42 
 	frames 623 624 
@@ -11179,6 +11381,7 @@ $sequence "walk_cautious" {
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	LX 
 	node "walking" 
 	fudgeloop 
@@ -11190,6 +11393,7 @@ $sequence "M_Raven_Caution_FwRw" "sbravenpm_anims\M_Raven_Caution_FwRw.smd" {
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	origin 0 0 42 
 	LX LY 
 	fudgeloop 
@@ -11212,6 +11416,7 @@ $sequence "m_raven_run_l" {
 	fps 30 
 	activity ACT_WALK_STIMULATED 9999 
 	addlayer inverse_proportions
+	addlayer raven_proportions
 	node "walking" 
 	fudgeloop 
 	{ event AE_NPC_LEFTFOOT 10 "" }

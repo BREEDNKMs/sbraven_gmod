@@ -639,36 +639,36 @@ $definebone "ValveBiped.Bip01_R_Finger3" "ValveBiped.Bip01_R_Hand" 2.836422 -0.1
 $definebone "ValveBiped.Bip01_R_Finger31" "ValveBiped.Bip01_R_Finger3" 1.532739 -0.000004 0 0.762032 -0.57629 -0.220765 0 0 0 0 0 0
 $definebone "ValveBiped.Bip01_R_Finger32" "ValveBiped.Bip01_R_Finger31" 0.833151 0.000004 0.000005 -0.554341 -24.681595 0.000456 0 0 0 0 0 0
 
-$keyvalues
-{
-	particles 
-	{
-		"effect"		 
-		{
-			"name" "ravencoreglow_8"
-			"attachment_type" "follow_attachment"
-			"attachment_point" "FX_Core_01"
-		}
-		"effect"		 
-		{
-			"name" "ravencoreglow_4"
-			"attachment_type" "follow_attachment"
-			"attachment_point" "FX_Core_02"
-		}
-		"effect"		 
-		{
-			"name" "ravencoreglow_2"
-			"attachment_type" "follow_attachment"
-			"attachment_point" "FX_Core_03"
-		}
-		"effect"		 
-		{
-			"name" "ravencoreglow_2"
-			"attachment_type" "follow_attachment"
-			"attachment_point" "FX_Core_04"
-		}
-	} 
-}
+//$keyvalues
+//{
+//	particles 
+//	{
+//		"effect"		 
+//		{
+//			"name" "ravencoreglow_8"
+//			"attachment_type" "follow_attachment"
+//			"attachment_point" "FX_Core_01"
+//		}
+//		"effect"		 
+//		{
+//			"name" "ravencoreglow_4"
+//			"attachment_type" "follow_attachment"
+//			"attachment_point" "FX_Core_02"
+//		}
+//		"effect"		 
+//		{
+//			"name" "ravencoreglow_2"
+//			"attachment_type" "follow_attachment"
+//			"attachment_point" "FX_Core_03"
+//		}
+//		"effect"		 
+//		{
+//			"name" "ravencoreglow_2"
+//			"attachment_type" "follow_attachment"
+//			"attachment_point" "FX_Core_04"
+//		}
+//	} 
+//}
 
 $jigglebone "lPectoral"
 {
@@ -2050,6 +2050,12 @@ $animation "a_inverse_proportions" "sbravenpm_anims\a_inverse_proportions.smd" {
 	subtract "a_proportions_corrective_animation" 0
 }
 
+$animation "a_raven_proportions" "sbravenpm_anims\a_raven_proportions.smd" {
+	fps 30
+	// Crowbar writes this subtract option to prevent jigglebone and poseparameter problems when delta sequences are recompiled.
+	subtract "a_proportions_corrective_animation" 0
+}
+
 $sequence "reference" {
 	"sbravenpm_anims\reference.smd"
 	fadein 0.2
@@ -2070,6 +2076,12 @@ $sequence "proportions" { // fixes bone locations to better resemble a woman cha
 
 $sequence "inverse_proportions" { // reverses bone manipulations added with "a_proportions" for raven animations 
 	"a_inverse_proportions"
+	predelta
+	snap
+}
+
+$sequence "raven_proportions" { // reverses bone manipulations added with "a_proportions" for raven animations 
+	"a_raven_proportions"
 	predelta
 	snap
 }

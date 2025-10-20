@@ -1,8 +1,14 @@
-$sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1.smd" { 
+$cmdlist "raven_proportions" { 
+	addlayer "inverse_proportions" 
+	addlayer "raven_proportions" 
+} 
+
+$sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1.smd" { // frames 378 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	260.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	241.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	69.0	 "M_Raven_vo_Dmg_L_Cue" }
@@ -13,11 +19,12 @@ $sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkA
 	{event AE_SV_PLAYSOUND 	313.0	 "M_Raven_Bodyfall_L_Cue" }
 } 
 
-$sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_e.smd" { 
+$sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_e.smd" { // // frames 158 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	11.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	90.0	 "M_Raven_Bodyfall_L_Cue" }
 	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_Bodyfall_S_Cue" }
@@ -25,20 +32,81 @@ $sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_Lin
 	{event AE_SV_PLAYSOUND 	14.0	 "M_Raven_vo_Dmg_L_Cue" }
 } 
 
-$sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_s.smd" { 
+$sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_s.smd" { // frames 220 
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	24.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_SV_PLAYSOUND 	115.0	 "M_Raven_Bodyfall_S_Cue" }
 } 
 
-$sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  { 
+$sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  { // frames 288
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+walkframe 5 LX LY LZ
+walkframe 10 LX LY LZ
+walkframe 15 LX LY LZ
+walkframe 20 LX LY LZ
+walkframe 25 LX LY LZ
+walkframe 30 LX LY LZ
+walkframe 35 LX LY LZ
+walkframe 40 LX LY LZ
+walkframe 45 LX LY LZ
+walkframe 50 LX LY LZ
+walkframe 55 LX LY LZ
+walkframe 60 LX LY LZ
+walkframe 65 LX LY LZ
+walkframe 70 LX LY LZ
+walkframe 75 LX LY LZ
+walkframe 80 LX LY LZ
+walkframe 85 LX LY LZ
+walkframe 90 LX LY LZ
+walkframe 95 LX LY LZ
+walkframe 100 LX LY LZ
+walkframe 105 LX LY LZ
+walkframe 110 LX LY LZ
+walkframe 115 LX LY LZ
+walkframe 120 LX LY LZ
+walkframe 125 LX LY LZ
+walkframe 130 LX LY LZ
+walkframe 135 LX LY LZ
+walkframe 140 LX LY LZ
+walkframe 145 LX LY LZ
+walkframe 150 LX LY LZ
+walkframe 155 LX LY LZ
+walkframe 160 LX LY LZ
+walkframe 165 LX LY LZ
+walkframe 170 LX LY LZ
+walkframe 175 LX LY LZ
+walkframe 180 LX LY LZ
+walkframe 185 LX LY LZ
+walkframe 190 LX LY LZ
+walkframe 195 LX LY LZ
+walkframe 200 LX LY LZ
+walkframe 205 LX LY LZ
+walkframe 210 LX LY LZ
+walkframe 215 LX LY LZ
+walkframe 220 LX LY LZ
+walkframe 225 LX LY LZ
+walkframe 230 LX LY LZ
+walkframe 235 LX LY LZ
+walkframe 240 LX LY LZ
+walkframe 245 LX LY LZ
+walkframe 250 LX LY LZ
+walkframe 255 LX LY LZ
+walkframe 260 LX LY LZ
+walkframe 265 LX LY LZ
+walkframe 270 LX LY LZ
+walkframe 275 LX LY LZ
+walkframe 280 LX LY LZ
+walkframe 285 LX LY LZ
+
+    // If you want motion extraction to continue until the final frame explicitly:
+    walkframe 288 LX LY LZ
 	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_NPC_RIGHTFOOT 	175.0	 "" }
 	{event AE_SV_PLAYSOUND 	250.0	 "M_Raven_SwordSwish_M_Cue" }
@@ -53,11 +121,12 @@ $sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  {
 	{event AE_SV_PLAYSOUND 	148.0	 "M_Raven_vo_Cast_S_Cue" }
 } 
 
-$sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd"  { 
+$sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd"  { // frames 431
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	407.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
 	{event AE_NPC_LEFTFOOT 	201.0	 "" }
@@ -76,11 +145,12 @@ $sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd
 	{event AE_NPC_RIGHTFOOT 	90.0	 "" }
 } 
 
-$sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd"  { 
+$sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd"  { // frames 101 
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_NPC_LEFTFOOT 	16.0	 "" }
 	{event AE_SV_PLAYSOUND 	43.0	 "M_Raven_Cloth_XL2_Ce" }
@@ -91,11 +161,12 @@ $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd
 	{event AE_NPC_LEFTFOOT 	58.0	 "" }
 } 
 
-$sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacountergrabsuccess.smd"  { 
+$sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacountergrabsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	233.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
 	{event AE_NPC_LEFTFOOT 	47.0	 "" }
@@ -109,33 +180,36 @@ $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacounterg
 	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
 } 
 
-$sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  { 
+$sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  { // frames 54
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_NPC_LEFTFOOT 	38.0	 "" }
 } 
 
-$sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd"  { 
+$sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd"  { // frames 54
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
 	{event AE_NPC_LEFTFOOT 	38.0	 "" }
 } 
 
-$sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { 
+$sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames 102
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	56.0	 "" }
 	{event AE_NPC_LEFTFOOT 	57.0	 "" }
 	{event AE_SV_PLAYSOUND 	39.0	 "M_Raven_Cloth_XL2_Ce" }
@@ -149,11 +223,12 @@ $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  {
 	{event AE_SV_PLAYSOUND 	23.0	 "M_Raven_vo_Cast_M_Cue" }
 } 
 
-$sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  { 
+$sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  { // frames 102
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
 	{event AE_NPC_LEFTFOOT 	32.0	 "" }
 	{event AE_NPC_LEFTFOOT 	59.0	 "" }
@@ -167,11 +242,12 @@ $sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  {
 	{event AE_NPC_RIGHTFOOT 	88.0	 "" }
 } 
 
-$sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { 
+$sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	233.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
 	{event AE_NPC_LEFTFOOT 	47.0	 "" }
@@ -184,11 +260,12 @@ $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchains
 	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
 } 
 
-$sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd"  { 
+$sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
 	{event AE_NPC_LEFTFOOT 	41.0	 "" }
@@ -200,11 +277,12 @@ $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd
 	{event AE_SV_PLAYSOUND 	229.0	 "M_Raven_Bodyfall_S_Cue" }
 } 
 
-$sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd"  { 
+$sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd"  { // frames 451
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	160.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	170.0	 "" }
 	{event AE_NPC_LEFTFOOT 	8.0	 "" }
@@ -220,11 +298,12 @@ $sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd" 
 	{event AE_NPC_RIGHTFOOT 	380.0	 "" }
 } 
 
-$sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.smd"  { 
+$sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.smd"  { // frames 375
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	203.0	 "M_Raven_vo_Cast_L_Cue" }
 	{event AE_NPC_LEFTFOOT 	237.0	 "" }
 	{event AE_SV_PLAYSOUND 	36.0	 "M_Raven_Cloth_XL_Cue" }
@@ -242,29 +321,32 @@ $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.s
 	{event AE_NPC_RIGHTFOOT 	267.0	 "" }
 } 
 
-$sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd"  { 
+$sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd"  { // frames 129
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_L_Cue" }
 } 
 
-$sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend.smd"  { 
+$sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend.smd"  { // frames 177
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_SwordSwish_XL_C_Cue" }
 	{event AE_NPC_RIGHTFOOT 	127.0	 "" }
 	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_L_Cue" }
 } 
 
-$sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd"  { 
+$sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd"  { // frames 321
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	84.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_NPC_RIGHTFOOT 	301.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	38.0	 "" }
@@ -287,54 +369,60 @@ $sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd" 
 	{event 1004 	43.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
 } 
 
-$sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { 
+$sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	7.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
 } 
 
-$sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { 
+$sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { // frames 420
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 } 
 
-$sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { 
+$sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	7.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	25.0	 "" }
 } 
 
-$sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { 
+$sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	6.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
 } 
 
-$sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { 
+$sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	6.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	22.0	 "" }
 } 
 
-$sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.smd"  { 
+$sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.smd"  { // frames 237
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_NPC_RIGHTFOOT 	146.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	20.0	 "" }
@@ -345,11 +433,12 @@ $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.s
 	{event AE_NPC_RIGHTFOOT 	218.0	 "" }
 } 
 
-$sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { 
+$sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // frames 228
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	68.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	74.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
@@ -357,11 +446,12 @@ $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  {
 	{event AE_NPC_RIGHTFOOT 	207.0	 "" }
 } 
 
-$sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { 
+$sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // frames 300
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	260.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	235.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	104.0	 "" }
@@ -373,11 +463,12 @@ $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  {
 	{event AE_NPC_LEFTFOOT 	186.0	 "" }
 } 
 
-$sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.smd"  { 
+$sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.smd"  { // frames 414
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	12.0	 "M_Raven_vo_Cast_L_Cue" }
 	{event AE_NPC_LEFTFOOT 	385.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	360.0	 "" }
@@ -388,11 +479,12 @@ $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.s
 	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_Cloth_XL2_Ce" }
 } 
 
-$sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsuccessend.smd"  { 
+$sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsuccessend.smd"  { // frames 454
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	361.0	 "" }
 	{event AE_SV_PLAYSOUND 	120.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_NPC_RIGHTFOOT 	306.0	 "" }
@@ -404,22 +496,24 @@ $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsucces
 	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
 
-$sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { 
+$sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { // frames 90
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
 	{event AE_NPC_LEFTFOOT 	38.0	 "" }
 	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
-$sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  { 
+$sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  { // frames 219
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	72.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_NPC_LEFTFOOT 	140.0	 "" }
 	{event AE_SV_PLAYSOUND 	161.0	 "M_Raven_SwordSwish_S_Cue" }
@@ -437,11 +531,12 @@ $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  {
 	{event AE_NPC_LEFTFOOT 	38.0	 "" }
 } 
 
-$sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordaura.smd"  { 
+$sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordaura.smd"  { // frames 225
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	45.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
 	{event AE_NPC_LEFTFOOT 	107.0	 "" }
@@ -453,11 +548,12 @@ $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordau
 	{event 1004 	37.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
-$sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { 
+$sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // frames 81
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
 	{event AE_NPC_LEFTFOOT 	42.0	 "" }
 	{event AE_SV_PLAYSOUND 	35.0	 "M_Raven_SwordSwish_S_Cue" }
@@ -465,11 +561,12 @@ $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  {
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
 } 
 
-$sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { 
+$sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { // frames 81
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	71.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
 	{event AE_NPC_LEFTFOOT 	68.0	 "" }
@@ -479,11 +576,12 @@ $sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  {
 	{event AE_NPC_LEFTFOOT 	42.0	 "" }
 } 
 
-$sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd"  { 
+$sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd"  { // frames 480
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
 	{event AE_SV_PLAYSOUND 	140.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_NPC_LEFTFOOT 	93.0	 "" }
@@ -501,11 +599,12 @@ $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd" 
 	{event AE_NPC_LEFTFOOT 	285.0	 "" }
 } 
 
-$sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { 
+$sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // frames 240
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	214.0	 "" }
 	{event AE_NPC_LEFTFOOT 	227.0	 "" }
 	{event AE_NPC_LEFTFOOT 	80.0	 "" }
@@ -515,11 +614,12 @@ $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  {
 	{event AE_NPC_LEFTFOOT 	162.0	 "" }
 } 
 
-$sequence "m_raven_parry" "sbravenpm_anims\m_raven_parry.smd"  { 
+$sequence "m_raven_parry" "sbravenpm_anims\m_raven_parry.smd"  { // frames 120
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	49.0	 "M_Raven_SwordSwish_XS_Cue" }
 	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
 	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_ATK_S_Cue" }
@@ -528,11 +628,12 @@ $sequence "m_raven_parry" "sbravenpm_anims\m_raven_parry.smd"  {
 	{event AE_NPC_LEFTFOOT 	5.0	 "" }
 } 
 
-$sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo.smd"  { 
+$sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo.smd"  { // frames 261
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_RIGHTFOOT 	100.0	 "" }
 	{event AE_NPC_LEFTFOOT 	150.0	 "" }
 	{event AE_NPC_LEFTFOOT 	4.0	 "" }
@@ -541,11 +642,12 @@ $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo
 	{event AE_NPC_RIGHTFOOT 	209.0	 "" }
 } 
 
-$sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash.smd"  { 
+$sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash.smd"  { // frames 297
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_vo_Cast_L_Cue" }
 	{event AE_NPC_RIGHTFOOT 	29.0	 "" }
 	{event AE_SV_PLAYSOUND 	150.0	 "M_Raven_SwordSwish_XL_Cue" }
@@ -554,11 +656,12 @@ $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash
 	{event AE_NPC_LEFTFOOT 	267.0	 "" }
 } 
 
-$sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycounterslashsuccess.smd"  { 
+$sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycounterslashsuccess.smd"  { // frames 408
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_NPC_LEFTFOOT 	379.0	 "" }
 	{event 1004 	308.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_NPC_LEFTFOOT 	326.0	 "" }
@@ -572,37 +675,41 @@ $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycount
 	{event AE_SV_PLAYSOUND 	304.0	 "M_Raven_vo_ATK_L_Cue" }
 } 
 
-$sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  { 
+$sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  { // frames 84
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_ATK_S_Cue" }
 } 
 
-$sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { 
+$sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { // frames 30
 	fps 31 
 	activity ACT_TRANSITION 1 
 	origin 0 0 42 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	transition "walking" "" 
 	{event AE_NPC_LEFTFOOT 	6.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
 } 
 
-$sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { 
+$sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { // frames 15
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	transition "" "walking" 
 	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
 } 
 
-$sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakercounter.smd" { 
+$sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakercounter.smd" { // frames 360
 	fps 32 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_NPC_LEFTFOOT 	222.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	248.0	 "" }
@@ -619,10 +726,11 @@ $sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakerc
 	{event AE_NPC_LEFTFOOT 	275.0	 "" }
 } 
 
-$sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { 
+$sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { // frames 180
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
 	{event AE_NPC_LEFTFOOT 	50.0	 "" }
@@ -634,10 +742,11 @@ $sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" {
 	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_SwordSwish_XL_Cue" }
 } 
 
-$sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { 
+$sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { // frames 198
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_NPC_RIGHTFOOT 	118.0	 "" }
 	{event AE_NPC_LEFTFOOT 	122.0	 "" }
@@ -653,10 +762,11 @@ $sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" {
 	{event 1004 	111.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
-$sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
+$sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd" { // frames 540
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	343.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_NPC_RIGHTFOOT 	449.0	 "" }
@@ -691,10 +801,11 @@ $sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd
 	{event AE_SV_PLAYSOUND 	261.0	 "M_Raven_vo_Cast_M_Cue" }
 } 
 
-$sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { 
+$sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { // frames 381
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	175.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
@@ -718,10 +829,11 @@ $sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" {
 	{event AE_SV_PLAYSOUND 	185.0	 "M_Raven_Cloth_XL2_Ce" }
 } 
 
-$sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" { 
+$sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" { // frames 270
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	110.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
@@ -735,51 +847,57 @@ $sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" 
 	{event AE_NPC_LEFTFOOT 	223.0	 "" }
 } 
 
-$sequence "result_hit_add_light_fw_dw" "sbravenpm_anims\result_hit_add_light_fw_dw.smd" { 
+$sequence "result_hit_add_light_fw_dw" "sbravenpm_anims\result_hit_add_light_fw_dw.smd" { // frames 20
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
 
-$sequence "result_hit_add_light_fw_lw" "sbravenpm_anims\result_hit_add_light_fw_lw.smd" { 
+$sequence "result_hit_add_light_fw_lw" "sbravenpm_anims\result_hit_add_light_fw_lw.smd" { // frames 20
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
 
-$sequence "result_hit_add_light_fw_rw" "sbravenpm_anims\result_hit_add_light_fw_rw.smd" { 
+$sequence "result_hit_add_light_fw_rw" "sbravenpm_anims\result_hit_add_light_fw_rw.smd" { // frames 20
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
 
-$sequence "result_hit_add_light_fw_uw" "sbravenpm_anims\result_hit_add_light_fw_uw.smd" { 
+$sequence "result_hit_add_light_fw_uw" "sbravenpm_anims\result_hit_add_light_fw_uw.smd" { // frames 20
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
 
-$sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { 
+$sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { // frames 45
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw.smd" { 
+$sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw.smd" { // frames 60
 	fps 30 
 	activity ACT_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_NPC_RIGHTFOOT 	33.0	 "" }
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
@@ -787,95 +905,105 @@ $sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw
 	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light_fw_dw.smd" { 
+$sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light_fw_dw.smd" { // frames 54
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	6.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light_fw_lw.smd" { 
+$sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light_fw_lw.smd" { // frames 54
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	12.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light_fw_rw.smd" { 
+$sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light_fw_rw.smd" { // frames 54
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	12.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light_fw_uw.smd" { 
+$sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light_fw_uw.smd" { // frames 54
 	fps 30 
 	activity ACT_BIG_FLINCH 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	6.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw.smd" { 
+$sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw.smd" { // frames 60
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	16.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	10.0	 "" }
 } 
 
-$sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw.smd" { 
+$sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw.smd" { // frames 60
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event AE_NPC_LEFTFOOT 	9.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	15.0	 "" }
 } 
 
-$sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd" { 
+$sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd" { // frames 60
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { 
+$sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { // frames 60
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	transition "result_state_groggy_l" "" 
 	{event AE_NPC_LEFTFOOT 	45.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
 } 
 
-$sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { 
+$sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { // frames 140
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	node "result_state_groggy_l" 
 } 
 
-$sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { 
+$sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { // frames 40
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	transition "" "result_state_groggy_l" 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_P_Cue" }
@@ -885,38 +1013,42 @@ $sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" {
 	{event 1004 	31.0	 "*Skill/Monster/Raven/M_Raven_SwordDrop.wav" }
 } 
 
-$sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.smd" { 
+$sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.smd" { // frames 60
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	transition "result_state_knockdown_l" "" 
 	{event AE_NPC_LEFTFOOT 	17.0	 "" }
 	{event AE_NPC_RIGHTFOOT 	32.0	 "" }
 } 
 
-$sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.smd" { 
+$sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.smd" { // frames 60
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	node result_state_knockdown_l 
 } 
 
-$sequence "result_state_knockdown_s_bw" "sbravenpm_anims\result_state_knockdown_s_bw.smd" { 
+$sequence "result_state_knockdown_s_bw" "sbravenpm_anims\result_state_knockdown_s_bw.smd" { // frames 60
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Dmg_L_Cue" }
 	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_L_Cue" }
 } 
 
-$sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_s_fw.smd" { 
+$sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_s_fw.smd" { // frames 60
 	fps 30 
 	activity ACT_TRANSITION 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_Dmg_L_Cue" }
 	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_S_Cue" }
@@ -925,834 +1057,946 @@ $sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_
 	{event AE_NPC_RIGHTFOOT 	5.0	 "" }
 } 
 
-$sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { 
+$sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { // frames 38
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	{event AE_NPC_RIGHTFOOT 	1.0	 "" }
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Dmg_L_Cue" }
 } 
 
-$sequence "Hit_Raven_BetaCounterGrabE" "sbravenpm_anims\Hit_Raven_BetaCounterGrabE.smd" { 
+$sequence "Hit_Raven_BetaCounterGrabE" "sbravenpm_anims\Hit_Raven_BetaCounterGrabE.smd" { // frames 51
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGrabL.smd" { 
+$sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGrabL.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGrabS.smd" { 
+$sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGrabS.smd" { // frames 240
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.smd" { 
+$sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.smd" { // frames 51
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.smd" { 
+$sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.smd" { 
+$sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.smd" { // frames 240
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { 
+$sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { // frames 51
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { 
+$sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { 
+$sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { // frames 240
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCounter.smd" { 
+$sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCounter.smd" { // frames 360
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { 
+$sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { // frames 410
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryCounterSlashSuccess.smd" { 
+$sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryCounterSlashSuccess.smd" { // frames 396
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBreakerCounter.smd" { 
+$sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBreakerCounter.smd" { // frames 348
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven.smd" { // frames 369
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_E.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_E.smd" { // frames 161
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_S.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_S.smd" { // frames 120
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast.smd" { // frames 282
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E.smd" { // frames 147
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S.smd" { 
+$sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S.smd" { // frames 220
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { 
+$sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 90
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { 
+$sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frames 210
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { 
+$sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { // frames 100
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { 
+$sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { // frames 1
 	fps 60 
-	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	activity ACT_GLIDE 1 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { 
+$sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { // frames 1
 	fps 60 
-	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	activity ACT_GLIDE 1 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { 
+$sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frames 30
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { 
+$sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
 	fps 60 
 	activity ACT_IDLE 100000 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { 
+$sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { 
+$sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { 
+$sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { 
+$sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { 
+$sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frames 800 
 	fps 60 
-	activity ACT_IDLE 50000 
-	addlayer inverse_proportions 
+	activity ACT_IDLE 1 
+	addlayer inverse_proportions
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { 
-	fps 60 
-	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
-	origin 0 0 42 
-} 
-
-$sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { 
+$sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { // frames 60
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { 
+$sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // frames 60
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { 
+$sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // frames 60
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { 
+$sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { 
+$sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { 
+$sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { // frames 30
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { 
+$sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { // frames 30
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { 
+$sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { // frames 30
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { 
+$sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { // frames 30
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
-$sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { 
+$sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
+	fps 60 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
+	origin 0 0 42 
+} 
+
+$sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { // frames 1
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "mann_fix_down_idle" "sbravenpm_anims\mann_fix_down_idle.smd" { 
+$sequence "mann_fix_down_idle" "sbravenpm_anims\mann_fix_down_idle.smd" { // frames 1
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_a" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_A.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_a" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_A.smd" { // frames 498
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_b" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_B.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_b" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_B.smd" { // frames 576
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_c" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_C.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_c" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_C.smd" { // frames 305
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_d" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_D.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_d" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_D.smd" { // frames 391
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_e" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_e.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_e" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_e.smd" { // frames 238
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_g" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_g.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_g" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_g.smd" { // frames 344
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Xion06_RavenAppearance_eve_h" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_h.smd" { 
+$sequence "MV_Xion06_RavenAppearance_eve_h" "sbravenpm_anims\MV_Xion06_RavenAppearance_eve_h.smd" { // frames 465
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "Xion01_Legacy2_Hologram_Raven_01" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01.smd" { 
+$sequence "Xion01_Legacy2_Hologram_Raven_01" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01.smd" { // frames 3590
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "Xion01_Legacy2_Hologram_Raven_01_1" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_1.smd" { 
+$sequence "Xion01_Legacy2_Hologram_Raven_01_1" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_1.smd" { // frames 235
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "Xion01_Legacy2_Hologram_Raven_01_2" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_2.smd" { 
+$sequence "Xion01_Legacy2_Hologram_Raven_01_2" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_01_2.smd" { // frames 2720
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "Xion01_Legacy2_Hologram_Raven_02" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_02.smd" { 
+$sequence "Xion01_Legacy2_Hologram_Raven_02" "sbravenpm_anims\Xion01_Legacy2_Hologram_Raven_02.smd" { // frames 189
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_WLA10_Legacy4_Hologram_Raven_01" "sbravenpm_anims\MV_WLA10_Legacy4_Hologram_Raven_01.smd" { 
+$sequence "MV_WLA10_Legacy4_Hologram_Raven_01" "sbravenpm_anims\MV_WLA10_Legacy4_Hologram_Raven_01.smd" { // frames 3097
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_eve_A" "sbravenpm_anims\MV_Nest_Intro_eve_A.smd" { 
+$sequence "MV_Nest_Intro_eve_A" "sbravenpm_anims\MV_Nest_Intro_eve_A.smd" { // frames 760
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { 
+$sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { // frames 1317
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_eve_C" "sbravenpm_anims\MV_Nest_Intro_eve_C.smd" { 
+$sequence "MV_Nest_Intro_eve_C" "sbravenpm_anims\MV_Nest_Intro_eve_C.smd" { // frames 700
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { 
+$sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { // frames 364
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_eve_H" "sbravenpm_anims\MV_Nest_Intro_eve_H.smd" { 
+$sequence "MV_Nest_Intro_eve_H" "sbravenpm_anims\MV_Nest_Intro_eve_H.smd" { // frames 467
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_A" "sbravenpm_anims\MV_Nest_Intro_raven_A.smd" { 
+$sequence "MV_Nest_Intro_raven_A" "sbravenpm_anims\MV_Nest_Intro_raven_A.smd" { // frames 860
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_B" "sbravenpm_anims\MV_Nest_Intro_raven_B.smd" { 
+$sequence "MV_Nest_Intro_raven_B" "sbravenpm_anims\MV_Nest_Intro_raven_B.smd" { // frames 1200
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_C" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
+$sequence "MV_Nest_Intro_raven_C" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { // frames 1164
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_D" "sbravenpm_anims\MV_Nest_Intro_raven_D.smd" { 
+$sequence "MV_Nest_Intro_raven_D" "sbravenpm_anims\MV_Nest_Intro_raven_D.smd" { // frames 948
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_E" "sbravenpm_anims\MV_Nest_Intro_raven_E.smd" { 
+$sequence "MV_Nest_Intro_raven_E" "sbravenpm_anims\MV_Nest_Intro_raven_E.smd" { // frames 1822
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_F" "sbravenpm_anims\MV_Nest_Intro_raven_F.smd" { 
+$sequence "MV_Nest_Intro_raven_F" "sbravenpm_anims\MV_Nest_Intro_raven_F.smd" { // frames 420
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { 
+$sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { // frames 1052
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_H" "sbravenpm_anims\MV_Nest_Intro_raven_H.smd" { 
+$sequence "MV_Nest_Intro_raven_H" "sbravenpm_anims\MV_Nest_Intro_raven_H.smd" { // frames 516
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_Intro_raven_I" "sbravenpm_anims\MV_Nest_Intro_raven_I.smd" { 
+$sequence "MV_Nest_Intro_raven_I" "sbravenpm_anims\MV_Nest_Intro_raven_I.smd" { // frames 480
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_eve_A.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_eve_A.smd" { // frames 762
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_eve_B.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_eve_B.smd" { // frames 591
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_eve_C.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_eve_C.smd" { // frames 541
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_D" "sbravenpm_anims\MV_Nest_RavenBattle_eve_D.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_D" "sbravenpm_anims\MV_Nest_RavenBattle_eve_D.smd" { // frames 448
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_eve_E.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_eve_E.smd" { // frames 732
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_eve_F.smd" { 
+$sequence "MV_Nest_RavenBattle_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_eve_F.smd" { // frames 768
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_raven_A.smd" { 
+$sequence "MV_Nest_RavenBattle_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_raven_A.smd" { // frames 146
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_raven_B.smd" { 
+$sequence "MV_Nest_RavenBattle_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_raven_B.smd" { // frames 644
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_raven_C.smd" { 
+$sequence "MV_Nest_RavenBattle_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_raven_C.smd" { // frames 1386
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_raven_D.smd" { 
+$sequence "MV_Nest_RavenBattle_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_raven_D.smd" { // frames 1880 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_raven_E.smd" { 
+$sequence "MV_Nest_RavenBattle_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_raven_E.smd" { // frames 460
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A.smd" { // frames 615 
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_a.smd" { // frames 1797
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_b.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_A_b.smd" { // frames 822
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_B" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B.smd" { // frames 980
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_B_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_b.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_a.smd" { // frames 828
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_B_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_B_b.smd" { // frames 76
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_C_idle" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C_idle.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C.smd" { // frames 656
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_d_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_C_idle" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_C_idle.smd" { // frames 30
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_d_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_b.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_d_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_a.smd" { // frames 295
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_d_c" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_c.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_d_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_b.smd" { // frames 540
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_E.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_d_c" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_d_c.smd" { // frames 340
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_E.smd" { // frames 1057
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_F_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F.smd" { // frames 521
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_G" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_G.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_F_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_F_a.smd" { // frames 850
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_Z.smd" { 
+$sequence "MV_Nest_RavenBattle_After_eve_G" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_G.smd" { // frames 346
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A.smd" { // actually has 19681 frames, this must last 10.25 seconds 
+$sequence "MV_Nest_RavenBattle_After_eve_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_eve_Z.smd" { // frames 163
+	fps 30 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_RavenBattle_After_raven_A" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A.smd" { // frames 1968
 	fps 60 // originally 1920 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions // actually has 19681 frames, this must last 10.25 seconds 
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_A_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_a.smd" { // frames 1454
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_b.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_A_b" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_b.smd" { // frames 921
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_A_Ch" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_Ch.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_A_Ch" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_A_Ch.smd" { // frames 919
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B.smd" { // frames 1051 
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_B_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_B_a.smd" { // frames 347
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C.smd" { // frames 1581
 	fps 60 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_C_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C_a.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_C_a" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_C_a.smd" { // frames 478
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_D.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_D.smd" { // frames 1351
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_E.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_E.smd" { // frames 509
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_F.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_F" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_F.smd" { // frames 283
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_Z.smd" { 
+$sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBattle_After_raven_Z.smd" { // frames 392
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
 
-$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { 
+$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
 	fps 60 
 	activity ACT_RESET 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 } 
 
@@ -1763,22 +2007,24 @@ $sequence "m_raven_battleidle01" "sbravenpm_anims\m_raven_battleidle01.smd" {
 	fadein 0.6
 	fadeout 0.6 
 	cmdlist lockfeet
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	fudgeloop 
 } 
 
-$sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { // from tests 
+$sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
 	fps 1 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	frames 73 74 
 } 
 
-$sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { // from tests 
+$sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
 	fps 1 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX LY LZ LXR LYR LZR LM 
 	origin 0 0 42 
 	frames 623 624 
 } 
@@ -1869,17 +2115,18 @@ $sequence "walk_cautious" {
 	blendwidth 3
 	fadein 0.3
 	fadeout 0.3
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
+	LX 
 	node "walking" 
 	fudgeloop 
 	{ event AE_NPC_LEFTFOOT 10 "" }
 	{ event AE_NPC_RIGHTFOOT 28 "" }
 } 
 
-$sequence "M_Raven_Caution_FwRw" "sbravenpm_anims\M_Raven_Caution_FwRw.smd" { // from tests 
+$sequence "M_Raven_Caution_FwRw" "sbravenpm_anims\M_Raven_Caution_FwRw.smd" { 
 	fps 30 
 	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	origin 0 0 42 
 	LX LY 
 	fudgeloop 
@@ -1901,10 +2148,9 @@ $sequence "m_raven_run_l" {
 	blendwidth 9
 	fps 30 
 	activity ACT_WALK_STIMULATED 9999 
-	addlayer inverse_proportions 
+	addlayer inverse_proportions
 	node "walking" 
 	fudgeloop 
 	{ event AE_NPC_LEFTFOOT 10 "" }
 	{ event AE_NPC_RIGHTFOOT 28 "" }
-
 } 

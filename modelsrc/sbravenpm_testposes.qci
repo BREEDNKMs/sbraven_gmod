@@ -243,3 +243,28 @@ $sequence "m_raven_run_l9" {
 	fudgeloop 
 } 
 
+$sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 42 
+	frames 73 74 
+} 
+
+$sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 42 
+	frames 623 624 
+} 
+
+$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 42 
+} 
