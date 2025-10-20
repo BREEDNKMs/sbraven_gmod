@@ -2839,10 +2839,10 @@ function ENT:SBAI_MaintainShow()
 				
 				ParticleScale = ParticleScale and ParticleScale * 10 or 10 
 				if RelativeLocation then -- convert to proper Vector table 
-					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * 1 
+					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * 0.42 
 				end 
 				if RelativeAngle then -- convert to proper Angle table 
-					RelativeAngle = Angle(RelativeLocation.Pitch,RelativeLocation.Yaw,RelativeLocation.Roll) 
+					RelativeAngle = Angle(RelativeAngle.Pitch,RelativeAngle.Yaw,RelativeAngle.Roll) 
 				end 
 				
 				local ef = EffectData() 
@@ -2862,12 +2862,14 @@ function ENT:SBAI_MaintainShow()
 				-- "Yaw": -30.0,
 				-- "Roll": 0.0
 			  -- }, 
+			  -- print("networking Ang:",Ang, "for:",AssetName) 
 				ef:SetAngles(Ang) 
 				ef:SetEntity(EffectEntity) 
 				ef:SetMagnitude(data.Properties.Duration or 0) -- use as effect timer 
 				ef:SetOrigin(Pos) -- contains finalized position 
 				ef:SetScale(ParticleScale) -- scale 
 				util.Effect(AssetName,ef) 
+				debugoverlay.Cross(Pos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
 				local PhysParticleSet = data.Properties.PhysParticleSet 
@@ -4732,4 +4734,20 @@ function ENT:ON_LIGHT_DAMAGE()
 		end 
 	end 
 	return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) 
+end 
+
+function ENT:Draw(flags) 
+	scripted_ents.Get("npc_unreali_female").Draw(self,flags) 
+	local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
+	for attachmentname, scale in pairs(attachment) do 
+		local attachmentid = self:LookupAttachment(attachmentname) 
+		if attachmentid > 0 then 
+			local Pos = self:GetAttachment(attachmentid).Pos -- Pos will be used 
+			local Material = Material("sprites/t_a_shineflare_02") 
+			render.SetMaterial(Material) 
+			for i = 1,math.random(1,3) do 
+				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
+			end 
+		end 
+	end 
 end 
