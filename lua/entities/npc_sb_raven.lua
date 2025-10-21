@@ -2658,7 +2658,7 @@ function ENT:SBAI_MaintainShow()
 				RecoverTime = data.RecoverTime,
 				RecoverWaitTime = data.RecoverWaitTime,
 				Target = data.Target or "Self",
-				StartSysTime = SysTime(),
+				StartSysTime = CurTime(),
 			}
 			self.SBAI_AnimationBlueprint[data.Name] = animData
 
@@ -2698,7 +2698,7 @@ function ENT:SBAI_MaintainShow()
 					return
 				end
 
-				local elapsed = SysTime() - animData.StartSysTime
+				local elapsed = CurTime() - animData.StartSysTime
 				local norm = math.Clamp(elapsed / animData.Duration, 0, 1)
 				local value = GetCurveValue(animData.CurveKeys, norm)
 				ApplyValue(targetEnt, animData.Name, value)
@@ -2714,11 +2714,11 @@ function ENT:SBAI_MaintainShow()
 
 							local startVal = value
 							local endVal = animData.RecoverValue
-							local StartTime = SysTime()
+							local StartTime = CurTime()
 
 							local function RecoverStep()
 								if not IsValid(self) or not IsValid(targetEnt) then return end
-								local rElapsed = SysTime() - StartTime
+								local rElapsed = CurTime() - StartTime
 								local rNorm = math.Clamp(rElapsed / (animData.RecoverTime or 0.5), 0, 1)
 								local v = Lerp(rNorm, startVal, endVal)
 								ApplyValue(targetEnt, animData.Name, v)
@@ -3475,7 +3475,7 @@ function ENT:SB_CheckWeaponCollision(entityList)
     local up      = boneAng:Up()
 
     -- Extend ray roughly along the weapon’s forward axis
-    local reach = maxs:Length() * 0
+    local reach = maxs:Length() * 0 -- 0 because reach scalar is disabled 
     local startPos = bonePos
     local endPos = bonePos + up * -reach
 
@@ -3597,7 +3597,7 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 
 			-- Condition 1: The enemy is a player and the GM:PlayerShouldTakeDamage hook returns false.
 			local playerHookBlocked = enemy:IsPlayer() and hook.Run("GM:PlayerShouldTakeDamage", enemy, self) == false
-			local ai_block_damage = enemy:IsNPC() and cvars.Bool("ai_block_damage") == false 
+			local ai_block_damage = enemy:IsNPC() and cvars.Bool("ai_block_damage") == true 
 
 			-- Condition 2: The enemy has God Mode enabled.
 			local isGodMode = enemy:IsFlagSet(FL_GODMODE)
@@ -3895,7 +3895,7 @@ function ENT:SBAI_SelectTask(taskTable, startIndex)
                     -- start the task if not running
                     if not sub._running then
                         sub._running = true
-                        sub._startTime = SysTime()
+                        sub._startTime = CurTime()
                     end
 
                     local handler = self[cleanTaskKey]
@@ -4668,7 +4668,7 @@ function ENT:SbUseableTimeReset(tbl)
         self.SBAI_Timers[KeyName.."_Cycle"] = nil
     end
 
-    return "Success"
+    return true 
 end
 
 
@@ -4677,10 +4677,10 @@ function ENT:SbWait(data)
     local returnSucceeded = data.bReturnSucceeded or false
 
     if !data.startTime then
-        data.startTime = SysTime()
+        data.startTime = CurTime()
     end
 
-    local elapsed = SysTime() - data.startTime
+    local elapsed = CurTime() - data.startTime
     print("in SbWait", elapsed, waitTime)
 
     if elapsed < waitTime then
@@ -4736,6 +4736,8 @@ function ENT:ON_LIGHT_DAMAGE()
 	return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) 
 end 
 
+local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
+
 function ENT:Draw(flags) 
 	scripted_ents.Get("npc_unreali_female").Draw(self,flags) 
 	local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
@@ -4743,8 +4745,8 @@ function ENT:Draw(flags)
 		local attachmentid = self:LookupAttachment(attachmentname) 
 		if attachmentid > 0 then 
 			local Pos = self:GetAttachment(attachmentid).Pos -- Pos will be used 
-			local Material = Material("sprites/t_a_shineflare_02") 
-			render.SetMaterial(Material) 
+			
+			render.SetMaterial(t_a_shineflare_02) 
 			for i = 1,math.random(1,3) do 
 				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
 			end 
