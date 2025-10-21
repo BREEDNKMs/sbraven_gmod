@@ -2467,23 +2467,6 @@ function ENT:SBAI_SetShow(showpath)
 	self.SBAI_ActiveShow.Stopped = false 
 	showname = "SB_"..showname 
 	self:SBAI_MaintainShow() 
-	-- for _,animpaths in pairs(_G[showname]) do 
-		-- if animpaths.Type == "SBShowAnimKey" then 
-			-- local Target = animpaths.Properties.Target 
-			-- if !Target then -- may not preexist 
-				-- Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
-			-- end 
-			-- if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
-				-- print(animpaths) 
-				-- local anim = animpaths.Properties.AnimResourcePath 
-				-- anim = string.GetFileFromFilename(anim) 
-				-- self:NPC_StartScriptedActivity(anim,true) 
-			-- elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
-				-- -- play interaction, not handled yet 
-				-- -- because target entity most likely doesn't have any of those anims 
-			-- end 
-		-- end 
-	-- end 
 	return showname -- return true on animation play, false on not play 
 end 
 
@@ -2835,41 +2818,52 @@ function ENT:SBAI_MaintainShow()
 				local ParticleScale = data.Properties.ParticleScale 
 				local bUseTargetEquipment = data.Properties.bUseTargetEquipment 
 				local RelativeLocation = data.Properties.RelativeLocation 
-				local RelativeAngle = data.Properties.RelativeAngle 
+				local RelativeRotation = data.Properties.RelativeRotation 
 				
 				ParticleScale = ParticleScale and ParticleScale * 10 or 10 
 				if RelativeLocation then -- convert to proper Vector table 
-					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * 0.42 
+					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * flRescale 
 				end 
-				if RelativeAngle then -- convert to proper Angle table 
-					RelativeAngle = Angle(RelativeAngle.Pitch,RelativeAngle.Yaw,RelativeAngle.Roll) 
+				local relAng = angle_zero
+				if RelativeRotation then -- convert to proper Angle table 
+					relAng = Angle(RelativeRotation.Pitch or 0, RelativeRotation.Yaw or 0, RelativeRotation.Roll or 0)
 				end 
 				
 				local ef = EffectData() 
 				local EffectEntity = bUseTargetEquipment and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self 
-				local Pos, Ang = EffectEntity:WorldSpaceCenter(), EffectEntity:GetLocalAngles() 
 				
-				if SocketName and EffectEntity:LookupAttachment(SocketName) != 0 then 
-					Pos = EffectEntity:GetAttachment(EffectEntity:LookupAttachment(SocketName)) -- Pos.Pos, Pos.Ang 
-					Pos, Ang = Pos.Pos, Pos.Ang 
-					ef:SetAttachment(EffectEntity:LookupAttachment(SocketName)) -- if the effect supports, they are parented to given attachment 
-				end 
-				if RelativeLocation then 
-					Pos, Ang = LocalToWorld(RelativeLocation,RelativeAngle or angle_zero,Pos,Ang) -- todo: also consider local angles of attachment 
-				end -- RelativeLocation is now global 
+				local worldPos = EffectEntity:GetPos() 
+				local worldAng = EffectEntity:GetLocalAngles() -- use world-space angles, not GetLocalAngles()
+
+				if SocketName and EffectEntity:LookupAttachment(SocketName) and EffectEntity:LookupAttachment(SocketName) ~= 0 then
+					local att = EffectEntity:GetAttachment(EffectEntity:LookupAttachment(SocketName))
+					if att and att.Pos and att.Ang then
+						worldPos = att.Pos
+						worldAng = att.Ang
+						-- Let effect know we used an attachment index (so engine can parent)
+						ef:SetAttachment(EffectEntity:LookupAttachment(SocketName))
+					end
+				end
+				if RelativeLocation then
+					-- LocalToWorld(localPos, localAng, originPos, originAng)
+					local finalPos, finalAng = LocalToWorld(RelativeLocation, relAng, worldPos, worldAng)
+					worldPos, worldAng = finalPos, finalAng
+				end
+				
+				-- RelativeLocation is now global 
 				-- "RelativeRotation": {
 				-- "Pitch": 110.0,
 				-- "Yaw": -30.0,
 				-- "Roll": 0.0
 			  -- }, 
 			  -- print("networking Ang:",Ang, "for:",AssetName) 
-				ef:SetAngles(Ang) 
+				ef:SetAngles(worldAng) 
 				ef:SetEntity(EffectEntity) 
 				ef:SetMagnitude(data.Properties.Duration or 0) -- use as effect timer 
-				ef:SetOrigin(Pos) -- contains finalized position 
+				ef:SetOrigin(worldPos) -- contains finalized position 
 				ef:SetScale(ParticleScale) -- scale 
 				util.Effect(AssetName,ef) 
-				debugoverlay.Cross(Pos,10,2) 
+				debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
 				local PhysParticleSet = data.Properties.PhysParticleSet 
@@ -3136,7 +3130,9 @@ function ENT:SBAI_LookupCharacterSound(key)
     return nil
 end 
 
-function ENT:SBAI_BuildSoundScript(parsedjson)
+function ENT:SBAI_BuildSoundScript(parsedjson) 
+	print("parsedjson") 
+	print(parsedjson) 
 	if not istable(parsedjson) then
 		parsedjson = SB_ImportJSON(parsedjson)
 	end
@@ -3969,7 +3965,7 @@ function ENT:SBAI_SelectTask(taskTable, startIndex)
 end
 
 -- Tick the runtime tree
-function ENT:SBAI_RunBehavior()
+function ENT:SBAI_RunBehavior() 
     if not self.SBAI_CurBehaviorStack then
         self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     end
@@ -4012,11 +4008,24 @@ function ENT:NPC_TranslateActivity(act)
 	end 
 end 
 
+function ENT:NPC_TranslateLuaSchedule(oldsched) 
+	local retVal = scripted_ents.Get("npc_unreali_female").NPC_TranslateLuaSchedule(self,oldsched) 
+	if retVal and retVal.DebugName == "LUASCHED_FLEE_FROM_BEST_SOUND" then 
+		return LUASCHED_RAVEN_BLINK_FROM_BESTSOUND 
+	elseif retVal and retVal.DebugName == "LUASCHED_TAKE_COVER_FROM_BEST_SOUND" then 
+		return LUASCHED_RAVEN_BLINK_FROM_BESTSOUND 
+	end 
+	return retVal 
+end 
+
 function ENT:NPC_ShouldConductBehaviorTree() 
 	-- likely performing a skill 
 	if self:GetCurrentSchedule() == SCHED_SCENE_GENERIC then -- may be in a skill task 
-		if self.scriptActivity then 
-			return true 
+		if self.SBAI_ActiveSkill and self.SBAI_ActiveSkill.Name then 
+			if !self.SBAI_ActiveSkill.Stopped then 
+				-- print("self.SBAI_ActiveSkill.Name:",self.SBAI_ActiveSkill.Name) 
+				return true 
+			end 
 		end 
 	end 
 	-- if true then return false end 
@@ -4047,18 +4056,21 @@ function ENT.ShotRegulator:UpdateRestTimes()
 	Outer.ShotRegulator.flMaxRestInterval = 0.1  
 end 
 
-function ENT:NPC_ShouldBlockRunAI() 
+function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
+	-- when blocked (true), it calls Lua schedules 
+	-- when not blocked (false), it calls Engine schedules 
+	if self.CurrentSchedule and self.CurrentSchedule.DebugName == "LUASCHED_RAVEN_BLINK" then return true end 
 	if self:NPC_ShouldConductBehaviorTree() then return true end 
 	return scripted_ents.Get("npc_unreali_female").NPC_ShouldBlockRunAI(self) 
 end 
 
 function ENT:CustomRunAI() 
 	self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
-	if self:NPC_ShouldConductBehaviorTree() then 
+	local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
+	if NPC_ShouldConductBehaviorTree then 
 		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
 	end 
 	local retVal = scripted_ents.Get("npc_unreali_female").CustomRunAI(self) 
-	-- self:DoSchedule( self.CurrentSchedule ) 
 end 
 
 -- FlowAbortMode: 
@@ -4736,6 +4748,225 @@ function ENT:ON_LIGHT_DAMAGE()
 	return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) 
 end 
 
+-- Master blink task: single-task orchestration for whole 1.4s blink timeline
+-- Put this in your ENT definition (server-side)
+
+local function clamp(v, a, b)
+    if v < a then return a end
+    if v > b then return b end
+    return v
+end
+
+function ENT:TASK_BLINK(data)
+    -- timeline constants (seconds) derived from the JSON 
+	self:ClearCondition(COND.TASK_FAILED) 
+    local TOTAL_DURATION = 1.4
+    local SOUND_START = 0.03
+    local DECAL_START = 0.042
+    local PARTICLE1_START = 0.2
+    local PARTICLE1_DUR = 0.2735 -- from JSON
+    local HIDE_START = 0.3
+    local HIDE_DUR = 0.2             -- actorkey duration -> hide from 0.3 to 0.5
+    local UNHIDE_AT = HIDE_START + HIDE_DUR -- 0.5
+    local PARTICLE2_START = 0.51
+    local PARTICLE2_DUR = 0.18714339
+    -- movement interpolation window -- move while hidden
+    local MOVE_START = HIDE_START
+    local MOVE_END = UNHIDE_AT 
+	local Pos = data == 1 and self:GetGoalPos() or self:GetLastPosition() 
+	self:ClearGoal() -- clear goal after we have stored the GetGoalPos 
+
+    if ( self:GetTaskStatus() == TASKSTATUS_NEW ) then
+        print("TASK_BLINK: started (ent " .. tostring(self:EntIndex()) .. ")")
+
+        -- initialize blink state
+        self.CurrentSchedule.blink = self.CurrentSchedule.blink or {}
+        self.CurrentSchedule.blink.startpos = self:GetPos()
+		self.CurrentSchedule.blink.targetpos = Pos 
+        self.CurrentSchedule.blink.triggered = {
+            sound = false,
+            decal = false,
+            particle1 = false,
+            hide = false,
+            move = false,
+            particle2 = false,
+            unhide = false,
+            finished = false
+        }
+
+        -- try to set sequence safely (non-blocking)
+		self:SetIdealActivity(ACT_DO_NOT_DISTURB) 
+        if self.ResetSequence then
+            -- Set the animation sequence name; if this fails it won't break task
+            pcall(function() self:ResetSequence("M_Raven_RapidMoveBack") self:SetCycle(0.0) end)
+        elseif self.SetSequence then
+            pcall(function() self:SetSequence("M_Raven_RapidMoveBack") end)
+        end
+
+        -- prepare sound path (use your existing helper; fallback if nil)
+        local soundPath = nil
+        if self.SBAI_BuildSoundScript then
+            local success, SoundScript = pcall(function() return self:SBAI_BuildSoundScript("addons/sbraven/data_static/SB/Content/Sound/Skill/Monster/Raven/M_Raven_Skill_RapidMove_Cue.json") end)
+            if success and SoundScript and SoundScript.SoundPath then soundPath = SoundScript.SoundPath end
+        end
+
+        -- store values for runtime use
+        self.CurrentSchedule.blink.soundPath = soundPath
+
+        -- mark task as running
+        self:SetTaskStatus(TASKSTATUS_RUN_MOVE_AND_TASK)
+        return
+    end
+
+    -- Running state: update timeline
+    -- Use self:TaskTime() where available (time since task started).
+    local t = 0
+    if self.TaskTime then
+        t = self:TaskTime()
+    else
+        -- fallback if TaskTime is not defined for some NPC variant
+        self.CurrentSchedule.blink._sysstart = self.CurrentSchedule.blink._sysstart or CurTime()
+        t = CurTime() - self.CurrentSchedule.blink._sysstart
+    end
+	
+	Pos = data == 1 and self.CurrentSchedule.blink.targetpos or self:GetLastPosition() 
+	self:SetIdealActivity(ACT_DO_NOT_DISTURB) 
+    local tr = self.CurrentSchedule.blink.triggered
+
+    -- 1) play sound early (SOUND_START)
+    if not tr.sound and t >= SOUND_START then
+        tr.sound = true
+        if self.CurrentSchedule.blink.soundPath then
+            self:EmitSound(self.CurrentSchedule.blink.soundPath)
+            print("TASK_BLINK: emitted sound", self.CurrentSchedule.blink.soundPath)
+        else
+            -- no sound script found; attempt to play by name if you know it
+            -- self:EmitSound("path/to/fallback.wav")
+            print("TASK_BLINK: no sound script available")
+        end
+    end
+
+    -- 2) create initial decal (approx start)
+	local disabled = true 
+	if !disabled then 
+		if not tr.decal and t >= DECAL_START then
+			tr.decal = true
+			-- Use same effect for decal if you prefer; here we create a small effect to hint
+			local ef = EffectData()
+			ef:SetOrigin(self:WorldSpaceCenter())
+			ef:SetEntity(self)
+			ef:SetScale(1)
+			ef:SetMagnitude(0)
+			-- If you have a decal effect name, spawn it; otherwise the effect will be ignored safely by clients that don't have it
+			util.Effect("NS_A_Blink", ef) -- this was used before in your code; harmless if missing
+			print("TASK_BLINK: decal/effect spawned (decal start)")
+		end
+	end 
+
+    -- 3) first particle (pre-hide flare) at ~PARTICLE1_START
+    if not tr.particle1 and t >= PARTICLE1_START then
+        tr.particle1 = true
+        local ef = EffectData()
+        ef:SetOrigin(self:WorldSpaceCenter())
+        ef:SetEntity(self)
+        ef:SetMagnitude(0.2735217)
+        ef:SetScale(10)
+        util.Effect("NS_A_Blink", ef)
+        print("TASK_BLINK: particle1 spawned")
+    end
+
+    -- 4) hide actor at HIDE_START and begin interpolated movement
+    if not tr.hide and t >= HIDE_START then
+        tr.hide = true
+        -- hide visually:
+        if self.SetNoDraw then
+            self:SetNoDraw(true)
+        else
+            -- fallback: add EF_NODRAW effect if SetNoDraw unavailable
+            pcall(function() self:AddEffects(EF_NODRAW) end)
+        end
+        -- capture fresh startpos in case the entity moved slightly after task start
+        self.CurrentSchedule.blink.startpos = self:GetPos()
+        print(("TASK_BLINK: hidden at t=%.3f, startpos=%s targetpos=%s"):format(t, tostring(self.CurrentSchedule.blink.startpos), tostring(Pos)))
+    end
+
+    -- 5) while hidden, lerp SetPos from startpos -> targetpos between MOVE_START and MOVE_END
+    if tr.hide and not tr.move then
+		self:NextThink(CurTime()) 
+        if t >= MOVE_START and t <= MOVE_END then
+            local frac = 0
+            if MOVE_END > MOVE_START then frac = clamp((t - MOVE_START) / (MOVE_END - MOVE_START), 0, 1) end
+            local newpos = LerpVector(frac, self.CurrentSchedule.blink.startpos, Pos)
+            -- keep original z if you want to preserve current height; the JSON moves in local axis, but we assume teleport target is valid
+			local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), newpos)
+            self:SetLocalPos(moveResult.vEndPosition)
+            -- optionally zero velocity to prevent physics interference
+            if self.GetVelocity and self.SetLocalVelocity then
+                -- no-op: keep it stable if function available
+            end
+            -- don't set move flag until we actually reach the end
+            if frac >= 1.0 then
+                tr.move = true
+                print("TASK_BLINK: move finished (arrived at target)")
+            end
+        elseif t > MOVE_END then
+            -- if we missed the window for some reason, just snap and mark move done
+			local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), Pos)
+            self:SetLocalPos(moveResult.vEndPosition)
+            tr.move = true
+            print("TASK_BLINK: move forced to target (late)")
+        end
+    end
+
+    -- 6) unhide at UNHIDE_AT
+    if tr.hide and not tr.unhide and t >= UNHIDE_AT then
+        tr.unhide = true
+        if self.SetNoDraw then
+            self:SetNoDraw(false)
+        else
+            pcall(function() self:RemoveEffects(EF_NODRAW) end)
+        end
+        print("TASK_BLINK: unhidden at t=" .. tostring(t))
+    end
+
+    -- 7) second particle near PARTICLE2_START
+    if not tr.particle2 and t >= PARTICLE2_START then
+        tr.particle2 = true
+        local ef = EffectData()
+        ef:SetOrigin(self:WorldSpaceCenter())
+        ef:SetEntity(self)
+        ef:SetMagnitude(0.18714339)
+        ef:SetScale(10)
+        util.Effect("NS_A_Blink", ef)
+        print("TASK_BLINK: particle2 spawned")
+    end
+
+    -- 8) finish at TOTAL_DURATION
+    if not tr.finished and t >= TOTAL_DURATION then
+        tr.finished = true
+        -- final cleanup to be safe
+        if self.SetNoDraw then self:SetNoDraw(false) end
+        print("TASK_BLINK: finished at t=" .. tostring(t))
+        self:TaskComplete()
+        return
+    end
+    -- the task is still running; return and will be called again next tick
+end
+
+-- create single-task schedule to use the master task
+if SERVER then
+    LUASCHED_RAVEN_BLINK = ai_schedule.New("LUASCHED_RAVEN_BLINK")
+    -- single master task; ensures the whole 1.4s timeline is controlled here
+    LUASCHED_RAVEN_BLINK:AddTaskEx("TASK_BLINK", "TASK_BLINK", 0)
+	
+	LUASCHED_RAVEN_BLINK_FROM_BESTSOUND = ai_schedule.New("LUASCHED_RAVEN_BLINK_FROM_BESTSOUND")
+	LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_STOP_MOVING",0) 
+    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_SET_FAIL_SCHEDULE",SCHED_COWER) 
+    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_STORE_BESTSOUND_REACTORIGIN_IN_SAVEPOSITION",0) 
+    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_GET_PATH_AWAY_FROM_BEST_SOUND",3000) 
+    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:AddTaskEx("TASK_BLINK", "TASK_BLINK", 1)
+end
+
 local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
 
 function ENT:Draw(flags) 
@@ -4745,7 +4976,6 @@ function ENT:Draw(flags)
 		local attachmentid = self:LookupAttachment(attachmentname) 
 		if attachmentid > 0 then 
 			local Pos = self:GetAttachment(attachmentid).Pos -- Pos will be used 
-			
 			render.SetMaterial(t_a_shineflare_02) 
 			for i = 1,math.random(1,3) do 
 				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
