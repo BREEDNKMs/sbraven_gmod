@@ -563,14 +563,390 @@ local exampleShaderLUT = {
 		0.0
 }
 
+local NiagaraDataInterfaceColorCurve_0 = {
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.9982762,
+        0.9987933,
+        1.0,
+        1.0,
+        0.99164724,
+        0.9941531,
+        1.0,
+        1.0,
+        0.9803357,
+        0.98623496,
+        1.0,
+        1.0,
+        0.96465164,
+        0.97525615,
+        1.0,
+        1.0,
+        0.94490564,
+        0.96143395,
+        1.0,
+        1.0,
+        0.92140764,
+        0.94498533,
+        1.0,
+        1.0,
+        0.8944682,
+        0.92612773,
+        1.0,
+        1.0,
+        0.8643976,
+        0.90507835,
+        1.0,
+        1.0,
+        0.8315059,
+        0.8820541,
+        1.0,
+        1.0,
+        0.79610366,
+        0.85727257,
+        1.0,
+        1.0,
+        0.7585008,
+        0.83095056,
+        1.0,
+        1.0,
+        0.7190082,
+        0.80330575,
+        1.0,
+        1.0,
+        0.6779354,
+        0.77455485,
+        1.0,
+        1.0,
+        0.6355935,
+        0.7449154,
+        1.0,
+        1.0,
+        0.59229225,
+        0.7146046,
+        1.0,
+        1.0,
+        0.5483419,
+        0.6838393,
+        1.0,
+        1.0,
+        0.50405294,
+        0.65283704,
+        1.0,
+        1.0,
+        0.45973557,
+        0.6218149,
+        1.0,
+        1.0,
+        0.41570038,
+        0.5909903,
+        1.0,
+        1.0,
+        0.3722571,
+        0.56058,
+        1.0,
+        1.0,
+        0.32971668,
+        0.5308018,
+        1.0,
+        1.0,
+        0.2883891,
+        0.5018724,
+        1.0,
+        1.0,
+        0.24858427,
+        0.47400898,
+        1.0,
+        1.0,
+        0.21061307,
+        0.44742918,
+        1.0,
+        1.0,
+        0.1747855,
+        0.4223498,
+        1.0,
+        1.0,
+        0.14141184,
+        0.3989883,
+        1.0,
+        1.0,
+        0.11080241,
+        0.3775617,
+        1.0,
+        1.0,
+        0.08326757,
+        0.35828733,
+        1.0,
+        1.0,
+        0.059117436,
+        0.34138227,
+        1.0,
+        1.0,
+        0.038662672,
+        0.32706386,
+        1.0,
+        1.0,
+        0.02221322,
+        0.31554925,
+        1.0,
+        1.0,
+        0.010079384,
+        0.3070556,
+        1.0,
+        1.0,
+        0.0025715828,
+        0.30180007,
+        1.0,
+        1.0,
+        0.0,
+        0.3,
+        1.0,
+        1.0
+} 
+
 local colorLUT = BuildColorLUTFromShaderLUT(exampleShaderLUT)
+local NiagaraDataInterfaceColorCurve_0 = BuildColorLUTFromShaderLUT(NiagaraDataInterfaceColorCurve_0)
 
 -- ===== Spawn particle + attach ThinkFunction =====
 -- This code assumes you already created 'p' via emitter:Add and set p:SetDieTime(die)
 -- You must compute 'birthTime' and 'dieTime' (seconds) when you set the particle up.
 
 -- Example wrapper that you call after creating p:
-local function AttachColorCurveThink(p, birthTime, dieTime, colorLUT)
+local function AttachColorCurveThink(p, birthTime, dieTime, colorLUT, isnormalized)
     -- dieTime = absolute die time (CurTime() + lifetime) OR pass lifetime and compute inside
     local lifetime = math.max(0.0001, dieTime - birthTime)
 
@@ -588,10 +964,17 @@ local function AttachColorCurveThink(p, birthTime, dieTime, colorLUT)
 
 		local normalizedAge = age / lifetime -- 0..1
 		local r,g,b,a = SampleColorLUT(colorLUT, normalizedAge)
-		r = r * 255 
-		g = g * 255 
-		b = b * 255 
-		a = 255 -- somehow always 0 
+		if isnormalized then 
+			r = r 
+			g = g 
+			b = b 
+			a = 255 -- somehow always 0 
+		else 
+			r = r * 255 
+			g = g * 255 
+			b = b * 255 
+			a = 255 -- somehow always 0 
+		end 
 
 		-- apply color and alpha each frame
 		-- SetColor usually takes 3 args (r,g,b)
@@ -622,20 +1005,18 @@ end
 -- p:SetDieTime(lifetimeSeconds)
 -- AttachColorCurveThink(p, birth, birth + lifetimeSeconds, colorLUT)
 
-
-
 function EFFECT:Init(data)
     -- Get position and angles from the effect data
     local pos = data:GetOrigin()
     local ang = data:GetAngles()
 	local ent = data:GetEntity() 
     self:SetPos(pos)
-	data:SetAngles(Angle(data:GetAngles().y,data:GetAngles().p,data:GetAngles().z)) 
+	-- data:SetAngles(Angle(data:GetAngles().y,data:GetAngles().p,data:GetAngles().z)) 
     self:SetAngles(ang)
 
     -- Get scale and lifetime multipliers, with default values of 1
     self.Scale = data:GetScale() ~= 0 and data:GetScale() or 1
-	self.Scale = self.Scale * 0.42 
+	self.Scale = self.Scale * 0.1 
 	
     local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1
 
@@ -650,8 +1031,8 @@ function EFFECT:Init(data)
 
     -- Initialize timing
     self.StartTime = CurTime()
-    -- The original effect has a randomized lifetime between 0.16 and 0.4 seconds
-    local randomLife = math.Rand(0.16, 0.4)
+    -- The original effect has a randomized lifetime between 0.25 and 0.5 seconds
+    local randomLife = math.Rand(0.25, 0.5)
     self.LifeTime = randomLife * lifetimeMultiplier
     self.EndTime = self.StartTime + self.LifeTime
 
@@ -664,6 +1045,7 @@ function EFFECT:Init(data)
     self:EnableMatrix("RenderMultiply", mat)
 	self.Hemisphere = self:InitHemisphere(data) 
 	self:InitNE_SpriteM003_1(data) 
+	self:InitNE_SpriteM004_3(data) 
 end 
 
 function EFFECT:InitHemisphere(data) 
@@ -672,7 +1054,7 @@ function EFFECT:InitHemisphere(data)
     local ent = data:GetEntity()
     local count = math.random(1, 2) -- spawn 1-2 hemispheres (tweak to 1-3)
     local baseScale = (data:GetScale() ~= 0) and data:GetScale() or 1
-	baseScale = baseScale * 0.05 
+	baseScale = baseScale * 0.1 
     local baseLife  = (data:GetMagnitude() ~= 0) and data:GetMagnitude() or 0.5
 
     self.Hemisphere = {}
@@ -715,16 +1097,6 @@ function EFFECT:InitHemisphere(data)
 				scaleValue = Lerp(EaseOutQuad(t), midS, endS)
 		    end
 		    scaleValue = scaleValue * selfModel.Scale
-			-- print("scaleValue is:",scaleValue) 
-
-		    -- reuse matrix/vector to avoid allocs
-		    -- selfModel._scaleVec.x = scaleValue
-		    -- selfModel._scaleVec.y = scaleValue
-		    -- selfModel._scaleVec.z = scaleValue
-		    -- selfModel._scaleMat:Scale(selfModel._scaleVec)
-		    -- selfModel:EnableMatrix("RenderMultiply", selfModel._scaleMat)
-			
-			-- local scaleValue = Lerp(lifeFrac, 0.1, 1.0) * hem.Scale 
 			local mat = Matrix() 
 			mat:Scale(Vector(scaleValue, scaleValue, 0.02)) 
 			hem:EnableMatrix("RenderMultiply", mat)
@@ -756,38 +1128,56 @@ function EFFECT:Think()
 
     -- Calculate the normalized age of the particle (0.0 to 1.0)
     local lifeFrac = (CurTime() - self.StartTime) / self.LifeTime
-    lifeFrac = math.Clamp(lifeFrac, 0, 1)
+    lifeFrac = math.Clamp(lifeFrac, 0, 1) 
+	
+	local alphaByte
+	if lifeFrac < 0.05 then
+		alphaByte = math.floor(255 * Lerp(0, 1, lifeFrac / 0.05))               -- 0→1 in 5%
+	elseif lifeFrac < 0.25 then
+		alphaByte = 255                                                   -- hold full brightness
+	elseif lifeFrac < 0.50 then
+		local localT = (lifeFrac - 0.25) / (0.25)                                -- 0..1 across 0.25..0.50
+		alphaByte = math.floor(255 * Lerp(1, 0.3, localT))                -- fade 1.0 → 0.3
+	else
+		local localT = (lifeFrac - 0.5) / 0.5
+		alphaByte = math.floor(255 * Lerp(0.3, 0, localT))                -- fade remaining to 0
+	end
 
-    -- ## Alpha Curve ##
-    -- This curve replicates the Niagara "ScaleColor" module's alpha behavior.
-    -- Keyframes: [0.0] -> 0.0, [0.05] -> 1.0, [0.98] -> 0.3
-    local alpha = 0
-    if lifeFrac < 0.05 then
-		-- Fade in from 0 to 1 in the first 5% of its life
-		alpha = math.Remap(lifeFrac, 0, 0.05, 0, 1)
-    elseif lifeFrac < 0.98 then
-		-- Hold full visibility, then start fading out
-		alpha = math.Remap(lifeFrac, 0.05, 0.98, 1, 0.3)
-    else
-		-- Fade from 0.3 to 0 in the last 2% of its life
-		alpha = math.Remap(lifeFrac, 0.98, 1.0, 0.3, 0)
-    end
-
-    self:SetColor(Color(255, 255, 255, alpha * 255))
-    if self.SetRenderFX then self:SetRenderFX(kRenderFxNone) end 
-
+    self:SetColor(Color(255, 255, 255, alphaByte)) 
 
 	-- ## Scale Curve ##
     -- This curve replicates the Niagara "ScaleMeshSize" module's vector curve.
     -- X and Y scale uniformly from 0.0 to 1.0 over the lifetime.
     -- Z remains constant at 1.0.
     local scaleXY = lifeFrac
-    local currentScale = Vector(scaleXY, scaleXY, 1) * self.Scale
+	
+	local peak = 1.25 * self.Scale
+	local baseline = 0.0 -- start from zero so model doesn't pop
+
+	if lifeFrac < 0.06 then
+		-- I0: initial pop to ~40% of peak
+		local localT = lifeFrac / 0.06
+		scaleXY = Lerp(baseline, peak * 0.4, math.ease.OutQuad(localT))
+	elseif lifeFrac < 0.25 then
+		-- I1: explosive growth to peak
+		local localT = (lifeFrac - 0.06) / (0.25 - 0.06)
+		scaleXY = Lerp(peak * 0.4, peak, math.ease.OutQuad(localT))
+	elseif lifeFrac < 0.50 then
+		-- I2: quick settle / shrink a bit from peak to settle value
+		local localT = (lifeFrac - 0.25) / (0.50 - 0.25)
+		scaleXY = Lerp(peak, peak * 0.85, 1 - localT) -- linear/soft settle (you can ease)
+	else
+		-- I3: gentle relax or tiny growth and then vanish with alpha
+		local localT = (lifeFrac - 0.5) / 0.5
+		scaleXY = Lerp(peak * 0.85, peak * 1.05, localT * 0.2) -- small final variation
+	end
+	
+    -- local currentScale = Vector(scaleXY, scaleXY, 0.02 * self.Scale) * self.Scale
 
     -- Create a transformation matrix for scaling and apply it to the entity
     local mat = Matrix()
-    mat:Scale(currentScale)
-    self:EnableMatrix("RenderMultiply", mat)
+    mat:Scale(Vector(scaleXY, scaleXY, 0.02 * self.Scale))
+	self:EnableMatrix("RenderMultiply", mat)
 	-- print("scaleValue for ",self,":",currentScale,",Length():",currentScale:Length(),"lifeFrac:",lifeFrac,",at CurTime()",CurTime()) 
 	-- PrintModelSizes(self,Vector(scaleValue, scaleValue, scaleValue)) 
     -- Keep the effect alive
@@ -811,7 +1201,9 @@ function EFFECT:InitNE_SpriteM003_1(data)
 
     -- Scale and lifetime multipliers from effect data
     local Scale = data:GetScale() ~= 0 and data:GetScale() or 1
-    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1
+    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1 
+	
+	Scale = Scale * 0.42 
 
     -- Best-guess parameters taken from the Niagara script literal table
     local spawnCount = 25				      -- chosen from literal constants (10,25,30,60). 25 is a plausible spark burst.
@@ -886,7 +1278,7 @@ function EFFECT:InitNE_SpriteM003_1(data)
 
 		-- Use collision and bounce lightly if you want sparks to hit world (optional)
 		p:SetCollide(false) -- set to true if you want collision interactions
-		AttachColorCurveThink(p,CurTime(), CurTime() + p:GetDieTime(), colorLUT) 
+		AttachColorCurveThink(p,CurTime(), CurTime() + p:GetDieTime(), colorLUT, false) 
 		-- p:SetBounce(0.3)
 
 		-- Set a small lifetime-based custom parameter (if needed later) - this is just illustrative:
@@ -897,4 +1289,114 @@ function EFFECT:InitNE_SpriteM003_1(data)
     end
 
     emitter:Finish()
+end 
+
+function EFFECT:InitNE_SpriteM004_3(data) 
+	print("InitNE_SpriteM004_3") 
+	local MaterialFrames = {
+    "sprites/MI_A_GPUSparks_01_Tr_000",
+    "sprites/MI_A_GPUSparks_01_Tr_001",
+    "sprites/MI_A_GPUSparks_01_Tr_002",
+    "sprites/MI_A_GPUSparks_01_Tr_003"
+	} 
+	
+	local pos = data:GetOrigin()
+    local ang = data:GetAngles()
+    local ent = data:GetEntity()
+    -- self:SetPos(pos)
+    -- self:SetAngles(ang)
+
+    -- Scale and lifetime multipliers from effect data
+    local Scale = data:GetScale() ~= 0 and data:GetScale() or 1
+    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1 
+	
+	Scale = Scale * 0.42 
+	
+	-- use the decoded values
+	local L = {
+		sizeMin = 0.30000001,
+		sizeMax = 0.5,
+		lifeMin = 0.69999999,
+		lifeMax = 1.5,
+		noiseAmp = 0.25924399,
+		noiseFreq = 0.68092698,
+		velMidZ = -100.0,
+		rotationRange = 6.28318548,
+		burstCount = 5,
+		spreadAngleH = 30,
+		spawnRadius = 40,
+		spreadAngleV = 80,
+		rollSpeedHint = 10
+	}
+
+	-- sensible GMod conversions
+	local VEL_SCALE = 1   -- scale unreal velocity -> GMod
+	local POS_SCALE = 1   -- scale spawnRadius down to gmod units
+	local spawnCount = math.max(1, math.floor(L.burstCount)) -- integer
+
+	-- color: Niagara default initial color in this system tends to be white (1,1,1,1)
+	local startR, startG, startB = 255,255,255
+	-- If we have an entity and it has velocity, pull that in as base (Niagara often uses emitter/owner velocity)
+    local ownerVel = IsValid(ent) and ent:GetVelocity() or Vector(0,0,0)
+
+	local emitter = ParticleEmitter(pos)
+	for i=1, spawnCount do
+		-- random offset on a circle (cylinder spawn)
+		local angle = math.rad((math.random()-0.5) * L.spreadAngleH) + (2*math.pi)*(math.random())
+		local radius = (math.random() ^ 0.6) * (L.spawnRadius * POS_SCALE)
+		local offset = Vector(math.cos(angle) * radius, math.sin(angle) * radius, 0)
+
+		-- pick lifetime and sizes directly from literals
+		local life = L.lifeMin + math.random() * (L.lifeMax - L.lifeMin)
+		local startSize = L.sizeMin + math.random() * (L.sizeMax - L.sizeMin)
+
+		local matFrame = MaterialFrames[math.random(1, #MaterialFrames)]
+
+		local p = emitter:Add(matFrame, pos)
+		if (not p) then break end
+
+		-- velocity: bias downward using velMidZ (scaled)
+		local baseDown = Vector(0,0, L.velMidZ * VEL_SCALE)
+		-- add a random cone velocity using spreadAngleV
+		local spreadRads = math.rad(math.Rand(-L.spreadAngleV/2, L.spreadAngleV/2))
+		local coneDir = Vector(
+			math.sin(spreadRads) * (math.Rand(-1,1)),
+			math.cos(spreadRads) * (math.Rand(-1,1)),
+			math.cos(spreadRads)
+		):GetNormalized() 
+
+		local magnitude = math.Rand(50, 150) * VEL_SCALE -- adjustable base speed
+		local vel = baseDown + coneDir * magnitude
+
+		-- small curl/noise perturbation
+		local noise = Vector(
+		(math.Rand(-1,1) * L.noiseAmp),
+		(math.Rand(-1,1) * L.noiseAmp),
+		(math.Rand(-1,1) * L.noiseAmp * 0.25)
+		)
+		vel = vel + noise
+
+		-- Particle properties
+		p:SetVelocity(vel + ownerVel)
+		p:SetDieTime(life)
+		p:SetStartAlpha(255)
+		p:SetEndAlpha(0)                 -- alpha fades out over lifetime (Niagara had an alpha fade)
+		-- approximate Niagara scale/size curve by startSize -> endSize multiplier
+		local endSize = startSize * (L.scaleB or 0.75) * 0.5  -- use scaleB as an end multiplier
+		p:SetStartSize(startSize * 32)   -- sprite size: multiply to make pixels — tune as needed
+		p:SetEndSize(endSize * 32)
+		p:SetRoll(math.Rand(0, L.rotationRange))
+		p:SetRollDelta(math.Rand(-L.rollSpeedHint, L.rollSpeedHint))
+		p:SetAirResistance(5)
+		p:SetGravity(Vector(0,0, -50))   -- small gravity; Niagara had negative Z bias
+		p:SetColor(startR,startG,startB)
+
+		-- optional: add a ThinkFunction to simulate the Niagara color/time curve if you want per-frame color changes
+		-- but GMod particles do not normally expose per-particle Think in high performance usage.
+		
+		AttachColorCurveThink(p,CurTime(), CurTime() + p:GetDieTime(), NiagaraDataInterfaceColorCurve_0, true) 
+	end
+
+	emitter:Finish()
+
 end 
