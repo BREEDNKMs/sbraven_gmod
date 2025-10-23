@@ -8,11 +8,10 @@
     "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N_specpacked" 
 	// bumpmap has tile flake normals blended, spec mask from ORM metallic * (1 - roughness), spec and tile scratches blended, applied as alpha to normal map 
 	// then, detailmask combined mask with existing spec in normal's alpha
-	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_2"
-	"$detailscale" "1"                // sample fabric 8×
+	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_3"
+	"$detailscale" "1"                
 	"$detailblendfactor" "1"
 	"$detailblendmode" "1"            // Additive (safer with $bumpmap)
-	// $detail not implemented 
 
     "$envmap" "env_cubemap"
     "$normalmapalphaenvmapmask" "1"    // use alpha of normal as env/spec mask
