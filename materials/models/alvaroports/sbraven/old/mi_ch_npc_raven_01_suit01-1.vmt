@@ -1,0 +1,64 @@
+"VertexLitGeneric" // this is the main body material 
+{
+	"$basetexture" "models\alvaroports\SBRaven\CH_NPC_Raven_01_Suit01_A" // ambient occlusion imported 
+	"$bumpmap" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit01_normal" // note that this disables many other detail options 
+	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
+	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
+	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
+	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
+	"$EmissiveBlendBaseTexture" 	"models\stellarblade\CH_NPC_Raven_01_Suit01_E"	// this is the glowing texture.vtf
+	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
+	"$EmissiveBlendTint" 			" [ 0 1 1 ] "		// RGB glow intensity. Leave at 1 1 1. This can be used to change how strong each color should glow. So instead of using a darker red color, you may use [.5 1 1] to have red glow half as strong.
+	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
+	"$detail" "models/alvaroports/SBRaven/CH_NPC_Raven_DetailMask" // working 
+	"$detailscale" "1"
+	"$detailblendfactor" "0.1"
+	"$detailblendmode" "1" 
+	"$phong" "1"
+	"$phongexponenttexture" "models\alvaroports\SBRaven\MI_CH_NPC_Raven_01_Suit01_roughness"
+    "$phongexponentfactor" "30" // JSON roughness max → higher factor
+    "$phongexponent" "10"       // JSON roughness min → lower exponent
+    "$phongboost" "1.5"         // JSON metallic/clearcoat intensity
+    "$phongfresnelranges" "[0.1 0.5 1]" // from FilmFresnel Intensity/Scale
+    "$phongalbedotint" "1"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "1"     // I don't know, it doesn't work 
+	"$rimlightboost" "1"        // like the phongexponent, it controls the spreading 
+	"$rimmask" "0"				// Uses the alpha channel of the phongexponenttexture as specular (useless if using dxt1 without alpha) 
+
+	"$envmap" "env_cubemap"
+//	"$envmapmask"		"models/alvaroports/SBRaven/CH_NPC_Raven_DetailMask"
+//	"$basealphaenvmapmask" "1" 
+//	"$bumptransform" "center 0.5 0.5 scale 20.0 20.0 rotate 0.0 translate 0.0 0.0" just a testing 
+	"$normalmapalphaenvmapmask"  1 // (use bumpmap alpha channel as env mask) (metal ok) 
+	"$envmaptint" "[0.2 0.2 0.2]" // (dye, 0.1 or 0.05 is ideal)
+
+//	"$nodecal" "1" 
+	"$color2" "[0.78 0.78 0.78]" 
+//	"$color2" "[1 0.806952 0.760525]" 
+//	"$allowAlphaToCoverage" 1 
+
+//	"$blendtintbybasealpha" "1" // apply color2 only to the alpha of the base texture 
+} 
+
+// material models/alvaroports/sbraven/mi_ch_npc_raven_01_suit01 has a normal map and $basealphaenvmapmask.  Must use $normalmapalphaenvmapmask to get specular. 
+
+// # Load the ORM texture
+// orm_path = "/mnt/data/CH_M_NA_53_Weapon_ORM.png"
+// orm_img = Image.open(orm_path).convert("RGB")
+
+// # Split channels
+// r, g, b = orm_img.split()
+
+// # Save each channel as a grayscale texture
+// output_paths = {}
+// output_paths["AO"] = "/mnt/data/CH_M_NA_53_Weapon_AO.png" // from O, red channel, multiply with basetexture or add as $detail and blendmode 0 
+// output_paths["Roughness"] = "/mnt/data/CH_M_NA_53_Weapon_Roughness.png" // from R, green channel, invert, becomes phongexponenttexture 
+// output_paths["Metallic"] = "/mnt/data/CH_M_NA_53_Weapon_Metallic.png" // from M, blue channel, becomes envmap 
+
+// r.save(output_paths["AO"])
+// g.save(output_paths["Roughness"])
+// b.save(output_paths["Metallic"])
+
+// output_paths 
