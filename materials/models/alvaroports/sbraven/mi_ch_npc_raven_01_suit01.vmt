@@ -2,25 +2,33 @@
 {
 	"$model"	"1" 
     "$basetexture" "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_A"
+	// basetexture has _AO baked in itself using Multiply 
 	"$color2"	"[ 0.645833 0.704959 0.771775 ]" // There is a base color tint applied in the material: R = 0.354167, G = 0.295041, B = 0.228245 (hex #A19483). 
-    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N_specpacked"
-
-//    "$detail"      "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_O"
-//    "$detailscale" "1"
-//	"$detailblendfactor" "1"
-//    "$detailblendmode" "0"
+	// we inverted the color because probable in json, R = 0, G = 0, B = 0 means no change, 1 means black. the RGB table is being subtracted. 
+    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N_specpacked" 
+	// bumpmap has tile flake normals blended, spec mask from ORM metallic * (1 - roughness), spec and tile scratches blended, applied as alpha to normal map 
+	// then, detailmask combined mask with existing spec in normal's alpha
+	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_2"
+	"$detailscale" "1"                // sample fabric 8×
+	"$detailblendfactor" "1"
+	"$detailblendmode" "1"            // Additive (safer with $bumpmap)
+	// $detail not implemented 
 
     "$envmap" "env_cubemap"
     "$normalmapalphaenvmapmask" "1"    // use alpha of normal as env/spec mask
     "$phong" "1"
-	"$envmaptint" "[0.1 0.1 0.1]"    // strongly reduce global env brightness
-	"$envmapcontrast" "0.15"            // reduces hot-spot intensity
-	"$envmapsaturation" "0.8"           // slightly desaturate reflections
+	"$envmaptint" "[0.10 0.10 0.10]"    // strongly reduce global env brightness
+	"$envmapcontrast" "1"            // reduces hot-spot intensity
+	"$envmapsaturation" "1"           // slightly desaturate reflections
     "$phongexponent" "40.0"
 	
-    "$phongboost" "40.9"
+    "$phongboost" "10"
     "$phongfresnelranges" "[0 0.5 1]"
     "$phongtint" "[1 0.98 0.95]"
+	
+	"$rimlight" "1"
+	"$rimlightexponent" "15"  // A high value for a tighter, shinier rim
+	"$rimlightboost" "0.5"   // Subtle brightness
 
 	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
 	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
