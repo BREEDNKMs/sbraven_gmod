@@ -5,7 +5,7 @@
 	// basetexture has _AO baked in itself using Multiply 
 	"$color2"	"[ 0.645833 0.704959 0.771775 ]" // There is a base color tint applied in the material: R = 0.354167, G = 0.295041, B = 0.228245 (hex #A19483). 
 	// we inverted the color because probable in json, R = 0, G = 0, B = 0 means no change, 1 means black. the RGB table is being subtracted. 
-    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N_specpacked" 
+    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N" 
 	// bumpmap has tile flake normals blended, spec mask from ORM metallic * (1 - roughness), spec and tile scratches blended, applied as alpha to normal map 
 	// then, detailmask combined mask with existing spec in normal's alpha
 	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_3"
@@ -15,12 +15,11 @@
 
     "$envmap" "env_cubemap"
     "$normalmapalphaenvmapmask" "1"    // use alpha of normal as env/spec mask
-    "$phong" "1"
-	"$envmaptint" "[0.10 0.10 0.10]"    // strongly reduce global env brightness
+	"$envmaptint" "[1 1 1]"    // strongly reduce global env brightness
 	"$envmapcontrast" "1"            // reduces hot-spot intensity
 	"$envmapsaturation" "1"           // slightly desaturate reflections
+	"$phong" "1"
     "$phongexponent" "40.0"
-	
     "$phongboost" "10"
     "$phongfresnelranges" "[0 0.5 1]"
     "$phongtint" "[1 0.98 0.95]"
