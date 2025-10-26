@@ -3538,6 +3538,9 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 			if self.SBAI_SkillTable then TargetFilterAlias = self.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
 		end 
 		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias) 
+		-- originally, characters have a SBCollisionGroupComponent 
+		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
+		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
 		if string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_Weapon") then 
 			tableofhittargets = self:SB_CheckWeaponCollision(tableofhittargets) 
 		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"LegL") then 
@@ -4757,7 +4760,7 @@ local function clamp(v, a, b)
     return v
 end
 
-function ENT:TASK_BLINK(data)
+function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards static GetGoalPos which will be cleared after saving 
     -- timeline constants (seconds) derived from the JSON 
 	self:ClearCondition(COND.TASK_FAILED) 
     local TOTAL_DURATION = 1.4
@@ -4773,11 +4776,60 @@ function ENT:TASK_BLINK(data)
     -- movement interpolation window -- move while hidden
     local MOVE_START = HIDE_START
     local MOVE_END = UNHIDE_AT 
-	local Pos = data == 1 and self:GetGoalPos() or self:GetLastPosition() 
-	self:ClearGoal() -- clear goal after we have stored the GetGoalPos 
 
-    if ( self:GetTaskStatus() == TASKSTATUS_NEW ) then
-        print("TASK_BLINK: started (ent " .. tostring(self:EntIndex()) .. ")")
+	if ( self:GetTaskStatus() == TASKSTATUS_NEW ) then 
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print("TASK_BLINK: started (ent " .. tostring(self:EntIndex()) .. ")")
+		end 
+		
+		local Pos = data == 1 and self:GetGoalPos() or self:GetLastPosition() 
+		if data == 1 then -- limited movement towards GetGoalPos 
+			local BestSound = self:GetBestSoundHint()
+			if BestSound and BestSound.origin then
+				local SoundVolume = tonumber(BestSound.volume) or 0
+				SoundVolume = SoundVolume * 1.5 
+				local soundOrigin = BestSound.origin
+
+				-- helper: returns true if vec is inside sound sphere
+				local function InsideSoundVolume(vec)
+					if not vec then return false end
+					return vec:DistToSqr(soundOrigin) <= (SoundVolume * SoundVolume)
+				end
+
+				-- 1) check current waypoint
+				local curWP = self:GetCurWaypointPos() != vector_origin and self:GetCurWaypointPos() or self:GetPos()
+				-- debugoverlay.Cross(curWP,50,5) 
+				if not InsideSoundVolume(curWP) then
+					-- cur waypoint is already outside the sound volume: keep Pos as goal
+					print("blink curwaypointpos is not volume") 
+					Pos = curWP or self:GetGoalPos()
+				else
+					-- 2) try next waypoint
+					local nextWP = self:GetNextWaypointPos() != vector_origin and self:GetNextWaypointPos() or self:GetPos()
+					-- debugoverlay.Cross(nextWP,50,5) 
+					if nextWP and not InsideSoundVolume(nextWP) then
+						print("blink nextwaypointpos is not in volume") 
+						Pos = nextWP
+					else
+						-- 3) still inside volume: do a forward trace hull from the sound origin
+						local dir = (self:GetPos() - soundOrigin):GetNormalized()
+						if dir:IsZero() then dir = Vector(1,0,0) end
+
+						local traceDist = SoundVolume * 1.0
+						local trstart = soundOrigin
+						local trend = soundOrigin + dir * traceDist
+						-- movement code will handle actual blocking
+						Pos = trend
+					end
+				end
+			else
+				-- no sound hint; leave Pos as-is (GetGoalPos)
+				Pos = Pos or self:GetGoalPos()
+			end
+		end
+
+		self:ClearGoal() -- clear goal after we have stored the GetGoalPos
+
 
         -- initialize blink state
         self.CurrentSchedule.blink = self.CurrentSchedule.blink or {}
@@ -4829,7 +4881,7 @@ function ENT:TASK_BLINK(data)
         t = CurTime() - self.CurrentSchedule.blink._sysstart
     end
 	
-	Pos = data == 1 and self.CurrentSchedule.blink.targetpos or self:GetLastPosition() 
+	local Pos = data == 1 and self.CurrentSchedule.blink.targetpos or self:GetLastPosition() 
 	self:SetIdealActivity(ACT_DO_NOT_DISTURB) 
     local tr = self.CurrentSchedule.blink.triggered
 
@@ -4838,11 +4890,15 @@ function ENT:TASK_BLINK(data)
         tr.sound = true
         if self.CurrentSchedule.blink.soundPath then
             self:EmitSound(self.CurrentSchedule.blink.soundPath)
-            print("TASK_BLINK: emitted sound", self.CurrentSchedule.blink.soundPath)
+			if cvars.Bool("g_debug_cycler_actor2",false) then 
+				print("TASK_BLINK: emitted sound", self.CurrentSchedule.blink.soundPath)
+			end 
         else
             -- no sound script found; attempt to play by name if you know it
             -- self:EmitSound("path/to/fallback.wav")
-            print("TASK_BLINK: no sound script available")
+			if cvars.Bool("g_debug_cycler_actor2",false) then 
+				print("TASK_BLINK: no sound script available")
+			end 
         end
     end
 
@@ -4859,7 +4915,9 @@ function ENT:TASK_BLINK(data)
 			ef:SetMagnitude(0)
 			-- If you have a decal effect name, spawn it; otherwise the effect will be ignored safely by clients that don't have it
 			util.Effect("NS_A_Blink", ef) -- this was used before in your code; harmless if missing
-			print("TASK_BLINK: decal/effect spawned (decal start)")
+			if cvars.Bool("g_debug_cycler_actor2",false) then 
+				print("TASK_BLINK: decal/effect spawned (decal start)") 
+			end 
 		end
 	end 
 
@@ -4872,7 +4930,9 @@ function ENT:TASK_BLINK(data)
         ef:SetMagnitude(0.2735217)
         ef:SetScale(10)
         util.Effect("NS_A_Blink", ef)
-        print("TASK_BLINK: particle1 spawned")
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print("TASK_BLINK: particle1 spawned") 
+		end 
     end
 
     -- 4) hide actor at HIDE_START and begin interpolated movement
@@ -4886,8 +4946,10 @@ function ENT:TASK_BLINK(data)
             pcall(function() self:AddEffects(EF_NODRAW) end)
         end
         -- capture fresh startpos in case the entity moved slightly after task start
-        self.CurrentSchedule.blink.startpos = self:GetPos()
-        print(("TASK_BLINK: hidden at t=%.3f, startpos=%s targetpos=%s"):format(t, tostring(self.CurrentSchedule.blink.startpos), tostring(Pos)))
+        self.CurrentSchedule.blink.startpos = self:GetPos() 
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print(("TASK_BLINK: hidden at t=%.3f, startpos=%s targetpos=%s"):format(t, tostring(self.CurrentSchedule.blink.startpos), tostring(Pos))) 
+		end 
     end
 
     -- 5) while hidden, lerp SetPos from startpos -> targetpos between MOVE_START and MOVE_END
@@ -4907,14 +4969,18 @@ function ENT:TASK_BLINK(data)
             -- don't set move flag until we actually reach the end
             if frac >= 1.0 then
                 tr.move = true
-                print("TASK_BLINK: move finished (arrived at target)")
+				if cvars.Bool("g_debug_cycler_actor2",false) then 
+					print("TASK_BLINK: move finished (arrived at target)") 
+				end 
             end
         elseif t > MOVE_END then
             -- if we missed the window for some reason, just snap and mark move done
 			local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), Pos)
             self:SetLocalPos(moveResult.vEndPosition)
             tr.move = true
-            print("TASK_BLINK: move forced to target (late)")
+			if cvars.Bool("g_debug_cycler_actor2",false) then 
+				print("TASK_BLINK: move forced to target (late)") 
+			end 
         end
     end
 
@@ -4926,7 +4992,9 @@ function ENT:TASK_BLINK(data)
         else
             pcall(function() self:RemoveEffects(EF_NODRAW) end)
         end
-        print("TASK_BLINK: unhidden at t=" .. tostring(t))
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print("TASK_BLINK: unhidden at t=" .. tostring(t)) 
+		end 
     end
 
     -- 7) second particle near PARTICLE2_START
@@ -4938,15 +5006,19 @@ function ENT:TASK_BLINK(data)
         ef:SetMagnitude(0.18714339)
         ef:SetScale(10)
         util.Effect("NS_A_Blink", ef)
-        print("TASK_BLINK: particle2 spawned")
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print("TASK_BLINK: particle2 spawned") 
+		end 
     end
 
     -- 8) finish at TOTAL_DURATION
     if not tr.finished and t >= TOTAL_DURATION then
         tr.finished = true
         -- final cleanup to be safe
-        if self.SetNoDraw then self:SetNoDraw(false) end
-        print("TASK_BLINK: finished at t=" .. tostring(t))
+        if self.SetNoDraw then self:SetNoDraw(false) end 
+		if cvars.Bool("g_debug_cycler_actor2",false) then 
+			print("TASK_BLINK: finished at t=" .. tostring(t)) 
+		end 
         self:TaskComplete()
         return
     end
