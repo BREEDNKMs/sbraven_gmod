@@ -7,10 +7,10 @@
 	// we inverted the color because probable in json, R = 0, G = 0, B = 0 means no change, 1 means black. the RGB table is being subtracted. 
     "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N" 
 	// bumpmap has tile flake normals blended, spec mask from ORM metallic * (1 - roughness), spec and tile scratches blended, applied as alpha to normal map 
-	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_3"
+	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask"
 	"$detailscale" "1"                
 	"$detailblendfactor" "1"
-	"$detailblendmode" "1"            // Additive (safer with $bumpmap)
+	"$detailblendmode" "1"            // Additive (safer with $bumpmap) 
 
     "$envmap" "env_cubemap"
     "$normalmapalphaenvmapmask" "1"    // use alpha of normal as env/spec mask
@@ -37,5 +37,5 @@
 	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. But ours is static, so leave at 0 0
 
     "$halflambert" "1"
-    "$surfaceprop" "cloth"
-}
+    "$surfaceprop" "Flesh"
+} 

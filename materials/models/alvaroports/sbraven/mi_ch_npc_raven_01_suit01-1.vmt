@@ -5,9 +5,9 @@
 	// basetexture has _AO baked in itself using Multiply 
 	"$color2"	"[ 0.645833 0.704959 0.771775 ]" // There is a base color tint applied in the material: R = 0.354167, G = 0.295041, B = 0.228245 (hex #A19483). 
 	// we inverted the color because probable in json, R = 0, G = 0, B = 0 means no change, 1 means black. the RGB table is being subtracted. 
-    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N2" 
+    "$bumpmap"     "models/alvaroports/sbraven/CH_NPC_Raven_01_Suit01_N" 
 	// bumpmap has tile flake normals blended, spec mask from ORM metallic * (1 - roughness), spec and tile scratches blended, applied as alpha to normal map 
-	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask_3"
+	"$detail" "models/alvaroports/sbraven/CH_NPC_Raven_DetailMask"
 	"$detailscale" "1"                
 	"$detailblendfactor" "1"
 	"$detailblendmode" "1"            // Additive (safer with $bumpmap) 
