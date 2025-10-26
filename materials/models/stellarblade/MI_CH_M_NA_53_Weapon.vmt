@@ -1,34 +1,41 @@
-"VertexLitGeneric" 
-{ 
-	"$basetexture" "models\stellarblade\ch_m_na_53_weapon_a" 
-	"$model" 1 
-	"$bumpmap"	"models\stellarblade\ch_m_na_53_weapon_n" 
-//	"$detailscale" 1        
-//	"$detailblendfactor" 100  
-//	"$detailblendmode" 5    
-//	"$selfillum" 1
-//	"$selfillummask" "models\stellarblade\ch_m_na_53_weapon_e" // can't be used with bumpmap 
-//	"$detail" "models\stellarblade\ch_m_na_53_weapon_e" // ditto 
-	//$Emissiveblend is another alternative if $selfillum and $detail can not be used.
-	"$EmissiveBlendEnabled" 		"1"					// Enable EmissiveBlend. Like $selfillum 1	
-	"$EmissiveBlendStrength" 		"1" 					// how strong the entire glow effect is.
-	"$EmissiveBlendTexture" 		"vgui/white"			// This will be useless, but is required.
-	"$EmissiveBlendBaseTexture" 	"models\stellarblade\ch_m_na_53_weapon_e2"	// this is the glowing texture.vtf
-	"$EmissiveBlendFlowTexture" 	"vgui/white"	 		// EmmisiveBlend can "flow" or move. But ours is static, so a white texture is used.
-	"$EmissiveBlendTint" 			" [ 0 10 10 ] "		// RGB glow intensity. Leave at 1 1 1. 
-	"$EmissiveBlendScrollVector" 	" [ 0 0 ] " 		// makes the EmmissiveBlend flow in either direction if a proper EmissiveBlendFlowTexture were set. 
-	// Phong Shading
-    "$phong" "1"
-	"$phongexponenttexture"		"models/stellarblade/CH_M_NA_53_Weapon_phongexp" 
-    "$phongboost" "5"                         // 5 may blow out highlights, 2–3 is safer
-    "$phongexponent" "30"                     // higher = sharper highlights
-    "$phongalbedotint" "1"
-    "$phongfresnelranges"			"[0.1 0.8 1.0]"           // tweak for a stronger fresnel/glint effect 
-	"$normalmapalphaenvmapmask" "1"             // allows bump alpha to control reflection mask
-	
-	"$envmap"						"env_cubemap" // $envmapmask will not work with materials using $bumpmap in most situations
-	"$envmaptint"					"[0.1 0.1 0.1]"
-	"$envmapcontrast"				1.0
-//	"$envmapmask"					"models/stellarblade/CH_M_NA_53_Weapon_envmap" // $envmapmask will not work with materials using $phong, at all. 
-	"$envmapfresnel"				1 
-} 
+"VertexLitGeneric"
+{
+    // Base textures
+    "$basetexture" "models/stellarblade/ch_m_na_53_weapon_a"
+    "$bumpmap"     "models/stellarblade/ch_m_na_53_weapon_n"    // RGB = normal, A = envmask/metal mask
+
+    // Model flag
+    "$model" 1
+
+    // EmissiveBlend (use this instead of $selfillum because we have $bumpmap)
+    "$emissiveblendenabled"    "1"
+    "$emissiveblendstrength"   "1.0"                              // start at 3.0, tweak in-game 0.5–6.0
+    "$emissiveblendtexture"    "vgui/white"                       // required placeholder
+    "$emissiveblendbasetexture" "models/stellarblade/ch_m_na_53_weapon_e" // emissive pattern
+    "$emissiveblendflowtexture" "vgui/white"                       // static, no flow
+    "$emissiveblendscrollvector" "[ 0 0 ]"
+    "$emissiveblendtint" "[ 0 158.3289 300 ]"
+                                                                       // => normalized; overall strength handled by strength param
+
+    // Phong / clear-coat approximation
+    "$phong"                   "1"
+	"$phongexponenttexture" "models/stellarblade/CH_M_NA_53_Weapon_phongexp"
+    "$phongboost"              "2.5"                              // safe default; 2–3 for balanced highlight
+    "$phongexponent"           "30"                               // fallback if exponent texture missing
+    "$phongalbedotint"         "1"
+    "$phongfresnelranges"      "[ 0.1 0.8 1.0 ]"                   // gives stronger grazing glints
+    "$phongtint"               "[ 1 1 1 ]"                        // white specular for metals; tint if needed
+
+    // Use normal map alpha as envmap mask (reflectivity / metallic mask)
+    "$normalmapalphaenvmapmask" "1"
+
+    // Environment reflections (combined with phong)
+    "$envmap"                  "env_cubemap"
+    "$envmaptint"              "[ 0.07 0.12 0.15 ]"               // dark tint to avoid blowout; tweak per-metal color
+    "$envmapcontrast"          "1.0"
+    "$envmapfresnel"           "1"
+
+    // Misc
+    "$halflambert"             "1"    // soften dark shading
+    "$nocull"                  "0"
+}
