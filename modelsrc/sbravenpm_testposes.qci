@@ -65,7 +65,13 @@ $animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
 	origin 0 0 42 
 } 
 
+//$animation a_Proto_Battle_Jump_End "sbravenpm_anims\Proto_Battle_Jump_End.smd" 
+//$animation a_Proto_Battle_Jump_End_layer "sbravenpm_anims\Proto_Battle_Jump_End.smd" subtract a_Proto_Battle_Jump_End 78 
+//$sequence Proto_Battle_Jump_End "a_Proto_Battle_Jump_End_layer" activity ACT_LAND 1 fps 120 delta 
 
+//$animation a_m_raven_parry "sbravenpm_anims\m_raven_parry.smd" 
+//$animation a_m_raven_parry_layer "sbravenpm_anims\m_raven_parry.smd" subtract a_m_raven_parry 120 
+//$sequence m_raven_parry "a_m_raven_parry_layer" activity ACT_LAND 1 fps 60 delta 
 
 $sequence "m_raven_run_l2" { 
 	"a_walking_walk_cautious_S"  // "a_canterS" 
@@ -89,160 +95,6 @@ $sequence "m_raven_run_l2" {
 	fudgeloop 
 } 
 
-$sequence "m_raven_run_l3" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_MP_JUMP_SECONDARY 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l4" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_IDLE 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l5" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_IDLE_STEALTH 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l6" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_IDLE_ANGRY 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l7" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_RANGE_ATTACK1 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l8" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180
-	blendwidth 9
-	fps 30 
-	activity ACT_RANGE_ATTACK2 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
-$sequence "m_raven_run_l9" { 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	"a_walking_walk_cautious_E"  // "a_canterSE" 
-	"a_walking_walk_cautious_E"  // "a_canterE"
-
-	"a_M_Raven_Run_L"  // "a_canterNE" 
-	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
-
-	"a_walking_walk_cautious_W"  // "a_canterW" 
-	"a_walking_walk_cautious_W"  // "a_canterSW" 
-	"a_walking_walk_cautious_S"  // "a_canterS" 
-	
-	blend "move_yaw" -180 180 
-	blendwidth 9 
-	fps 30 
-	activity ACT_MELEE_ATTACK2 32768 
-	addlayer inverse_proportions 
-	node "walking" 
-	fudgeloop 
-} 
-
 $sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
 	fps 1 
 	activity ACT_DO_NOT_DISTURB 1 
@@ -259,6 +111,14 @@ $sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" {
 	
 	origin 0 0 42 
 	frames 623 624 
+} 
+
+$sequence "laughtest3" "M_Raven_SlashChainCombo_Retarget.smd" { 
+	fps 1 
+	activity ACT_DO_NOT_DISTURB 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 0 
 } 
 
 $sequence "raven_base" "sbravenpm_anims\raven_base.smd" { 
