@@ -2515,7 +2515,7 @@ function ENT:SBAI_MaintainShow()
 
 		-- Mark as triggered
 		self.SBAI_ActiveShow.TriggeredKeys[data.Name] = true
-		Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - self.SBAI_ActiveShow.Time)) 
+		-- Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - self.SBAI_ActiveShow.Time)) 
 		
 		local CheckShowKeyTag = data.Properties.CheckShowKeyTag 
 		-- static_assert(offsetof(USBShowKey, CheckShowKeyTag) == 0x000028, "Member 'USBShowKey::CheckShowKeyTag' has a wrong offset!");
@@ -2778,7 +2778,7 @@ function ENT:SBAI_MaintainShow()
 			local filter = nil
 			util.ScreenShake(pos, amplitude, frequency, duration, radius, airshake, filter)
 			-- Debug print
-			Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f ", amplitude, frequency, duration))
+			-- Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f ", amplitude, frequency, duration))
 
 		elseif data.Type == "SBShowChangeAttachTo" then -- call function with named parameter after passing some conditions 
 		elseif data.Type == "SBShowClientEventKey" then 
@@ -3131,8 +3131,6 @@ function ENT:SBAI_LookupCharacterSound(key)
 end 
 
 function ENT:SBAI_BuildSoundScript(parsedjson) 
-	print("parsedjson") 
-	print(parsedjson) 
 	if not istable(parsedjson) then
 		parsedjson = SB_ImportJSON(parsedjson)
 	end
@@ -3445,13 +3443,10 @@ end
     Returns the list of entities within the weapon's collision volume.
     Excludes any entities not intersecting the ray volume.
 ]]
-function ENT:SB_CheckWeaponCollision(entityList)
+function ENT:SB_CheckWeaponCollision(entityList) 
+	self:MaintainActivity() 
 	local debugColor = Color(255,0,0,5) 
-    if not IsValid(self) then return {} end
-
     local wep = self:GetActiveWeapon()
-    if not IsValid(wep) then return {} end
-
     local mins, maxs = wep:GetCollisionBounds() 
 	if wep:GetClass() == "raven_blade" then 
 		mins = mins * -1 
@@ -3460,10 +3455,8 @@ function ENT:SB_CheckWeaponCollision(entityList)
 
     -- Get the right-hand bone transform
     local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
-    if not boneIndex then return {} end
 
     local bonePos, boneAng = self:GetBonePosition(boneIndex)
-    if not bonePos or not boneAng then return {} end
 
     -- Base direction vectors
     local forward = boneAng:Forward()
@@ -3495,7 +3488,7 @@ function ENT:SB_CheckWeaponCollision(entityList)
 
     -- Perform the oriented trace
     local hitEnts = ents.FindAlongRay(startPos, endPos, orientedMins, orientedMaxs)
-
+	PrintTable(entityList) 
     -- Filter to include only given entity list members
     local filtered = {}
     for _, ent in ipairs(hitEnts) do
@@ -3506,8 +3499,8 @@ function ENT:SB_CheckWeaponCollision(entityList)
     end
 
     -- Optional debug visualization
-	-- debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor)
-	-- debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
+	debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor)
+	debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
 
     return filtered
 end
@@ -3541,7 +3534,9 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 		-- originally, characters have a SBCollisionGroupComponent 
 		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
 		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
+		print("SkillStepTable.AttackCollisionGroupArray",SkillStepTable.AttackCollisionGroupArray) 
 		if string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_Weapon") then 
+			print("calling Collision_Weapon",SkillStepTable,bEveryFrameHitCheck) 
 			tableofhittargets = self:SB_CheckWeaponCollision(tableofhittargets) 
 		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"LegL") then 
 			tableofhittargets = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Foot") 
@@ -3601,7 +3596,7 @@ function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck)
 			-- Condition 2: The enemy has God Mode enabled.
 			local isGodMode = enemy:IsFlagSet(FL_GODMODE)
 
-			-- Condition 3: The enemy's internal takedamage variable is set to 0 (D_HT_NO) or less.
+			-- Condition 3: The enemy's internal takedamage variable is set to 0 (DAMAGE_NO) or less.
 			-- (or 1) is a safeguard in case the variable is missing, defaulting to a state that takes damage.
 			local takeDamageDisabled = (enemy:GetInternalVariable("m_takedamage") or 1) < 1
 
@@ -3727,11 +3722,13 @@ end
 -- attack power: 1600 
 -- skill min / max distances and activate cases are in TargetFilterTable.json 
 
--- Initialize a working copy of the master tree
+-- Initialize a working copy of the master tree and reset coroutine state
 function ENT:SBAI_InitTree()
     self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     self.CurrentBranch = nil
     self.SBAI_bInBackgroundTask = false
+    -- reset running coroutine (so we start fresh)
+    self._sbaico = nil
 end
 
 -- Recursively clear running state in a subtree (used by flow-abort)
@@ -3746,6 +3743,10 @@ function ENT:SBAI_ClearRunning(node)
             self:SBAI_ClearRunning(child)
         end
     end
+
+    -- If we cleared running nodes mid-coroutine, drop the coroutine so a fresh traversal will be created next tick.
+    -- This prevents stale coroutine-local control flow from continuing on a pruned subtree.
+    self._sbaico = nil
 end
 
 -- Main selector for an array of sibling nodes.
@@ -3965,8 +3966,265 @@ function ENT:SBAI_SelectTask(taskTable, startIndex)
 
     -- If no child returned success/running, return false.
     return false
+end 
+
+-- Coroutine-friendly, stack-based Behavior Tree selector/sequence executor.
+-- Call this function *inside* a coroutine (NextBot coroutine think).
+-- It yields whenever a running task returns nil so the coroutine can be resumed later.
+function ENT:SBAI_SelectTask(taskTable, startIndex)
+    startIndex = startIndex or 1
+    if not taskTable or #taskTable == 0 then return false end
+
+    -- Frame represents a composite frame we are iterating:
+    -- { tasks = <table>, idx = <current index>, parentSub = <sub table on parent>, parentIsSelector, parentIsSequence }
+    local stack = {}
+    local function pushFrame(tasks, idx, parentSub)
+        stack[#stack + 1] = {
+            tasks = tasks,
+            idx = idx or 1,
+            parentSub = parentSub,
+        }
+    end
+    local function popFrame()
+        stack[#stack] = nil
+    end
+    -- Start with root
+    pushFrame(taskTable, startIndex, nil)
+
+    -- Helper: evaluate decorators (conditions). Returns allowEntry, flowAbortMode
+    local function evalConditions(sub)
+        local allowEntry = true
+        local flowAbortMode = nil
+
+        if sub.Condition then
+            for subConditionName, subConditionValues in pairs(sub.Condition) do
+                -- cached previous result optimization:
+                local prev = subConditionValues._result
+                local passed
+
+                if sub._running and not (sub.bBackgroundTask or false) and prev ~= nil then
+                    -- If node is running (and not background), reuse previous decorator result when available
+                    passed = prev
+                else
+                    -- record flow abort mode if present (prefer first seen)
+                    if not flowAbortMode and subConditionValues.FlowAbortMode then
+                        flowAbortMode = subConditionValues.FlowAbortMode
+                    end
+
+                    local decoName = subConditionName:gsub("^SBBTDecorator_", ""):gsub("_%d+$", "")
+                    local decoHandler = self[decoName]
+                    if decoHandler then
+                        passed = decoHandler(self, subConditionValues)
+                    else
+                        passed = true
+                        print("SBAI_SelectTask_Co: unknown decorator handler", decoName, "-> assuming true")
+                    end
+
+                    -- cache result for reuse while running
+                    subConditionValues._result = passed
+                end
+
+                if not passed then
+                    allowEntry = false
+                    break
+                end
+            end
+        end
+
+        return allowEntry, flowAbortMode
+    end
+
+    -- Helper: run a leaf StartTask until non-nil result (yielding between nil results).
+    local function runLeafTask(sub)
+        for taskKey, taskData in pairs(sub.StartTask) do
+            local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+            local handler = self[cleanTaskKey]
+
+            if not handler then
+                print("SBAI_SelectTask_Co: missing task handler", cleanTaskKey)
+                sub._running = false
+                sub._result = false
+                return false
+            end
+
+            -- Ensure running flag and start time
+            if not sub._running then
+                sub._running = true
+                sub._startTime = CurTime()
+            end
+
+            -- Loop calling handler until it returns non-nil; yield on nil
+            local result = handler(self, taskData, sub)
+            while result == nil do
+                if taskData.bBackgroundTask then
+                    self.SBAI_bInBackgroundTask = true
+                end
+                coroutine.yield() -- pause the coroutine; caller should resume next tick
+                -- resume here
+                result = handler(self, taskData, sub)
+            end
+
+            -- Handler finished (non-nil)
+            sub._running = false
+            sub._result = result
+            self.SBAI_bInBackgroundTask = false
+
+            -- Return the result for caller to apply selector/sequence logic
+            return result
+        end
+
+        -- No StartTask entries (shouldn't happen)
+        return false
+    end
+
+    -- Main iterative traversal loop
+    while #stack > 0 do
+        local frame = stack[#stack]
+        local tasks = frame.tasks
+        local i = frame.idx
+
+        -- If we've exhausted this composite's children, finish this frame and propagate result to its parent
+        if i > #tasks then
+            -- No child returned success/running in this composite -> default false for sequences/selectors
+            -- Propagate false to parent if any
+            local parentSub = frame.parentSub
+            popFrame()
+            if not parentSub then
+                -- root finished with no running children -> final false
+                return false
+            else
+                -- mark parentSub as finished with result = false
+                parentSub._running = false
+                parentSub._result = false
+                parentSub._currentChild = nil
+                -- continue loop and let parent frame handle its selector/sequence logic
+                -- NOTE: do NOT automatically return here; parent frame will check parentSub._result when continuing
+                -- increment parent's idx so parent will continue to next sibling after processing
+                local parentFrame = stack[#stack]
+                if parentFrame then
+                    parentFrame.idx = parentFrame.idx + 1
+                end
+                -- next iteration will handle parent
+                goto continue_outer_loop
+            end
+        end
+
+        local sub = tasks[i]
+        local objectName = sub.ObjectName or ""
+        local isSelector = objectName:find("BTComposite_Selector")
+        local isSequence = objectName:find("BTComposite_Sequence")
+
+        -- If this node was already running: resume it without re-evaluating decorators (original behaviour)
+        if sub._running then
+            if sub.StartTask then
+                local result = runLeafTask(sub) -- this yields internally if still running
+                -- runLeafTask returns only when handler returns non-nil
+                if result == true then
+                    if isSelector then return true end
+                    -- if sequence, continue to next sibling
+                elseif result == false then
+                    if isSequence then return false end
+                    -- if selector, continue
+                end
+                -- move to next sibling
+                frame.idx = frame.idx + 1
+                goto continue_outer_loop
+            elseif sub.NextTask then
+                -- composite: resume its children
+                local childStart = sub._currentChild or 1
+                -- push a child frame and continue loop (we'll resume the child in subsequent iterations)
+                pushFrame(sub.NextTask, childStart, sub)
+                goto continue_outer_loop
+            else
+                -- nothing to run; mark finished
+                sub._running = false
+                sub._result = false
+                frame.idx = frame.idx + 1
+                goto continue_outer_loop
+            end
+        end
+
+        -- Evaluate decorators (unless we resumed above)
+        local allowEntry, flowAbortMode = evalConditions(sub)
+
+        -- Flow-abort handling (mirrors your original logic)
+        -- Self: abort current node and clear running subtree
+        if flowAbortMode == "Self" and not allowEntry and self.CurrentBranch == i then
+            self.CurrentBranch = nil
+            self:SBAI_ClearRunning(sub)
+            return false
+        end
+
+        -- LowerPriority: a higher-priority node became valid -> preempt lower-priority
+        if flowAbortMode == "LowerPriority" and allowEntry and startIndex and i < startIndex then
+            self.CurrentBranch = i
+            -- restart selection at this higher priority (push root to stack starting at i)
+            popFrame() -- remove current frame and push the taskTable starting from i
+            pushFrame(tasks, i, frame.parentSub)
+            goto continue_outer_loop
+        end
+
+        if flowAbortMode == "Both" then
+            if not allowEntry and self.CurrentBranch == i then
+                self.CurrentBranch = nil
+                self:SBAI_ClearRunning(sub)
+                return false
+            elseif allowEntry and startIndex and i < startIndex then
+                self.CurrentBranch = i
+                popFrame()
+                pushFrame(tasks, i, frame.parentSub)
+                goto continue_outer_loop
+            end
+        end
+
+        -- If decorators allow entry, execute this node
+        if allowEntry then
+            if not self.CurrentBranch then
+                self.CurrentBranch = i
+            end
+
+            if sub.StartTask then
+                -- Run the leaf task and yield if still running (runLeafTask yields internally).
+                local result = runLeafTask(sub)
+                if result == true then
+                    if isSelector then return true end
+                    -- if sequence, continue to next sibling
+                elseif result == false then
+                    if isSequence then return false end
+                    -- if selector, continue to next sibling
+                end
+                -- proceed to next sibling
+                frame.idx = frame.idx + 1
+                goto continue_outer_loop
+
+            elseif sub.NextTask then
+                -- Composite: descend into children
+                local childStart = sub._currentChild or 1
+                -- mark parent running and remember current child start
+                sub._running = true
+                sub._currentChild = childStart
+                pushFrame(sub.NextTask, childStart, sub)
+                goto continue_outer_loop
+            else
+                -- Unknown node type - skip
+                frame.idx = frame.idx + 1
+                goto continue_outer_loop
+            end
+        else
+            -- decorator prevented entry -> continue to next sibling
+            frame.idx = frame.idx + 1
+            goto continue_outer_loop
+        end
+
+        ::continue_outer_loop::
+    end
+
+    -- If stack emptied and nothing returned true/running, return false
+    return false
 end
 
+
+--[[ 
 -- Tick the runtime tree
 function ENT:SBAI_RunBehavior() 
     if not self.SBAI_CurBehaviorStack then
@@ -3982,6 +4240,51 @@ function ENT:SBAI_RunBehavior()
     end
 
     return result
+end
+--]] 
+
+-- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
+function ENT:SBAI_RunBehavior()
+    -- Initialize runtime copy if missing
+    if not self.SBAI_CurBehaviorStack then
+        self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
+    end
+
+    -- Create coroutine if missing or dead
+    if not self._sbaico or coroutine.status(self._sbaico) == "dead" then
+        self._sbaico = coroutine.create(function()
+            return self:SBAI_SelectTask(self.SBAI_CurBehaviorStack)
+        end)
+    end
+
+    -- Resume coroutine safely
+    if coroutine.status(self._sbaico) == "suspended" then
+        local ok, ret = coroutine.resume(self._sbaico)
+        if not ok then
+            -- coroutine errored: print and reset so next tick can recreate
+            print("[SBAI] behavior coroutine error:", ret)
+            self._sbaico = nil
+            -- clear runtime copy to avoid half-baked state
+            self.SBAI_CurBehaviorStack = nil
+            self.CurrentBranch = nil
+            return false
+        else
+            -- If coroutine finished (dead), ret contains final boolean result
+            if self._sbaico and coroutine.status(self._sbaico) == "dead" then
+                -- resolved this tick; clear runtime copy so next tick starts fresh
+                self.SBAI_CurBehaviorStack = nil
+                self.CurrentBranch = nil
+                -- clear coroutine so next tick a new one is created
+                self._sbaico = nil
+                return ret
+            else
+                -- coroutine yielded (task still running) -> return nil to indicate running
+                return nil
+            end
+        end
+    end
+
+    return false
 end
 
 function ENT:NPC_GetRunActivity( act ) 
@@ -4068,7 +4371,7 @@ function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
 end 
 
 function ENT:CustomRunAI() 
-	self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
+	-- self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
 	local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
 	if NPC_ShouldConductBehaviorTree then 
 		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
@@ -4414,53 +4717,256 @@ end
 
 -- skills 
 
-function ENT:SbCautionToTarget(tbl) 
-	local MaxDistance = tbl.MaxDistance 
-	local SetMoveType = tbl.SetMoveType 
-	local SideMoveMaxDistance = tbl.SideMoveMaxDistance 
-	local SideMoveMinDistance = tbl.SideMoveMinDistance 
-	local WaitCheckTime = tbl.WaitCheckTime 
-	local WaitCountByGroup = tbl.WaitCountByGroup 
-	local bIgnoreRestartSelf = tbl.bIgnoreRestartSelf 
-	local bLockOn = tbl.bLockOn 
-	-- create random route 
-	-- set walk type 
-	-- now delay 
-	local waitTime = tbl.WaitCheckTime or 0
-    local returnSucceeded = tbl.bReturnSucceeded or false
-	-- if tbl.finished then return true end 
+-- SbCautionToTarget: property-driven adaptation (no spawn hacks)
+function ENT:SbCautionToTarget(tbl)
+	print("cautiontotarget") 
+	PrintTable(tbl) 
+    -- small helpers
+    local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
+    local function randFloat(a,b) return a + math.random() * (b - a) end
+    local function isValidEnt(e) return e ~= nil and e ~= NULL and IsValid(e) end
 
-    if !tbl.startTime then -- TASKSTATUS_NEW 
-        tbl.startTime = CurTime() 
-		-- self:StartSchedule(LUASCHED_RANDOM_NONAV_GO) 
-		-- self.flMaxTasksRun = 10 
-		-- self:DoSchedule(self.CurrentSchedule) 
-		self.bTaskComplete = false 
-		self:TASK_FIND_RANDOM_PATH(500) 
-		self:ChainStartTask("TASK_SET_TOLERANCE_DISTANCE",48) 
-		self:ChainStartTask("TASK_SET_ROUTE_SEARCH_TIME",3) 
-		self:ChainStartTask("TASK_GET_PATH_TO_LASTPOSITION",1) 
-		self:ChainStartTask("TASK_WALK_PATH",48) 
-		self:ResetIdealActivity(ACT_MP_WALK_MELEE) 
+    -- resolve and fail if no valid target
+    if not tbl.target then
+        tbl.target = tbl.Target or tbl.TargetEntity or self:GetEnemy()
     end
-	self:SetMovementActivity(ACT_MP_WALK_MELEE) -- do the cautious move 
-    local elapsed = CurTime() - tbl.startTime
-    -- print("in SbCautionToTarget", elapsed, waitTime)
+    local target = tbl.target
+    if !IsValid(target) then return false end
 
-    if elapsed < waitTime then
-        return nil -- still running
-    else
-		tbl.finished = true 
-		-- Entity(1):ChatPrint("SbCautionToTarget: finishing "..tbl.startTime) 
-		-- tbl.startTime = nil
-		-- if true then return true end -- temporary: remove this when branch selection issues are solved 
-        if returnSucceeded then
-            return true  -- wait succeeded
+    -- Map fields with defaults
+    local SetMoveType = SafeGet("SetMoveType", "ESBCautionToTargetMoveType::All")
+    local MinDistance = SafeGet("MinDistance", 200)
+    local MaxDistance = SafeGet("MaxDistance", 1200)
+    local RunDistance = SafeGet("RunDistance", 0)
+    local SideMin = SafeGet("SideMoveMinDistance", 300)
+    local SideMax = SafeGet("SideMoveMaxDistance", 800)
+    local SideRepeat = math.max( SafeGet("SideMoveRepeatCount", 1), 1 )
+    local WaitCheckTime = SafeGet("WaitCheckTime", 0)
+    local bWaitRandom = SafeGet("bWaitCheckRandomTime", false)
+    local WaitRandMin = SafeGet("WaitCheckTimeRandomMinTime", math.max(0, WaitCheckTime - 1))
+    local WaitRandMax = SafeGet("WaitCheckTimeRandomMaxTime", WaitCheckTime + 1)
+    local WaitRate = SafeGet("WaitRate", 100) -- percent (kept for reference)
+    local PlayShowRateWhenWait = SafeGet("PlayShowRateWhenWait", 0) -- percent
+    local WaitCountByGroup = math.max( SafeGet("WaitCountByGroup", 1), 1 )
+    local bLockOn = SafeGet("bLockOn", false)
+    local bIgnoreRestartSelf = SafeGet("bIgnoreRestartSelf", false)
+    local bStayTargetView = SafeGet("bStayTargetView", false)
+    local CheckSkillFlag = SafeGet("CheckSkillFlag", nil) -- not acted on here
+
+    -- initialize per-task cached fields (only once)
+    if not tbl._started then
+        tbl._started = true
+        tbl.startTime = CurTime()
+        tbl.attempts = 0
+        tbl.navSet = false
+        tbl.waitEnd = nil
+        tbl.returnSucceeded = false
+
+        -- compute wait time (possibly randomized)
+        if WaitCheckTime > 0 then
+            if bWaitRandom then
+                tbl.waitTime = randFloat(WaitRandMin, WaitRandMax)
+            else
+                tbl.waitTime = WaitCheckTime
+            end
         else
-            return false -- wait failed
+            tbl.waitTime = 0
+        end
+
+        -- group repetition counter
+        tbl.waitGroupRemaining = WaitCountByGroup
+
+        -- side repeat counter
+        tbl.sideRepeatRemaining = SideRepeat
+
+        -- preserved random choices if bIgnoreRestartSelf; re-roll only if absent or not preserving
+        if not (bIgnoreRestartSelf and tbl.chosenMoveChoice) then
+            tbl.chosenMoveChoice = nil -- will choose below
+        end
+        if not (bIgnoreRestartSelf and tbl.sideSign) then
+            tbl.sideSign = (math.random() < 0.5) and -1 or 1
+        end
+        if not (bIgnoreRestartSelf and tbl.sideDist) then
+            tbl.sideDist = math.Rand(SideMin, SideMax)
+        end
+        if not (bIgnoreRestartSelf and tbl.forwardDist) then
+            tbl.forwardDist = math.Rand(MinDistance, math.max(MinDistance, MaxDistance))
+        end
+
+        -- yaw lock
+        if bLockOn then
+            self:SetMoveYawLocked(false) -- disabled  
+        end
+
+        -- choose movement style now (set tbl.chosenMoveChoice if not set)
+        if not tbl.chosenMoveChoice then
+            if SetMoveType == "ESBCautionToTargetMoveType::Side" then
+                tbl.chosenMoveChoice = "side"
+            elseif SetMoveType == "ESBCautionToTargetMoveType::ForwardAndSide" then
+                tbl.chosenMoveChoice = "forwardandside"
+            else -- All or unknown: decide probabilistically by declared ranges
+                local forwardRange = math.max(0, (MaxDistance or 0) - (MinDistance or 0))
+                local sideRange = math.max(0, (SideMax or 0) - (SideMin or 0))
+                -- if RunDistance present, bias toward forward
+                if RunDistance and RunDistance > 0 then forwardRange = forwardRange + RunDistance end
+                -- avoid zero division
+                if forwardRange + sideRange <= 0 then
+                    -- fallback: choose forward if MinDistance small, else side
+                    tbl.chosenMoveChoice = (MinDistance <= SideMin) and "forward" or "side"
+                else
+                    local pForward = forwardRange / (forwardRange + sideRange)
+                    if math.random() < pForward then tbl.chosenMoveChoice = "forward" else tbl.chosenMoveChoice = "side" end
+                end
+            end
+        end
+
+        -- increment attempts
+        tbl.attempts = tbl.attempts + 1
+    end -- init done
+
+    -- if nav not set, create nav goal according to chosenMoveChoice
+    if not tbl.navSet then
+        local myPos = self:GetPos()
+        local tgtPos = target:GetPos()
+        local dir = (tgtPos - myPos)
+        local dir2D = Vector(dir.x, dir.y, 0)
+        if dir2D:Length() > 0.001 then dir2D:Normalize() else dir2D = Vector(1,0,0) end
+        local rightVec = dir2D:Angle():Right()
+
+        local chosen = tbl.chosenMoveChoice
+
+        local goalPos = tgtPos
+		print("chosen",chosen) 
+        if chosen == "side" then
+            goalPos = tgtPos + rightVec * (tbl.sideDist * tbl.sideSign)
+        elseif chosen == "forward" then
+            goalPos = tgtPos - dir2D * tbl.forwardDist
+        elseif chosen == "forwardandside" then
+            goalPos = tgtPos - dir2D * tbl.forwardDist + rightVec * (tbl.sideDist * tbl.sideSign)
+        else
+            -- defensive fallback to forward
+            goalPos = tgtPos - dir2D * tbl.forwardDist
+        end
+
+        -- Prefer NavSetRandomGoal for side moves to create natural paths; otherwise NavSetGoalPos.
+        if chosen == "side" and self.NavSetRandomGoal then
+            local minPathLen = math.Clamp(tbl.sideDist * 0.5, 100, 2000)
+			print("NavSetRandomGoal",minPathLen,(tgtPos - myPos):GetNormalized()) 
+            self:NavSetRandomGoal(minPathLen, (tgtPos - myPos):GetNormalized()) 
+        else
+            if self.NavSetGoalPos then
+				print("NavSetGoalPos",goalPos) 
+                self:NavSetGoalPos(goalPos) 
+            elseif self.NavSetGoalTarget then
+                -- fallback: offset from target
+                local offset = goalPos - tgtPos
+                self:NavSetGoalTarget(target, offset) 
+            end
+        end
+		print("nav set",CurTime()) 
+        tbl.navSet = true
+		self:SetMovementActivity(ACT_MP_WALK_MELEE) 
+        return nil -- running while nav completes
+    end
+
+    -- -- While nav is set, keep running until movement stops; try to detect movement using available API:
+    -- if self.IsMoving and type(self.IsMoving) == "function" then
+        -- if self:IsMoving() then return nil end
+    -- else
+        -- -- fallback heuristic: if current distance to goal is still far, consider still moving.
+        -- -- We judge "movement finished" by whether navSet is true and we're not moving (or attempts exceeded)
+        -- -- We'll compute distance to target and allow finishing if inside MaxDistance.
+        -- local curDistToTarget = (self:GetPos() - target:GetPos()):Length()
+        -- if curDistToTarget > math.max( (MinDistance or 0), 100 ) and tbl.attempts <= 6 then
+            -- -- still likely moving / trying; let it run a few attempts
+            -- return nil
+        -- end
+    -- end
+	if self:IsMoving() then return nil end 
+
+    -- If we reach here, nav likely finished (success or not). Decide success:
+    local curDist = (self:GetPos() - target:GetPos()):Length()
+    local success = false
+    -- success if within MaxDistance (or at least within a reasonable threshold based on MinDistance)
+    if curDist <= math.max( (MaxDistance or 1200), (MinDistance or 200) ) then
+        success = true
+    else
+        -- if we were performing side moves, consider success when side repeats exhausted
+        if tbl.chosenMoveChoice == "side" or tbl.chosenMoveChoice == "forwardandside" then
+            if tbl.sideRepeatRemaining and tbl.sideRepeatRemaining <= 1 then
+                success = true
+            end
         end
     end
-end 
+
+    -- if we did side movement and have repeats remaining, decrement and prepare another side move
+    if not tbl.waitEnd and (tbl.chosenMoveChoice == "side" or tbl.chosenMoveChoice == "forwardandside") and tbl.sideRepeatRemaining and tbl.sideRepeatRemaining > 1 then
+        tbl.sideRepeatRemaining = tbl.sideRepeatRemaining - 1
+        -- pick new lateral sign unless preserving with bIgnoreRestartSelf
+        if not bIgnoreRestartSelf then tbl.sideSign = (math.random() < 0.5) and -1 or 1 end
+        tbl.navSet = false
+        tbl.attempts = tbl.attempts + 1
+        return nil
+    end
+
+    -- Start wait phase when movement finished (or attempts exhausted)
+    if not tbl.waitEnd then
+        tbl.returnSucceeded = success
+        tbl.waitEnd = CurTime() + (tbl.waitTime or 0)
+        -- maybe play a show/gesture with PlayShowRateWhenWait probability
+        if PlayShowRateWhenWait and PlayShowRateWhenWait > 0 and math.random() * 100 <= PlayShowRateWhenWait then
+            -- safe-call a generic "gesture" if present (you can replace with your own)
+            pcall(function() if self.PlayGesture then self:PlayGesture(ACT_GESTURE_TURN_RIGHT) end end)
+        end
+    end
+
+    -- during wait: keep looking at target if requested
+    if tbl.waitEnd and CurTime() < tbl.waitEnd then
+        if bStayTargetView then
+            -- if NPC API offers SetEyeTarget / look functions, use them safely
+            pcall(function()
+                if self.SetEyeTarget then self:SetEyeTarget(target:GetPos()) end
+            end)
+        end
+        return nil -- still waiting
+    end
+
+    -- wait finished: decrement group counter and either finish or iterate another cycle
+    if tbl.waitEnd and CurTime() >= tbl.waitEnd then
+        tbl.waitEnd = nil
+        tbl.waitGroupRemaining = math.max(0, (tbl.waitGroupRemaining or 1) - 1)
+
+        -- if group cycles remain, prepare for another caution move
+        if tbl.waitGroupRemaining > 0 then
+            tbl.navSet = false
+            tbl.sideRepeatRemaining = SideRepeat
+            -- if not preserving, re-roll movement choices to create variety
+            if not bIgnoreRestartSelf then
+                tbl.chosenMoveChoice = nil
+                tbl.sideSign = (math.random() < 0.5) and -1 or 1
+                tbl.sideDist = math.Rand(SideMin, SideMax)
+                tbl.forwardDist = math.Rand(MinDistance, math.max(MinDistance, MaxDistance))
+            end
+            return nil
+        end
+
+        -- final decision: succeed if movement reported success, else fail
+        -- clear move locks and stop
+        pcall(function() if self.StopMoving then self:StopMoving(true) end end)
+        pcall(function() if self.ClearGoal then self:ClearGoal() end end)
+        if bLockOn then self:SetMoveYawLocked(false) end
+
+        if tbl.returnSucceeded then
+            return true
+        else
+            return false
+        end
+    end
+
+    -- default: still running
+    return nil
+end
+
 
 function ENT:SbDetectTarget(tbl) 
 	local bEnemy, bComa = tbl.bEnemy, tbl.bComa 
@@ -4646,23 +5152,42 @@ function ENT:SBAI_ProcessActiveSkill(tbl)
 	
 	end 
 
-    -- Check if the duration for the current step has elapsed
-    local Time = tbl.Time 
-    if CurTime() > Time + Duration then
-        local NextStepAlias = SkillStepTable.NextStepAlias
-        if NextStepAlias and NextStepAlias != "None" then
-            -- Transition to the next skill step
-            self:SBAI_SetSkillStep(NextStepAlias)
-        else
-            -- No next step, so the skill is finished
-            self.SBAI_ActiveSkill = {}
-        end
-    else 
-		local GetAnimTimeInterval = self:GetAnimTimeInterval() 
-		GetAnimTimeInterval = GetAnimTimeInterval > 0.1 and GetAnimTimeInterval or 0.1 -- by default it can't be lesser than 0.1 so we will assume 0.1 is original think rate 
-		if Duration < self:GetAnimTimeInterval() then 
-			self:NextThink(CurTime()+Duration) -- run activities in lesser gaps with high frequency 
-		end 
+	-- Check if the duration for the current step has elapsed
+	local Time = tbl.Time
+	local EndTime = Time + Duration
+	local now = CurTime()
+
+	if now >= EndTime then
+		-- step finished: advance to next step or clear
+		local NextStepAlias = SkillStepTable.NextStepAlias
+		if NextStepAlias and NextStepAlias ~= "None" then
+			-- Transition to the next skill step
+			self:SBAI_SetSkillStep(NextStepAlias)
+		else
+			-- No next step, so the skill is finished
+			self.SBAI_ActiveSkill = {}
+		end
+
+	else
+		-- still inside step: decide whether to force a closer NextThink
+		local GetAnimTimeInterval = self:GetAnimTimeInterval() or 0
+		-- keep the minimum think interval (your original minimum was 0.1)
+		GetAnimTimeInterval = (GetAnimTimeInterval > 0.1) and GetAnimTimeInterval or 0.1
+
+		local remaining = EndTime - now -- seconds until we must advance
+
+		-- If the remaining time is shorter than our usual animation/think interval,
+		-- schedule a NextThink to wake us right when the step ends (or slightly before).
+		if remaining < GetAnimTimeInterval then
+			-- clamp to a small positive value to avoid 0 or negative NextThink
+			local delta = math.max(0.01, remaining)
+			self:NextThink(now + delta)
+			-- DEBUG
+			print(string.format("scheduling NextThink in %.6f (remaining %.6f, animInterval %.6f) at CurTime: %.6f",delta, remaining, GetAnimTimeInterval, now))
+		end
+
+		-- optional: debug print showing why we didn't reschedule
+		print(string.format("Duration is:\t%.3f\t%.6f\t%.3f (remaining %.6f) -- no NextThink change",Duration, GetAnimTimeInterval, Time, remaining)) 
 	end 
 end
 
@@ -4754,12 +5279,6 @@ end
 -- Master blink task: single-task orchestration for whole 1.4s blink timeline
 -- Put this in your ENT definition (server-side)
 
-local function clamp(v, a, b)
-    if v < a then return a end
-    if v > b then return b end
-    return v
-end
-
 function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards static GetGoalPos which will be cleared after saving 
     -- timeline constants (seconds) derived from the JSON 
 	self:ClearCondition(COND.TASK_FAILED) 
@@ -4801,14 +5320,14 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
 				-- debugoverlay.Cross(curWP,50,5) 
 				if not InsideSoundVolume(curWP) then
 					-- cur waypoint is already outside the sound volume: keep Pos as goal
-					print("blink curwaypointpos is not volume") 
+					-- print("blink curwaypointpos is not volume") 
 					Pos = curWP or self:GetGoalPos()
 				else
 					-- 2) try next waypoint
 					local nextWP = self:GetNextWaypointPos() != vector_origin and self:GetNextWaypointPos() or self:GetPos()
 					-- debugoverlay.Cross(nextWP,50,5) 
 					if nextWP and not InsideSoundVolume(nextWP) then
-						print("blink nextwaypointpos is not in volume") 
+						-- print("blink nextwaypointpos is not in volume") 
 						Pos = nextWP
 					else
 						-- 3) still inside volume: do a forward trace hull from the sound origin
@@ -4957,7 +5476,7 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
 		self:NextThink(CurTime()) 
         if t >= MOVE_START and t <= MOVE_END then
             local frac = 0
-            if MOVE_END > MOVE_START then frac = clamp((t - MOVE_START) / (MOVE_END - MOVE_START), 0, 1) end
+            if MOVE_END > MOVE_START then frac = math.Clamp((t - MOVE_START) / (MOVE_END - MOVE_START), 0, 1) end
             local newpos = LerpVector(frac, self.CurrentSchedule.blink.startpos, Pos)
             -- keep original z if you want to preserve current height; the JSON moves in local axis, but we assume teleport target is valid
 			local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), newpos)
