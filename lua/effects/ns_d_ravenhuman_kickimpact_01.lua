@@ -1077,44 +1077,98 @@ function EFFECT:InitHemisphere(data)
 		-- if mat then hem:SetMaterial(CreateDynamicMaterial(mat)) end
 
 		hem.RenderOverride = function(selfModel, flags)
-		    local lifeFrac = 1 - ((selfModel.DieTime - CurTime()) / selfModel.LifeTime)
-		    if lifeFrac >= 1 then 
-				SafeRemoveEntity(selfModel)
-				return 
-		    end
-		    lifeFrac = math.Clamp(lifeFrac, 0, 1)
+			-- Choose preset: "faithful" (punchy) or "subtle" (gentle)
+			local PRESET = "faithful" -- "subtle"
 
-		    -- Ease out scale: fast then slower to final
-		    local function EaseOutQuad(t) return 1 - (1 - t) * (1 - t) end
-		    local eased = EaseOutQuad(lifeFrac)
-		    local startS, midS, endS = 0.05, 1.4, 4.2
-		    local scaleValue
-		    if lifeFrac < 0.3 then
-				local t = lifeFrac / 0.3
-				scaleValue = Lerp(EaseOutQuad(t), startS, midS)
-		    else
-				local t = (lifeFrac - 0.3) / 0.7
-				scaleValue = Lerp(EaseOutQuad(t), midS, endS)
-		    end
-		    scaleValue = scaleValue * selfModel.Scale
-			local mat = Matrix() 
-			mat:Scale(Vector(scaleValue, scaleValue, 0.02)) 
-			hem:EnableMatrix("RenderMultiply", mat)
-			-- print("scaleValue for ",hem,":",Vector(scaleValue, scaleValue, scaleValue),",Length():,",Vector(scaleValue, scaleValue, scaleValue):Length(),"lifeFrac:",lifeFrac,"at CurTime()",CurTime()) 
-			-- PrintModelSizes(hem,Vector(scaleValue, scaleValue, scaleValue)) 
-		    -- soft alpha: fade in quickly then ease out
-		    local fadeIn = math.Clamp(lifeFrac / 0.06, 0, 1)
-		    local fall = (1 - lifeFrac) ^ 1.6
-		    local alpha = math.Clamp(fadeIn * fall * 1.0, 0, 1)
-		    selfModel:SetColor(Color(255,255,255, math.floor(alpha * 255)))
+			-- lifetime calculation already in your code: lifeFrac = 1 - ((DieTime - CurTime()) / LifeTime)
+			local lifeFrac = 1 - ((selfModel.DieTime - CurTime()) / selfModel.LifeTime)
+			if lifeFrac >= 1 then SafeRemoveEntity(selfModel) return end
+			lifeFrac = math.Clamp(lifeFrac, 0, 1)
 
-		    -- optional: set dynamic material scalar param "Brightness" if available
-		    -- local dyn = selfModel:GetMaterial(0) -- pseudo
-		    -- if dyn and dyn.SetFloatParameter then dyn:SetFloatParameter("Brightness", Lerp(lifeFrac, 2.0, 0.2)) end
+			-- Preset tuning
+			local baseScale = selfModel.Scale or 1
+			local zFlat = 0.02 * baseScale -- keep hemisphere flat
 
-		    selfModel:DrawModel(flags)
+			local peak, startSnap, settleMul
+			if PRESET == "faithful" then
+				startSnap = 0.18         -- fraction of base at very first snap
+				peak = 1.4 * baseScale   -- main visible peak
+				settleMul = 0.85         -- settle to 85% of peak
+			else -- subtle
+				startSnap = 0.12
+				peak = 0.95 * baseScale
+				settleMul = 1.05
+			end
+
+			-- SCALE (XY)
+			local scaleXY
+			if lifeFrac < 0.08 then
+				local t = lifeFrac / 0.08
+				scaleXY = Lerp(0, startSnap * baseScale, math.ease.OutQuad(t))
+			elseif lifeFrac < 0.30 then
+				local t = (lifeFrac - 0.08) / (0.30 - 0.08)
+				scaleXY = Lerp(startSnap * baseScale, peak, math.ease.OutQuad(t))
+			elseif lifeFrac < 0.55 then
+				local t = (lifeFrac - 0.30) / (0.55 - 0.30)
+				-- ease to settle
+				scaleXY = Lerp(peak, peak * settleMul, math.ease.OutQuad(t))
+			else
+				local t = (lifeFrac - 0.55) / (1.0 - 0.55)
+				-- optional slight final expansion or hold
+				scaleXY = Lerp(peak * settleMul, peak * (1.0 + 0.05 * (PRESET=="faithful" and 1 or 0)), t)
+			end
+
+			-- Apply scale matrix (X,Y uniform; Z flattened)
+			local mat = Matrix()
+			mat:Scale(Vector(scaleXY, scaleXY, zFlat))
+			selfModel:EnableMatrix("RenderMultiply", mat)
+
+			-- ALPHA
+			local alphaByte
+			if lifeFrac < 0.04 then
+				alphaByte = math.floor(255 * Lerp(0, 1, lifeFrac / 0.04))
+			elseif lifeFrac < 0.30 then
+				alphaByte = 255
+			elseif lifeFrac < 0.60 then
+				alphaByte = math.floor(255 * Lerp(1, 0.3, (lifeFrac - 0.30) / 0.30))
+			else
+				alphaByte = math.floor(255 * Lerp(0.3, 0, (lifeFrac - 0.60) / 0.40))
+			end
+			alphaByte = math.Clamp(alphaByte, 0, 255)
+
+			-- COLOR & BRIGHTNESS
+			local baseR, baseG, baseB = 255, 255, 255 -- JSON initial color = white
+			-- slight tint toward pale blue as it fades
+			local tintR = Lerp(baseR, 160, lifeFrac) -- 255 -> 160 across life
+			local tintG = Lerp(baseG, 180, lifeFrac)
+			local tintB = Lerp(baseB, 220, lifeFrac)
+
+			-- brightness multiplier (emissive) approximation
+			local brightness
+			if lifeFrac < 0.30 then
+				brightness = Lerp(3.0, 1.0, lifeFrac / 0.30) -- early bright -> normal
+			elseif lifeFrac < 0.60 then
+				brightness = Lerp(1.0, 0.4, (lifeFrac - 0.30) / 0.30)
+			else
+				brightness = Lerp(0.4, 0.08, (lifeFrac - 0.60) / 0.40)
+			end
+
+			-- If you cannot set a material float parameter, approximate brightness by multiplying color:
+			local rOut = math.floor(math.Clamp(tintR * brightness, 0, 255))
+			local gOut = math.floor(math.Clamp(tintG * brightness, 0, 255))
+			local bOut = math.floor(math.Clamp(tintB * brightness, 0, 255))
+
+			selfModel:SetColor(Color(rOut, gOut, bOut, alphaByte))
+
+			-- Optionally drive material param (if you have a dynamic material instance)
+			-- Example pseudo: if you created dynMat earlier and it supports SetFloatParameter:
+			-- if selfModel._dynMat and selfModel._dynMat.SetFloatParameter then
+			--     selfModel._dynMat:SetFloatParameter("Brightness", brightness)
+			-- end
+
+			-- Draw model
+			selfModel:DrawModel(flags)
 		end
-
 		table.insert(self.Hemisphere, hem)
     end
 end 

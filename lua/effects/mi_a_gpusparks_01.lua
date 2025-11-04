@@ -220,17 +220,18 @@ end
 -- Think / Render
 -- ============================================================
 function EFFECT:Think()
-	if not IsValid(self.Entity) or not self.Entity:Alive() then return false end
-	if not self.Emitter or not self.Emitter:IsValid() then return false end
+	if !IsValid(self.Entity) or !self.Entity:Alive() then return false end
+	if !self.Emitter or !self.Emitter:IsValid() then return false end
 	
-	-- Update the effect's position to follow the entity.
-	local pos = self.Entity:GetShootPos() 
+	-- Update the effect's position to follow the entity. 
+	GetShootPos = IsValid(self.Entity:GetOwner()) and self.Entity:GetOwner():GetShootPos() or self:WorldSpaceCenter() 
+	local pos = GetShootPos 
 	-- move this to FX_Weapon_Begin 
 	local Bip01_R_Hand = self.Entity:LookupBone("ValveBiped.Bip01_R_Hand") 
 	-- print(Bip01_R_Hand,self.Entity) 
 	if Bip01_R_Hand then 
 		pos = self.Entity:GetBoneMatrix(Bip01_R_Hand) 
-		pos = pos and pos:GetTranslation() or self.Entity:GetShootPos() 
+		pos = pos and pos:GetTranslation() or GetShootPos 
 	end 
 
 	self.Origin = pos 
@@ -275,6 +276,15 @@ end
 
 function EFFECT:Render()
     if not self.Emitter or not self.ActiveParticles then return end
+	
+	-- remove dead
+    local alive = {}
+    for _, p in ipairs(self.ActiveParticles or {}) do
+        if p:GetLifeTime() < p:GetDieTime() then
+            table.insert(alive, p)
+        end
+    end
+    self.ActiveParticles = alive 
 
     -- example: pulsating intensity factor
     local t = CurTime()

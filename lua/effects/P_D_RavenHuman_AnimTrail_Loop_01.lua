@@ -3,7 +3,7 @@ EFFECT.Mat = Material("trails/t_c_animtrail_02")
 EFFECT.SegmentLifetime = 0.4 
 function EFFECT:Init(data)
     self.Entity = data:GetEntity()
-	self.Scale = data:GetScale() -- LifeTime 
+	self.Scale = data:GetScale() -- LifeTime, update to GetMagnitude 
 	-- print("scale:",self.Scale) 
 	self.Attachment = data:GetAttachment() -- hand attachment 
 	self.DieTime = CurTime() + self.Scale 
@@ -38,11 +38,20 @@ function EFFECT:Init(data)
     self:SetRenderBounds(Vector(-256, -256, -256), Vector(256, 256, 256))
 	-- print("render bounds set") 
 	-- print(self:GetPos()) 
-end
+end 
+
+function EFFECT:GetRenderEntity() 
+	if !IsValid(GetViewEntity():GetActiveWeapon()) then return self.Entity end 
+	if self.Entity == GetViewEntity():GetActiveWeapon() then 
+		return GetViewEntity():GetViewModel() 
+	end 
+	return self.Entity 
+end 
 
 -- Prefer real attachments if the model has them. Fallback to bone + offset.
 function EFFECT:GetAttachmentPos(id)
-    if not IsValid(self.Entity) then return end
+	local GetRenderEntity = self:GetRenderEntity() 
+    if !IsValid(GetRenderEntity) then return end
 
     -- try GetAttachment (works when model has named attachments)
     -- if self.Entity.GetAttachment then
@@ -53,21 +62,17 @@ function EFFECT:GetAttachmentPos(id)
     -- end
 
     -- fallback: lookup a reasonable bone and offset by forward/up depending on id meaning
-    local handBone = self.Entity:LookupBone("ValveBiped.Bip01_R_Hand")
-    if not handBone then
+    local handBone = GetRenderEntity:LookupBone("ValveBiped.Bip01_R_Hand")
+    if !handBone then
         -- try any bone idx 0
         handBone = 0
     end
 
-    local matrix = self.Entity:GetBoneMatrix(handBone)
+    local matrix = GetRenderEntity:GetBoneMatrix(handBone)
     if not matrix then return end
 
     local pos = matrix:GetTranslation()
     local ang = matrix:GetAngles()
-
-    -- In your original code you subtracted ang:Up() * id which produced wrong direction.
-    -- Use forward for tip offsets, or allow negative id to flip. This keeps distance between the two points.
-    -- Interpret the numeric ids as a forward offset in local space.
     pos = pos - ang:Up() * id
 
     return pos
@@ -103,9 +108,7 @@ end
 
 function EFFECT:UpdateRenderBounds()
     -- Don't try to calculate bounds if there are no points
-    if not self.TrailPoints or #self.TrailPoints == 0 then
-        return
-    end
+    if not self.TrailPoints or #self.TrailPoints == 0 then return end
 
     -- Initialize mins and maxs with the first point of the first segment
     -- We must :Copy() to avoid modifying the vector in the table
@@ -150,20 +153,24 @@ function EFFECT:UpdateRenderBounds()
 end
 
 function EFFECT:Think()
-	if !IsValid(self.Entity) then return false end 
-	self:SetLocalPos(self.Entity:GetLocalPos()) 
+	local GetRenderEntity = self:GetRenderEntity() 
+	if !IsValid(GetRenderEntity) then return false end 
+	self:SetLocalPos(GetRenderEntity:GetLocalPos()) 
 	if self.DieTime > 0 then 
 		if CurTime() > self.DieTime then return false end 
+	end 
+	if GetRenderEntity:GetNoDraw() then -- may enable rendering afterwards, don't update stats but keep effect entity 
+		return true 
 	end 
 
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
 	-- debugoverlay.Cross(pos1,32,1) 
 	-- debugoverlay.Cross(pos2,32,1) 
-    if not pos1 or not pos2 then return false end
+    if !pos1 or !pos2 then return false end
 
     -- Only add a new segment when positions moved a small epsilon to avoid duplicates
-    if not pos1:IsEqualTol(self.LastPos1 or vector_origin,1) or not pos2:IsEqualTol(self.LastPos2 or vector_origin,1) then
+    if !pos1:IsEqualTol(self.LastPos1 or vector_origin,0.1) or !pos2:IsEqualTol(self.LastPos2 or vector_origin,0.1) then
         self:AddSegment(pos1, pos2)
         self.LastPos1, self.LastPos2 = pos1, pos2
     end
@@ -208,7 +215,7 @@ end
 
 -- modify Render's width calculation to use these params
 function EFFECT:Render()
-    if not self.TrailPoints or #self.TrailPoints < 2 then return end
+    if !self.TrailPoints or #self.TrailPoints < 2 then return end
 
     render.SetMaterial(self.Mat)
     mesh.Begin(MATERIAL_TRIANGLE_STRIP, #self.TrailPoints * 2)
@@ -220,7 +227,7 @@ function EFFECT:Render()
         -- --- Appearance Calculation ---
         local alpha = math.sin(math.pi * (1 - lifeFrac)) * 255
         local intensity = Lerp(lifeFrac, 1.5, 0.0)
-        local trailColor = Color(0, 180 * intensity, 255 * intensity, alpha)
+        local trailColor = Color(0, 1800 * intensity, 2550 * intensity, alpha)
 
         -- --- Vertex Position & Width Calculation ---
         local pos1 = seg.pos1

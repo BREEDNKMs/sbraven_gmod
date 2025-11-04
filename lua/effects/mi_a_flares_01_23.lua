@@ -66,10 +66,13 @@ function EFFECT:Think()
 	-- print(Bip01_R_Hand,self.Entity) 
 	if Bip01_R_Hand then 
 		pos = self.Entity:GetBoneMatrix(Bip01_R_Hand) 
-		pos = pos and pos:GetTranslation() or self.Entity:GetShootPos() 
+		GetShootPos = IsValid(self.Entity:GetOwner()) and self.Entity:GetOwner():GetShootPos() or self:WorldSpaceCenter() 
+		pos = pos and pos:GetTranslation() or GetShootPos 
 	end 
     self.Pos = pos 
+	if !self.Emitter or !self.Emitter:IsValid() then self.Emitter = ParticleEmitter(self.Pos, true) end 
     self.Emitter:SetPos(self.Pos)
+	self.NextEmit = self.NextEmit or 0 
 
 	if CurTime() >= self.NextEmit then 
 		self.NextEmit = CurTime() + self.EmitInterval 
