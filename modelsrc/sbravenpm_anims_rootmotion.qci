@@ -66,12 +66,19 @@ $animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
 } 
 
 $animation a_Proto_Battle_Jump_End "sbravenpm_anims\Proto_Battle_Jump_End.smd" 
+$animation a_Raven_Base "sbravenpm_anims\Raven_Base.smd" 
 //$animation a_Proto_Battle_Jump_End_layer "sbravenpm_anims\Proto_Battle_Jump_End.smd" subtract a_Proto_Battle_Jump_End 78 
 //$sequence Proto_Battle_Jump_End "a_Proto_Battle_Jump_End_layer" activity ACT_LAND 1 fps 120 delta 
 
 $animation a_m_raven_parry "sbravenpm_anims\m_raven_parry.smd" 
 //$animation a_m_raven_parry_layer "sbravenpm_anims\m_raven_parry.smd" subtract a_m_raven_parry 120 
+$animation a_Raven_Base_layer "sbravenpm_anims\Raven_Base.smd" subtract a_Raven_Base 0 
 //$sequence m_raven_parry "a_m_raven_parry_layer" activity ACT_SPECIAL_ATTACK2 1 fps 60 delta 
+
+$animation a_result_hit_add_light_fw_dw_layer "sbravenpm_anims\result_hit_add_light_fw_dw.smd" subtract a_Raven_Base 0 
+$animation a_result_hit_add_light_fw_lw_layer "sbravenpm_anims\result_hit_add_light_fw_lw.smd" subtract a_Raven_Base 0 
+$animation a_result_hit_add_light_fw_rw_layer "sbravenpm_anims\result_hit_add_light_fw_rw.smd" subtract a_Raven_Base 0 
+$animation a_result_hit_add_light_fw_uw_layer "sbravenpm_anims\result_hit_add_light_fw_uw.smd" subtract a_Raven_Base 0 
 
 $sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1.smd" { // frames 378 
 	fps 60 
@@ -349,15 +356,15 @@ $sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  {
 	walkframe 288 LX LY LZ LM
 
 	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	175.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	175.0	 "" }
 	{event AE_SV_PLAYSOUND 	250.0	 "M_Raven_SwordSwish_M_Cue" }
-	{event 1004 	165.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	165.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	172.0	 "" }
-	{event 1004 	30.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	39.0	 "" }
-	{event AE_NPC_LEFTFOOT 	8.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	42.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	172.0	 "" }
+	{event AE_SV_PLAYSOUND 	30.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	39.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	8.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	42.0	 "" }
 	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_Cloth_XL3_Cue" }
 	{event AE_SV_PLAYSOUND 	148.0	 "M_Raven_vo_Cast_S_Cue" }
 } 
@@ -431,22 +438,22 @@ $sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd
 	walkframe 427 LX LY LZ LM
 	walkframe 431 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	407.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
-	{event AE_NPC_LEFTFOOT 	201.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	407.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	28.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	201.0	 "" }
 	{event AE_SV_PLAYSOUND 	168.0	 "M_Raven_SwordSwish_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	315.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	178.0	 "M_Raven_Cloth_XL3_Cue" }
 	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	24.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_LEFTFOOT 	333.0	 "" }
-	{event AE_NPC_LEFTFOOT 	402.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	333.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	402.0	 "" }
 	{event AE_SV_PLAYSOUND 	314.0	 "M_Raven_Cloth_XL3_Cue" }
-	{event AE_NPC_RIGHTFOOT 	340.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	340.0	 "" }
 	{event AE_SV_PLAYSOUND 	316.0	 "M_Raven_SwordSwish_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	78.0	 "M_Raven_SwordSwish_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	90.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	90.0	 "" }
 } 
 
 $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd"  { // frames 101 
@@ -508,13 +515,13 @@ $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd
 	walkframe 101 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_LEFTFOOT 	16.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	16.0	 "" }
 	{event AE_SV_PLAYSOUND 	43.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_RIGHTFOOT 	89.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	54.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	89.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	54.0	 "" }
 	{event AE_SV_PLAYSOUND 	43.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_Cloth_XL_Cue" }
-	{event AE_NPC_LEFTFOOT 	58.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	58.0	 "" }
 } 
 
 $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacountergrabsuccess.smd"  { // frames 322
@@ -578,17 +585,17 @@ $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacounterg
 	walkframe 318 LX LY LZ LM
 	walkframe 322 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	233.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
-	{event AE_NPC_LEFTFOOT 	47.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	233.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	237.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	47.0	 "" }
 	{event AE_SV_PLAYSOUND 	127.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_L_Cue" }
 	{event AE_SV_PLAYSOUND 	125.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	94.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	94.0	 "" }
 	{event AE_SV_PLAYSOUND 	68.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	157.0	 "" }
 	{event AE_SV_PLAYSOUND 	229.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	51.0	 "" }
 } 
 
 $sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  { // frames 54
@@ -652,10 +659,10 @@ $sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  {
 	walkframe 53 LX LY LZ LM
 	walkframe 54 LX LY LZ LM
 	
-	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event AE_SV_PLAYSOUND 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	36.0	 "" }
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	38.0	 "" }
 } 
 
 $sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd"  { // frames 54
@@ -720,9 +727,9 @@ $sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd" 
 	walkframe 54 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
-	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+	{event AE_SV_PLAYSOUND 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	36.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	38.0	 "" }
 } 
 
 $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames 102
@@ -783,14 +790,14 @@ $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames
 	walkframe 100 LX LY LZ LM
 	walkframe 102 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	56.0	 "" }
-	{event AE_NPC_LEFTFOOT 	57.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	56.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	57.0	 "" }
 	{event AE_SV_PLAYSOUND 	39.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_RIGHTFOOT 	7.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
-	{event AE_NPC_LEFTFOOT 	31.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	87.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	7.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	27.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	31.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	36.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	87.0	 "" }
 	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	56.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	23.0	 "M_Raven_vo_Cast_M_Cue" }
@@ -854,17 +861,17 @@ $sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  {
 	walkframe 100 LX LY LZ LM
 	walkframe 102 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
-	{event AE_NPC_LEFTFOOT 	32.0	 "" }
-	{event AE_NPC_LEFTFOOT 	59.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	58.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	37.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	32.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	59.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	58.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	27.0	 "" }
 	{event AE_SV_PLAYSOUND 	37.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_RIGHTFOOT 	9.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	9.0	 "" }
 	{event AE_SV_PLAYSOUND 	21.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_SV_PLAYSOUND 	56.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	88.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	88.0	 "" }
 } 
 
 $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { // frames 322
@@ -928,19 +935,19 @@ $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchains
 	walkframe 318 LX LY LM
 	walkframe 322 LX LY LM
 	
-	{event AE_NPC_LEFTFOOT 	233.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
-	{event AE_NPC_LEFTFOOT 	47.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	233.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	237.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	47.0	 "" }
 	{event AE_SV_PLAYSOUND 	132.0	 "M_Raven_SwordSwish_S_Cue" }
 	{event AE_SV_PLAYSOUND 	37.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	134.0	 "M_Raven_Skill_Stab_Cue" }
 	{event AE_SV_PLAYSOUND 	82.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event 1004 	226.0	 "CharSESound" }
+	{event AE_SV_PLAYSOUND 	226.0	 "CharSESound" }
 	{event AE_SV_PLAYSOUND 	132.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	51.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	51.0	 "" }
 } 
 
-$sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { // frames 322
+$sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
 	origin 0 0 42 
@@ -1002,12 +1009,12 @@ $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabchainsucces
 	walkframe 322 LX LY LM
 	
 	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_RIGHTFOOT 	237.0	 "" }
-	{event AE_NPC_LEFTFOOT 	41.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	237.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	41.0	 "" }
 	{event AE_SV_PLAYSOUND 	124.0	 "M_Raven_SwordSwish_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	45.0	 "" }
-	{event AE_NPC_LEFTFOOT 	233.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	157.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	45.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	233.0	 "" }
 	{event AE_SV_PLAYSOUND 	128.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	229.0	 "M_Raven_Bodyfall_S_Cue" }
 } 
@@ -1076,19 +1083,19 @@ $sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd" 
 	walkframe 448 LX LY LZ LM
 	walkframe 451 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	160.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	170.0	 "" }
-	{event AE_NPC_LEFTFOOT 	8.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	334.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	160.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	170.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	8.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	334.0	 "" }
 	{event AE_SV_PLAYSOUND 	256.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	88.0	 "" }
-	{event AE_NPC_LEFTFOOT 	361.0	 "" }
-	{event AE_NPC_LEFTFOOT 	189.0	 "" }
-	{event AE_NPC_LEFTFOOT 	96.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	88.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	361.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	189.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	96.0	 "" }
 	{event AE_SV_PLAYSOUND 	354.0	 "M_Raven_SwordSwish_XS_Cue" }
 	{event AE_SV_PLAYSOUND 	30.0	 "M_Raven_SwordSwish_XS_Cue" }
 	{event AE_SV_PLAYSOUND 	27.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	380.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	380.0	 "" }
 } 
 
 $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.smd"  { // frames 375
@@ -1162,20 +1169,20 @@ $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.s
 	walkframe 375 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	203.0	 "M_Raven_vo_Cast_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	237.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	237.0	 "" }
 	{event AE_SV_PLAYSOUND 	36.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Cast_S_Cue" }
 	{event AE_SV_PLAYSOUND 	38.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	128.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	200.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	185.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	354.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	143.0	 "" }
-	{event AE_NPC_LEFTFOOT 	154.0	 "" }
-	{event AE_NPC_LEFTFOOT 	298.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	200.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	185.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	354.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	143.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	154.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	298.0	 "" }
 	{event AE_SV_PLAYSOUND 	199.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	167.0	 "M_Raven_vo_Cast_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	267.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	267.0	 "" }
 } 
 
 $sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd"  { // frames 129
@@ -1298,7 +1305,7 @@ $sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend
 	walkframe 177 LX LY LM
 	
 	{event AE_SV_PLAYSOUND 	53.0	 "M_Raven_SwordSwish_XL_C_Cue" }
-	{event AE_NPC_RIGHTFOOT 	127.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	127.0	 "" }
 	{event AE_SV_PLAYSOUND 	52.0	 "M_Raven_vo_ATK_L_Cue" }
 } 
 
@@ -1364,25 +1371,25 @@ $sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd" 
 	walkframe 321 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	84.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	301.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	38.0	 "" }
-	{event 1004 	79.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	197.0	 "" }
-	{event AE_NPC_LEFTFOOT 	294.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	223.0	 "" }
-	{event AE_NPC_LEFTFOOT 	152.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	301.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	38.0	 "" }
+	{event AE_SV_PLAYSOUND 	79.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	197.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	294.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	223.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	152.0	 "" }
 	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	16.0	 "M_Raven_Cloth_XL_Cue" }
-	{event AE_NPC_RIGHTFOOT 	173.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	173.0	 "" }
 	{event AE_SV_PLAYSOUND 	21.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_SV_PLAYSOUND 	165.0	 "M_Raven_Cloth_XL_Cue" }
-	{event AE_NPC_LEFTFOOT 	169.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	169.0	 "" }
 	{event AE_SV_PLAYSOUND 	171.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
-	{event AE_NPC_LEFTFOOT 	92.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	96.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	23.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	92.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	96.0	 "" }
 	{event AE_SV_PLAYSOUND 	214.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event 1004 	43.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+	{event AE_SV_PLAYSOUND 	43.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
 } 
 
 $sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // frames 36
@@ -1428,8 +1435,8 @@ $sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // fr
 	walkframe 35 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	7.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	7.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	23.0	 "" }
 } 
 
 $sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { // frames 420
@@ -1544,8 +1551,8 @@ $sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { // fr
 	walkframe 35 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	7.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	25.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	7.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	25.0	 "" }
 } 
 
 $sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // frames 36
@@ -1591,8 +1598,8 @@ $sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // fr
 	walkframe 35 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	6.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	23.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	23.0	 "" }
 } 
 
 $sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // frames 36
@@ -1638,8 +1645,8 @@ $sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // fr
 	walkframe 35 LX LY LZ LM
 	walkframe 36 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	6.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	22.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	22.0	 "" }
 } 
 
 $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.smd"  { // frames 237
@@ -1710,13 +1717,13 @@ $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.s
 	walkframe 237 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_RIGHTFOOT 	146.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	20.0	 "" }
-	{event 1004 	134.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	150.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	146.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	20.0	 "" }
+	{event AE_SV_PLAYSOUND 	134.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	150.0	 "" }
 	{event AE_SV_PLAYSOUND 	101.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_LEFTFOOT 	210.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	218.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	210.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	218.0	 "" }
 } 
 
 $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // frames 228
@@ -1783,11 +1790,11 @@ $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // fr
 	walkframe 224 LX LY LZ LM
 	walkframe 228 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	68.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	74.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
-	{event AE_NPC_LEFTFOOT 	141.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	207.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	68.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	74.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	137.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	141.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	207.0	 "" }
 } 
 
 $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // frames 300
@@ -1857,15 +1864,15 @@ $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // fram
 	walkframe 295 LX LY LZ LM
 	walkframe 300 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	260.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	235.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	104.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	260.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	235.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	104.0	 "" }
 	{event AE_SV_PLAYSOUND 	88.0	 "M_Raven_SwordSwish_XL_Cue" }
-	{event AE_NPC_LEFTFOOT 	106.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	106.0	 "" }
 	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_vo_Cast_S_Cue" }
 	{event AE_SV_PLAYSOUND 	182.0	 "M_Raven_SwordSwish_S_Cue" }
 	{event AE_SV_PLAYSOUND 	90.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	186.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	186.0	 "" }
 } 
 
 $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.smd"  { // frames 414
@@ -1936,8 +1943,8 @@ $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.s
 	walkframe 414 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	12.0	 "M_Raven_vo_Cast_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	385.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	360.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	385.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	360.0	 "" }
 	{event AE_SV_PLAYSOUND 	145.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	214.0	 "M_Raven_SwordSwish_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	221.0	 "M_Raven_vo_ATK_L_Cue" }
@@ -2009,13 +2016,13 @@ $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsucces
 	walkframe 448 LX LY LM
 	walkframe 454 LX LY LM
 	
-	{event AE_NPC_LEFTFOOT 	361.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	361.0	 "" }
 	{event AE_SV_PLAYSOUND 	120.0	 "M_Raven_Bodyfall_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	306.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	306.0	 "" }
 	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_Bodyfall_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	258.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	258.0	 "" }
 	{event AE_SV_PLAYSOUND 	114.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	63.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	63.0	 "" }
 	{event AE_SV_PLAYSOUND 	174.0	 "M_Raven_vo_Dmg_L_Cue" }
 	{event AE_SV_PLAYSOUND 	58.0	 "M_Raven_vo_Dmg_S_Cue" }
 } 
@@ -2073,9 +2080,9 @@ $sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { // fram
 	walkframe 90 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
-	{event AE_NPC_LEFTFOOT 	38.0	 "" }
-	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	36.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	38.0	 "" }
+	{event AE_SV_PLAYSOUND 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
 $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  { // frames 219
@@ -2141,20 +2148,20 @@ $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  {
 	walkframe 219 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	72.0	 "M_Raven_SwordSwish_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	140.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	140.0	 "" }
 	{event AE_SV_PLAYSOUND 	161.0	 "M_Raven_SwordSwish_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	36.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	36.0	 "" }
 	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	81.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	81.0	 "" }
 	{event AE_SV_PLAYSOUND 	112.0	 "M_Raven_SwordSwish_XL_Cue" }
-	{event AE_NPC_RIGHTFOOT 	95.0	 "" }
-	{event AE_NPC_LEFTFOOT 	167.0	 "" }
-	{event AE_NPC_LEFTFOOT 	101.0	 "" }
-	{event 1004 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	95.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	167.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	101.0	 "" }
+	{event AE_SV_PLAYSOUND 	34.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	145.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	145.0	 "" }
 	{event AE_SV_PLAYSOUND 	117.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	38.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	38.0	 "" }
 } 
 
 $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordaura.smd"  { // frames 225
@@ -2221,15 +2228,15 @@ $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordau
 	walkframe 224 LX LY LZ LM
 	walkframe 225 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	45.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
-	{event AE_NPC_LEFTFOOT 	107.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	45.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	48.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	107.0	 "" }
 	{event AE_SV_PLAYSOUND 	94.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	195.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	195.0	 "" }
 	{event AE_SV_PLAYSOUND 	7.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	5.0	 "M_Raven_Cloth_XL3_Cue" }
 	{event AE_SV_PLAYSOUND 	49.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event 1004 	37.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	37.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
 $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // frames 81
@@ -2280,10 +2287,10 @@ $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // fram
 	walkframe 80 LX LY LZ LM
 	walkframe 81 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
-	{event AE_NPC_LEFTFOOT 	42.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	39.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	42.0	 "" }
 	{event AE_SV_PLAYSOUND 	35.0	 "M_Raven_SwordSwish_S_Cue" }
-	{event 1004 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
 } 
 
@@ -2335,13 +2342,13 @@ $sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { // fr
 	walkframe 80 LX LY LZ LM
 	walkframe 81 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	71.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	39.0	 "" }
-	{event AE_NPC_LEFTFOOT 	68.0	 "" }
-	{event 1004 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	71.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	39.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	68.0	 "" }
+	{event AE_SV_PLAYSOUND 	33.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_SV_PLAYSOUND 	35.0	 "M_Raven_SwordSwish_S_Cue" }
 	{event AE_SV_PLAYSOUND 	4.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	42.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	42.0	 "" }
 } 
 
 $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd"  { // frames 480
@@ -2411,21 +2418,21 @@ $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd" 
 	walkframe 472 LX LY LZ LM
 	walkframe 480 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	37.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	37.0	 "" }
 	{event AE_SV_PLAYSOUND 	140.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_LEFTFOOT 	93.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	294.0	 "" }
-	{event 1004 	119.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
-	{event AE_NPC_LEFTFOOT 	395.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	385.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	166.0	 "" }
-	{event AE_NPC_LEFTFOOT 	217.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	80.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	315.0	 "" }
-	{event AE_NPC_LEFTFOOT 	162.0	 "" }
-	{event AE_NPC_LEFTFOOT 	364.0	 "" }
-	{event 1004 	155.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	285.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	93.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	294.0	 "" }
+	{event AE_SV_PLAYSOUND 	119.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	395.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	385.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	166.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	217.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	80.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	315.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	162.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	364.0	 "" }
+	{event AE_SV_PLAYSOUND 	155.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	285.0	 "" }
 } 
 
 $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // frames 240
@@ -2495,13 +2502,13 @@ $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // fram
 	walkframe 236 LX LY LZ LM
 	walkframe 240 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	214.0	 "" }
-	{event AE_NPC_LEFTFOOT 	227.0	 "" }
-	{event AE_NPC_LEFTFOOT 	80.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	106.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	214.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	227.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	80.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	106.0	 "" }
 	{event AE_SV_PLAYSOUND 	140.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	162.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	162.0	 "" }
 } 
 
 $sequence "m_raven_parry" "a_m_raven_parry"  { // frames 120
@@ -2572,11 +2579,11 @@ $sequence "m_raven_parry" "a_m_raven_parry"  { // frames 120
 	walkframe 120 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	49.0	 "M_Raven_SwordSwish_XS_Cue" }
-	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	8.0	 "" }
 	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	45.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_SwordSwish_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	5.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	5.0	 "" }
 } 
 
 $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo.smd"  { // frames 261
@@ -2639,12 +2646,12 @@ $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo
 	walkframe 260 LX LY LZ LM
 	walkframe 261 LX LY LZ LM
 	
-	{event AE_NPC_RIGHTFOOT 	100.0	 "" }
-	{event AE_NPC_LEFTFOOT 	150.0	 "" }
-	{event AE_NPC_LEFTFOOT 	4.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	79.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	5.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	209.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	100.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	150.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	4.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	79.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	5.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	209.0	 "" }
 } 
 
 $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash.smd"  { // frames 297
@@ -2715,11 +2722,11 @@ $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash
 	walkframe 297 LX LY LZ LM
 	
 	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_vo_Cast_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	29.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	29.0	 "" }
 	{event AE_SV_PLAYSOUND 	150.0	 "M_Raven_SwordSwish_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	156.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	158.0	 "" }
-	{event AE_NPC_LEFTFOOT 	267.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	158.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	267.0	 "" }
 } 
 
 $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycounterslashsuccess.smd"  { // frames 408
@@ -2788,14 +2795,14 @@ $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycount
 	walkframe 406 LX LY LZ LM
 	walkframe 408 LX LY LZ LM
 	
-	{event AE_NPC_LEFTFOOT 	379.0	 "" }
-	{event 1004 	308.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	326.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	379.0	 "" }
+	{event AE_SV_PLAYSOUND 	308.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	326.0	 "" }
 	{event AE_SV_PLAYSOUND 	243.0	 "M_Raven_vo_Cast_S_Cue" }
 	{event AE_SV_PLAYSOUND 	192.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	261.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_RIGHTFOOT 	373.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	322.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	373.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	322.0	 "" }
 	{event AE_SV_PLAYSOUND 	16.0	 "M_Raven_vo_Cast_S_Cue" }
 	{event AE_SV_PLAYSOUND 	154.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	304.0	 "M_Raven_vo_ATK_L_Cue" }
@@ -2891,8 +2898,8 @@ $sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { // frames 30
 	walkframe 30 LX LY LZ LM
 	
 	transition "walking" "" 
-	{event AE_NPC_LEFTFOOT 	6.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	12.0	 "" }
 } 
 
 $sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { // frames 15
@@ -2918,7 +2925,7 @@ $sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { // frames 15
 	
 	origin 0 0 42 
 	transition "" "walking" 
-	{event AE_NPC_RIGHTFOOT 	12.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	12.0	 "" }
 } 
 
 $sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakercounter.smd" { // frames 360
@@ -2988,19 +2995,19 @@ $sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakerc
 	walkframe 360 LX LY LZ LM
 	
 	origin 0 0 42 
-	{event AE_NPC_LEFTFOOT 	222.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	248.0	 "" }
-	{event AE_NPC_LEFTFOOT 	124.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	222.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	248.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	124.0	 "" }
 	{event AE_SV_PLAYSOUND 	86.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	170.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	172.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	324.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	157.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	113.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	172.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	324.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	157.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	113.0	 "" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_Cast_M_Cue" }
 	{event AE_SV_PLAYSOUND 	83.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	168.0	 "M_Raven_Cloth_XL_Cue" }
-	{event AE_NPC_LEFTFOOT 	275.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	275.0	 "" }
 } 
 
 $sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { // frames 180
@@ -3070,10 +3077,10 @@ $sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { // frames 180
 	walkframe 180 LX LY LZ LM
 	
 	origin 0 0 42 
-	{event AE_NPC_RIGHTFOOT 	48.0	 "" }
-	{event AE_NPC_LEFTFOOT 	50.0	 "" }
-	{event AE_NPC_LEFTFOOT 	105.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	154.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	48.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	50.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	105.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	154.0	 "" }
 	{event AE_SV_PLAYSOUND 	101.0	 "M_Raven_SwordSwish_S_Cue" }
 	{event AE_SV_PLAYSOUND 	31.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	28.0	 "M_Raven_Cloth_XL_Cue" }
@@ -3137,18 +3144,18 @@ $sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { // fra
 	walkframe 198 LX LY LZ LM
 	
 	origin 0 0 42 
-	{event AE_NPC_RIGHTFOOT 	118.0	 "" }
-	{event AE_NPC_LEFTFOOT 	122.0	 "" }
-	{event AE_NPC_LEFTFOOT 	174.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	118.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	122.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	174.0	 "" }
 	{event AE_SV_PLAYSOUND 	40.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_SV_PLAYSOUND 	116.0	 "M_Raven_vo_Cast_L_Cue" }
 	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Cast_S_Cue" }
 	{event AE_SV_PLAYSOUND 	74.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	168.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	168.0	 "" }
 	{event AE_SV_PLAYSOUND 	40.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	79.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	76.0	 "M_Raven_SwordSwish_XL_Cue" }
-	{event 1004 	111.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event AE_SV_PLAYSOUND 	111.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 } 
 
 $sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd" { // frames 540
@@ -3219,32 +3226,32 @@ $sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	343.0	 "M_Raven_SwordSwish_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	449.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	314.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	449.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	314.0	 "" }
 	{event AE_SV_PLAYSOUND 	259.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	404.0	 "M_Raven_Cloth_XL2_Ce" }
 	{event AE_SV_PLAYSOUND 	194.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_SV_PLAYSOUND 	151.0	 "M_Raven_SwordSwish_M_Cue" }
-	{event 1004 	433.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
-	{event AE_NPC_LEFTFOOT 	251.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	256.0	 "" }
+	{event AE_SV_PLAYSOUND 	433.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	251.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	256.0	 "" }
 	{event AE_SV_PLAYSOUND 	406.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event AE_SV_PLAYSOUND 	261.0	 "mon_swish_m_cue" }
 	{event AE_SV_PLAYSOUND 	173.0	 "M_Raven_SwordSwish_M_Cue" }
 	{event AE_SV_PLAYSOUND 	236.0	 "M_Raven_SwordSwish_M_Cue" }
-	{event AE_NPC_RIGHTFOOT 	526.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	66.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	526.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	66.0	 "" }
 	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_vo_SkillLaugh_Cue" }
 	{event AE_SV_PLAYSOUND 	407.0	 "M_Raven_SwordSwish_M_Cue" }
-	{event AE_NPC_LEFTFOOT 	322.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	322.0	 "" }
 	{event AE_SV_PLAYSOUND 	342.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	147.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	444.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	444.0	 "" }
 	{event AE_SV_PLAYSOUND 	286.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_SV_PLAYSOUND 	376.0	 "M_Raven_vo_Cast_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	498.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	498.0	 "" }
 	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_Cloth_XL2_Ce" }
-	{event AE_NPC_RIGHTFOOT 	223.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	223.0	 "" }
 	{event AE_SV_PLAYSOUND 	172.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	287.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	219.0	 "M_Raven_vo_Cast_M_Cue" }
@@ -3323,21 +3330,21 @@ $sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { // fra
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	175.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	137.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	210.0	 "" }
-	{event 1004 	111.0	 "*Skill/Monster/Raven/M_Raven_Skill_ElectricImpact_S_1.wav" }
-	{event 1004 	201.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	137.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	210.0	 "" }
+	{event AE_SV_PLAYSOUND 	111.0	 "*Skill/Monster/Raven/M_Raven_Skill_ElectricImpact_S_1.wav" }
+	{event AE_SV_PLAYSOUND 	201.0	 "*Skill/Monster/Raven/M_Raven_Jump.wav" }
 	{event AE_SV_PLAYSOUND 	202.0	 "M_Raven_vo_Cast_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	347.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	347.0	 "" }
 	{event AE_SV_PLAYSOUND 	105.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	109.0	 "" }
-	{event AE_NPC_LEFTFOOT 	102.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	109.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	102.0	 "" }
 	{event AE_SV_PLAYSOUND 	75.0	 "M_Raven_SwordSwish_L_Cue" }
-	{event AE_NPC_LEFTFOOT 	206.0	 "" }
-	{event 1004 	164.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
-	{event AE_NPC_LEFTFOOT 	20.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	168.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	69.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	206.0	 "" }
+	{event AE_SV_PLAYSOUND 	164.0	 "*Skill/Monster/Raven/M_Raven_Skill_Evade_Direction2.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	20.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	168.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	69.0	 "" }
 	{event AE_SV_PLAYSOUND 	109.0	 "M_Raven_SwordSwish_M_Cue" }
 	{event AE_SV_PLAYSOUND 	142.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event AE_SV_PLAYSOUND 	138.0	 "M_Raven_vo_ATK_S_Cue" }
@@ -3406,135 +3413,95 @@ $sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" 
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	110.0	 "M_Raven_vo_ATK_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	27.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	46.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	27.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	46.0	 "" }
 	{event AE_SV_PLAYSOUND 	20.0	 "M_Raven_vo_ATK_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	76.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	122.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	76.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	122.0	 "" }
 	{event AE_SV_PLAYSOUND 	208.0	 "M_Raven_SwordSwish_M_Cue" }
 	{event AE_SV_PLAYSOUND 	41.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event AE_SV_PLAYSOUND 	63.0	 "M_Raven_vo_Cast_M_Cue" }
-	{event AE_NPC_LEFTFOOT 	223.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	223.0	 "" }
 } 
 
-$sequence "result_hit_add_light_fw_dw" "sbravenpm_anims\result_hit_add_light_fw_dw.smd" { // frames 20
-	fps 30 
-	activity ACT_FLINCH 1 
-	addlayer inverse_proportions
+$sequence "result_hit_add_light_fw_dw" "a_result_hit_add_light_fw_dw_layer" { // frames 20
+	fps 1 
+	activity ACT_FLINCH_BACK 999 
+	//addlayer inverse_proportions
 	
-	walkframe 1 LX LY LZ LM
-	walkframe 2 LX LY LZ LM
-	walkframe 3 LX LY LZ LM
-	walkframe 4 LX LY LZ LM
-	walkframe 5 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 7 LX LY LZ LM
-	walkframe 8 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 10 LX LY LZ LM
-	walkframe 11 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 13 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 17 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 19 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
-	
-	origin 0 0 42 
+	//origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
+	delta 
 } 
 
-$sequence "result_hit_add_light_fw_lw" "sbravenpm_anims\result_hit_add_light_fw_lw.smd" { // frames 20
-	fps 30 
-	activity ACT_FLINCH 1 
-	addlayer inverse_proportions
+$sequence "result_hit_add_light_fw_lw" "a_result_hit_add_light_fw_lw_layer" { // frames 20
+	fps 1 
+	activity ACT_FLINCH_SHOULDER_LEFT 999 
+	//addlayer inverse_proportions
 	
-	walkframe 1 LX LY LZ LM
-	walkframe 2 LX LY LZ LM
-	walkframe 3 LX LY LZ LM
-	walkframe 4 LX LY LZ LM
-	walkframe 5 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 7 LX LY LZ LM
-	walkframe 8 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 10 LX LY LZ LM
-	walkframe 11 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 13 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 17 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 19 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
-	
-	origin 0 0 42 
+	//origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	delta 
 } 
 
-$sequence "result_hit_add_light_fw_rw" "sbravenpm_anims\result_hit_add_light_fw_rw.smd" { // frames 20
+$sequence "result_hit_add_light_fw_rw" "a_result_hit_add_light_fw_rw_layer" { // frames 20
 	fps 30 
-	activity ACT_FLINCH 1 
-	addlayer inverse_proportions
+	activity ACT_FLINCH_SHOULDER_RIGHT 999 
+	//addlayer inverse_proportions
 	
-	walkframe 1 LX LY LZ LM
-	walkframe 2 LX LY LZ LM
-	walkframe 3 LX LY LZ LM
-	walkframe 4 LX LY LZ LM
-	walkframe 5 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 7 LX LY LZ LM
-	walkframe 8 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 10 LX LY LZ LM
-	walkframe 11 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 13 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 17 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 19 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
-	
-	origin 0 0 42 
+	//origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	delta 
 } 
 
-$sequence "result_hit_add_light_fw_uw" "sbravenpm_anims\result_hit_add_light_fw_uw.smd" { // frames 20
+$sequence "result_hit_add_light_fw_uw" "a_result_hit_add_light_fw_uw_layer" { // frames 20
 	fps 30 
-	activity ACT_FLINCH 1 
-	addlayer inverse_proportions
+	activity ACT_FLINCH_HEAD 999 
+	//addlayer inverse_proportions
 	
-	walkframe 1 LX LY LZ LM
-	walkframe 2 LX LY LZ LM
-	walkframe 3 LX LY LZ LM
-	walkframe 4 LX LY LZ LM
-	walkframe 5 LX LY LZ LM
-	walkframe 6 LX LY LZ LM
-	walkframe 7 LX LY LZ LM
-	walkframe 8 LX LY LZ LM
-	walkframe 9 LX LY LZ LM
-	walkframe 10 LX LY LZ LM
-	walkframe 11 LX LY LZ LM
-	walkframe 12 LX LY LZ LM
-	walkframe 13 LX LY LZ LM
-	walkframe 14 LX LY LZ LM
-	walkframe 15 LX LY LZ LM
-	walkframe 16 LX LY LZ LM
-	walkframe 17 LX LY LZ LM
-	walkframe 18 LX LY LZ LM
-	walkframe 19 LX LY LZ LM
-	walkframe 20 LX LY LZ LM
+	//origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
+	delta 
+} 
+
+$sequence "result_hit_add_light_fw_uw2" "a_result_hit_add_light_fw_uw_layer" { // frames 20
+	fps 30 
+	activity ACT_FLINCH 999 
+	//addlayer inverse_proportions
 	
-	origin 0 0 42 
-	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
+	//origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
+	delta 
+} 
+
+$sequence "result_hit_add_light_fw_uw3" "a_result_hit_add_light_fw_uw_layer" { // frames 20
+	fps 30 
+	activity ACT_FLINCH_CHEST 999 
+	//addlayer inverse_proportions
+	
+	//origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
+	delta 
+} 
+
+$sequence "result_hit_add_light_fw_uw4" "a_result_hit_add_light_fw_uw_layer" { // frames 20
+	fps 30 
+	activity ACT_FLINCH_LEFTLEG 999 
+	//addlayer inverse_proportions
+	
+	//origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
+	delta 
+} 
+
+$sequence "result_hit_add_light_fw_uw5" "a_result_hit_add_light_fw_uw_layer" { // frames 20
+	fps 30 
+	activity ACT_FLINCH_RIGHTLEG 999 
+	//addlayer inverse_proportions
+	
+	//origin 0 0 42 
+	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
+	delta 
 } 
 
 $sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { // frames 45
@@ -3590,7 +3557,7 @@ $sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { //
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	8.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw.smd" { // frames 60
@@ -3660,10 +3627,10 @@ $sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw
 	walkframe 60 LX LY LZ LM
 	
 	origin 0 0 42 
-	{event AE_NPC_RIGHTFOOT 	33.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	33.0	 "" }
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	17.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	8.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	17.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	8.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light_fw_dw.smd" { // frames 54
@@ -3728,8 +3695,8 @@ $sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	6.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	13.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light_fw_lw.smd" { // frames 54
@@ -3794,8 +3761,8 @@ $sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	12.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	12.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	6.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light_fw_rw.smd" { // frames 54
@@ -3860,8 +3827,8 @@ $sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	12.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	12.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	6.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light_fw_uw.smd" { // frames 54
@@ -3926,8 +3893,8 @@ $sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	6.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	13.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	6.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	13.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw.smd" { // frames 60
@@ -3998,8 +3965,8 @@ $sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	16.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	10.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	16.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	10.0	 "" }
 } 
 
 $sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw.smd" { // frames 60
@@ -4070,8 +4037,8 @@ $sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw
 	
 	origin 0 0 42 
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	9.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	15.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	9.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	15.0	 "" }
 } 
 
 $sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd" { // frames 60
@@ -4211,8 +4178,8 @@ $sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { 
 	
 	origin 0 0 42 
 	transition "result_state_groggy_l" "" 
-	{event AE_NPC_LEFTFOOT 	45.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	28.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	45.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	28.0	 "" }
 } 
 
 $sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { // frames 140
@@ -4322,9 +4289,9 @@ $sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { 
 	transition "" "result_state_groggy_l" 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_P_Cue" }
 	{event AE_SV_PLAYSOUND 	28.0	 "M_Raven_Bodyfall_S_Cue" }
-	{event AE_NPC_LEFTFOOT 	15.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	22.0	 "" }
-	{event 1004 	31.0	 "*Skill/Monster/Raven/M_Raven_SwordDrop.wav" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	15.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	22.0	 "" }
+	{event AE_SV_PLAYSOUND 	31.0	 "*Skill/Monster/Raven/M_Raven_SwordDrop.wav" }
 } 
 
 $sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.smd" { // frames 60
@@ -4395,8 +4362,8 @@ $sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.s
 	
 	origin 0 0 42 
 	transition "result_state_knockdown_l" "" 
-	{event AE_NPC_LEFTFOOT 	17.0	 "" }
-	{event AE_NPC_RIGHTFOOT 	32.0	 "" }
+	{event CL_EVENT_FOOTSTEP_LEFT 	17.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	32.0	 "" }
 } 
 
 $sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.smd" { // frames 60
@@ -4612,7 +4579,7 @@ $sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_
 	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	5.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	11.0	 "M_Raven_Bodyfall_L_Cue" }
-	{event AE_NPC_RIGHTFOOT 	5.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	5.0	 "" }
 } 
 
 $sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { // frames 38
@@ -4660,7 +4627,7 @@ $sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { // frames 38
 	walkframe 38 LX LY LZ LM
 	
 	origin 0 0 42 
-	{event AE_NPC_RIGHTFOOT 	1.0	 "" }
+	{event CL_EVENT_FOOTSTEP_RIGHT 	1.0	 "" }
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Dmg_L_Cue" }
 } 
 
@@ -5762,10 +5729,11 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_S
 } 
 
 $sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 90
-	fps 60 
+	fps 30  
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_LEFT 75 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 47 "" }
 	walkframe 2 LX LY LZ LM
 	walkframe 4 LX LY LZ LM
 	walkframe 6 LX LY LZ LM
@@ -5816,7 +5784,7 @@ $sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 
 } 
 
 $sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frames 210
-	fps 60 
+	fps 30  
 	activity ACT_IDLE_AGITATED 1 
 	addlayer inverse_proportions
 	
@@ -5878,7 +5846,7 @@ $sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frame
 } 
 
 $sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { // frames 100
-	fps 60 
+	fps 30  
 	activity ACT_IDLE_AGITATED 1 
 	addlayer inverse_proportions
 	
@@ -5940,8 +5908,11 @@ $sequence "Proto_Battle_Jog" "sbravenpm_anims\Proto_Battle_Jog.smd" { // frames 
 	fps 30 
 	activity ACT_WALK_AGITATED 1 
 	addlayer inverse_proportions
-	
-	LX fudgeloop 
+	{event CL_EVENT_FOOTSTEP_RIGHT 21 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 9 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 10 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 21 "" }
+	LX LY fudgeloop 
 	origin 0 0 42 
 } 
 
@@ -5949,7 +5920,12 @@ $sequence "Proto_Battle_Jump_End" "a_Proto_Battle_Jump_End" { // frames 78
 	fps 30 
 	activity ACT_MP_JUMP_LAND_MELEE 9999 // make it gesture 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 45 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 0 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 58 "" }
+    {event AE_SV_PLAYSOUND 0 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_LEFT 2 "" }
+    {event AE_SV_PLAYSOUND 1 "eve_vo_social_Motion_Strong_Cue" }
 	origin 0 0 42 
 } 
 
@@ -5957,7 +5933,9 @@ $sequence "Proto_Battle_Jump_Start" "sbravenpm_anims\Proto_Battle_Jump_Start.smd
 	fps 30 
 	activity ACT_JUMP 9999 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	origin 0 0 42 
 } 
 
@@ -5965,7 +5943,9 @@ $sequence "Proto_Battle_Jump_Start2" "sbravenpm_anims\Proto_Battle_Jump_Start2.s
 	fps 30 
 	activity ACT_JUMP 9999 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	origin 0 0 42 
 } 
 
@@ -5973,7 +5953,9 @@ $sequence "Proto_Battle_Jump_Start3" "sbravenpm_anims\Proto_Battle_Jump_Start3.s
 	fps 30 
 	activity ACT_JUMP 9999 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	origin 0 0 42 
 } 
 
@@ -5981,7 +5963,12 @@ $sequence "Proto_Battle_JumpHigh_End" "sbravenpm_anims\Proto_Battle_JumpHigh_End
 	fps 40 
 	activity ACT_MP_JUMP_LAND_MELEE 9999 // make it gesture 
 	addlayer inverse_proportions
-	
+	{event AE_SV_PLAYSOUND 51 "EVE_SE_ClothMid" }
+    {event AE_SV_PLAYSOUND 1 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 1 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 72 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 66 "" }
 	origin 0 0 42 
 } 
 
@@ -5989,7 +5976,11 @@ $sequence "Proto_Battle_JumpHigh_Run" "sbravenpm_anims\Proto_Battle_JumpHigh_Run
 	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
-	
+	{event AE_SV_PLAYSOUND 1 "EVE_SE_ClothMid" }
+    {event CL_EVENT_FOOTSTEP_LEFT 24 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 14 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 0 "" }
 	origin 0 0 42 
 } 
 
@@ -5997,16 +5988,23 @@ $sequence "Proto_Battle_JumpHigh_Walk" "sbravenpm_anims\Proto_Battle_JumpHigh_Wa
 	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
-	
+	{event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 45 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 2 "" }
+    {event AE_SV_PLAYSOUND 1 "EVE_SE_ClothMid" }
+    {event CL_EVENT_FOOTSTEP_LEFT 28 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 17 "" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Battle_Run" "sbravenpm_anims\Proto_Battle_Run.smd" { // frames 20 
 	fps 30 
-	activity ACT_MP_RUN_MELEE 1 
+	activity ACT_MP_RUN_MELEE_ALLCLASS 1 
 	addlayer inverse_proportions
-	 
+	{event CL_EVENT_FOOTSTEP_RIGHT 18 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 7 "" }
 	fudgeloop 
+	LX LY 
 	origin 0 0 42 
 } 
 
@@ -6014,17 +6012,21 @@ $sequence "Proto_Battle_Sprint" "sbravenpm_anims\Proto_Battle_Sprint.smd" { // f
 	fps 30 
 	activity ACT_MP_SPRINT 1 
 	addlayer inverse_proportions
-	 
+	{event CL_EVENT_FOOTSTEP_RIGHT 14 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 6 "" }
 	fudgeloop 
+	LX LY 
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Battle_Walk" "sbravenpm_anims\Proto_Battle_Walk.smd" { // frames 20 
 	fps 30 
-	activity ACT_MP_WALK_MELEE 1 
+	activity ACT_MP_WALK_MELEE_ALLCLASS 1 
 	addlayer inverse_proportions
-	 
+	{event CL_EVENT_FOOTSTEP_LEFT 10 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 28 "" }
 	fudgeloop 
+	LX LY 
 	origin 0 0 42 
 } 
 
@@ -6038,30 +6040,31 @@ $sequence "Proto_Fall" "sbravenpm_anims\Proto_Fall.smd" { // frames 120
 } 
 
 $sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { // frames 1
-	fps 60 
+	fps 30 
 	activity ACT_GLIDE2 1 
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LZ LM
-	
+	fudgeloop 
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { // frames 1
-	fps 60 
+	fps 30 
 	activity ACT_GLIDE2 1 
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LZ LM
-	
+	fudgeloop 
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frames 30
-	fps 60 
+	fps 30 
 	activity ACT_HOP 1 
 	addlayer inverse_proportions
-	
+	{event AE_SV_PLAYSOUND 17 "EVE_SE_ClothMid" }
+    {event AE_SV_PLAYSOUND 0 "*Character/Skill/Proto_Whoosh_Low_01.wav" }
 	walkframe 1 LX LY LZ LM
 	walkframe 2 LX LY LZ LM
 	walkframe 3 LX LY LZ LM
@@ -6118,7 +6121,7 @@ $sequence "Proto_Guard_idle" "sbravenpm_anims\Proto_Guard_idle.smd" { // frames 
 } 
 
 $sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
-	fps 60 
+	fps 30 
 	activity ACT_MP_STAND_IDLE 10 
 	addlayer inverse_proportions
 	
@@ -6186,12 +6189,13 @@ $sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
 	walkframe 124 LX LY LZ LM
 	walkframe 126 LX LY LZ LM
 	walkframe 128 LX LY LZ LM
-	
+	fudgeloop 
 	origin 0 0 42 
+	fudgeloop 
 } 
 
 $sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
-	fps 60 
+	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
 	
@@ -6264,7 +6268,7 @@ $sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
 } 
 
 $sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
-	fps 60 
+	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
 	
@@ -6273,7 +6277,7 @@ $sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
 } 
 
 $sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
-	fps 60 
+	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
 	
@@ -6282,7 +6286,7 @@ $sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
 } 
 
 $sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
-	fps 60 
+	fps 30 
 	activity ACT_MP_VCD 1 
 	addlayer inverse_proportions
 	
@@ -6291,7 +6295,7 @@ $sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
 } 
 
 $sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frames 800 
-	fps 60 
+	fps 30 
 	activity ACT_DEEPIDLE1 1 
 	addlayer inverse_proportions
 	
@@ -6358,10 +6362,16 @@ $sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frame
 	walkframe 793 LX LY LZ LM
 	walkframe 800 LX LY LZ LM
 	origin 0 0 42 
+	{event AE_SV_PLAYSOUND 186 "EVE_SE_ClothMid" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 33 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 453 "" }
+    {event AE_SV_PLAYSOUND 28 "EVE_SE_ClothMid" }
+    {event CL_EVENT_FOOTSTEP_LEFT 407 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 333 "" }
 } 
 
 $sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { // frames 60
-	fps 60 
+	fps 30 
 	activity ACT_MP_DOUBLEJUMP 1 
 	addlayer inverse_proportions
 	
@@ -6425,12 +6435,13 @@ $sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { // frame
 	walkframe 58 LX LY LZ LM
 	walkframe 59 LX LY LZ LM
 	walkframe 60 LX LY LZ LM
-	
+	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
+    {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // frames 60
-	fps 60 
+	fps 30 
 	activity ACT_MP_DOUBLEJUMP 1 
 	addlayer inverse_proportions
 	
@@ -6494,12 +6505,13 @@ $sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // fra
 	walkframe 58 LX LY LZ LM
 	walkframe 59 LX LY LZ LM
 	walkframe 60 LX LY LZ LM
-	
+	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
+    {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // frames 60
-	fps 60 
+	fps 30 
 	activity ACT_MP_DOUBLEJUMP 1 
 	addlayer inverse_proportions
 	
@@ -6563,12 +6575,13 @@ $sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // fra
 	walkframe 58 LX LY LZ LM
 	walkframe 59 LX LY LZ LM
 	walkframe 60 LX LY LZ LM
-	
+	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
+    {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
-	fps 60 
+	fps 30 
 	activity ACT_MP_JUMP_LAND 9999 // make it gesture 
 	addlayer inverse_proportions
 	
@@ -6617,12 +6630,16 @@ $sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
 	walkframe 86 LX LY LM
 	walkframe 88 LX LY LM
 	walkframe 90 LX LY LM
-	
+	{event AE_SV_PLAYSOUND 1 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 45 "" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 2 "" }
+	{event AE_SV_PLAYSOUND 1 "eve_vo_breath_s_Cue" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
-	fps 60 
+	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
 	
@@ -6653,12 +6670,15 @@ $sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
 	walkframe 25 LX LY LZ LM
 	walkframe 26 LX LY LZ LM
 	walkframe 27 LX LY LZ LM
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 1 "" }
+    {event AE_SV_PLAYSOUND 0 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 19 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 10 "" }
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { // frames 30
-	fps 60 
+	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
 	
@@ -6692,12 +6712,16 @@ $sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { //
 	walkframe 28 LX LY LZ LM
 	walkframe 29 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
+	{event CL_EVENT_FOOTSTEP_LEFT 2 "" }
+    {event AE_SV_PLAYSOUND 0 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 21 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 12 "" }
 	
 	origin 0 0 42 
 } 
 
 $sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { // frames 30
-	fps 60 
+	fps 30 
 	activity ACT_HOP 1 
 	addlayer inverse_proportions
 	
@@ -6731,12 +6755,15 @@ $sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { // frames 
 	walkframe 28 LX LY LZ LM
 	walkframe 29 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	
 	origin 0 0 0 
 } 
 
 $sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { // frames 30
-	fps 60 
+	fps 30 
 	activity ACT_HOP 1 
 	addlayer inverse_proportions
 	
@@ -6770,12 +6797,14 @@ $sequence "Proto_Jump_Start2" "sbravenpm_anims\Proto_Jump_Start2.smd" { // frame
 	walkframe 28 LX LY LZ LM
 	walkframe 29 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
-	
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	origin 0 0 0 
 } 
 
 $sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { // frames 30
-	fps 60 
+	fps 30 
 	activity ACT_HOP 1 
 	addlayer inverse_proportions
 	
@@ -6809,12 +6838,15 @@ $sequence "Proto_Jump_Start3" "sbravenpm_anims\Proto_Jump_Start3.smd" { // frame
 	walkframe 28 LX LY LZ LM
 	walkframe 29 LX LY LZ LM
 	walkframe 30 LX LY LZ LM
+	{event CL_EVENT_FOOTSTEP_RIGHT 2 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 1 "" }
 	
 	origin 0 0 0 
 } 
 
 $sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
-	fps 60 
+	fps 30 
 	activity ACT_HOP 1 
 	addlayer inverse_proportions
 	
@@ -6855,6 +6887,11 @@ $sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
 	walkframe 35 LX LY LM
 	walkframe 36 LX LY LM
 	
+	{event CL_EVENT_FOOTSTEP_RIGHT 30 "" }
+    {event AE_SV_PLAYSOUND 1 "EVE_SE_ClothShort" }
+    {event CL_EVENT_FOOTSTEP_RIGHT 1 "" }
+    {event CL_EVENT_FOOTSTEP_LEFT 4 "" }
+	
 	origin 0 0 42 
 } 
 
@@ -6862,7 +6899,9 @@ $sequence "Proto_Run" "sbravenpm_anims\Proto_Run.smd" { // frames 20
 	fps 30 
 	activity ACT_MP_RUN 1 
 	addlayer inverse_proportions
-	 
+	{ event CL_EVENT_FOOTSTEP_RIGHT 8 "Event.HostageKilled" }
+	{ event CL_EVENT_FOOTSTEP_LEFT 18 "Event.HostageKilled" }
+	
 	fudgeloop LX LY 
 	origin 0 0 42 
 } 
@@ -6871,7 +6910,8 @@ $sequence "Proto_Sprint" "sbravenpm_anims\Proto_Sprint.smd" { // frames 20
 	fps 30 
 	activity ACT_MP_SPRINT 1 
 	addlayer inverse_proportions
-	 
+	{ event CL_EVENT_FOOTSTEP_RIGHT 7 "Event.HostageKilled" }
+	{ event CL_EVENT_FOOTSTEP_LEFT 14 "Event.HostageKilled" }
 	fudgeloop LX LY 
 	origin 0 0 42 
 } 
@@ -6880,7 +6920,8 @@ $sequence "Proto_Walk" "sbravenpm_anims\Proto_Walk.smd" { // frames 20
 	fps 30 
 	activity ACT_MP_WALK 1 
 	addlayer inverse_proportions
-	 
+	{ event CL_EVENT_FOOTSTEP_RIGHT 13 "Event.HostageKilled" }
+	{ event CL_EVENT_FOOTSTEP_LEFT 31 "Event.HostageKilled" }
 	fudgeloop LX LY 
 	origin 0 0 42 
 } 
@@ -8046,6 +8087,77 @@ $sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { // f
 	walkframe 360 LX LY LZ LM
 	walkframe 364 LX LY LZ LM
 	
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "MV_Nest_Intro_eve_G" "sbravenpm_anims\MV_Nest_Intro_eve_G.smd" { // frames 860
+	fps 30 
+	activity ACT_MP_VCD 1 
+	addlayer inverse_proportions
+	walkframe 14 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 406 LX LY LM
+	walkframe 420 LX LY LM
+	walkframe 434 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 462 LX LY LM
+	walkframe 476 LX LY LM
+	walkframe 490 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 518 LX LY LM
+	walkframe 532 LX LY LM
+	walkframe 546 LX LY LM
+	walkframe 560 LX LY LM
+	walkframe 574 LX LY LM
+	walkframe 588 LX LY LM
+	walkframe 602 LX LY LM
+	walkframe 616 LX LY LM
+	walkframe 630 LX LY LM
+	walkframe 644 LX LY LM
+	walkframe 658 LX LY LM
+	walkframe 672 LX LY LM
+	walkframe 686 LX LY LM
+	walkframe 700 LX LY LM
+	walkframe 714 LX LY LM
+	walkframe 728 LX LY LM
+	walkframe 742 LX LY LM
+	walkframe 756 LX LY LM
+	walkframe 770 LX LY LM
+	walkframe 784 LX LY LM
+	walkframe 798 LX LY LM
+	walkframe 812 LX LY LM
+	walkframe 826 LX LY LM
+	walkframe 840 LX LY LM
+	walkframe 854 LX LY LM
+	walkframe 859 LX LY LM
+	LX LY LM 
 	origin 0 0 42 
 	//alignto "raven_base" 
 } 
@@ -11464,11 +11576,3816 @@ $sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBatt
 	//alignto "raven_base" 
 } 
 
-$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
-	fps 60 
-	activity ACT_RESET 1 
+$sequence "45A01" "sbravenpm_anims\45A01.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
 	addlayer inverse_proportions
-	
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A02" "sbravenpm_anims\45A02.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A03" "sbravenpm_anims\45A03.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A04" "sbravenpm_anims\45A04.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A05" "sbravenpm_anims\45A05.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A06" "sbravenpm_anims\45A06.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A07" "sbravenpm_anims\45A07.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45A08" "sbravenpm_anims\45A08.smd" { // frames 170
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 170 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B01" "sbravenpm_anims\45B01.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B02" "sbravenpm_anims\45B02.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B03" "sbravenpm_anims\45B03.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B04" "sbravenpm_anims\45B04.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B05" "sbravenpm_anims\45B05.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B06" "sbravenpm_anims\45B06.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B07" "sbravenpm_anims\45B07.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "45B08" "sbravenpm_anims\45B08.smd" { // frames 160
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 160 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A01" "sbravenpm_anims\90A01.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A02" "sbravenpm_anims\90A02.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A03" "sbravenpm_anims\90A03.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A04" "sbravenpm_anims\90A04.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A05" "sbravenpm_anims\90A05.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A06" "sbravenpm_anims\90A06.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A07" "sbravenpm_anims\90A07.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90A08" "sbravenpm_anims\90A08.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B01" "sbravenpm_anims\90B01.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B02" "sbravenpm_anims\90B02.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B03" "sbravenpm_anims\90B03.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B04" "sbravenpm_anims\90B04.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B05" "sbravenpm_anims\90B05.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B06" "sbravenpm_anims\90B06.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B07" "sbravenpm_anims\90B07.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "90B08" "sbravenpm_anims\90B08.smd" { // frames 140
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 140 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "A01" "sbravenpm_anims\A01.smd" { // frames 360
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 6 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 222 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 246 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 258 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 282 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 318 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 342 LX LY LM
+	walkframe 348 LX LY LM
+	walkframe 354 LX LY LM
+	walkframe 360 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "B01" "sbravenpm_anims\B01.smd" { // frames 339
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 6 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 222 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 246 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 258 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 282 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 318 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 339 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-Idle" "sbravenpm_anims\BND-Idle.smd" { // frames 75
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 2 LX LY LM
+	walkframe 4 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 8 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 22 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 26 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 34 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 38 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 46 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 58 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 62 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 74 LX LY LM
+	walkframe 75 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-A-RZ" "sbravenpm_anims\BND-No-Run01-A-RZ.smd" { // frames 150
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-A" "sbravenpm_anims\BND-No-Run01-A.smd" { // frames 300
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 285 LX LY LM
+	walkframe 290 LX LY LM
+	walkframe 295 LX LY LM
+	walkframe 300 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-B-RZ" "sbravenpm_anims\BND-No-Run01-B-RZ.smd" { // frames 135
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-B" "sbravenpm_anims\BND-No-Run01-B.smd" { // frames 270
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-C-RZ" "sbravenpm_anims\BND-No-Run01-C-RZ.smd" { // frames 145
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 145 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run01-C" "sbravenpm_anims\BND-No-Run01-C.smd" { // frames 290
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 285 LX LY LM
+	walkframe 290 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-A-RZ" "sbravenpm_anims\BND-No-Run02-A-RZ.smd" { // frames 145
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 111 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 145 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-A" "sbravenpm_anims\BND-No-Run02-A.smd" { // frames 290
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 285 LX LY LM
+	walkframe 290 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-B-RZ" "sbravenpm_anims\BND-No-Run02-B-RZ.smd" { // frames 190
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 3 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 9 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 27 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 51 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 57 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 69 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 81 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 87 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 93 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 123 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 129 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 141 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 153 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 159 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 171 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 177 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 183 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 190 LX LY LM
+	LX LY LM 
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-B" "sbravenpm_anims\BND-No-Run02-B.smd" { // frames 380
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 6 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 102 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 114 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 138 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 174 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 186 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 204 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 222 LX LY LM
+	walkframe 228 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 246 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 258 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 276 LX LY LM
+	walkframe 282 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 300 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 318 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 342 LX LY LM
+	walkframe 348 LX LY LM
+	walkframe 354 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 372 LX LY LM
+	walkframe 378 LX LY LM
+	LX LY LM 
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-C-RZ" "sbravenpm_anims\BND-No-Run02-C-RZ.smd" { // frames 210
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 4 LX LY LM
+	walkframe 8 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 76 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 92 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 116 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 124 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 148 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 164 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 172 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 188 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 208 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-No-Run02-C" "sbravenpm_anims\BND-No-Run02-C.smd" { // frames 420
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 7 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 49 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 77 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 91 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 119 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 133 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 161 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 203 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 217 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 231 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 259 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 273 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 287 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 301 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 315 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 329 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 343 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 357 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 371 LX LY LM
+	walkframe 385 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 399 LX LY LM
+	walkframe 406 LX LY LM
+	walkframe 413 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-Run" "sbravenpm_anims\BND-Run.smd" { // frames 72
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 2 LX LY LM
+	walkframe 4 LX LY LM
+	walkframe 6 LX LY LM
+	walkframe 8 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 18 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 22 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 26 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 34 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 38 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 46 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 58 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 62 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 70 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run01-A" "sbravenpm_anims\BND-WP-Run01-A.smd" { // frames 300
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 285 LX LY LM
+	walkframe 290 LX LY LM
+	walkframe 295 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run01-B" "sbravenpm_anims\BND-WP-Run01-B.smd" { // frames 270
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run01-C" "sbravenpm_anims\BND-WP-Run01-C.smd" { // frames 270
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run02-A" "sbravenpm_anims\BND-WP-Run02-A.smd" { // frames 300
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 5 LX LY LM
+	walkframe 10 LX LY LM
+	walkframe 15 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 25 LX LY LM
+	walkframe 30 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 45 LX LY LM
+	walkframe 50 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 75 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 85 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 95 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 115 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 125 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 135 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 145 LX LY LM
+	walkframe 150 LX LY LM
+	walkframe 155 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 170 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 185 LX LY LM
+	walkframe 190 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 205 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 215 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 225 LX LY LM
+	walkframe 230 LX LY LM
+	walkframe 235 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 250 LX LY LM
+	walkframe 255 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 265 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 285 LX LY LM
+	walkframe 290 LX LY LM
+	walkframe 295 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run02-B" "sbravenpm_anims\BND-WP-Run02-B.smd" { // frames 390
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 7 LX LY LM
+	walkframe 14 LX LY LM
+	walkframe 21 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 35 LX LY LM
+	walkframe 42 LX LY LM
+	walkframe 49 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 63 LX LY LM
+	walkframe 70 LX LY LM
+	walkframe 77 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 91 LX LY LM
+	walkframe 98 LX LY LM
+	walkframe 105 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 119 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 133 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 147 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 161 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 175 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 189 LX LY LM
+	walkframe 196 LX LY LM
+	walkframe 203 LX LY LM
+	walkframe 210 LX LY LM
+	walkframe 217 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 231 LX LY LM
+	walkframe 238 LX LY LM
+	walkframe 245 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 259 LX LY LM
+	walkframe 266 LX LY LM
+	walkframe 273 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 287 LX LY LM
+	walkframe 294 LX LY LM
+	walkframe 301 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 315 LX LY LM
+	walkframe 322 LX LY LM
+	walkframe 329 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 343 LX LY LM
+	walkframe 350 LX LY LM
+	walkframe 357 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 371 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 385 LX LY LM
+	walkframe 390 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "BND-WP-Run02-C" "sbravenpm_anims\BND-WP-Run02-C.smd" { // frames 450
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 8 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 208 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 232 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 248 LX LY LM
+	walkframe 256 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 272 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 296 LX LY LM
+	walkframe 304 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 320 LX LY LM
+	walkframe 328 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 344 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 368 LX LY LM
+	walkframe 376 LX LY LM
+	walkframe 384 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 400 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 416 LX LY LM
+	walkframe 424 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 450 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "Circle_Left" "sbravenpm_anims\Circle_Left.smd" { // frames 1135
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 18 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 342 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 414 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 450 LX LY LM
+	walkframe 468 LX LY LM
+	walkframe 486 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 522 LX LY LM
+	walkframe 540 LX LY LM
+	walkframe 558 LX LY LM
+	walkframe 576 LX LY LM
+	walkframe 594 LX LY LM
+	walkframe 612 LX LY LM
+	walkframe 630 LX LY LM
+	walkframe 648 LX LY LM
+	walkframe 666 LX LY LM
+	walkframe 684 LX LY LM
+	walkframe 702 LX LY LM
+	walkframe 720 LX LY LM
+	walkframe 738 LX LY LM
+	walkframe 756 LX LY LM
+	walkframe 774 LX LY LM
+	walkframe 792 LX LY LM
+	walkframe 810 LX LY LM
+	walkframe 828 LX LY LM
+	walkframe 846 LX LY LM
+	walkframe 864 LX LY LM
+	walkframe 882 LX LY LM
+	walkframe 900 LX LY LM
+	walkframe 918 LX LY LM
+	walkframe 936 LX LY LM
+	walkframe 954 LX LY LM
+	walkframe 972 LX LY LM
+	walkframe 990 LX LY LM
+	walkframe 1008 LX LY LM
+	walkframe 1026 LX LY LM
+	walkframe 1044 LX LY LM
+	walkframe 1062 LX LY LM
+	walkframe 1080 LX LY LM
+	walkframe 1098 LX LY LM
+	walkframe 1116 LX LY LM
+	walkframe 1134 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "Circle_Right" "sbravenpm_anims\Circle_Right.smd" { // frames 1143
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 18 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 54 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 90 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 126 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 162 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 252 LX LY LM
+	walkframe 270 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 306 LX LY LM
+	walkframe 324 LX LY LM
+	walkframe 342 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 378 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 414 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 450 LX LY LM
+	walkframe 468 LX LY LM
+	walkframe 486 LX LY LM
+	walkframe 504 LX LY LM
+	walkframe 522 LX LY LM
+	walkframe 540 LX LY LM
+	walkframe 558 LX LY LM
+	walkframe 576 LX LY LM
+	walkframe 594 LX LY LM
+	walkframe 612 LX LY LM
+	walkframe 630 LX LY LM
+	walkframe 648 LX LY LM
+	walkframe 666 LX LY LM
+	walkframe 684 LX LY LM
+	walkframe 702 LX LY LM
+	walkframe 720 LX LY LM
+	walkframe 738 LX LY LM
+	walkframe 756 LX LY LM
+	walkframe 774 LX LY LM
+	walkframe 792 LX LY LM
+	walkframe 810 LX LY LM
+	walkframe 828 LX LY LM
+	walkframe 846 LX LY LM
+	walkframe 864 LX LY LM
+	walkframe 882 LX LY LM
+	walkframe 900 LX LY LM
+	walkframe 918 LX LY LM
+	walkframe 936 LX LY LM
+	walkframe 954 LX LY LM
+	walkframe 972 LX LY LM
+	walkframe 990 LX LY LM
+	walkframe 1008 LX LY LM
+	walkframe 1026 LX LY LM
+	walkframe 1044 LX LY LM
+	walkframe 1062 LX LY LM
+	walkframe 1080 LX LY LM
+	walkframe 1098 LX LY LM
+	walkframe 1116 LX LY LM
+	walkframe 1134 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "MT_Idle_Turns" "sbravenpm_anims\MT_Idle_Turns.smd" { // frames 810
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 13 LX LY LM
+	walkframe 26 LX LY LM
+	walkframe 39 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 65 LX LY LM
+	walkframe 78 LX LY LM
+	walkframe 91 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 117 LX LY LM
+	walkframe 130 LX LY LM
+	walkframe 143 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 169 LX LY LM
+	walkframe 182 LX LY LM
+	walkframe 195 LX LY LM
+	walkframe 208 LX LY LM
+	walkframe 221 LX LY LM
+	walkframe 234 LX LY LM
+	walkframe 247 LX LY LM
+	walkframe 260 LX LY LM
+	walkframe 273 LX LY LM
+	walkframe 286 LX LY LM
+	walkframe 299 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 325 LX LY LM
+	walkframe 338 LX LY LM
+	walkframe 351 LX LY LM
+	walkframe 364 LX LY LM
+	walkframe 377 LX LY LM
+	walkframe 390 LX LY LM
+	walkframe 403 LX LY LM
+	walkframe 416 LX LY LM
+	walkframe 429 LX LY LM
+	walkframe 442 LX LY LM
+	walkframe 455 LX LY LM
+	walkframe 468 LX LY LM
+	walkframe 481 LX LY LM
+	walkframe 494 LX LY LM
+	walkframe 507 LX LY LM
+	walkframe 520 LX LY LM
+	walkframe 533 LX LY LM
+	walkframe 546 LX LY LM
+	walkframe 559 LX LY LM
+	walkframe 572 LX LY LM
+	walkframe 585 LX LY LM
+	walkframe 598 LX LY LM
+	walkframe 611 LX LY LM
+	walkframe 624 LX LY LM
+	walkframe 637 LX LY LM
+	walkframe 650 LX LY LM
+	walkframe 663 LX LY LM
+	walkframe 676 LX LY LM
+	walkframe 689 LX LY LM
+	walkframe 702 LX LY LM
+	walkframe 715 LX LY LM
+	walkframe 728 LX LY LM
+	walkframe 741 LX LY LM
+	walkframe 754 LX LY LM
+	walkframe 767 LX LY LM
+	walkframe 780 LX LY LM
+	walkframe 793 LX LY LM
+	walkframe 806 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "MT_Round_3ndL_T" "sbravenpm_anims\MT_Round_3ndL_T.smd" { // frames 200
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 4 LX LY LM
+	walkframe 8 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 76 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 92 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 116 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 124 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 148 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 164 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 172 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 188 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 196 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "MT_Round_3ndR_T" "sbravenpm_anims\MT_Round_3ndR_T.smd" { // frames 200
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 4 LX LY LM
+	walkframe 8 LX LY LM
+	walkframe 12 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 20 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 28 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 36 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 52 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 60 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 68 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 76 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 84 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 92 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 100 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 108 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 116 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 124 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 140 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 148 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 156 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 164 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 172 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 180 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 188 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 196 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "MT_RUN_TURNS2" "sbravenpm_anims\MT_RUN_TURNS2.smd" { // frames 655
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 11 LX LY LM
+	walkframe 22 LX LY LM
+	walkframe 33 LX LY LM
+	walkframe 44 LX LY LM
+	walkframe 55 LX LY LM
+	walkframe 66 LX LY LM
+	walkframe 77 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 99 LX LY LM
+	walkframe 110 LX LY LM
+	walkframe 121 LX LY LM
+	walkframe 132 LX LY LM
+	walkframe 143 LX LY LM
+	walkframe 154 LX LY LM
+	walkframe 165 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 187 LX LY LM
+	walkframe 198 LX LY LM
+	walkframe 209 LX LY LM
+	walkframe 220 LX LY LM
+	walkframe 231 LX LY LM
+	walkframe 242 LX LY LM
+	walkframe 253 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 275 LX LY LM
+	walkframe 286 LX LY LM
+	walkframe 297 LX LY LM
+	walkframe 308 LX LY LM
+	walkframe 319 LX LY LM
+	walkframe 330 LX LY LM
+	walkframe 341 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 363 LX LY LM
+	walkframe 374 LX LY LM
+	walkframe 385 LX LY LM
+	walkframe 396 LX LY LM
+	walkframe 407 LX LY LM
+	walkframe 418 LX LY LM
+	walkframe 429 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 451 LX LY LM
+	walkframe 462 LX LY LM
+	walkframe 473 LX LY LM
+	walkframe 484 LX LY LM
+	walkframe 495 LX LY LM
+	walkframe 506 LX LY LM
+	walkframe 517 LX LY LM
+	walkframe 528 LX LY LM
+	walkframe 539 LX LY LM
+	walkframe 550 LX LY LM
+	walkframe 561 LX LY LM
+	walkframe 572 LX LY LM
+	walkframe 583 LX LY LM
+	walkframe 594 LX LY LM
+	walkframe 605 LX LY LM
+	walkframe 616 LX LY LM
+	walkframe 627 LX LY LM
+	walkframe 638 LX LY LM
+	walkframe 649 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "TurnBack_Front_back" "sbravenpm_anims\TurnBack_Front_back.smd" { // frames 478
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 8 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 208 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 232 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 248 LX LY LM
+	walkframe 256 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 272 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 296 LX LY LM
+	walkframe 304 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 320 LX LY LM
+	walkframe 328 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 344 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 368 LX LY LM
+	walkframe 376 LX LY LM
+	walkframe 384 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 400 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 416 LX LY LM
+	walkframe 424 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 456 LX LY LM
+	walkframe 464 LX LY LM
+	walkframe 472 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+$sequence "TurnBack_Left_Right" "sbravenpm_anims\TurnBack_Left_Right.smd" { // frames 478
+	fps 30
+	activity ACT_MP_VCD 1
+	addlayer inverse_proportions
+	walkframe 8 LX LY LM
+	walkframe 16 LX LY LM
+	walkframe 24 LX LY LM
+	walkframe 32 LX LY LM
+	walkframe 40 LX LY LM
+	walkframe 48 LX LY LM
+	walkframe 56 LX LY LM
+	walkframe 64 LX LY LM
+	walkframe 72 LX LY LM
+	walkframe 80 LX LY LM
+	walkframe 88 LX LY LM
+	walkframe 96 LX LY LM
+	walkframe 104 LX LY LM
+	walkframe 112 LX LY LM
+	walkframe 120 LX LY LM
+	walkframe 128 LX LY LM
+	walkframe 136 LX LY LM
+	walkframe 144 LX LY LM
+	walkframe 152 LX LY LM
+	walkframe 160 LX LY LM
+	walkframe 168 LX LY LM
+	walkframe 176 LX LY LM
+	walkframe 184 LX LY LM
+	walkframe 192 LX LY LM
+	walkframe 200 LX LY LM
+	walkframe 208 LX LY LM
+	walkframe 216 LX LY LM
+	walkframe 224 LX LY LM
+	walkframe 232 LX LY LM
+	walkframe 240 LX LY LM
+	walkframe 248 LX LY LM
+	walkframe 256 LX LY LM
+	walkframe 264 LX LY LM
+	walkframe 272 LX LY LM
+	walkframe 280 LX LY LM
+	walkframe 288 LX LY LM
+	walkframe 296 LX LY LM
+	walkframe 304 LX LY LM
+	walkframe 312 LX LY LM
+	walkframe 320 LX LY LM
+	walkframe 328 LX LY LM
+	walkframe 336 LX LY LM
+	walkframe 344 LX LY LM
+	walkframe 352 LX LY LM
+	walkframe 360 LX LY LM
+	walkframe 368 LX LY LM
+	walkframe 376 LX LY LM
+	walkframe 384 LX LY LM
+	walkframe 392 LX LY LM
+	walkframe 400 LX LY LM
+	walkframe 408 LX LY LM
+	walkframe 416 LX LY LM
+	walkframe 424 LX LY LM
+	walkframe 432 LX LY LM
+	walkframe 440 LX LY LM
+	walkframe 448 LX LY LM
+	walkframe 456 LX LY LM
+	walkframe 464 LX LY LM
+	walkframe 472 LX LY LM
+	LX LY LM
+	origin 0 0 42 
+}
+
+
+$sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
+	fps 1  
+	addlayer inverse_proportions
+	snap 
 	origin 0 0 42 
 } 
 
@@ -11496,26 +15413,6 @@ $sequence "m_raven_battleidle01_tf2" "sbravenpm_anims\m_raven_battleidle01.smd" 
 	fudgeloop 
 } 
 
-$sequence "laughtest" "sbravenpm_anims\m_raven_slashchaincombo.smd" { 
-	fps 1 
-	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions
-	
-	
-	origin 0 0 42 
-	frames 73 74 
-} 
-
-$sequence "laughtest2" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
-	fps 1 
-	activity ACT_DO_NOT_DISTURB 1 
-	addlayer inverse_proportions
-	
-	
-	origin 0 0 42 
-	frames 623 624 
-} 
-
 $sequence "walk_cautious" {
 	"a_walking_walk_cautious_S"  // row 1 col 1 (SW slot → backward)
 	"a_walking_walk_cautious_S"  // row 1 col 2 (S slot)
@@ -11540,8 +15437,8 @@ $sequence "walk_cautious" {
 	LX 
 	node "walking" 
 	fudgeloop 
-	{ event AE_NPC_LEFTFOOT 10 "" }
-	{ event AE_NPC_RIGHTFOOT 28 "" }
+	{ event CL_EVENT_FOOTSTEP_LEFT 10 "" }
+	{ event CL_EVENT_FOOTSTEP_RIGHT 28 "" }
 } 
 
 $sequence "M_Raven_Caution_FwRw" "sbravenpm_anims\M_Raven_Caution_FwRw.smd" { 
@@ -11574,6 +15471,6 @@ $sequence "m_raven_run_l" {
 	
 	node "walking" 
 	fudgeloop 
-	{ event AE_NPC_LEFTFOOT 10 "" }
-	{ event AE_NPC_RIGHTFOOT 28 "" }
+	{ event CL_EVENT_FOOTSTEP_LEFT 10 "" }
+	{ event CL_EVENT_FOOTSTEP_RIGHT 28 "" }
 } 

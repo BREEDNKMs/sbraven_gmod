@@ -2037,6 +2037,7 @@ $cmdlist lockfeet {
 } 
 
 $animation "a_proportions_corrective_animation" "sbravenpm_anims\a_proportions_corrective_animation.smd" 
+$animation "a_reference" "sbravenpm_anims\reference.smd" 
 
 $animation "a_proportions" "sbravenpm_anims\a_proportions.smd" { 
 	fps 30
@@ -2048,19 +2049,13 @@ $animation "a_inverse_proportions" "sbravenpm_anims\a_inverse_proportions.smd" {
 	fps 30
 	// Crowbar writes this subtract option to prevent jigglebone and poseparameter problems when delta sequences are recompiled.
 	subtract "a_proportions_corrective_animation" 0
-}
-
-$animation "a_raven_proportions" "sbravenpm_anims\a_raven_proportions.smd" {
-	fps 30
-	// Crowbar writes this subtract option to prevent jigglebone and poseparameter problems when delta sequences are recompiled.
-	subtract "a_proportions_corrective_animation" 0
-}
+} 
 
 $sequence "reference" {
-	"sbravenpm_anims\reference.smd"
-	fadein 0.2
-	fadeout 0.2
-	fps 30
+	"a_reference"
+	fadein 1
+	fadeout 1
+	fps 1
 	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 0
 	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 1
 	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 2
@@ -2080,18 +2075,12 @@ $sequence "inverse_proportions" { // reverses bone manipulations added with "a_p
 	snap
 }
 
-$sequence "raven_proportions" { // reverses bone manipulations added with "a_proportions" for raven animations 
-	"a_raven_proportions"
-	predelta
-	snap
-}
-
 $sequence "ragdoll" {
 	"sbravenpm_anims\ragdoll.smd"
 	activity "ACT_DIERAGDOLL" 1
-	fadein 0.2
-	fadeout 0.2
-	fps 30
+	fadein 1
+	fadeout 1
+	fps 1
 } 
 
 //$include "sbravenpm_anims.qci" 
