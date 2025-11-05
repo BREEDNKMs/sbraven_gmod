@@ -2373,7 +2373,7 @@ ENT.SBAI_BehaviorTree = {
 
 function ENT:SBAI_SetSkillStep(strSkill) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
-    if not SkillStepTable then
+    if !SkillStepTable then
         self.SBAI_ActiveSkill = {} -- Clear active skill if the next step is invalid
         return
     end
@@ -2381,13 +2381,17 @@ function ENT:SBAI_SetSkillStep(strSkill)
     -- Store the current skill step's data
     self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime(), Data = SkillStepTable } 
 	
-	-- clear out old step effects 
-	for EffectAlias, EffectStatus in pairs(self.SB_EffectAlias) do 
-		-- lookup original effect fade type 
-		local LifeType = SB_EffectTable[1].Rows[EffectAlias] 
-		if LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then 
-			if EffectStatus != strSkill then self.SB_EffectAlias[EffectAlias] = nil end -- effect aliases that don't pair with skill step name strSkill 
-		end 
+	local StartSelfEffect = SkillStepTable.StartSelfEffect 
+	local StartTargetEffect = SkillStepTable.StartTargetEffect 
+	
+	if #StartSelfEffect > 0 then 
+		StartSelfEffect = StellarBlade.ParseTableStrings(StartSelfEffect) 
+		StellarBlade.AddEffectFromTable(self,StartSelfEffect) 
+	end 
+	
+	if #StartTargetEffect > 0 then 
+		StartTargetEffect = StellarBlade.ParseTableStrings(StartTargetEffect) 
+		StellarBlade.AddEffectFromTable(self,StartTargetEffect) 
 	end 
 
     -- [NEW] Handle `bRetargeting`: Lock onto the current target if false
@@ -3385,57 +3389,10 @@ function ENT:Think()
 	-- self:SB_CheckWeaponCollision({Entity(1)}) -- for debug 
 	return scripted_ents.Get("npc_unreali_female").Think(self) 
 end 
-	-- EffectLifeType_SkillDependent            = 0,
-	-- EffectLifeType_StepDependent             = 1,
-	-- EffectLifeType_IndependentTime           = 2,
-	-- EffectLifeType_Infinite                  = 3,
-	-- EffectLifeType_StanceDependent           = 4,
-	-- EffectLifeType_CharacterGetupTime        = 5,
-	-- EffectLifeType_ProjectileDependent       = 6,
-	-- EffectLifeType_BeforeNextSkill           = 7,
-	-- EffectLifeType_CharacterGroggyEndTime    = 8,
-	-- EffectLifeType_NextSkillDependent        = 9,
-	-- EffectLifeType_LevelSequenceDependent    = 10,
-	-- EffectLifeType_EquipmentDependent        = 11,
-	-- EffectLifeType_LevelSequenceDependentWithoutPlayable = 12,
-	-- EffectLifeType_MAX                       = 13,
-function ENT:SBAI_AddEffect(strEffect,overrideValue) 
-	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
-	local curEffects = self.SB_EffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
-	if !curEffects then self.SB_EffectAlias = { } curEffects = self.SB_EffectAlias end 
-	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
-		curEffects[strEffect] = true 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then 
-		curEffects[strEffect] = CurTime() + EffectTable.LifeTime 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then 
-		
-	end 
-end 
 
 function ENT:SBAI_GetEffectTable(strEffect) 
 	local EffectTable = SB_EffectTable[1].Rows[strEffect] 
 	return EffectTable 
-end 
-
-function ENT:SBAI_CheckEffect(strEffect) -- check existence of effect, return time available 
-	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,strEffect) 
-	local curEffects = self.SB_EffectAlias -- {["EffectName"] = CurTime() + EffectDuration} 
-	if EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
-		return curEffects[strEffect] -- check whether we have specific effect 
-	elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
-		return self.StanceName == EffectTable.StanceAlias 
-	-- elseif EffectTable.LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
-	end 
 end 
 
 --[[
@@ -4244,14 +4201,11 @@ end
 --]] 
 
 -- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
-function ENT:SBAI_RunBehavior()
-    -- Initialize runtime copy if missing
-    if not self.SBAI_CurBehaviorStack then
-        self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
-    end
-
+function ENT:SBAI_RunBehavior() 
     -- Create coroutine if missing or dead
-    if not self._sbaico or coroutine.status(self._sbaico) == "dead" then
+    if !self._sbaico or coroutine.status(self._sbaico) == "dead" then 
+		self:SBAI_InitTree() 
+		print("constructing coroutine") 
         self._sbaico = coroutine.create(function()
             return self:SBAI_SelectTask(self.SBAI_CurBehaviorStack)
         end)
@@ -4260,7 +4214,7 @@ function ENT:SBAI_RunBehavior()
     -- Resume coroutine safely
     if coroutine.status(self._sbaico) == "suspended" then
         local ok, ret = coroutine.resume(self._sbaico)
-        if not ok then
+        if !ok then
             -- coroutine errored: print and reset so next tick can recreate
             print("[SBAI] behavior coroutine error:", ret)
             self._sbaico = nil
@@ -4471,7 +4425,7 @@ function ENT:SbCheckActorEffect(tbl)
     end
     if !IsValid(ent) then return bInverseCondition end 
 	-- debug 
-	if math.random() > 0.5 then return true else return false end 
+	-- if math.random() > 0.5 then return true else return false end 
 
     -- gather effects to check
     local effectsToCheck = {}
@@ -4523,7 +4477,7 @@ function ENT:SbCheckActorStat(tbl)
 	local CompareOP = tbl.CompareOP -- Greater 
 	local bRateValue = tbl.bRateValue or false -- true 
 	local NodeName = tbl.NodeName -- SB_CheckActorStat(HP>60) 
-	-- handle only ActorStatType_HP for now 
+	-- handle only ActorStatType_HP for now, Raven only looks for this 
 	local testvalue, result 
 	if CheckStat == "ActorStatType_HP" then 
 		testvalue = self:Health() 
@@ -4584,7 +4538,7 @@ function ENT:SbDistanceToTarget(tbl) -- distance to enemy
 	elseif operator == "NotEqual" then 
 		result = self.enemyDist != dist 
 	end 
-	print("DistanceToTarget:",dist,operator,FlowAbortMode) 
+	-- print("DistanceToTarget:",dist,operator,FlowAbortMode) 
 	return result 
 end 
 
@@ -4719,8 +4673,6 @@ end
 
 -- SbCautionToTarget: property-driven adaptation (no spawn hacks)
 function ENT:SbCautionToTarget(tbl)
-	print("cautiontotarget") 
-	PrintTable(tbl) 
     -- small helpers
     local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
     local function randFloat(a,b) return a + math.random() * (b - a) end
@@ -4851,11 +4803,9 @@ function ENT:SbCautionToTarget(tbl)
         -- Prefer NavSetRandomGoal for side moves to create natural paths; otherwise NavSetGoalPos.
         if chosen == "side" and self.NavSetRandomGoal then
             local minPathLen = math.Clamp(tbl.sideDist * 0.5, 100, 2000)
-			print("NavSetRandomGoal",minPathLen,(tgtPos - myPos):GetNormalized()) 
             self:NavSetRandomGoal(minPathLen, (tgtPos - myPos):GetNormalized()) 
         else
             if self.NavSetGoalPos then
-				print("NavSetGoalPos",goalPos) 
                 self:NavSetGoalPos(goalPos) 
             elseif self.NavSetGoalTarget then
                 -- fallback: offset from target
@@ -4863,7 +4813,6 @@ function ENT:SbCautionToTarget(tbl)
                 self:NavSetGoalTarget(target, offset) 
             end
         end
-		print("nav set",CurTime()) 
         tbl.navSet = true
 		self:SetMovementActivity(ACT_MP_WALK_MELEE) 
         return nil -- running while nav completes
@@ -4882,7 +4831,7 @@ function ENT:SbCautionToTarget(tbl)
             -- return nil
         -- end
     -- end
-	if self:IsMoving() then return nil end 
+	-- if self:IsMoving() then return nil end 
 
     -- If we reach here, nav likely finished (success or not). Decide success:
     local curDist = (self:GetPos() - target:GetPos()):Length()
@@ -4952,8 +4901,8 @@ function ENT:SbCautionToTarget(tbl)
 
         -- final decision: succeed if movement reported success, else fail
         -- clear move locks and stop
-        pcall(function() if self.StopMoving then self:StopMoving(true) end end)
-        pcall(function() if self.ClearGoal then self:ClearGoal() end end)
+        self:StopMoving(true) 
+        self:ClearGoal() 
         if bLockOn then self:SetMoveYawLocked(false) end
 
         if tbl.returnSucceeded then
@@ -4983,34 +4932,36 @@ function ENT:SbDetectTarget(tbl)
 end 
 
 function ENT:SbMoveToTarget(tbl) 
+	print("in SbMoveToTarget") 
 	local MoveState = tbl.MoveState
-	local DistanceOfApproach = tbl.DistanceOfApproach -- i think this means walk until distancetoenemy < 250 
+	local DistanceOfApproach = tbl.DistanceOfApproach or 250 -- i think this means walk until distancetoenemy < 250 
 	local bBackgroundTask = tbl.bBackgroundTask
 	local NodeName = tbl.NodeName 
-	if self.CurrentSchedule then 
+	local navSet = self:IsMoving() 
+	if !navSet then 
 		if IsValid(self:GetEnemy()) then 
-			if self.CurrentSchedule.DebugName != "LUASCHED_CHASE_ENEMY" then 
-				self:StartSchedule(LUASCHED_CHASE_ENEMY) 
-			end 
+			navSet = self:NavSetGoalTarget(self:GetEnemy()) 
 		else 
-			if self.CurrentSchedule.DebugName != "LUASCHED_PATROL_WALK" then 
-				self:StartSchedule(LUASCHED_PATROL_WALK) 
-			end 
+			navSet = self:NavSetGoalPos(self:GetPos() + (self:GetForward()*300)) 
 		end 
 	end 
+	if !navSet then return false end 
+	self:SetMovementActivity(ACT_MP_WALK_MELEE) 
 	-- tbl.StartPos = tbl.StartPos or self:GetEnemyLastKnownPos() 
 	local enemyDist = self.enemyDist or 9999 
-	if enemyDist < 250 then return true end -- moved away from task start pos by 250 units 
+	if enemyDist < DistanceOfApproach then return true end -- moved away from task start pos by 250 units 
 end 
 
 function ENT:SbUseEffect(tbl) -- add effect 
 	local bSelfActor = tbl.bSelfActor 
 	local EffectAlias = tbl.EffectAlias 
+	local bSubTarget = tbl.bSubTarget or false 
 	local target = self:GetEnemy() 
 	if bSelfActor then target = self end 
 	if IsValid(target) then 
-		target.SB_EffectAlias[target] = CurTime() 
+		StellarBlade.AddEffect(target,EffectAlias) 
 	end 
+	return true 
 end 
 
 -- SbUseSkill 
@@ -5036,26 +4987,20 @@ function ENT:SbUseSkill(tbl)
 					-- This logic correctly finds the *first* skill step to execute 
 					-- clear out old skill effects 
 					
-					for EffectAlias, EffectStatus in pairs(self.SB_EffectAlias) do 
-						-- lookup original effect fade type 
-						local LifeType = SB_EffectTable[1].Rows[EffectAlias] 
-						if LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then 
-							if EffectStatus != v then self.SB_EffectAlias[EffectAlias] = nil end -- effect aliases that don't pair with skill step name strSkill 
-						end 
-					end 
-					
-					self.SBAI_SkillTable = SkillTable 
+					StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
+					StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_StepDependent") 
 					
 					-- add effects from SkillTable 
-					
-					if SkillCommandTable then
-						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias
-						-- This now correctly handles all the data-driven setup for the first step
-						self:SBAI_SetSkillStep(FirstSkillActiveAlias)
+					self.SBAI_SkillTable = SkillTable 
+					-- StellarBlade.AddEffect(self,effect,name) 
+					if SkillCommandTable then 
+						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
+						-- This now correctly handles all the data-driven setup for the first step 
+						self:SBAI_SetSkillStep(FirstSkillActiveAlias) 
 						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
 						Entity(1):ChatPrint("starting "..v.." at CurTime:"..tostring(CurTime())) 
 						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
-						tbl.Started = true
+						tbl.Started = true 
 						break -- Start with the first valid skill found 
 					else -- does not use SkillCommandTable, directly refer to SkillTable 
 					
@@ -5158,13 +5103,15 @@ function ENT:SBAI_ProcessActiveSkill(tbl)
 	local now = CurTime()
 
 	if now >= EndTime then
+		StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_StepDependent") 
 		-- step finished: advance to next step or clear
 		local NextStepAlias = SkillStepTable.NextStepAlias
-		if NextStepAlias and NextStepAlias ~= "None" then
+		if NextStepAlias and NextStepAlias != "None" then
 			-- Transition to the next skill step
 			self:SBAI_SetSkillStep(NextStepAlias)
 		else
-			-- No next step, so the skill is finished
+			-- No next step, so the skill is finished 
+			StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
 			self.SBAI_ActiveSkill = {}
 		end
 
@@ -5455,15 +5402,10 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
     end
 
     -- 4) hide actor at HIDE_START and begin interpolated movement
-    if not tr.hide and t >= HIDE_START then
+    if !tr.hide and t >= HIDE_START then
         tr.hide = true
         -- hide visually:
-        if self.SetNoDraw then
-            self:SetNoDraw(true)
-        else
-            -- fallback: add EF_NODRAW effect if SetNoDraw unavailable
-            pcall(function() self:AddEffects(EF_NODRAW) end)
-        end
+		self:SetNoDraw(true)
         -- capture fresh startpos in case the entity moved slightly after task start
         self.CurrentSchedule.blink.startpos = self:GetPos() 
 		if cvars.Bool("g_debug_cycler_actor2",false) then 
