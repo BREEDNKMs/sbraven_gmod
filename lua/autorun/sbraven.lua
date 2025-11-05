@@ -11,7 +11,7 @@ local NPC = {
 	Category = "Other",
 	Weapons = tblWeapons,
 	Model = "models/alvaroports/sbravenpm.mdl",
-	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = 2 }
+	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PLAYER }
 } 
 
 list.Set( "NPC", "CH_M_NA_53", NPC ) 
@@ -22,7 +22,7 @@ NPC = {
 	Category = "Other",
 	Weapons = tblWeapons,
 	Model = "models/alvaroports/sbravenpm.mdl",
-	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = 5 }
+	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PORTAL_TURRET }
 } 
 
 list.Set( "NPC", "CH_M_NA_53_enemy", NPC ) 
@@ -43,6 +43,121 @@ hook.Add("PostPlayerDraw","sbravenpm_coreglow",function(ply)
 		end 
 	end 
 end) 
+
+local co -- worker coroutine
+
+local function EffectCheckerPass()
+    -- one full pass over all ents' SB_EffectAlias; when this function returns the coroutine dies
+    for _, ENT in ents.Iterator() do
+        if not ENT.SB_EffectAlias then
+            ENT.SB_EffectAlias = {}
+        end
+
+        -- if there are no effects for this ENT, yield once so we don't stall
+        if not next(ENT.SB_EffectAlias) then
+            coroutine.yield()
+        else
+            -- iterate effects; yield before each expensive lookup
+            for Effect, EffectData in pairs(ENT.SB_EffectAlias) do
+                coroutine.yield() -- yield BEFORE doing the expensive SBAI_GetEffectTable lookup
+
+                -- safe lookup; pass ENT as the first argument
+                local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(ENT, Effect)
+                if not EffectTable then
+                    -- table missing for this effect; remove it to keep things clean
+                    StellarBlade.RemoveEffect(ENT, Effect)
+                else
+                    local LifeType = EffectTable.LifeType
+
+                    if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
+                        -- do nothing (infinite)
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
+                        if not ENT.SBAI_SkillTable then
+                            StellarBlade.RemoveEffect(ENT, Effect)
+                        end
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
+                        if not ENT.SBAI_ActiveSkill then
+                            StellarBlade.RemoveEffect(ENT, Effect)
+                        end
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
+                        if EffectData and EffectTable.LifeTime and CurTime() > (EffectData.Time or 0) + EffectTable.LifeTime then
+                            StellarBlade.RemoveEffect(ENT, Effect)
+                        end
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
+                        -- keep as-is for now
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
+                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then
+                    end
+                end
+            end
+        end
+    end
+
+    -- completed a full pass; coroutine returns and becomes dead so it will be reconstructed next Think
+end
+
+hook.Add("Think", "StellarBlade_CheckEffects", function()
+    local systime = SysTime()
+    local bDisabled = false
+
+    if SERVER and not bDisabled then
+        -- try to resume existing coroutine; if none exists or resume fails (coroutine finished / errored),
+        -- create a fresh one and resume it once so it starts working immediately
+        if not co or not coroutine.resume(co) then
+            co = coroutine.create(EffectCheckerPass)
+            coroutine.resume(co)
+        end
+    end
+
+    -- print("time difference for this think interval:", SysTime() - systime, bDisabled)
+end)
+
+hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo)
+	if target.SB_EffectAlias then
+		for Effect, EffectTable in pairs(target.SB_EffectAlias) do
+			local Damage = dmginfo:GetDamage()
+			local CalculationValue = EffectTable.CalculationValue
+			local ActorState1, ActorState2, ActorState3, ActorState4, ActorState5, ActorState6, ActorState7, ActorState8, ActorState9, ActorState10 = EffectTable.EffectTable.ActorState1, EffectTable.ActorState2, EffectTable.ActorState3, EffectTable.ActorState4, EffectTable.ActorState5, EffectTable.ActorState6, EffectTable.ActorState7, EffectTable.ActorState8, EffectTable.ActorState9, EffectTable.ActorState10 
+			
+			if EffectTable.StatType == "ESBActorStatType::ActorStatType_MinimumHP" and CalculationValue then
+				local Health = target:Health()
+				local MaxHealth = target:GetMaxHealth()
+				local MinHealth = MaxHealth * (CalculationValue * 0.01)
+
+				-- predicted health after taking damage
+				local NewHealth = Health - Damage
+
+				-- if new health would go below minimum threshold
+				if NewHealth < MinHealth then
+					-- clamp the damage so HP stops at minimum
+					local AllowedDamage = math.max(0, Health - MinHealth)
+
+					if AllowedDamage <= 0 then
+						-- completely negate the damage
+						dmginfo:SetDamage(0)
+						return true
+					else
+						dmginfo:SetDamage(AllowedDamage)
+					end
+				end
+			elseif EffectTable.StatType == "ESBActorStatType::ActorStatType_HitDefenseLevel" then 
+				dmginfo:ScaleDamage(CalculationValue) 
+			end 
+			
+			if ActorState1 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState2 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState3 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState4 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState5 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState6 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState7 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState8 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState9 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState10 == "ESBActorState::ActorState_NoDamageNoHit" then 
+				return true 
+			end 
+			
+		end
+	end
+end)
+
 
 game.AddParticles( "particles/raven.pcf" ) 
 PrecacheParticleSystem("ravencoreglow_2") 
@@ -145,9 +260,276 @@ local EasingFunctions = {
     ["InterpType_EaseOut"] = math.ease.OutQuad -- Using Quad as a generic EaseOut
 }
 
+StellarBlade = StellarBlade or {} 
 
-StellarBlade = { } 
-StellarBlade = StellarBlade or {}
+-- Minimal parser: returns a plain array table
+StellarBlade.ParseTableStrings = function(input)
+    if !input then error("no input to ParseTableStrings") end
+
+    local t = input
+
+    if type(input) == "string" then
+        t = util.JSONToTable(input)
+        if type(t) != "table" then return input end
+    end
+
+    -- If passed a single effect object (table with Alias) convert to array
+    if type(t) == "table" and t.Alias != nil and t[1] == nil then
+        t = { t }
+    end
+
+    local out = {}
+
+    for i, entry in ipairs(t) do
+        if type(entry) == "table" then
+            local e = {}
+            for k, v in pairs(entry) do
+                if type(v) == "string" then
+                    local n = tonumber(v)
+                    if n ~= nil then
+                        e[k] = n
+                    else
+                        e[k] = v
+                    end
+                else
+                    e[k] = v
+                end
+            end
+            out[#out + 1] = e
+        else
+            -- non-table entry: wrap as Alias string
+            out[#out + 1] = { Alias = tostring(entry) }
+        end
+    end
+
+    return out
+end
+
+StellarBlade.AddEffect = function(self,strEffect, ...) 
+	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, strEffect) 
+	local curEffects = self.SB_EffectAlias
+
+	if !curEffects then
+		self.SB_EffectAlias = {}
+		curEffects = self.SB_EffectAlias
+	end
+
+	-- initialize/overwrite effect entry
+	curEffects[strEffect] = table.Copy(SB_EffectTable[1].Rows[strEffect]) 
+	Entity(1):ChatPrint("effect added: "..strEffect.." to: "..tostring(self)) 
+	curEffects[strEffect].Time = CurTime() 
+	local curEffect = curEffects[strEffect] 
+
+	-- process vararg key/value pairs
+	local args = { ... }
+	local n = #args
+	for i = 1, n, 2 do
+		local key = args[i]
+		local val = args[i + 1]
+		if key ~= nil then
+			-- try to convert numeric-like strings to numbers
+			if type(val) == "string" then
+				local num = tonumber(val)
+				if num ~= nil then
+					val = num
+				end
+			end
+			curEffect[tostring(key)] = val
+		end
+	end
+	local LifeType = EffectTable.LifeType 
+	if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
+		-- curEffects[strEffect] = true 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then -- active during entirety of skill 
+		-- curEffects[strEffect] = self.SBAI_SkillTable.SkillName 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then 
+		-- curEffects[strEffect] = CurTime() + EffectTable.LifeTime 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then 
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then 
+	end 
+	
+	local DispelFlagsArray = curEffect.DispelFlagsArray
+	if type(DispelFlagsArray) == "table" and next(DispelFlagsArray) then
+		local toRemove = {}
+		for _, dispFlag in ipairs(DispelFlagsArray) do
+			if dispFlag then
+				for existName, existData in pairs(curEffects) do
+					if existName != strEffect then -- don't remove the effect we just added
+						local existFlag = existData and existData.Flag
+						if existFlag == dispFlag or existName == dispFlag then
+							toRemove[#toRemove + 1] = existName
+						end
+					end
+				end
+			end
+		end
+
+		for _, name in ipairs(toRemove) do
+			StellarBlade.RemoveEffect(self, name)
+		end
+	end 
+	
+	local Action1, ActionValue1 = curEffect.Action1, curEffect.ActionValue1 
+	StellarBlade.ApplyEffectAction(self,curEffect,Action1,ActionValue1) 
+	local Action2, ActionValue2 = curEffect.Action2, curEffect.ActionValue2 
+	StellarBlade.ApplyEffectAction(self,curEffect,Action2,ActionValue2) 
+	local Action3, ActionValue3 = curEffect.Action3, curEffect.ActionValue3 
+	StellarBlade.ApplyEffectAction(self,curEffect,Action3,ActionValue3) 
+	local Action4, ActionValue4 = curEffect.Action4, curEffect.ActionValue4 
+	StellarBlade.ApplyEffectAction(self,curEffect,Action4,ActionValue4) 
+	local Action5, ActionValue5 = curEffect.Action5, curEffect.ActionValue5 
+	StellarBlade.ApplyEffectAction(self,curEffect,Action5,ActionValue5) 
+	
+end 
+
+StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue) 
+	ParsedActionValue = StellarBlade.ParseTableStrings(ActionValue) 
+	if Action == "ESBEffectAction::EffectAction_None" then 
+	
+	elseif Action == "ESBEffectAction::EffectAction_SkillCancel" then 
+		self.SBAI_ActiveSkill = { } 
+		self.SBAI_SkillTable = { } 
+	elseif Action == "ESBEffectAction::EffectAction_TimeScale" then -- simple 
+	-- "{\"TotalTime\":0.5, \"FadeInTime\":0.05, \"FadeOutTime\":0.1, \"TimeScale\":0.1}" 
+		game.SetTimeScale(ParsedActionValue[1].TimeScale) 
+		timer.Simple(ParsedActionValue[1].TotalTime, function() 
+			game.SetTimeScale(1) 
+		end) 
+	elseif Action == "ESBEffectAction::EffectAction_SkillCancelUnImmune" then -- unused 
+	elseif Action == "ESBEffectAction::EffectAction_ResetSkillCommandCoolTime" then 
+		if self.SBAI_SkillTimers then 
+			self.SBAI_SkillTimers[ActionValue] = nil 
+		end 
+	elseif Action == "ESBEffectAction::EffectAction_ResetSkillCommandUsableCount" then 
+	elseif Action == "ESBEffectAction::EffectAction_ResetSkillUsableGroup" then 
+	elseif Action == "ESBEffectAction::EffectAction_ActiveSkillCombinationCrossKey" then 
+	elseif Action == "ESBEffectAction::EffectAction_SummonActor" then 
+	elseif Action == "ESBEffectAction::EffectAction_ActiveInteraction" then 
+	elseif Action == "ESBEffectAction::EffectAction_RecoveryItems" then 
+	elseif Action == "ESBEffectAction::EffectAction_AreaTimeScale" then 
+	elseif Action == "ESBEffectAction::EffectAction_TargetEncroachment" then 
+	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillCommandCoolTime" then 
+	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillCoolTime" then 
+	elseif Action == "ESBEffectAction::EffectAction_ShowUI" then 
+	elseif Action == "ESBEffectAction::EffectAction_PlayTheater" then 
+	elseif Action == "ESBEffectAction::EffectAction_PlayTheaterParam" then 
+	elseif Action == "ESBEffectAction::EffectAction_StopTheater" then 
+	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillEnergyAmount" then 
+	elseif Action == "ESBEffectAction::EffectAction_LockOnConstructorActor" then 
+	elseif Action == "ESBEffectAction::EffectAction_LockOnMainActor" then 
+	elseif Action == "ESBEffectAction::EffectAction_ItemRefill" then 
+	elseif Action == "ESBEffectAction::EffectAction_WarpToSafeLocation" then 
+	elseif Action == "ESBEffectAction::EffectAction_MountingEquipment" then 
+	elseif Action == "ESBEffectAction::EffectAction_UnmountingEquipment" then 
+	elseif Action == "ESBEffectAction::EffectAction_WarpCamp" then 
+	elseif Action == "ESBEffectAction::EffectAction_TryLinkBreak" then 
+	elseif Action == "ESBEffectAction::EffectAction_ConstructorActorSkillCancelWhenDispel" then 
+	elseif Action == "ESBEffectAction::EffectAction_CancelEventMove" then 
+	elseif Action == "ESBEffectAction::EffectAction_Revival" then 
+	elseif Action == "ESBEffectAction::EffectAction_TransformCharacter" then -- unused 
+	elseif Action == "ESBEffectAction::EffectAction_Possess" then -- unused 
+	elseif Action == "ESBEffectAction::EffectAction_ChangeTribe" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPSMiniGame" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPSNikke" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPSNikkeAimTriggerEffect" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPSNikkeBulletTriggerEffect" then 
+	elseif Action == "ESBEffectAction::EffectAction_RecoveryCollisionGroup" then 
+	elseif Action == "ESBEffectAction::EffectAction_Scan" then 
+	elseif Action == "ESBEffectAction::EffectAction_NotifyTagEvent" then 
+	elseif Action == "ESBEffectAction::EffectAction_FishingMode" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPS_ZoomIn" then 
+	elseif Action == "ESBEffectAction::EffectAction_DroneFixedPosition" then 
+	elseif Action == "ESBEffectAction::EffectAction_CancelAllAttacks" then 
+	elseif Action == "ESBEffectAction::EffectAction_ClearAllProjectile" then 
+	elseif Action == "ESBEffectAction::EffectAction_FishingCasting" then 
+	elseif Action == "ESBEffectAction::EffectAction_FishingSuccess" then 
+	elseif Action == "ESBEffectAction::EffectAction_AttachEquipment" then 
+	elseif Action == "ESBEffectAction::EffectAction_ImmediateDeath" then 
+	elseif Action == "ESBEffectAction::EffectAction_ImmediateDeathPossibleRevival" then 
+	elseif Action == "ESBEffectAction::EffectAction_ScreenEffect" then 
+	elseif Action == "ESBEffectAction::EffectAction_TPSTutorial" then 
+	elseif Action == "ESBEffectAction::EffectAction_UIClientEvent" then 
+	elseif Action == "ESBEffectAction::EffectAction_RetryPlayGame" then 
+	elseif Action == "ESBEffectAction::EffectAction_FixedLocation" then 
+	elseif Action == "ESBEffectAction::EffectAction_CancelInteraction" then 
+	elseif Action == "ESBEffectAction::EffectAction_DisableSliceMesh" then 
+	elseif Action == "ESBEffectAction::EffectAction_ClearAllTargetingMe" then 
+	elseif Action == "ESBEffectAction::EffectAction_ZoneEventActorDestruction" then 
+	elseif Action == "ESBEffectAction::EffectAction_ArcEventSpawn" then 
+	elseif Action == "ESBEffectAction::EffectAction_Countdown" then 
+	elseif Action == "ESBEffectAction::EffectAction_ActionAssist_Repulse" then 
+	elseif Action == "ESBEffectAction::EffectAction_ActionAssist_Blink" then 
+	elseif Action == "ESBEffectAction::EffectAction_MonsterWarp" then 
+	elseif Action == "ESBEffectAction::EffectAction_AttachOverrideStencil" then 
+	elseif Action == "ESBEffectAction::EffectAction_ForceLOD0" then 
+	elseif Action == "ESBEffectAction::EffectAction_BlockCamera" then 
+	elseif Action == "ESBEffectAction::EffectAction_SelfiePhotoMode" then 
+	elseif Action == "ESBEffectAction::EffectAction_UseSkill" then 
+	elseif Action == "ESBEffectAction::EffectAction_SkillCoolTimeScale" then 
+	elseif Action == "ESBEffectAction::EffectAction_ResetTPSAimPosition" then 
+	elseif Action == "ESBEffectAction::EffectAction_HideAllProjectile" then 
+	elseif Action == "ESBEffectAction::EffectAction_ClearAllProjectileMadeBy" then 
+		for k,v in ents.Iterator() do 
+			if IsValid(v:GetOwner()) and v:GetOwner() == self then 
+				SafeRemoveEntity(v) 
+			end 
+		end 
+	elseif Action == "ESBEffectAction::EffectAction_MAX" then 
+
+	else -- unlikely 
+	
+	end 
+end 
+
+-- Updated AddEffectFromTable to accept the plain array table produced by ParseTableStrings
+StellarBlade.AddEffectFromTable = function(self, tblEffect)
+    if type(tblEffect) != "table" then error("table expected, got",type(tblEffect))  end
+
+    for _, v in ipairs(tblEffect) do
+        if type(v) == "table" and v.Alias then
+            -- build vararg list from all keys except Alias
+            local args = {}
+            for k, val in pairs(v) do
+                if k ~= "Alias" then
+                    table.insert(args, k)
+                    -- convert numeric-like strings to numbers (to match ParseTableStrings behavior)
+                    if type(val) == "string" then
+                        local num = tonumber(val)
+                        if num ~= nil then
+                            val = num
+                        end
+                    end
+                    table.insert(args, val)
+                end
+            end
+
+            -- call AddEffect passing unpacked args
+            StellarBlade.AddEffect(self, v.Alias, unpack(args))
+        end
+    end
+end
+
+StellarBlade.RemoveEffect = function(self,strEffect) 
+	self.SB_EffectAlias[strEffect] = nil 
+end 
+
+StellarBlade.RemoveEffectLifeTypes = function(self,strLifeType) 
+	for EffectName,EffectData in pairs(self.SB_EffectAlias) do 
+		local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,EffectName) 
+		if strLifeType == EffectTable.LifeType then 
+			self.SB_EffectAlias[EffectName] = nil 
+		end 
+	end 
+end 
+
 
 StellarBlade.TargetFilter = function(ent, filter)
     local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
@@ -312,7 +694,7 @@ StellarBlade.TargetFilter = function(ent, filter)
 	-- print("past custom filters:") 
 
     -- Step 4b: Line of sight check
-    if not TargetFilterTable.bDisableBlockingCheck then
+    if !TargetFilterTable.bDisableBlockingCheck then
         local losFiltered = {}
         for _, candidate in ipairs(distFiltered) do
             local targetPos = TargetFilterTable.bBlockingCheckWithTopLocation
@@ -328,10 +710,12 @@ StellarBlade.TargetFilter = function(ent, filter)
             })
             if tr.Entity == candidate or tr.Fraction >= 1 then
                 table.insert(losFiltered, candidate)
-            end
-        end
-        distFiltered = losFiltered
-    end
+            elseif IsValid(tr.Entity) and (IsValid(candidate:GetParent()) and candidate:GetParent() == tr.Entity or candidate.GetVehicle and IsValid(candidate:GetVehicle()) and candidate:GetVehicle() == tr.Entity) then 
+				table.insert(losFiltered,tr.Entity) 
+			end 
+        end 
+        distFiltered = losFiltered 
+    end 
 
     -- Step 5: Sorting
     local sortType = TargetFilterTable.SortType
@@ -1037,4 +1421,3 @@ hook.Add("Think","SB_MaintainMoveTable", function()
 		StellarBlade.MaintainMoveTable(ent) 
 	end 
 end) 
-
