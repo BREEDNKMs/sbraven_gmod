@@ -116,7 +116,7 @@ ENT.NPC_PainSoundWater 	= "Unreali_Female.HurtUnderWater"
 ENT.npc_health 		= 248304 -- "MaxHP": 248304, "MaxShield": 4805, 
 ENT.npc_model		= "models/alvaroports/sbraven2.mdl" 
 ENT.PhysicAttackPower = 1600  
-ENT.bHasInnateMelee1 = false 
+ENT.bHasInnateMelee1 = true 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
@@ -2371,109 +2371,6 @@ ENT.SBAI_BehaviorTree = {
 -- "M_Raven_BetaGrab_HitL": {"ActiveShowPath": "CH_M_NA_53_Raven/LinkSkill/M_Raven_BetaGrabSuccessHitL"} 
 -- M_Raven_BetaGrabSuccessHitL: "AnimResourcePath": "/Game/Art/Character/PC/CH_P_EVE_01/Animation/Hit_Raven_BetaCounterGrabL" 
 
-function ENT:SBAI_SetSkillStep(strSkill) 
-	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
-    if !SkillStepTable then
-        self.SBAI_ActiveSkill = {} -- Clear active skill if the next step is invalid
-        return
-    end
-
-    -- Store the current skill step's data
-    self.SBAI_ActiveSkill = { Name = strSkill, Time = CurTime(), Data = SkillStepTable } 
-	
-	local StartSelfEffect = SkillStepTable.StartSelfEffect 
-	local StartTargetEffect = SkillStepTable.StartTargetEffect 
-	
-	if #StartSelfEffect > 0 then 
-		StartSelfEffect = StellarBlade.ParseTableStrings(StartSelfEffect) 
-		StellarBlade.AddEffectFromTable(self,StartSelfEffect) 
-	end 
-	
-	if #StartTargetEffect > 0 then 
-		StartTargetEffect = StellarBlade.ParseTableStrings(StartTargetEffect) 
-		StellarBlade.AddEffectFromTable(self,StartTargetEffect) 
-	end 
-
-    -- [NEW] Handle `bRetargeting`: Lock onto the current target if false
-    if SkillStepTable.bRetargeting == false then
-        self.SBAI_ActiveSkill.LockedTarget = self:GetEnemy()
-    else
-        -- If retargeting is allowed, ensure no previous target is locked
-        self.SBAI_ActiveSkill.LockedTarget = nil
-    end
-    if SkillStepTable.StopSelfMove then
-        self:StopMoving(true)
-        self:ClearGoal()
-    end
-
-    -- [NEW] Handle initial `bLookAtTarget`: Turn to face the target at the start of the step
-    if SkillStepTable.bLookAtTarget then
-        local target = self.SBAI_ActiveSkill.LockedTarget or self:GetEnemy()
-        if IsValid(target) then
-            local angleToTarget = (target:GetPos() - self:GetPos()):Angle().y
-            self:SetIdealYawAndUpdate(angleToTarget, -1) -- -1 for automatic turn speed
-        end
-    end
-
-    -- Apply the animation/movement for this step
-    local SelfMoveAliasArray = SkillStepTable.SelfMoveAliasArray
-    for _, SelfMoveAlias in pairs(SelfMoveAliasArray) do
-        StellarBlade.SetMoveTable(self,SelfMoveAlias)
-    end
-	-- activate TargetMoveAliasArray on target 
-	
-	-- activate ShowPath "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_Slash", 
-	if SkillStepTable.ShowPath != "None" then 
-		local showpath = "addons/sbraven/data_static/SB/Content/Art/Show/" 
-		showpath = showpath..SkillStepTable.ShowPath..".json" 
-		-- SB_ImportJSON(showpath) 
-		-- local showname = string.GetFileFromFilename( showpath ) 
-		-- showname = string.StripExtension(showname) 
-		-- showname = "SB_"..showname 
-		-- for _,animpaths in pairs(_G[showname]) do 
-			-- if animpaths.Type == "SBShowAnimKey" then 
-				-- local Target = animpaths.Properties.Target 
-				-- if !Target then -- may not preexist 
-					-- Target = "ESBShowActorTarget::ShowActorTarget_MainActor" 
-				-- end 
-				-- if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
-					-- print(animpaths) 
-					-- local anim = animpaths.Properties.AnimResourcePath 
-					-- anim = string.GetFileFromFilename(anim) 
-					-- self:NPC_StartScriptedActivity(anim,true) 
-				-- elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
-					-- -- play interaction, not handled yet 
-					-- -- because target entity most likely doesn't have any of those anims 
-				-- end 
-			-- end 
-		-- end 
-		-- print("showname:",showname) 
-		self:SBAI_SetShow(showpath) 
-	end 
-	if #SkillStepTable.UsableTargetProjectileAliasArray > 0 then 
-		for i = 1,#SkillStepTable.UsableTargetProjectileAliasArray do 
-			local event,etime,cycle,types,options 
-			self:NPC_RangedAttack(event,etime,cycle,types,options) 
-		end 
-	end 
-	-- play animations stored as SBShowAnimKey_0 
-	
-end 
-
-function ENT:SBAI_SetShow(showpath) 
-	SB_ImportJSON(showpath) 
-	self.SBAI_ActiveShow = {["Time"] = CurTime(),["RunTime"] = CurTime()} 
-	self.SBAI_ActiveShow.Dir = showpath 
-	local showname = string.GetFileFromFilename( showpath ) 
-	showname = string.StripExtension(showname) 
-	self.SBAI_ActiveShow.Name = showname 
-	self.SBAI_ActiveShow.Frame = 0 
-	self.SBAI_ActiveShow.Stopped = false 
-	showname = "SB_"..showname 
-	self:SBAI_MaintainShow() 
-	return showname -- return true on animation play, false on not play 
-end 
-
 function ENT:SBAI_MaintainShow() 
 	if not self.SBAI_ActiveShow or self.SBAI_ActiveShow.Stopped then return end
 	if not self.SBAI_ActiveShow.Name then return end
@@ -2537,12 +2434,17 @@ function ENT:SBAI_MaintainShow()
 			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor"
 			local anim = props.AnimResourcePath and string.GetFileFromFilename(props.AnimResourcePath)
 			if anim then
-				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then
-					self:NPC_StartScriptedActivity(anim, true)
-				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then
-					-- Optional: handle other actor animations
-				end
-			end
+				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+					if self:IsPlayer() then 
+						self:AddVCDSequenceToGestureSlot(0,self:LookupSequence(anim),0,true) 
+						BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then Entity("..self:EntIndex().."):AddVCDSequenceToGestureSlot(0,"..self:LookupSequence(anim)..",0,true) end") 
+					else 
+						self:NPC_StartScriptedActivity(anim, true) 
+					end 
+				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
+					-- Optional: handle other actor animations 
+				end 
+			end 
 
 		elseif data.Type == "SBShowActorKey" then
 			local hidden = props.bUseActorHidden or false
@@ -2600,7 +2502,7 @@ function ENT:SBAI_MaintainShow()
 			local CuePath
 			if data.Type == "SBShowCharSESoundKey" then
 				local key = props.CharacterReactKey or props.CharacterVoiceKey
-				local lookup = self:SBAI_LookupCharacterSound(key)
+				local lookup = StellarBlade.LookupCharacterSound(self,key)
 				CuePath = lookup and lookup.ObjectPath
 				if CuePath then
 					CuePath = string.gsub(CuePath, "/L10N/[^/]+", "")
@@ -2617,7 +2519,7 @@ function ENT:SBAI_MaintainShow()
 				CuePath = "addons/sbraven/data_static/SB/Content" .. CuePath
 				CuePath = string.StripExtension(CuePath) .. ".json"
 
-				local SoundScript = self:SBAI_BuildSoundScript(CuePath)
+				local SoundScript = StellarBlade.BuildSoundScript(self,CuePath)
 				if SoundScript then
 					if SoundScript.Delay and SoundScript.Delay ~= 0 then
 						timer.Simple(SoundScript.Delay, function()
@@ -3093,7 +2995,7 @@ end
 
 function ENT:SBAI_LookupCharacterSound(key) 
 	key = string.upper(key) 
-	local CharacterSoundSet = string.GetFileFromFilename(string.StripExtension(self.CharacterSoundSetPath)) 
+	local CharacterSoundSet = string.GetFileFromFilename(string.StripExtension(self.CharacterSoundSetPath or "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json")) 
 	CharacterSoundSet = _G["SB_"..CharacterSoundSet] -- the CharacterSoundSet imported from JSON is now a Lua table 
 	if !CharacterSoundSet or !CharacterSoundSet[1].Properties then return nil end
     -- search through all sound categories
@@ -3135,7 +3037,7 @@ function ENT:SBAI_LookupCharacterSound(key)
 end 
 
 function ENT:SBAI_BuildSoundScript(parsedjson) 
-	if not istable(parsedjson) then
+	if !istable(parsedjson) then
 		parsedjson = SB_ImportJSON(parsedjson)
 	end
 
@@ -3382,282 +3284,11 @@ function ENT:SBAI_BuildSoundScript(parsedjson)
 	end
 
 	return SoundScript
-end
-
-function ENT:Think() 
-	self:SBAI_MaintainShow() 
-	-- self:SB_CheckWeaponCollision({Entity(1)}) -- for debug 
-	return scripted_ents.Get("npc_unreali_female").Think(self) 
 end 
 
 function ENT:SBAI_GetEffectTable(strEffect) 
 	local EffectTable = SB_EffectTable[1].Rows[strEffect] 
 	return EffectTable 
-end 
-
---[[
-    Checks weapon collision for a given entity.
-    Returns the list of entities within the weapon's collision volume.
-    Excludes any entities not intersecting the ray volume.
-]]
-function ENT:SB_CheckWeaponCollision(entityList) 
-	self:MaintainActivity() 
-	local debugColor = Color(255,0,0,5) 
-    local wep = self:GetActiveWeapon()
-    local mins, maxs = wep:GetCollisionBounds() 
-	if wep:GetClass() == "raven_blade" then 
-		mins = mins * -1 
-		maxs = maxs * -1 
-	end 
-
-    -- Get the right-hand bone transform
-    local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
-
-    local bonePos, boneAng = self:GetBonePosition(boneIndex)
-
-    -- Base direction vectors
-    local forward = boneAng:Forward()
-    local right   = boneAng:Right()
-    local up      = boneAng:Up()
-
-    -- Extend ray roughly along the weapon’s forward axis
-    local reach = maxs:Length() * 0 -- 0 because reach scalar is disabled 
-    local startPos = bonePos
-    local endPos = bonePos + up * -reach
-
-    -- Convert mins/maxs into world-space oriented bounding box corners
-    -- by applying the bone’s rotation
-    local worldMins, worldMaxs = LocalToWorld(mins, Angle(), vector_origin, boneAng)
-    local worldMins2, worldMaxs2 = LocalToWorld(maxs, Angle(), vector_origin, boneAng)
-
-    -- Because LocalToWorld rotates each vector around origin, we must find the
-    -- actual numeric min/max bounds after rotation.
-    local orientedMins = Vector(
-        math.min(worldMins.x, worldMaxs.x, worldMins2.x, worldMaxs2.x),
-        math.min(worldMins.y, worldMaxs.y, worldMins2.y, worldMaxs2.y),
-        math.min(worldMins.z, worldMaxs.z, worldMins2.z, worldMaxs2.z)
-    )
-    local orientedMaxs = Vector(
-        math.max(worldMins.x, worldMaxs.x, worldMins2.x, worldMaxs2.x),
-        math.max(worldMins.y, worldMaxs.y, worldMins2.y, worldMaxs2.y),
-        math.max(worldMins.z, worldMaxs.z, worldMins2.z, worldMaxs2.z)
-    )
-
-    -- Perform the oriented trace
-    local hitEnts = ents.FindAlongRay(startPos, endPos, orientedMins, orientedMaxs)
-	PrintTable(entityList) 
-    -- Filter to include only given entity list members
-    local filtered = {}
-    for _, ent in ipairs(hitEnts) do
-        if IsValid(ent) and table.HasValue(entityList, ent) then
-			debugColor = Color(0,255,0,5) 
-            table.insert(filtered, ent)
-        end
-    end
-
-    -- Optional debug visualization
-	debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor)
-	debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
-
-    return filtered
-end
-
-function ENT:SBAI_CheckSkillHit(SkillStepTable,bEveryFrameHitCheck) 
-	local ID = SkillStepTable.ID 
-	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and deal damage 
-	-- for now, do default damage action 
-	local event,etime,cycle,types,options = util.GetAnimEventIDByName("EVENT_WEAPON_MELEE_HIT"), CurTime(), self:GetCycle(), 0, self.PhysicAttackPower 
-	-- adjust melee damage depending on step options 
-	options = options * SkillStepTable.SkillAttackDamageRate
-	local enemy = self:GetEnemy() 
-	if !IsValid(self:GetEnemy()) then -- pick random enemy 
-		if #self:GetKnownEnemies() > 0 then 
-			enemy = self:GetKnownEnemies()[1] 
-		end 
-	end 
-	local tableofhittargets 
-	-- to do: update: use Parry for %10 damage 
-	-- use %0 damage for JustParry 
-	-- print("in CheckSkillHit") 
-	if IsValid(enemy) then 
-		local curHealth = enemy:Health()
-		-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
-		-- print("invoking TargetFilter with filtername:",SkillStepTable.OverrideTargetFilterAlias) 
-		local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
-		if !TargetFilterAlias or TargetFilterAlias == "None" then 
-			if self.SBAI_SkillTable then TargetFilterAlias = self.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
-		end 
-		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias) 
-		-- originally, characters have a SBCollisionGroupComponent 
-		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
-		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
-		print("SkillStepTable.AttackCollisionGroupArray",SkillStepTable.AttackCollisionGroupArray) 
-		if string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_Weapon") then 
-			print("calling Collision_Weapon",SkillStepTable,bEveryFrameHitCheck) 
-			tableofhittargets = self:SB_CheckWeaponCollision(tableofhittargets) 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"LegL") then 
-			tableofhittargets = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Foot") 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"LegR") then 
-			tableofhittargets = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Foot") 
-		end 
-		for k,v in pairs(tableofhittargets) do 
-			local NearestPoint = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:GetShootPos()) 
-			local dmg = DamageInfo() 
-			dmg:SetAttacker(self) 
-			dmg:SetWeapon(self:GetActiveWeapon()) 
-			dmg:SetInflictor(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
-			dmg:SetDamage(options) 
-			dmg:SetReportedPosition(self:GetShootPos()) 
-			dmg:SetDamageType(DMG_SLASH+DMG_ALWAYSGIB) 
-			dmg:SetDamagePosition(NearestPoint) 
-			self:NPC_CalculateMeleeDamageForce(dmg,self:GetAimVector(),v:GetPos(),1) 
-			local tempTable = { -- even though we generate a table of a traceRes, this function uses only hitpos and hitnormal 
-			Entity = v, 
-			Hit = true, 
-			-- HitPos = v:NearestPoint(self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitNormal = Vector(0,0,1), 
-			HitWorld = false, 
-			HitMaterial = v:GetMaterial(), 
-			
-			-- Normal = (self:NearestPoint(v:EyePos()) - v:GetPos()):GetNormalized(), 
-			Normal = (scripted_ents.Get("cycler_actor2").NearestPoint2(self,v:EyePos()) - v:GetPos()):GetNormalized(), 
-			StartPos = nearestpoint 
-			} 
-			v:DispatchTraceAttack(dmg,tempTable) 
-		end 
-		local newHealth = enemy:Health() -- will have decreased if damage is applied
-
-		--- START: Added Damage Check Logic ---
-
-		local bDamageBlocked = false -- Initialize the variable to false.
-
-		-- Proceed only if the intended enemy was actually in the list of entities hit by the attack.
-		if tableofhittargets and table.HasValue(tableofhittargets, enemy) then
-			local intendedDamage = options
-			local actualDamageDealt = curHealth - newHealth
-			local damagePercentage = 0
-
-			-- Avoid division by zero if the skill was not meant to do damage.
-			if intendedDamage > 0 then
-				damagePercentage = actualDamageDealt / intendedDamage
-			end
-
-			-- Check various conditions to see if damage was blocked or prevented.
-			-- We set bDamageBlocked to true if ANY of these conditions are met.
-
-			-- Condition 1: The enemy is a player and the GM:PlayerShouldTakeDamage hook returns false.
-			local playerHookBlocked = enemy:IsPlayer() and hook.Run("GM:PlayerShouldTakeDamage", enemy, self) == false
-			local ai_block_damage = enemy:IsNPC() and cvars.Bool("ai_block_damage") == true 
-
-			-- Condition 2: The enemy has God Mode enabled.
-			local isGodMode = enemy:IsFlagSet(FL_GODMODE)
-
-			-- Condition 3: The enemy's internal takedamage variable is set to 0 (DAMAGE_NO) or less.
-			-- (or 1) is a safeguard in case the variable is missing, defaulting to a state that takes damage.
-			local takeDamageDisabled = (enemy:GetInternalVariable("m_takedamage") or 1) < 1
-
-			-- Condition 4: The actual damage applied was less than 10% of what was intended.
-			local lowDamage = damagePercentage < 0.1
-
-			if playerHookBlocked or isGodMode or takeDamageDisabled or lowDamage or ai_block_damage then
-				bDamageBlocked = true
-			end
-		end
-	else 
-		tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
-	end 
-    --- END: Added Damage Check Logic --
-
-	for k,v in pairs(tableofhittargets) do 
-		if IsValid(v) and v != self then 
-			local Disposition = self:Disposition(v) 
-			if Disposition == D_HT or Disposition == D_FR then 
-				if SkillStepTable.SkillResultAlias then -- applied on self and target 
-					-- self:SBAI_SetSkillStep() 
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenParry != "None" then -- player blocked your attack. 
-				-- this will be reinterpreted as: trace attack to GetEnemy hit something else 
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenParryJust != "None" then -- interpret as: getenemy is invincible or total damage is lesser than %10 
-					if bDamageBlocked then 
-						self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenParryJust) 
-						Entity(1):ChatPrint("Enemy in JustParry, calling "..SkillStepTable.NextStepAliasWhenParryJust) 
-					end 
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenPerfectParry != "None" then -- player performed parry right at HitTime 
-				-- this will be reinterpreted as: GetEnemy damaged us right at hit event 
-				-- implemented in ON_LIGHT_DAMAGE 
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenSuperParry != "None" then -- unused, probably back dodge 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenGuard != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenBreakGuard != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenCancel != "None" then -- when player wins the interaction 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenPerfectHit != "None" then -- unused 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenHoldRelease != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenHoldAndDualSenseTriggerEffectWeaponFired != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenAttacked != "None" then -- when the target is hit during skill, implemented in ON_LIGHT_DAMAGE 
-					
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenNoTarget != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenLinkBreak != "None" then -- same as NextStepAliasWhenCancel 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenInvalidItemConsume != "None" then 
-				
-				end 
-				
-				if SkillStepTable.NextStepAliasWhenHit != "None" then 
-					if v == self:GetEnemy() then 
-						self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenHit)
-					end 
-				end 
-			end 
-		end 
-	end 
-	if bEveryFrameHitCheck then 
-		timer.Simple(0.01,function() 
-			if IsValid(self) then 
-				local NextStepTable = self.SBAI_ActiveSkill.Name -- check to see whether Name has changed 
-				print("next step is:",NextStepTable) 
-				if !NextStepTable or NextStepTable == "None" then return end 
-				NextStepTable = SB_SkillActiveStepTable[1].Rows[NextStepTable] 
-				if ID == NextStepTable.ID then -- maintain loop as long as ID is same 
-					self:SBAI_CheckSkillHit(SkillStepTable,true) 
-				end 
-			end 
-		end) 
-	end 
 end 
 
 function ENT:SBAI_GetSkillAnimData(name) 
@@ -4408,7 +4039,7 @@ function ENT:SbCheckActorEffect(tbl)
     if bActive == false then return false end
 
     -- resolve actor
-    local ent
+    local ent = self 
     if ActorType == "Target" then
         ent = self:GetEnemy()
     elseif ActorType == "Self" then
@@ -4442,13 +4073,6 @@ function ENT:SbCheckActorEffect(tbl)
         -- normal alias checks
         if ent.SB_EffectAlias and ent.SB_EffectAlias[eff] then
             hasEffect = true
-        elseif ent.EffectAliasArray then
-            for _, eff2 in ipairs(ent.EffectAliasArray) do
-                if eff2 == eff then
-                    hasEffect = true
-                    break
-                end
-            end
         end
 
         -- post check wrapper: if ENT has a function named after the effect alias, call it 
@@ -4996,7 +4620,8 @@ function ENT:SbUseSkill(tbl)
 					if SkillCommandTable then 
 						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 						-- This now correctly handles all the data-driven setup for the first step 
-						self:SBAI_SetSkillStep(FirstSkillActiveAlias) 
+						-- self:SBAI_SetSkillStep(FirstSkillActiveAlias) 
+						StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
 						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
 						Entity(1):ChatPrint("starting "..v.." at CurTime:"..tostring(CurTime())) 
 						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
@@ -5014,10 +4639,10 @@ function ENT:SbUseSkill(tbl)
 
     if tbl.Started then
         -- Process the currently active skill step
-        self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill)
+        -- self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
 
         -- If the active skill was cleared (e.g., skill finished or target died), the task is complete
-        if not self.SBAI_ActiveSkill or not self.SBAI_ActiveSkill.Name then
+        if !self.SBAI_ActiveSkill or !self.SBAI_ActiveSkill.Name then
              -- Entity(1):ChatPrint("task complete")
              self:NPC_StopScriptedActivity() 
 			 self:ResetIdealActivity(ACT_IDLE) 
@@ -5035,108 +4660,7 @@ function ENT:SbUseSkill(tbl)
 	end 
 
     return nil -- Task is still running
-end
-
--- This function is called every tick to process the active skill step.
--- It handles timed events, continuous actions, and transitioning to the next step.
-function ENT:SBAI_ProcessActiveSkill(tbl)
-    local Name = tbl.Name
-    if not Name then return end
-
-    local SkillStepTable = tbl.Data
-    if not SkillStepTable then return end
-	local Duration = SkillStepTable.Duration 
-    -- Determine the current target. Prioritize the locked target if it exists and is valid.
-    local currentTarget = nil
-    if IsValid(tbl.LockedTarget) then
-        if tbl.LockedTarget:Alive() then
-            currentTarget = tbl.LockedTarget
-        else
-            -- [NEW] Failsafe: If the locked target is dead, end the skill immediately.
-            -- Entity(1):ChatPrint("Locked target died. Ending skill.")
-            self.SBAI_ActiveSkill = {}
-            return
-        end
-    else
-        -- If there's no locked target, use the NPC's current enemy.
-        currentTarget = self:GetEnemy()
-    end
-
-    -- [NEW] Handle persistent "bLookAtTarget": Keep looking at the target during the step
-	local bLookAtTarget = true 
-	-- local bLookAtTarget = SkillStepTable.bLookAtTarget 
-    if bLookAtTarget and IsValid(currentTarget) then
-        local angleToTarget = (currentTarget:GetPos() - self:GetPos()):Angle().y
-        self:SetIdealYawAndUpdate(angleToTarget, -1)
-    end 
-	
-	local Type = SkillStepTable.Type 
-	-- get skill step type 
-	
-	if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then -- parries incoming attack, used by eve, raven and some other npcs 
-	-- to be filled 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
-		local bEveryFrameHitCheck = SkillStepTable.bEveryFrameHitCheck 
-		if bEveryFrameHitCheck then 
-			if !self.SBAI_ActiveSkill.bEveryFrameHitCheck then 
-				self.SBAI_ActiveSkill.bEveryFrameHitCheck = true 
-				timer.Simple(0.01,function() 
-					if IsValid(self) then 
-						self:SBAI_CheckSkillHit(SkillStepTable,true) 
-					end 
-				end) 
-			end 
-		else 
-			self:SBAI_CheckSkillHit(SkillStepTable) 
-		end 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hold" then -- unused 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_SuperParry" then -- unused 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Item" then -- eve only: use item 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Guard" then -- eve only: put sword / wings in front to parry 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then -- default action 
-	
-	end 
-
-	-- Check if the duration for the current step has elapsed
-	local Time = tbl.Time
-	local EndTime = Time + Duration
-	local now = CurTime()
-
-	if now >= EndTime then
-		StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_StepDependent") 
-		-- step finished: advance to next step or clear
-		local NextStepAlias = SkillStepTable.NextStepAlias
-		if NextStepAlias and NextStepAlias != "None" then
-			-- Transition to the next skill step
-			self:SBAI_SetSkillStep(NextStepAlias)
-		else
-			-- No next step, so the skill is finished 
-			StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
-			self.SBAI_ActiveSkill = {}
-		end
-
-	else
-		-- still inside step: decide whether to force a closer NextThink
-		local GetAnimTimeInterval = self:GetAnimTimeInterval() or 0
-		-- keep the minimum think interval (your original minimum was 0.1)
-		GetAnimTimeInterval = (GetAnimTimeInterval > 0.1) and GetAnimTimeInterval or 0.1
-
-		local remaining = EndTime - now -- seconds until we must advance
-
-		-- If the remaining time is shorter than our usual animation/think interval,
-		-- schedule a NextThink to wake us right when the step ends (or slightly before).
-		if remaining < GetAnimTimeInterval then
-			-- clamp to a small positive value to avoid 0 or negative NextThink
-			local delta = math.max(0.01, remaining)
-			self:NextThink(now + delta)
-			-- DEBUG
-			print(string.format("scheduling NextThink in %.6f (remaining %.6f, animInterval %.6f) at CurTime: %.6f",delta, remaining, GetAnimTimeInterval, now))
-		end
-
-		-- optional: debug print showing why we didn't reschedule
-		print(string.format("Duration is:\t%.3f\t%.6f\t%.3f (remaining %.6f) -- no NextThink change",Duration, GetAnimTimeInterval, Time, remaining)) 
-	end 
-end
+end 
 
 function ENT:SbUseableTimeReset(tbl)
     local KeyName = tbl.KeyName
@@ -5198,9 +4722,9 @@ function ENT:SbWaitTimeRandom(data) -- only in tachy ai
 	local bReturnSucceeded = data.bReturnSucceeded 
 end 
 
-function ENT:Item_Resurrection_Ground(ent) return false end 
-function ENT:M_Raven_BetaCounterGrab_HitE(ent) return false end 
-function ENT:LV_FinishQTE_FailDown(ent) return false end 
+-- function ENT:Item_Resurrection_Ground(ent) return false end 
+-- function ENT:M_Raven_BetaCounterGrab_HitE(ent) return false end 
+-- function ENT:LV_FinishQTE_FailDown(ent) return false end 
 
 function ENT:ON_LIGHT_DAMAGE() 
 	-- get current skill step if available and see whether NextStepAliasWhenAttacked is set 
@@ -5210,13 +4734,13 @@ function ENT:ON_LIGHT_DAMAGE()
 	SkillStepTable = SB_SkillActiveStepTable[1].Rows[SkillStepTable] 
 	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
 	if SkillStepTable.NextStepAliasWhenAttacked and SkillStepTable.NextStepAliasWhenAttacked != "None" then 
-		self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenAttacked) 
+		StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenAttacked) 
 	elseif SkillStepTable.NextStepAliasWhenPerfectParry != "None" then 
 		local enemy = self:GetEnemy() 
 		if IsValid(self:GetEnemy()) then 
 			local DamageTime = self:GetLastTimeTookDamageFromEnemy() 
 			if DamageTime + 0.02 > CurTime() then 
-				self:SBAI_SetSkillStep(SkillStepTable.NextStepAliasWhenPerfectParry) 
+				StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenPerfectParry) 
 			end 
 		end 
 	end 
@@ -5322,11 +4846,8 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
         end
 
         -- prepare sound path (use your existing helper; fallback if nil)
-        local soundPath = nil
-        if self.SBAI_BuildSoundScript then
-            local success, SoundScript = pcall(function() return self:SBAI_BuildSoundScript("addons/sbraven/data_static/SB/Content/Sound/Skill/Monster/Raven/M_Raven_Skill_RapidMove_Cue.json") end)
-            if success and SoundScript and SoundScript.SoundPath then soundPath = SoundScript.SoundPath end
-        end
+        local soundPath = nil 
+		soundPath = StellarBlade.BuildSoundScript(self,"addons/sbraven/data_static/SB/Content/Sound/Skill/Monster/Raven/M_Raven_Skill_RapidMove_Cue.json").SoundPath 
 
         -- store values for runtime use
         self.CurrentSchedule.blink.soundPath = soundPath
