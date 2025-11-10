@@ -86,7 +86,6 @@ $bodygroup "Suit"
 	blank
 }
 
-
 $surfaceprop "flesh"
 
 $contents "solid" 
@@ -2102,14 +2101,145 @@ $includemodel "humans/female_ss.mdl"
 $includemodel "humans/female_gestures.mdl"
 $includemodel "humans/female_postures.mdl"
 
-$collisionjoints "sbravenpm_physics.smd"
-{
+// animations to override / delete from includemodels 
+$sequence "range_knife_1" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "range_knife_2" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "walk_physgun_1" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "walk_pistol_1" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "run_pistol_1" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "jump_holding_land" "sbravenpm_anims\reference.smd" noanimation 
+
+$sequence "idle_knife" "sbravenpm_anims\m_raven_battleidle01.smd" { 
+	fps 60 
+	activity ACT_HL2MP_IDLE_KNIFE 9999 
+	origin 0 0 42 
+	fadein 0.6
+	fadeout 0.6 
+	cmdlist lockfeet
+	addlayer inverse_proportions
+	
+	fudgeloop 
+} 
+
+$sequence "walk_knife" {
+	"a_walking_walk_cautious_SW"  // row 1 col 1 (SW slot → backward)
+	"a_walking_walk_cautious_S"  // row 1 col 2 (S slot)
+	"a_walking_walk_cautious_SE"  // row 1 col 3 (SE slot)
+
+	"a_walking_walk_cautious_W"  // row 2 col 1 (W slot)
+	"a_walking_walk_cautious_C"  // row 2 col 2 (Center still)
+	"a_walking_walk_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_walking_walk_cautious_NW"  // row 3 col 1 (NW slot)
+	"a_walking_walk_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_walking_walk_cautious_NE"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_HL2MP_WALK_KNIFE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.7
+	fadeout 0.7
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "walking" 
+	fudgeloop 
+	{ event 6008 10 "" }
+	{ event 6009 28 "" }
+} 
+
+$sequence "walk_knife_1" {
+	"a_walking_walk_cautious_SW"  // row 1 col 1 (SW slot → backward)
+	"a_walking_walk_cautious_S"  // row 1 col 2 (S slot)
+	"a_walking_walk_cautious_SE"  // row 1 col 3 (SE slot)
+
+	"a_walking_walk_cautious_W"  // row 2 col 1 (W slot)
+	"a_walking_walk_cautious_C"  // row 2 col 2 (Center still)
+	"a_walking_walk_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_walking_walk_cautious_NW"  // row 3 col 1 (NW slot)
+	"a_walking_walk_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_walking_walk_cautious_NE"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_HL2MP_WALK_KNIFE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.7
+	fadeout 0.7
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "walking" 
+	fudgeloop 
+	{ event 6008 10 "" }
+	{ event 6009 28 "" }
+} 
+
+$sequence "run_knife" {
+	"a_running_run_cautious_SW"  // row 1 col 1 (SW slot → backward)
+	"a_running_run_cautious_S"  // row 1 col 2 (S slot)
+	"a_running_run_cautious_SE"  // row 1 col 3 (SE slot)
+
+	"a_running_run_cautious_W"  // row 2 col 1 (W slot)
+	"a_running_run_cautious_C"  // row 2 col 2 (Center still)
+	"a_running_run_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_running_run_cautious_NW"  // row 3 col 1 (NW slot)
+	"a_running_run_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_running_run_cautious_NE"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_HL2MP_RUN_KNIFE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "running" 
+	fudgeloop 
+	{ event 6009 8 "" }
+	{ event 6008 18 "" }
+} 
+
+$sequence "run_knife_1" {
+	"a_running_run_cautious_SW"  // row 1 col 1 (SW slot → backward)
+	"a_running_run_cautious_S"  // row 1 col 2 (S slot)
+	"a_running_run_cautious_SE"  // row 1 col 3 (SE slot)
+
+	"a_running_run_cautious_W"  // row 2 col 1 (W slot)
+	"a_running_run_cautious_C"  // row 2 col 2 (Center still)
+	"a_running_run_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_running_run_cautious_NW"  // row 3 col 1 (NW slot)
+	"a_running_run_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_running_run_cautious_NE"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_HL2MP_RUN_KNIFE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "running" 
+	fudgeloop 
+	{ event 6009 8 "" }
+	{ event 6008 18 "" }
+} 
+
+$collisionjoints "sbravenpm_physics.smd" 
+{ 
 	$mass 70
 	$inertia 10
 	$damping 0.01
 	$rotdamping 1.5
 	$rootbone "valvebiped.bip01_pelvis"
-
 
 	$jointconstrain "ValveBiped.Bip01_R_Thigh" x limit -12 12 0
 	$jointconstrain "ValveBiped.Bip01_R_Thigh" y limit -8 75 0
@@ -2180,4 +2310,4 @@ $collisionjoints "sbravenpm_physics.smd"
 	$jointcollide "ValveBiped.Bip01_L_Forearm" "ValveBiped.Bip01_R_Thigh"
 	$jointcollide "ValveBiped.Bip01_R_Forearm" "ValveBiped.Bip01_L_Thigh"
 	$jointcollide "ValveBiped.Bip01_R_Forearm" "ValveBiped.Bip01_R_Thigh"
-}
+} 

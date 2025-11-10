@@ -109,6 +109,68 @@ $animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
 	origin 0 0 42 
 } 
 
+$animation "a_running_run_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
+	fps 30
+	fudgeloop
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_N" "sbravenpm_anims\Proto_Lockon_Run_Forward.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_S" "sbravenpm_anims\Proto_Lockon_Run_Backward.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_E" "sbravenpm_anims\Proto_Lockon_Run_Left.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_W" "sbravenpm_anims\Proto_Lockon_Run_Right.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_SE" "sbravenpm_anims\Proto_Lockon_Run_Backward_Left.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_SW" "sbravenpm_anims\Proto_Lockon_Run_Backward_Right.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_NE" "sbravenpm_anims\Proto_Lockon_Run_Forward_Left.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
+$animation "a_running_run_cautious_NW" "sbravenpm_anims\Proto_Lockon_Run_Forward_Right.smd" {
+	fps 30
+	fudgeloop
+	LX LY
+	origin 0 0 42 
+}
+
 $animation a_Proto_Battle_Jump_End "sbravenpm_anims\Proto_Battle_Jump_End.smd" 
 $animation a_Raven_Base "sbravenpm_anims\Raven_Base.smd" 
 //$animation a_Proto_Battle_Jump_End_layer "sbravenpm_anims\Proto_Battle_Jump_End.smd" subtract a_Proto_Battle_Jump_End 78 
@@ -6944,8 +7006,8 @@ $sequence "Proto_Run" "sbravenpm_anims\Proto_Run.smd" { // frames 20
 	fps 30 
 	activity ACT_MP_RUN 1 
 	addlayer inverse_proportions
-	{ event 6009 8 "Event.HostageKilled" }
-	{ event 6008 18 "Event.HostageKilled" }
+	{ event 6009 8 "" }
+	{ event 6008 18 "" }
 	
 	fudgeloop LX LY 
 	origin 0 0 42 
@@ -6955,8 +7017,8 @@ $sequence "Proto_Sprint" "sbravenpm_anims\Proto_Sprint.smd" { // frames 20
 	fps 30 
 	activity ACT_MP_SPRINT 1 
 	addlayer inverse_proportions
-	{ event 6009 7 "Event.HostageKilled" }
-	{ event 6008 14 "Event.HostageKilled" }
+	{ event 6009 7 "" }
+	{ event 6008 14 "" }
 	fudgeloop LX LY 
 	origin 0 0 42 
 } 
@@ -15484,6 +15546,34 @@ $sequence "walk_cautious" {
 	fudgeloop 
 	{ event 6008 10 "" }
 	{ event 6009 28 "" }
+} 
+
+$sequence "run_cautious" {
+	"a_running_run_cautious_SW"  // row 1 col 1 (SW slot → backward)
+	"a_running_run_cautious_S"  // row 1 col 2 (S slot)
+	"a_running_run_cautious_SE"  // row 1 col 3 (SE slot)
+
+	"a_running_run_cautious_W"  // row 2 col 1 (W slot)
+	"a_running_run_cautious_C"  // row 2 col 2 (Center still)
+	"a_running_run_cautious_E"  // row 2 col 3 (E slot)
+
+	"a_running_run_cautious_NW"  // row 3 col 1 (NW slot)
+	"a_running_run_cautious_N"  // row 3 col 2 (N slot → forward)
+	"a_running_run_cautious_NE"  // row 3 col 3 (NE slot)
+	
+	activity "ACT_MP_RUN_MELEE" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "walking" 
+	fudgeloop 
+	{ event 6009 8 "" }
+	{ event 6008 18 "" }
 } 
 
 $sequence "m_raven_run_l" { 
