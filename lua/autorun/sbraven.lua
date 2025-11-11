@@ -272,6 +272,7 @@ hook.Add("Think","StellarBlade_MaintainMoveTable", function()
 	for _,ent in ents.Iterator() do 
 		StellarBlade.MaintainMoveTable(ent) 
 	end 
+	-- StellarBlade.CheckWeaponCollision(Entity(34),{Entity(1)}) 
 end) 
 
 hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo)
@@ -1712,11 +1713,23 @@ StellarBlade.TargetFilter = function(ent, filter)
     local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
 	if !IsValid(ent) then error("Expected Entity, got NULL Entity!") return end 
 	if !filter then print("input a filter") end 
-    if !TargetFilterTable then return {ent:GetEnemy()} end
+    if !TargetFilterTable then return {ent:GetEnemy()} end 
+	
+	local tableInsert = table.insert
+    local tableEmpty = table.Empty
+    local ents_FindInSphere = ents.FindInSphere
+    local ents_FindInCone = ents.FindInCone
+    local math_max = math.max
+    local math_min = math.min
+    local math_cos = math.cos
+    local math_rad = math.rad
+    local util_TraceLine = util.TraceLine
 
     -- Base vectors
     local origin = ent:GetPos() 
     local forward = ent:GetAimVector() 
+	local right = ent:GetRight() 
+	local up = ent:GetUp() 
 	
 	local ShapeForwardDistance = TargetFilterTable.ShapeForwardDistance * flRescale 
 	local ShapeRightDistance = TargetFilterTable.ShapeRightDistance * flRescale 
@@ -1730,13 +1743,17 @@ StellarBlade.TargetFilter = function(ent, filter)
 	local NearDistance = TargetFilterTable.NearDistance * flRescale 
 
     -- Shape offsets
-    local offsetOrigin = origin
-        + forward * (ShapeForwardDistance or 0)
-        + ent:GetRight() * (ShapeRightDistance or 0)
-        + ent:GetUp() * (ShapeUpDistance or 0)
+	local offsetOrigin = origin + forward * ShapeForwardDistance + right * ShapeRightDistance + up * ShapeUpDistance
 
     local candidates = {}
-
+	local function cheapReject(t)
+        if !IsValid(t) then return true end
+        if t == ent then return true end
+        if !t:IsSolid() then return true end
+        if t:GetCollisionGroup() == COLLISION_GROUP_NONE then return true end
+        if t:IsFlagSet(FL_DONTTOUCH) then return true end
+        return false
+    end
     -- Step 1: Candidate pool
     local shape = TargetFilterTable.TargetCheckShape or ""
     if shape == "ESBCheckShape::CheckShape_3DArc" then
@@ -1787,9 +1804,9 @@ StellarBlade.TargetFilter = function(ent, filter)
     local filtered = {}
 	
 	if TargetType == "ESBTargetActor::Target_Self" then 
-		filtered[1] = self 
+		filtered[1] = ent 
 	elseif TargetType == "ESBTargetActor::Target_Owner" then 
-		filtered[1] = IsValid(self:GetOwner()) and self:GetOwner() 
+		filtered[1] = IsValid(ent:GetOwner()) and ent:GetOwner() 
 	elseif TargetType == "ESBTargetActor::Target_All" then 
 		for _, target in ipairs(candidates) do
 			if IsValid(target) 
@@ -1803,7 +1820,7 @@ StellarBlade.TargetFilter = function(ent, filter)
 		end 
 	elseif TargetType == "ESBTargetActor::Target_Ally" then 
 		for _, target in ipairs(candidates) do 
-			local Disposition = self.Disposition and (self:Disposition(target) == D_LI) or target.Disposition and target:Disposition(self) == D_LI 
+			local Disposition = ent.Disposition and (ent:Disposition(target) == D_LI) or target.Disposition and target:Disposition(ent) == D_LI 
 			if Disposition then 
 				table.insert(filtered, target) 
 			end 
@@ -1901,28 +1918,13 @@ StellarBlade.TargetFilter = function(ent, filter)
     -- Step 5: Sorting
     local sortType = TargetFilterTable.SortType
     if sortType == "ESBActorSortType::ActorSortType_Near" then
-        table.sort(distFiltered, function(a, b)
-            return offsetOrigin:DistToSqr(a:GetPos()) < offsetOrigin:DistToSqr(b:GetPos())
-        end) 
-	elseif sortType == "ESBActorSortType::ActorSortType_Far" then
-        table.sort(distFiltered, function(a, b)
-            return offsetOrigin:DistToSqr(a:GetPos()) > offsetOrigin:DistToSqr(b:GetPos())
-        end)
-	elseif sortType == "ESBActorSortType::ActorSortType_LowHp" then
-        table.sort(distFiltered, function(a, b)
-            return offsetOrigin:DistToSqr(a:Health()) < offsetOrigin:DistToSqr(b:Health())
-        end)
-	elseif sortType == "ESBActorSortType::ActorSortType_HighHp" then
-        table.sort(distFiltered, function(a, b)
-            return offsetOrigin:DistToSqr(a:Health()) > offsetOrigin:DistToSqr(b:Health())
-        end)
-    elseif sortType == "ESBActorSortType::ActorSortType_Parry" then
-        table.sort(distFiltered, function(a, b)
-            local aflag = a:IsFlagSet(FL_GODMODE)
-            local bflag = b:IsFlagSet(FL_GODMODE)
-            if aflag != bflag then return aflag end
-            return offsetOrigin:DistToSqr(a:GetPos()) < offsetOrigin:DistToSqr(b:GetPos()) -- default to distance check 
-        end)
+        table.sort(distFiltered, function(a,b) return offsetOrigin:DistToSqr(a:GetPos()) < offsetOrigin:DistToSqr(b:GetPos()) end)
+    elseif sortType == "ESBActorSortType::ActorSortType_Far" then
+        table.sort(distFiltered, function(a,b) return offsetOrigin:DistToSqr(a:GetPos()) > offsetOrigin:DistToSqr(b:GetPos()) end)
+    elseif sortType == "ESBActorSortType::ActorSortType_LowHp" then
+        table.sort(distFiltered, function(a,b) return (a.Health and a:Health() or 0) < (b.Health and b:Health() or 0) end)
+    elseif sortType == "ESBActorSortType::ActorSortType_HighHp" then
+        table.sort(distFiltered, function(a,b) return (a.Health and a:Health() or 0) > (b.Health and b:Health() or 0) end)
     end
 	
 	-- print("multiple targets:",TargetFilterTable.bMultipleTargets) 
@@ -1944,6 +1946,7 @@ end
 ]]
 StellarBlade.CheckWeaponCollision = function(self, entityList) 
 	-- print(owner) 
+	if !SERVER then return end 
  	local debugColor = Color(255,0,0,5) 
     local wep = self:GetActiveWeapon() 
 	if !IsValid(wep) then return entityList end 
@@ -1965,8 +1968,10 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
 
     -- Extend ray roughly along the weapon’s forward axis
     local reach = maxs:Length() * 0 -- 0 because reach scalar is disabled 
-    local startPos = bonePos
-    local endPos = bonePos + up * -reach
+    local startPos = bonePos 
+	-- debugoverlay.Cross(startPos, 32, 0.1) 
+    local endPos = bonePos + up * -reach 
+	-- debugoverlay.Cross(endPos, 32, 0.1) 
 
     -- Convert mins/maxs into world-space oriented bounding box corners
     -- by applying the bone’s rotation
@@ -1988,10 +1993,10 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
 
     -- Perform the oriented trace
     local hitEnts = ents.FindAlongRay(startPos, endPos, orientedMins, orientedMaxs) 
-	print("ents in blade range") 
-	PrintTable(entityList) 
+	-- print("ents in blade range") 
+	-- PrintTable(entityList) 
     -- Filter to include only given entity list members
-    local filtered = {}
+    local filtered = {} 
     for _, ent in ipairs(hitEnts) do
         if IsValid(ent) and table.HasValue(entityList, ent) then
 			debugColor = Color(0,255,0,5) 
@@ -1999,15 +2004,14 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
         end
     end
 
-    -- Optional debug visualization
-	debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor)
-	debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false)
+    -- Optional debug visualization 
+	-- debugoverlay.BoxAngles(startPos, mins, maxs, boneAng, 0.1, debugColor) 
+	-- debugoverlay.Line(startPos, endPos, 0.1, Color(255, 255, 0), false) 
 
-    return filtered
-end
+    return filtered 
+end 
 
-
---[[
+--[[ 
     Checks whether a given entity’s specified hitbox collides with any entities in entityList.
     @param owner      (Entity) The entity whose hitbox will be checked.
     @param entityList (table)  List of entities to test against.
@@ -2738,7 +2742,7 @@ StellarBlade.BuildSoundScript = function(self,parsedjson)
 		-- RawSoundPath (converted)
 		SoundScript.RawSoundPath = result.Raw or tostring(result.SoundPath or "")
 		-- SoundPath as Sound() object if conversion succeeded above
-		pcall(function() SoundScript.SoundPath = result.SoundPath end)
+		SoundScript.SoundPath = result.SoundPath 
 	end
 
 	return SoundScript
