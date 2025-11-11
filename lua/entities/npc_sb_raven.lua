@@ -4561,7 +4561,7 @@ function ENT:SbMoveToTarget(tbl)
 	local DistanceOfApproach = tbl.DistanceOfApproach or 250 -- i think this means walk until distancetoenemy < 250 
 	local bBackgroundTask = tbl.bBackgroundTask
 	local NodeName = tbl.NodeName 
-	local navSet = self:IsMoving() 
+	local navSet = self:GetCurWaypointPos() != Vector(0,0,0) 
 	if !navSet then 
 		if IsValid(self:GetEnemy()) then 
 			navSet = self:NavSetGoalTarget(self:GetEnemy()) 
@@ -4569,6 +4569,7 @@ function ENT:SbMoveToTarget(tbl)
 			navSet = self:NavSetGoalPos(self:GetPos() + (self:GetForward()*300)) 
 		end 
 	end 
+	print(self:GetCurWaypointPos()) 
 	if !navSet then return false end 
 	self:SetMovementActivity(ACT_MP_WALK_MELEE) 
 	-- tbl.StartPos = tbl.StartPos or self:GetEnemyLastKnownPos() 
