@@ -1,5 +1,79 @@
 AddCSLuaFile() 
 
+function SB_ImportJSON(path)
+    -- Helper function to process a single JSON file (unchanged).
+    local function ProcessJSONFile(relativePath)
+        local fileName = string.match(relativePath, "([^/]+)%.json$")
+        if not fileName then
+            MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n")
+            return
+        end
+        local globalTableName = "SB_" .. fileName
+
+        if _G[globalTableName] then
+            MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
+            return _G[globalTableName] 
+        end
+
+        local jsonString = file.Read(relativePath, "GAME")
+        if not jsonString then
+            ErrorNoHalt(string.format("[SB Importer] Failed to read file for '%s'! Check path: %s\n", globalTableName, relativePath))
+            return
+        end
+
+        local tempTable = util.JSONToTable(jsonString,false)
+        if not tempTable then
+            ErrorNoHalt(string.format("[SB Importer] Failed to parse JSON for '%s'! File may be malformed: %s\n", globalTableName, relativePath))
+            return
+        end
+
+        _G[globalTableName] = tempTable
+        MsgC(Color(100, 255, 100), "[SB Importer] Successfully loaded '", relativePath, "' into global table '", globalTableName, "'.\n")
+		return tempTable 
+    end
+
+    -- Main function logic starts here.
+    -- First, normalize the path separators from Windows-style '\' to '/'
+    local normalizedPath = string.gsub(path, "\\", "/")
+    local relativePath
+
+    -- NEW, SMARTER PATH HANDLING:
+    -- Try to strip the path as if it's absolute.
+    local strippedPath = string.match(normalizedPath, "/garrysmod/(.+)")
+    if strippedPath then
+        -- If it succeeded, it was an absolute path. Use the stripped version.
+        relativePath = strippedPath
+    else
+        -- If it failed, it's already a relative path. Use it as-is.
+        relativePath = normalizedPath
+    end
+
+    -- The rest of the function proceeds with the correctly determined relativePath.
+    if file.IsDir(relativePath, "GAME") then
+        local filesInDir = file.Find(relativePath .. "/*.json", "GAME")
+        MsgC(Color(255, 255, 100), "[SB Importer] Starting batch import for directory: ", relativePath, "\n")
+
+        if #filesInDir == 0 then
+            MsgC(Color(255, 150, 0), "[SB Importer] No .json files found in ", relativePath, "\n")
+            return
+        end
+
+        for _, fileName in ipairs(filesInDir) do
+            -- Make sure the path has a trailing slash before appending the filename
+            local dirPath = string.sub(relativePath, -1) == "/" and relativePath or (relativePath .. "/")
+            ProcessJSONFile(dirPath .. fileName)
+        end
+    else
+        return ProcessJSONFile(relativePath)
+    end
+end
+
+-- include("entities/npc_sb_raven.lua") 
+
+local M_Raven_Default = "data_static/SB/Content/Local/Data/CharacterStanceTable.json" 
+SB_ImportJSON(M_Raven_Default) 
+M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default 
+
 SWEP.Base = "weapon_ut99_base" 
 SWEP.Category = "Other" 
 SWEP.PrintName = "Raven Blade" 
@@ -38,15 +112,50 @@ SWEP.Melee_HitSound	=	Sound("M_Raven_Skill_Stab_Cue")
 
 function SWEP:CanPrimaryAttack() return self:GetHolsterDelay() == 0 and self:GetActivity() != ACT_VM_HOLSTER end 
 function SWEP:CanBePickedUpByNPCs() return false end 
-function SWEP:SpecialThink() 
-	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
-	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
-end 
 function SWEP:Deploy() return weapons.Get("weapon_ugold_automag").Deploy(self) end 
 function SWEP:ShouldDropOnDie() return true end 
+function SWEP:SpecialThink() 
+	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
+	if SERVER then 
+		local StellarBlade_SelectedSkill = self.StellarBlade_SelectedSkill  
+		local CheckCooldown = self:GetOwner().SBAI_SkillTimers and self:GetOwner().SBAI_SkillTimers[StellarBlade_SelectedSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
+		-- print(CheckCooldown) 
+		if CheckCooldown then 
+			self:SetAttackDelay(CheckCooldown) 
+		end 
+	end 
+	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
+end 
+
+function SWEP:SpecialInit() 
+	self:SetSaveValue("m_fMaxRange1",64) 
+	self:SetSaveValue("m_fMaxRange2",64) 
+	self:SetSaveValue("m_fMinRange1",0) 
+	self:SetSaveValue("m_fMinRange2",0) 
+	local ef = EffectData() 
+	ef:SetEntity(self) 
+	ef:SetScale(0) -- sets time. 0 to make looping 
+	ef:SetFlags(0) 
+	ef:SetMagnitude(0) 
+	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
+	util.Effect("mi_a_gpusparks_01",ef) 
+	util.Effect("MI_A_Flares_01_23",ef) 
+	util.Effect("ne_ribbonm",ef) 
+end 
+
 function SWEP:PrimaryAttack() 
 	-- determine next attack time, relative with anim play rate 
 	if !self:CanPrimaryAttack() then return false end 
+	if IsValid(self:GetOwner()) and self.StellarBlade_SelectedSkill then 
+		if !self:GetOwner().SBAI_SkillTable then 
+			StellarBlade.StartSkillCommand(self:GetOwner(),self.StellarBlade_SelectedSkill) 
+			-- self.StellarBlade_SelectedSkill = nil 
+			return 
+		end 
+	end 
+	if IsValid(self:GetOwner()) then 
+		if self:GetOwner().SBAI_ActiveSkill then return end 
+	end 
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Primary.Animation ) 
 	local Delay = vm:SequenceDuration(seq) 
@@ -86,6 +195,20 @@ function SWEP:SecondaryAttack()
 	self:SetIdleDelay(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
 	self:EmitSound(self.Secondary.Sound, 100, 100) 
 	local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,240) 
+end 
+
+function SWEP:Reload() 
+	local owner = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
+	if owner:KeyPressed(IN_RELOAD) then 
+		local CommandArray = M_Raven_Default.CommandArray 
+		local SelectedRandomSkill = CommandArray[math.random(1,#CommandArray)] 
+		owner:ChatPrint(SelectedRandomSkill) 
+		self.StellarBlade_SelectedSkill = SelectedRandomSkill 
+		local CheckCooldown = self:GetOwner().SBAI_SkillTimers and self:GetOwner().SBAI_SkillTimers[SelectedRandomSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
+		if CheckCooldown then 
+			self:SetAttackDelay(CheckCooldown) 
+		end 
+	end 
 end 
 
 function SWEP:Holster(Other) 
@@ -144,149 +267,28 @@ SWEP.NiagaraLensObjs = SWEP.NiagaraLensObjs or {}
 function SWEP:ViewModelDrawn(vm)
     weapons.Get("weapon_ut99_base").ViewModelDrawn(self, vm) 
 	self:Raven_Blade_Flare(0.4,0.5,"v_weapon.Knife_Handle") 
-    -- local boneID = vm:LookupBone("v_weapon.Knife_Handle")
-    -- if not boneID then return end
+end 
 
-    -- local matrix = vm:GetBoneMatrix(boneID)
-    -- if not matrix then return end
-
-    -- local pos = matrix:GetTranslation()
-    -- local ang = matrix:GetAngles()
-    -- local forward = ang:Up() * 7
-    -- pos = pos + forward
-
-    -- local view = EyePos()
-    -- local distSqr = pos:DistToSqr(view)
-    -- local dist = math.sqrt(distSqr)
-
-    -- -- Niagara-style distance emissive scaling
-    -- local maxRange = 4096
-    -- local fade = math.Clamp(dist / maxRange, 0, 1)
-    -- local intensity = Lerp(1 - math.sqrt(fade), 1.0, 2.5)
-
-    -- -- ============================================================
-    -- -- === Flares ===
-    -- -- ============================================================
-    -- if not self.NextFlareSpawn or CurTime() > self.NextFlareSpawn then
-        -- self.NextFlareSpawn = CurTime() + 0.05
-        -- table.insert(self.NiagaraFlares, {
-            -- pos = pos,
-            -- life = 0,
-            -- maxlife = 0.4 + math.Rand(0.2, 0.4),
-            -- scale = math.Rand(0.4, 0.5),
-            -- seed = math.Rand(0, 100)
-        -- })
-    -- end
-
-    -- for i = #self.NiagaraFlares, 1, -1 do
-        -- local p = self.NiagaraFlares[i]
-        -- p.life = p.life + FrameTime()
-        -- local frac = p.life / p.maxlife
-
-        -- if frac >= 1 then
-            -- table.remove(self.NiagaraFlares, i)
-        -- else
-            -- local fadeIn = math.Clamp(frac / 0.2, 0, 1)
-            -- local fadeOut = 1 - math.Clamp((frac - 0.8) / 0.2, 0, 1)
-            -- local alphaMul = fadeIn * fadeOut
-
-            -- local flicker = 1 + (math.sin(CurTime() * 17.3 + p.seed) + math.sin(CurTime() * 11.8 + p.seed)) * 0.02
-            -- local pulse = 1 + math.sin(CurTime() * 6 + p.seed) * 0.05
-
-            -- local lifeScale = p.scale * pulse * flicker
-            -- local brightness = alphaMul * intensity
-
-            -- for _, layer in ipairs(flareLayers) do
-                -- render.SetMaterial(layer.mat)
-                -- local col = layer.color
-                -- local size = layer.size * lifeScale
-                -- render.DrawSprite(
-                    -- pos,
-                    -- size,
-                    -- size,
-                    -- Color(
-                        -- col.r * brightness * layer.hardness,
-                        -- col.g * brightness * layer.hardness,
-                        -- col.b * brightness * layer.hardness,
-                        -- 255 * brightness
-                    -- )
-                -- )
-            -- end
-        -- end
-    -- end
-
-    -- -- ============================================================
-    -- -- === Lens Objects ===
-    -- -- ============================================================
-    -- if not self.NextLensSpawn or CurTime() > self.NextLensSpawn then
-        -- self.NextLensSpawn = CurTime() + 0.12
-        -- table.insert(self.NiagaraLensObjs, {
-            -- pos = pos,
-            -- life = 0,
-            -- maxlife = 0.8 + math.Rand(0.5, 1.2),
-            -- scale = 1.0,
-            -- seed = math.Rand(0, 100)
-        -- })
-    -- end
-
-    -- for i = #self.NiagaraLensObjs, 1, -1 do
-        -- local p = self.NiagaraLensObjs[i]
-        -- p.life = p.life + FrameTime()
-        -- local frac = p.life / p.maxlife
-
-        -- if frac >= 1 then
-            -- table.remove(self.NiagaraLensObjs, i)
-        -- else
-            -- -- Slower flicker and expansion over distance
-            -- local flicker = 1.0 + math.sin(CurTime() * 1.5 + p.seed) * 0.08
-            -- local distScale = math.Clamp(dist / 512, 0.4, 2.5)
-            -- local scale = p.scale * distScale * flicker
-            -- local brightness = Lerp(1 - frac, 1.4, 0.8) * intensity
-
-            -- for _, layer in ipairs(lensObjLayers) do
-                -- render.SetMaterial(layer.mat)
-                -- local col = layer.color
-                -- local size = layer.baseSize * scale
-                -- local flicker2 = 1 + math.sin(CurTime() * layer.flickerSpeed + p.seed) * 0.05
-                -- render.DrawSprite(
-                    -- pos,
-                    -- (size * flicker2) * 0.10,
-                    -- (size * flicker2) * 0.15,
-                    -- Color(
-                        -- col.r * brightness * layer.hardness,
-                        -- col.g * brightness * layer.hardness,
-                        -- col.b * brightness * layer.hardness,
-                        -- 255 * brightness
-                    -- )
-                -- )
-            -- end
-        -- end
-    -- end
-end
-
-function SWEP:Initialize() 
-	weapons.Get("weapon_ut99_base").Initialize(self) 
-	local ef = EffectData() 
-	ef:SetEntity(self) 
-	ef:SetScale(0) -- sets time. 0 to make looping 
-	ef:SetFlags(0) 
-	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
-	util.Effect("mi_a_gpusparks_01",ef) 
-	util.Effect("MI_A_Flares_01_23",ef) 
-	util.Effect("ne_ribbonm",ef) 
+function SWEP:CustomAmmoDisplay() 
+	self.AmmoDisplay = self.AmmoDisplay or {} 
+	self.AmmoDisplay.Draw = true -- draw the display? 
+	self.AmmoDisplay.PrimaryClip = -1 -- amount in clip 
+	-- self.AmmoDisplay.PrimaryAmmo = self:GetAttackDelay() - CurTime() -- amount in clip 
+	self.AmmoDisplay.SecondaryAmmo = self:GetAttackDelay() - CurTime() -- amount in clip 
+	return self.AmmoDisplay 
 end 
 
 function SWEP:DrawWorldModelTranslucent(flags) 
-	local base = weapons.Get("weapon_ut99_base")
-	if base and base.DrawWorldModelTranslucent then
-		base.DrawWorldModelTranslucent(self, flags)
-	end
+	local base = weapons.Get("weapon_ut99_base") 
+	if base and base.DrawWorldModelTranslucent then 
+		base.DrawWorldModelTranslucent(self, flags) 
+	end 
 	self:Raven_Blade_Flare(1.3,1.5,"ValveBiped.Bip01_R_Hand") 
 end 
 
 function SWEP:Raven_Blade_Flare(mins,maxs,bonename) 
 	local ViewModel = IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and IsValid(GetViewEntity():GetActiveWeapon()) and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
-	local renderer = ViewModel and self:GetOwner():GetViewModel() or self 
+	local renderer = ViewModel and self:GetOwner():IsPlayer() and !self:GetOwner():ShouldDrawLocalPlayer() and self:GetOwner():GetViewModel() or self 
 	local handBone = renderer:LookupBone(bonename)
 	if !handBone then return end
 
