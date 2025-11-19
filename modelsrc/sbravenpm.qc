@@ -80,6 +80,11 @@ $bodygroup "Armor 2"
 	studio "Armor2.smd"
 	blank
 }
+$bodygroup "RavensuitVinyl_Blur"
+{
+	studio "RavensuitVinyl_Blur.smd"
+	blank
+}
 $bodygroup "Suit"
 {
 	studio "Suit.smd"
@@ -2105,6 +2110,7 @@ $includemodel "humans/female_postures.mdl"
 $sequence "range_knife_1" "sbravenpm_anims\reference.smd" noanimation 
 $sequence "range_knife_2" "sbravenpm_anims\reference.smd" noanimation 
 $sequence "walk_physgun_1" "sbravenpm_anims\reference.smd" noanimation 
+$sequence "run_physgun_1" "sbravenpm_anims\reference.smd" noanimation 
 $sequence "walk_pistol_1" "sbravenpm_anims\reference.smd" noanimation 
 $sequence "run_pistol_1" "sbravenpm_anims\reference.smd" noanimation 
 $sequence "jump_holding_land" "sbravenpm_anims\reference.smd" noanimation 

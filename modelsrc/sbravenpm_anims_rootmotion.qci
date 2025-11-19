@@ -111,62 +111,62 @@ $animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
 
 $animation "a_running_run_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
 	fps 30
-	fudgeloop
+	loop
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_N" "sbravenpm_anims\Proto_Lockon_Run_Forward.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_S" "sbravenpm_anims\Proto_Lockon_Run_Backward.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_E" "sbravenpm_anims\Proto_Lockon_Run_Left.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_W" "sbravenpm_anims\Proto_Lockon_Run_Right.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_SE" "sbravenpm_anims\Proto_Lockon_Run_Backward_Left.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_SW" "sbravenpm_anims\Proto_Lockon_Run_Backward_Right.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_NE" "sbravenpm_anims\Proto_Lockon_Run_Forward_Left.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
 
 $animation "a_running_run_cautious_NW" "sbravenpm_anims\Proto_Lockon_Run_Forward_Right.smd" {
 	fps 30
-	fudgeloop
+	loop
 	LX LY
 	origin 0 0 42 
 }
@@ -5436,7 +5436,7 @@ $sequence "Hit_Sawshark_GuardSuccess" "sbravenpm_anims\Hit_Sawshark_GuardSuccess
 
 $sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68
 	fps 30 
-	activity ACT_MELEE_ATTACK1 1 
+	activity ACT_MELEE_ATTACK_SWING 1 
 	addlayer inverse_proportions
 	
 	LX LY LM
@@ -7002,15 +7002,117 @@ $sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Run" "sbravenpm_anims\Proto_Run.smd" { // frames 20 
-	fps 30 
-	activity ACT_MP_RUN 1 
+$animation "a_eve_RunS" "sbravenpm_anims\Proto_Run_Backward.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunSE" "sbravenpm_anims\Proto_Run_Backward_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunE" "sbravenpm_anims\Proto_Run_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunNE" "sbravenpm_anims\Proto_Run_Forward_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunN" "sbravenpm_anims\Proto_Run.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunNW" "sbravenpm_anims\Proto_Run_Forward_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunW" "sbravenpm_anims\Proto_Run_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_RunSW" "sbravenpm_anims\Proto_Run_Backward_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 3
+	walkframe 20 LX LY 
+	origin 0 0 42 
+}
+
+$sequence "Proto_Run" { // frames 20 
+	"a_eve_RunSW"
+	"a_eve_RunS"
+	"a_eve_RunSE"
+	"a_eve_RunW"
+	"a_running_run_cautious_C"
+	"a_eve_RunE"
+	"a_eve_RunNW"
+	"a_eve_RunN"
+	"a_eve_RunNE"
+	activity "ACT_MP_RUN" 1
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
 	addlayer inverse_proportions
+	
+	LX LY 
+	node "running" 
+	loop 
 	{ event 6009 8 "" }
 	{ event 6008 18 "" }
-	
-	fudgeloop LX LY 
-	origin 0 0 42 
 } 
 
 $sequence "Proto_Sprint" "sbravenpm_anims\Proto_Sprint.smd" { // frames 20 
@@ -7023,14 +7125,150 @@ $sequence "Proto_Sprint" "sbravenpm_anims\Proto_Sprint.smd" { // frames 20
 	origin 0 0 42 
 } 
 
-$sequence "Proto_Walk" "sbravenpm_anims\Proto_Walk.smd" { // frames 20 
+$animation "a_eve_WalkC" "sbravenpm_anims\Proto_Idle.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkS" "sbravenpm_anims\Chat_Lockon_Walk_Backward.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkSE" "sbravenpm_anims\Chat_Lockon_Walk_Backward_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkE" "sbravenpm_anims\Chat_Lockon_Walk_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkNE" "sbravenpm_anims\Chat_Lockon_Walk_Forward_Left.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkN" "sbravenpm_anims\Chat_Lockon_Walk_Forward.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkNW" "sbravenpm_anims\Chat_Lockon_Walk_Forward_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkW" "sbravenpm_anims\Chat_Lockon_Walk_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$animation "a_eve_WalkSW" "sbravenpm_anims\Chat_Lockon_Walk_Backward_Right.smd" {
+	fps 30
+	loop
+	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 0
+	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 1
+	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 2
+	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 3
+	walkframe 37 LX LY 
+	origin 0 0 42 
+}
+
+$sequence "Proto_Walk" { // frames 37 
+	"a_eve_WalkSW"
+	"a_eve_WalkS"
+	"a_eve_WalkSE"
+	"a_eve_WalkW"
+	"a_eve_WalkC"
+	"a_eve_WalkE"
+	"a_eve_WalkNW"
+	"a_eve_WalkN"
+	"a_eve_WalkNE"
 	fps 30 
 	activity ACT_MP_WALK 1 
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
 	addlayer inverse_proportions
-	{ event 6009 13 "Event.HostageKilled" }
-	{ event 6008 31 "Event.HostageKilled" }
-	fudgeloop LX LY 
-	origin 0 0 42 
+	
+	LX LY 
+	node "running" 
+	loop 
+} 
+
+$sequence "walk_all" { // frames 37 
+	"a_eve_WalkSW"
+	"a_eve_WalkS"
+	"a_eve_WalkSE"
+	"a_eve_WalkW"
+	"a_eve_WalkC"
+	"a_eve_WalkE"
+	"a_eve_WalkNW"
+	"a_eve_WalkN"
+	"a_eve_WalkNE"
+	fps 30 
+	activity ACT_HL2MP_WALK 1 
+	blend "move_y" 1 -1
+	blend "move_x" -1 1
+	blendwidth 3
+	fadein 0.3
+	fadeout 0.3
+	addlayer inverse_proportions
+	
+	LX LY 
+	node "running" 
+	loop 
 } 
 
 $sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { // frames 1
@@ -15581,9 +15819,9 @@ $sequence "m_raven_run_l" {
 	"a_walking_walk_cautious_SE"  // "a_canterSE" 
 	"a_walking_walk_cautious_E"  // "a_canterE"
 
-	"a_M_Raven_Run_L"  // "a_canterNE" 
+	"a_walking_walk_cautious_NE"  // "a_canterNE" 
 	"a_M_Raven_Run_L"  // "a_canterN" 
-	"a_M_Raven_Run_L"  // "a_canterNW" 
+	"a_walking_walk_cautious_NW"  // "a_canterNW" 
 
 	"a_walking_walk_cautious_W"  // "a_canterW" 
 	"a_walking_walk_cautious_SW"  // "a_canterSW" 
