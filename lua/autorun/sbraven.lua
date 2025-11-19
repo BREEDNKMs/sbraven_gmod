@@ -45,121 +45,57 @@ hook.Add("PostPlayerDraw","sbravenpm_coreglow",function(ply)
 	end 
 end) 
 
-local co -- worker coroutine
-
-local function EffectCheckerPass()
-    -- one full pass over all ents' SB_EffectAlias; when this function returns the coroutine dies
-    for _, ENT in ents.Iterator() do
-        if not ENT.SB_EffectAlias then
-            ENT.SB_EffectAlias = {}
-        end
-
-        -- if there are no effects for this ENT, yield once so we don't stall
-        if not next(ENT.SB_EffectAlias) then
-            coroutine.yield()
-        else
-            -- iterate effects; yield before each expensive lookup
-            for Effect, EffectData in pairs(ENT.SB_EffectAlias) do
-                coroutine.yield() -- yield BEFORE doing the expensive SBAI_GetEffectTable lookup
-
-                -- safe lookup; pass ENT as the first argument
-                local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(ENT, Effect)
-                if not EffectTable then
-                    -- table missing for this effect; remove it to keep things clean
-                    StellarBlade.RemoveEffect(ENT, Effect)
-                else
-                    local LifeType = EffectTable.LifeType
-
-                    if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
-                        -- do nothing (infinite)
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
-                        if not ENT.SBAI_SkillTable then
-                            StellarBlade.RemoveEffect(ENT, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
-                        if not ENT.SBAI_ActiveSkill then
-                            StellarBlade.RemoveEffect(ENT, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
-                        if EffectData and EffectTable.LifeTime and CurTime() > (EffectData.Time or 0) + EffectTable.LifeTime then
-                            StellarBlade.RemoveEffect(ENT, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
-                        -- keep as-is for now
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then
-                    end
-                end
-            end
-        end
-    end
-
-    -- completed a full pass; coroutine returns and becomes dead so it will be reconstructed next Think
-end
-
 hook.Add("Think", "StellarBlade_CheckEffects", function()
     local systime = SysTime()
     local bDisabled = false
 	
 	for _, self in ents.Iterator() do 
 		if self.SB_EffectAlias then 
-			for Effect, EffectTable in pairs(self.SB_EffectAlias) do 
-				if !EffectTable then
-                    -- table missing for this effect; remove it to keep things clean
-                    StellarBlade.RemoveEffect(self, Effect)
-                else
-                    local LifeType = EffectTable.LifeType
+			for Effect, EffectList in pairs(self.SB_EffectAlias) do 
+				for i = #EffectList, 1, -1 do 
+					local EffectTable = EffectList[i] 
+				-- for k, EffectTable in ipairs(EffectList) do 
+					if !EffectTable then
+						-- table missing for this effect; remove it to keep things clean
+						StellarBlade.RemoveEffect(self, Effect) 
+					else
+						local LifeType = EffectTable.LifeType
 
-                    if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
-                        -- do nothing (infinite)
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
-                        if !self.SBAI_SkillTable then
-                            StellarBlade.RemoveEffect(self, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
-                        if !self.SBAI_ActiveSkill then
-                            StellarBlade.RemoveEffect(self, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
-                        if EffectData and EffectTable.LifeTime and CurTime() > (EffectData.Time or 0) + EffectTable.LifeTime then
-                            StellarBlade.RemoveEffect(self, Effect)
-                        end
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
-                        -- keep as-is for now
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
-                    elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then
-                    end 
+						if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
+							-- do nothing (infinite)
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
+							if !self.SBAI_SkillTable then 
+								EffectTable:Remove() 
+								-- StellarBlade.RemoveEffect(self, Effect) 
+							end
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
+							if !self.SBAI_ActiveSkill then 
+								EffectTable:Remove() 
+								-- StellarBlade.RemoveEffect(self, Effect) 
+							end
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
+							if CurTime() > EffectTable.LifeTime + EffectTable.Time then 
+								EffectTable:Remove() 
+								-- StellarBlade.RemoveEffect(self, Effect) 
+							end
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
+							-- keep as-is for now
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
+						elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then
+						end 
+					end 
 				end 
 			end 
 		end 
 	end 
-
-    -- if SERVER and not bDisabled then
-        -- -- try to resume existing coroutine; if none exists or resume fails (coroutine finished / errored),
-        -- -- create a fresh one and resume it once so it starts working immediately
-        -- if not co or not coroutine.resume(co) then
-            -- co = coroutine.create(EffectCheckerPass)
-            -- coroutine.resume(co)
-        -- end
-    -- end
-
-    -- print("time difference for this think interval:", SysTime() - systime, bDisabled)
 end) 
 
--- flIntervalUsed: time interval (float)
--- Returns: moved, newPosition (Vector), newAngles (Angle), bMoveSeqFinished (bool)
 -- flIntervalUsed: time interval (float)
 -- layerID: optional layer index (number) - when provided and valid, use layer (gesture) sequence movement
 -- Returns: moved, newPosition (Vector), newAngles (Angle), bMoveSeqFinished (bool)
@@ -277,40 +213,43 @@ end)
 
 hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo)
 	if target.SB_EffectAlias then
-		for Effect, EffectTable in pairs(target.SB_EffectAlias) do
-			local Damage = dmginfo:GetDamage()
-			local CalculationValue = EffectTable.CalculationValue
-			local ActorState1, ActorState2, ActorState3, ActorState4, ActorState5, ActorState6, ActorState7, ActorState8, ActorState9, ActorState10 = EffectTable.ActorState1, EffectTable.ActorState2, EffectTable.ActorState3, EffectTable.ActorState4, EffectTable.ActorState5, EffectTable.ActorState6, EffectTable.ActorState7, EffectTable.ActorState8, EffectTable.ActorState9, EffectTable.ActorState10 
-			
-			if EffectTable.StatType == "ESBActorStatType::ActorStatType_MinimumHP" and CalculationValue then
-				local Health = target:Health()
-				local MaxHealth = target:GetMaxHealth()
-				local MinHealth = MaxHealth * (CalculationValue * 0.01)
+		for Effect, EffectList in pairs(target.SB_EffectAlias) do
+			for i = #EffectList, 1, -1 do 
+				local EffectTable = EffectList[i] 
+				
+				local Damage = dmginfo:GetDamage()
+				local CalculationValue = EffectTable.CalculationValue
+				local ActorState1, ActorState2, ActorState3, ActorState4, ActorState5, ActorState6, ActorState7, ActorState8, ActorState9, ActorState10 = EffectTable.ActorState1, EffectTable.ActorState2, EffectTable.ActorState3, EffectTable.ActorState4, EffectTable.ActorState5, EffectTable.ActorState6, EffectTable.ActorState7, EffectTable.ActorState8, EffectTable.ActorState9, EffectTable.ActorState10 
+				
+				if EffectTable.StatType == "ESBActorStatType::ActorStatType_MinimumHP" and CalculationValue then
+					local Health = target:Health()
+					local MaxHealth = target:GetMaxHealth()
+					local MinHealth = MaxHealth * (CalculationValue * 0.01)
 
-				-- predicted health after taking damage
-				local NewHealth = Health - Damage
+					-- predicted health after taking damage
+					local NewHealth = Health - Damage
 
-				-- if new health would go below minimum threshold
-				if NewHealth < MinHealth then
-					-- clamp the damage so HP stops at minimum
-					local AllowedDamage = math.max(0, Health - MinHealth)
+					-- if new health would go below minimum threshold
+					if NewHealth < MinHealth then
+						-- clamp the damage so HP stops at minimum
+						local AllowedDamage = math.max(0, Health - MinHealth)
 
-					if AllowedDamage <= 0 then
-						-- completely negate the damage
-						dmginfo:SetDamage(0)
-						return true
-					else
-						dmginfo:SetDamage(AllowedDamage)
+						if AllowedDamage <= 0 then
+							-- completely negate the damage
+							dmginfo:SetDamage(0)
+							return true
+						else
+							dmginfo:SetDamage(AllowedDamage)
+						end
 					end
-				end
-			elseif EffectTable.StatType == "ESBActorStatType::ActorStatType_HitDefenseLevel" then 
-				dmginfo:ScaleDamage(CalculationValue) 
+				elseif EffectTable.StatType == "ESBActorStatType::ActorStatType_HitDefenseLevel" then 
+					dmginfo:ScaleDamage(CalculationValue) 
+				end 
+				
+				if ActorState1 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState2 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState3 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState4 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState5 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState6 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState7 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState8 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState9 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState10 == "ESBActorState::ActorState_NoDamageNoHit" then 
+					return true 
+				end 			
 			end 
-			
-			if ActorState1 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState2 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState3 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState4 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState5 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState6 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState7 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState8 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState9 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState10 == "ESBActorState::ActorState_NoDamageNoHit" then 
-				return true 
-			end 
-			
 		end
 	end
 end)
@@ -419,7 +358,12 @@ local EasingFunctions = {
 
 StellarBlade = StellarBlade or {} 
 
--- Minimal parser: returns a plain array table
+-- Minimal parser: returns a plain array table 
+-- Input is a string like "[{\"Alias\":\"HitStun\", \"Time\":1.5}, {\"Alias\":\"KnockDownForward_Eve\"}, {\"Alias\":\"KnockDownBackward_Eve\"}]" 
+-- Output is: { 
+-- [1] = { ["Alias"] = "HitStun", ["Time"] = 1.5 } 
+-- [2] = { ["Alias"] = "KnockDownForward_Eve" } 
+-- [3] = { ["Alias"] = "KnockDownBackward_Eve" } } 
 StellarBlade.ParseTableStrings = function(input)
     if !input then error("no input to ParseTableStrings") end
 
@@ -462,98 +406,149 @@ StellarBlade.ParseTableStrings = function(input)
     return out
 end
 
-StellarBlade.AddEffect = function(self,strEffect, ...) 
-	local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, strEffect) 
-	local curEffects = self.SB_EffectAlias
+StellarBlade.AddEffect = function(self, strEffect, ...)
+    local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, strEffect)
+    if !EffectTable then error("EffectTable not found for "..strEffect) end
 
-	if !curEffects then
-		self.SB_EffectAlias = {}
-		curEffects = self.SB_EffectAlias
-	end
+    -- Ensure our container exists
+    self.SB_EffectAlias = self.SB_EffectAlias or {}
+    local curEffects = self.SB_EffectAlias
 
-	-- initialize/overwrite effect entry
-	-- print(strEffect) 
-	curEffects[strEffect] = table.Copy(SB_EffectTable[1].Rows[strEffect]) 
-	-- Entity(1):ChatPrint("effect added: "..strEffect.." to: "..tostring(self)) 
-	-- print("effect added: "..strEffect.." to: "..tostring(self)) 
-	-- print(curEffects) 
-	-- PrintTable(curEffects) 
-	curEffects[strEffect].Time = CurTime() 
-	local curEffect = curEffects[strEffect] 
+    -- Ensure per-effect list exists (always treat as array of instances)
+    if not curEffects[strEffect] then
+        curEffects[strEffect] = {}
+    end
 
-	-- process vararg key/value pairs
-	local args = { ... }
-	local n = #args
-	for i = 1, n, 2 do
-		local key = args[i]
-		local val = args[i + 1]
-		if key ~= nil then
-			-- try to convert numeric-like strings to numbers
-			if type(val) == "string" then
-				local num = tonumber(val)
-				if num ~= nil then
-					val = num
-				end
-			end
-			curEffect[tostring(key)] = val
-		end
-	end
-	local LifeType = EffectTable.LifeType 
-	if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then 
-		-- curEffects[strEffect] = true 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then -- active during entirety of skill 
-		-- curEffects[strEffect] = self.SBAI_SkillTable.SkillName 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then 
-		-- curEffects[strEffect] = CurTime() + EffectTable.LifeTime 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependentWithoutPlayable" then 
+    -- Prepare a fresh instance from canonical table (copy)
+    local template = SB_EffectTable and SB_EffectTable[1] and SB_EffectTable[1].Rows and SB_EffectTable[1].Rows[strEffect]
+    local newInstance = template and table.Copy(template) or {}
+
+    -- The effect definition (metadata) from npc table (may include Overlap too)
+    local Overlap = EffectTable.Overlap
+
+    local chosenIndex = nil
+
+    if Overlap == "ESBEffectOverlap::EffectOverlap_Overlap" then
+        -- If there is already an instance, merge into the first one (numeric fields are added, others overridden).
+        if #curEffects[strEffect] >= 1 then
+            chosenIndex = 1
+            local exist = curEffects[strEffect][chosenIndex]
+            -- Merge numeric values: add numbers; otherwise override/assign
+            for k, v in pairs(newInstance) do
+                if k == "Time" then continue end
+                local ev = exist[k]
+                if type(v) == "number" and type(ev) == "number" then
+                    exist[k] = ev + v
+                else
+                    exist[k] = v
+                end
+            end
+            -- preserve (or update) Overlap field if provided
+            if EffectTable.Overlap then
+                exist.Overlap = EffectTable.Overlap
+            end
+        else
+            -- no existing instance: append new one
+            table.insert(curEffects[strEffect], newInstance)
+            chosenIndex = #curEffects[strEffect]
+        end
+
+    elseif Overlap == "ESBEffectOverlap::EffectOverlap_Change" then
+        -- Insert new instance at index 1 (becomes the primary / changed effect)
+        table.insert(curEffects[strEffect], 1, newInstance)
+        chosenIndex = 1
+
+    elseif Overlap == "ESBEffectOverlap::EffectOverlap_Unique" then
+        -- Always append a new instance (unique stacking)
+        table.insert(curEffects[strEffect], newInstance)
+        chosenIndex = #curEffects[strEffect]
+
+    else
+        -- Unknown/unspecified overlap: default to single-instance replace behaviour
+        curEffects[strEffect][1] = newInstance
+        chosenIndex = 1
+    end
+
+    -- The instance we're working with
+    local curEffect = curEffects[strEffect][chosenIndex]
+
+    -- ensure curEffect exists (defensive)
+    if !curEffect then
+        curEffect = newInstance
+        curEffects[strEffect][chosenIndex or 1] = curEffect
+    end
+
+    -- timestamp / lifetime anchor
+    curEffect.Time = CurTime()
+	curEffect.Remove = function() 
+		table.remove(curEffects[strEffect],chosenIndex) 
 	end 
-	
-	local DispelFlagsArray = curEffect.DispelFlagsArray
-	if type(DispelFlagsArray) == "table" and next(DispelFlagsArray) then
-		local toRemove = {}
-		for _, dispFlag in ipairs(DispelFlagsArray) do
-			if dispFlag then
-				for existName, existData in pairs(curEffects) do
-					if existName != strEffect then -- don't remove the effect we just added
-						local existFlag = existData and existData.Flag
-						if existFlag == dispFlag or existName == dispFlag then
-							toRemove[#toRemove + 1] = existName
-						end
-					end
-				end
-			end
-		end 
 
-		for _, name in ipairs(toRemove) do 
-			StellarBlade.RemoveEffect(self, name) 
-		end 
-	end 
+    -- Process vararg key/value pairs and write into chosen instance
+    local args = { ... }
+    local n = #args
+    for i = 1, n, 2 do
+        local key = args[i]
+        local val = args[i + 1]
+        if key ~= nil then
+            -- try to convert numeric-like strings to numbers
+            if type(val) == "string" then
+                local num = tonumber(val)
+                if num ~= nil then
+                    val = num
+                end
+            end
+            curEffect[tostring(key)] = val
+        end
+    end
+
+    -- Handle life type if you need to perform special registration/tracking
+    local LifeType = curEffect.LifeType
+    if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
+        -- keep as-is (no time limit)
+    elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
+        -- curEffect.ActiveSkill = self.SBAI_SkillTable and self.SBAI_SkillTable.SkillName
+    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
+        -- handle step-dependent logic if needed
+    elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
+        -- curEffect.ExpireTime = CurTime() + (EffectTable.LifeTime or curEffect.LifeTime or 0)
+    end
+    -- (extend cases as you need)
+
+    -- Process dispel flags: curEffect.DispelFlagsArray may be an array of strings/flags
+    local DispelFlagsArray = curEffect.DispelFlagsArray
+    if type(DispelFlagsArray) == "table" and next(DispelFlagsArray) then
+        local toRemoveAliases = {}
+        for _, dispFlag in ipairs(DispelFlagsArray) do
+            if not dispFlag then continue end
+            -- iterate over all effect aliases present on the entity
+            for existName, existInstances in pairs(curEffects) do
+                if existName ~= strEffect then -- don't remove the effect we just added
+                    -- existInstances is an array of instance tables
+                    for _, existInstance in ipairs(existInstances) do
+                        local existFlag = existInstance and existInstance.Flag
+                        if existFlag == dispFlag or existName == dispFlag then
+                            toRemoveAliases[existName] = true
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        -- Remove matching aliases (call your RemoveEffect helper which likely removes whole alias)
+        for name, _ in pairs(toRemoveAliases) do
+            -- StellarBlade.RemoveEffect(self, name)
+            -- also clean local table in case RemoveEffect doesn't
+            -- curEffects[name] = nil
+        end
+    end
 	
-	StellarBlade.SetMoveTable(self,curEffect.MoveAlias) 
-	
-	local Action1, ActionValue1 = curEffect.Action1, curEffect.ActionValue1 
-	StellarBlade.ApplyEffectAction(self,curEffect,Action1,ActionValue1) 
-	local Action2, ActionValue2 = curEffect.Action2, curEffect.ActionValue2 
-	StellarBlade.ApplyEffectAction(self,curEffect,Action2,ActionValue2) 
-	local Action3, ActionValue3 = curEffect.Action3, curEffect.ActionValue3 
-	StellarBlade.ApplyEffectAction(self,curEffect,Action3,ActionValue3) 
-	local Action4, ActionValue4 = curEffect.Action4, curEffect.ActionValue4 
-	StellarBlade.ApplyEffectAction(self,curEffect,Action4,ActionValue4) 
-	local Action5, ActionValue5 = curEffect.Action5, curEffect.ActionValue5 
-	StellarBlade.ApplyEffectAction(self,curEffect,Action5,ActionValue5) 
-	
-	local StatType = curEffect.StatType 
-	
-end 
+	StellarBlade.OnAddEffect(self,curEffect) 
+    -- Optionally return chosenIndex and curEffect for caller convenience
+    return chosenIndex, curEffect
+end
+
 
 StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue) 
 	ParsedActionValue = StellarBlade.ParseTableStrings(ActionValue) 
@@ -561,8 +556,8 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	
 	elseif Action == "ESBEffectAction::EffectAction_SkillCancel" then 
 		-- print("calling EffectAction_SkillCancel") 
-		self.SBAI_ActiveSkill = { } 
-		self.SBAI_SkillTable = { } 
+		self.SBAI_ActiveSkill = nil 
+		self.SBAI_SkillTable = nil 
 	elseif Action == "ESBEffectAction::EffectAction_TimeScale" then -- simple 
 	-- "{\"TotalTime\":0.5, \"FadeInTime\":0.05, \"FadeOutTime\":0.1, \"TimeScale\":0.1}" 
 		game.SetTimeScale(ParsedActionValue[1].TimeScale) 
@@ -655,6 +650,40 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	end 
 end 
 
+StellarBlade.OnAddEffect = function(self,EffectTable) 
+	local StatType = EffectTable.StatType 
+	local StatCalculationType = EffectTable.StatCalculationType 
+	local CalculationValue = EffectTable.CalculationValue 
+	
+	if StatType == "ESBActorStatType::ActorStatType_HP" then 
+		self:SetHealth(CalculationValue) 
+	elseif StatType == "ESBActorStatType::ActorStatType_MaxHPValue" then 
+		self:SetMaxHealth(CalculationValue) 
+	end 
+	
+    StellarBlade.SetMoveTable(self, EffectTable.MoveAlias)
+
+    -- Apply up to five actions (keeps same API as before)
+    for idx = 1, 5 do
+        local actKey = "Action" .. idx
+        local valKey = "ActionValue" .. idx
+        local Action, ActionValue = EffectTable[actKey], EffectTable[valKey]
+        if Action then
+            StellarBlade.ApplyEffectAction(self, EffectTable, Action, ActionValue)
+        end
+    end
+end 
+
+StellarBlade.OnRemoveEffect = function(self,EffectTable) 
+	local StatType = curEffect.StatType 
+	local StatCalculationType = curEffect.StatCalculationType 
+	local CalculationValue = curEffect.CalculationValue 
+	
+	if StatType == "ESBActorStatType::ActorStatType_MaxHPValue" then 
+		self:SetMaxHealth(-CalculationValue) 
+	end 
+end 
+
 -- Updated AddEffectFromTable to accept the plain array table produced by ParseTableStrings
 StellarBlade.AddEffectFromTable = function(self, tblEffect)
     if type(tblEffect) != "table" then error("table expected, got",type(tblEffect))  end
@@ -687,15 +716,34 @@ StellarBlade.RemoveEffect = function(self,strEffect)
 	self.SB_EffectAlias[strEffect] = nil 
 end 
 
-StellarBlade.RemoveEffectLifeTypes = function(self,strLifeType) 
-	if !self.SB_EffectAlias then return end 
-	for EffectName,EffectData in pairs(self.SB_EffectAlias) do 
-		local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self,EffectName) 
-		if strLifeType == EffectTable.LifeType then 
-			self.SB_EffectAlias[EffectName] = nil 
-		end 
-	end 
-end 
+StellarBlade.RemoveEffectLifeTypes = function(self, strLifeType)
+    if !self.SB_EffectAlias then return end
+
+    for EffectName, EffectInstances in pairs(self.SB_EffectAlias) do
+        -- If the stored value isn't an array (defensive), fall back to checking the effect table metadata
+        if type(EffectInstances) ~= "table" then
+            local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, EffectName)
+            if EffectTable and strLifeType == EffectTable.LifeType then
+                self.SB_EffectAlias[EffectName] = nil
+            end
+        else
+            -- iterate backwards to safely remove array entries
+            for i = #EffectInstances, 1, -1 do
+                local inst = EffectInstances[i]
+                local life = inst and inst.LifeType
+                if !inst or life == strLifeType then
+                    table.remove(EffectInstances, i)
+                end
+            end
+
+            -- if no instances left, remove the alias entirely
+            if #EffectInstances == 0 then
+                self.SB_EffectAlias[EffectName] = nil
+            end
+        end
+    end
+end
+
 
 StellarBlade.StartSkill = function(self,SkillName) 
 	local CheckCooldown = self.SBAI_SkillTimers and self.SBAI_SkillTimers[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
@@ -704,7 +752,8 @@ StellarBlade.StartSkill = function(self,SkillName)
 		self.SBAI_SkillTable = SkillTable 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 		-- This now correctly handles all the data-driven setup for the first step 
-		StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
+		local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
+		if !bSkillStep then Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) return false end 
 		if !self.SBAI_SkillTimers then self.SBAI_SkillTimers = { } end 
 		self.SBAI_SkillTimers[SkillName] = CurTime() + SkillTable.CoolTime 
 		Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())) 
@@ -714,7 +763,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 end 
 
 StellarBlade.StartSkillCommand = function(self,SkillName) 
-	local CheckCooldown = self.SBAI_SkillTimers[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
+	local CheckCooldown = self.SBAI_SkillTimers and self.SBAI_SkillTimers[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
 	local SkillCommandTable = SB_SkillCommandTable[1].Rows[SkillName]
 	local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias
 	local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable] 
@@ -722,7 +771,8 @@ StellarBlade.StartSkillCommand = function(self,SkillName)
 		self.SBAI_SkillTable = SkillTable 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 		-- This now correctly handles all the data-driven setup for the first step 
-		self:SBAI_SetSkillStep(FirstSkillActiveAlias) 
+		local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
+		if !bSkillStep then Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) return false end 
 		if !self.SBAI_SkillTimers then self.SBAI_SkillTimers = { } end 
 		self.SBAI_SkillTimers[SkillName] = CurTime() + SkillTable.CoolTime 
 		Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())) 
@@ -1118,8 +1168,13 @@ StellarBlade.MaintainShow = function(self)
 				
 				local worldPos = EffectEntity:GetPos() 
 				local worldAng = EffectEntity:GetLocalAngles() -- use world-space angles, not GetLocalAngles()
+				local foundAttachmentIndex = nil
+				local foundBoneID = nil
 
-				if SocketName and EffectEntity:LookupAttachment(SocketName) and EffectEntity:LookupAttachment(SocketName) ~= 0 then
+				if SocketName and EffectEntity:LookupAttachment(SocketName) and EffectEntity:LookupAttachment(SocketName) != 0 then
+					local attachmentIndex = EffectEntity:LookupAttachment(SocketName)
+					foundAttachmentIndex = attachmentIndex
+					
 					local att = EffectEntity:GetAttachment(EffectEntity:LookupAttachment(SocketName))
 					if att and att.Pos and att.Ang then
 						worldPos = att.Pos
@@ -1127,20 +1182,93 @@ StellarBlade.MaintainShow = function(self)
 						-- Let effect know we used an attachment index (so engine can parent)
 						ef:SetAttachment(EffectEntity:LookupAttachment(SocketName))
 					end
+					
+					-- Try to find the Bone ID for that attachment via model info
+					local model = EffectEntity:GetModel() or nil
+					if model then
+						local mInfo = util.GetModelInfo(model) 
+						if istable(mInfo) and istable(mInfo.Attachments) then
+							-- find an attachment entry with matching name (some models index attachments numerically)
+							for k, v in ipairs(mInfo.Attachments) do
+								if istable(v) and v.Name and v.Name == SocketName then
+									foundBoneID = v.Bone
+									break
+								end
+							end
+							-- fallback: sometimes the numeric index matches attachmentIndex
+							if !foundBoneID and mInfo.Attachments[attachmentIndex] and mInfo.Attachments[attachmentIndex].Bone then
+								foundBoneID = mInfo.Attachments[attachmentIndex].Bone
+							end
+						end
+					end
+
+					-- store boneID into effect data using SetHitBox (we're repurposing hitbox field)
+					if foundBoneID then
+						ef:SetHitBox(foundBoneID)
+					end
 				end
+				
+				if not foundBoneID or foundBoneID == 0 then
+					local fallbackBoneName = "ValveBiped.Bip01_R_Hand"
+					local boneID, boneEntity = nil, nil
+
+					-- try the effect entity (weapon) first
+					if EffectEntity.LookupBone then
+						local bid = EffectEntity:LookupBone(fallbackBoneName)
+						if bid and bid ~= -1 then
+							boneID = bid
+							boneEntity = EffectEntity
+						end
+					end
+
+					-- then try the actor/player (self)
+					if (not boneID or boneID == -1) and IsValid(self) and self.LookupBone then
+						local bid = self:LookupBone(fallbackBoneName)
+						if bid and bid ~= -1 then
+							boneID = bid
+							boneEntity = self
+						end
+					end
+
+					-- If we found a bone, use its world matrix as our origin/angles and save boneID in ef
+					if boneID and boneID != -1 and boneEntity and boneEntity.GetBoneMatrix then
+						local mat = boneEntity:GetBoneMatrix(boneID)
+						if mat then
+							local matPos = mat:GetTranslation()
+							local matAng = mat:GetAngles()
+							if matPos and matAng then
+								worldPos = matPos
+								worldAng = matAng
+								foundBoneID = boneID
+								if ef.SetHitBox then ef:SetHitBox(foundBoneID) end
+							end
+						end
+					end
+				end
+				
+
+				-- If requested, prefer bone matrix world transform (works well on server where weapon may be parented to root)
+				if bUseTargetEquipment and foundBoneID and EffectEntity.GetBoneMatrix then
+					local mat = EffectEntity:GetBoneMatrix(foundBoneID)
+					if mat then
+						-- GetTranslation / GetAngles give world-space translation & rotation for that bone
+						local matPos = mat:GetTranslation()
+						local matAng = mat:GetAngles()
+						if matPos and matAng then
+							worldPos = matPos
+							worldAng = matAng
+							-- ensure bone saved into effect data (if not already)
+							if ef.SetHitBox then ef:SetHitBox(foundBoneID) end
+						end
+					end
+				end
+				print("found bone ID:",foundBoneID,SocketName,EffectEntity) 
+					
 				if RelativeLocation then
 					-- LocalToWorld(localPos, localAng, originPos, originAng)
 					local finalPos, finalAng = LocalToWorld(RelativeLocation, relAng, worldPos, worldAng)
 					worldPos, worldAng = finalPos, finalAng
 				end
-				
-				-- RelativeLocation is now global 
-				-- "RelativeRotation": {
-				-- "Pitch": 110.0,
-				-- "Yaw": -30.0,
-				-- "Roll": 0.0
-			  -- }, 
-			  -- print("networking Ang:",Ang, "for:",AssetName) 
 				ef:SetAngles(worldAng) 
 				ef:SetEntity(EffectEntity) 
 				ef:SetMagnitude(data.Properties.Duration or 0) -- use as effect timer 
@@ -1387,7 +1515,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
         else
             -- [NEW] Failsafe: If the locked target is dead, end the skill immediately.
             -- Entity(1):ChatPrint("Locked target died. Ending skill.")
-            self.SBAI_ActiveSkill = {}
+            self.SBAI_ActiveSkill = nil 
             return
         end
     else
@@ -1443,7 +1571,8 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 		else
 			-- No next step, so the skill is finished 
 			StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
-			self.SBAI_ActiveSkill = {}
+			self.SBAI_ActiveSkill = nil 
+			self.SBAI_SkillTable = nil 
 		end
 
 	else
@@ -2112,8 +2241,8 @@ end
 StellarBlade.SetSkillStep = function(self,strSkill) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
     if !SkillStepTable then
-        self.SBAI_ActiveSkill = {} -- Clear active skill if the next step is invalid
-        return
+        self.SBAI_ActiveSkill = nil -- Clear active skill if the next step is invalid
+        return false 
     end
 
     -- Store the current skill step's data
@@ -2160,12 +2289,20 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 			local event,etime,cycle,types,options 
 			if self.NPC_RangedAttack then 
 				self:NPC_RangedAttack(event,etime,cycle,types,options) 
-			else 
+			elseif self:IsNPC() then 
 				self.NPC_RangedProjectile = "proj_unreali_dispersionammo" 
 				scripted_ents.Get("npc_unreali_female").NPC_RangedAttack(self,event,etime,cycle,types,options) 
+			else 
+				local proj = ents.Create("proj_unreali_dispersionammo") 
+				proj:SetOwner(self) 
+				proj:SetPos(self:GetShootPos()) 
+				proj:SetAngles(self:GetAimVector()) 
+				proj:Spawn() 
+				proj:Activate() 
 			end 
 		end 
 	end 
+	return true 
 end 
 
 --==============================================================================
@@ -2347,7 +2484,8 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Target" then 
 				vecMoveDirection = enemy:GetAimVector() 
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then 
-				vecMoveDirection = (enemy:GetPos() - self:GetPos()):GetNormalized() 
+				-- vecMoveDirection = (enemy:GetPos() - self:GetPos()):GetNormalized() 
+				vecMoveDirection = (self:GetPos() - enemy:GetPos()):GetNormalized() 
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionWorld" then -- relative to DefaultInputDirection, for player takedamage 
 				vecMoveDirection = self:GetForward()  
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionLocal" then -- unused 
@@ -2357,12 +2495,13 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget2D" then 
 				local enemyPos = enemy:GetPos() enemyPos.z = 0 
 				local selfPos = self:GetPos() selfPos.z = 0 
-				vecMoveDirection = (enemyPos - selfPos):GetNormalized() 
+				vecMoveDirection = (selfPos - enemyPos):GetNormalized() 
 			elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionWorldWithoutZ" then -- relative to DefaultInputDirection, for player takedamage 
 			
 			end 
+			-- print("directionAxis:",directionAxis) 
 
-            if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
+            if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then 
 				-- print("root motion") 
                 local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath))
                 local RootMotion = _G["SB_" .. RootMotionDataPath]
@@ -2378,7 +2517,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                         -- movePosDelta = directionAngle:Forward() * posDelta.x + directionAngle:Right() * posDelta.y + directionAngle:Up() * posDelta.z
 						-- print(vecMoveDirection) 
 						-- posDelta = posDelta * flRescale -- rescale to approximate hammer units 
-						movePosDelta = vecMoveDirection * posDelta.x + vecMoveDirection:Cross(Vector(0,0,-1)) * posDelta.y + vecMoveDirection:Cross(Vector(0,1,0)) * posDelta.z 
+						movePosDelta = vecMoveDirection * posDelta.x + vecMoveDirection:Cross(Vector(0,0,1)) * posDelta.y + vecMoveDirection:Cross(Vector(0,1,0)) * posDelta.z 
 						-- movePosDelta = vecMoveDirection * posDelta 
                         moveStep.PrevPosOffset = posOffset 
                         moveStep.PrevAngOffset = angOffset 
@@ -2386,6 +2525,7 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                 end 
 				-- movePosDelta = movePosDelta * (easedNow - easedPrev) -- is the RootMotion influenced from interptype? 
             elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
+				-- print("static") 
 				if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then -- TargetSocket used only by eve, static 
                     local target = IsValid(self:GetEnemy()) and self:GetEnemy() or StellarBlade.PickTarget(self) 
                     movePosDelta = target:WorldSpaceCenter() - self:GetPos()
@@ -2428,13 +2568,18 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                     end
 					-- movePosDelta = movePosDelta * flRescale 
                 end
-            elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
-                local forwardMove = CharacterMoveTable.ForwardValue or 0
-                local rightMove = CharacterMoveTable.RightValue or 0
-                local upMove = CharacterMoveTable.UpValue or 0
-                local totalLocalDisplacement = Vector(forwardMove, rightMove, upMove)
+            elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then 
+			-- print("local") 
+                local forwardMove = CharacterMoveTable.ForwardValue or 0 
+                local rightMove = CharacterMoveTable.RightValue or 0 
+                local upMove = CharacterMoveTable.UpValue or 0 
+				-- print(forwardMove, rightMove, upMove) 
+                local totalLocalDisplacement = Vector(forwardMove, rightMove, upMove) 
+				-- print("totalLocalDisplacement", totalLocalDisplacement) 
+				-- print(easedNow, easedPrev) 
                 local localDisplacementDelta = totalLocalDisplacement * (easedNow - easedPrev) 
-                movePosDelta = vecMoveDirection * localDisplacementDelta.x + vecMoveDirection:Cross(Vector(0,0,-1)) * localDisplacementDelta.y + vecMoveDirection:Cross(Vector(0,1,0)) * localDisplacementDelta.z
+				-- print("localDisplacementDelta", localDisplacementDelta) 
+                movePosDelta = vecMoveDirection * localDisplacementDelta.x + vecMoveDirection:Cross(Vector(0,0,1)) * localDisplacementDelta.y + vecMoveDirection:Cross(Vector(0,1,0)) * localDisplacementDelta.z 
             elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then 
 				local targetPos = Vector(CharacterMoveTable.ForwardValue,CharacterMoveTable.RightValue,CharacterMoveTable.UpValue) 
 				movePosDelta = movePosDelta * (easedNow - easedPrev) 
@@ -2896,10 +3041,22 @@ end
 
 StellarBlade.PickTarget = function(self) 
 	local Time = CurTime() 
+	
+	if self.SBAI_ActiveSkill then 
+		if self.SBAI_ActiveSkill.PickTarget and IsValid(self.SBAI_ActiveSkill.PickTarget) then 
+			if self.SBAI_ActiveSkill.PickTarget:Alive() then 
+				return self.SBAI_ActiveSkill.PickTarget 
+			end 
+		end 
+	end 
+	
 	if !self.SB_PickTargetTime or self.SB_PickTargetTime and Time > self.SB_PickTargetTime then 
 		local bestAim, bestDist, FireDir, projStart = -1, 2500 
 		local PickTarget = scripted_ents.Get("proj_unreali_skaarjprojectile").PickTarget(self,-1) 
 		self.SB_PickTarget = PickTarget 
+		if self.SBAI_ActiveSkill then 
+			self.SBAI_ActiveSkill.PickTarget = PickTarget 
+		end 
 		return PickTarget 
 	else 
 		return self.SB_PickTarget 
