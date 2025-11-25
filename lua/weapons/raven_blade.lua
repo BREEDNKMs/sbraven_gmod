@@ -110,22 +110,69 @@ SWEP.Secondary.Playback_Rate 	= 1 -- determine anim play speed
 SWEP.Secondary.Sound			= Sound("M_Raven_SwordSwish_L_Cue") 
 SWEP.Melee_HitSound	=	Sound("M_Raven_Skill_Stab_Cue") 
 
+function SWEP:SpecialDT()
+    self:NetworkVar("Int", 0, "SelectedSkillIndex")
+    -- self:NetworkVar("Bool", 0, "InSkillMode") -- SetAttack will be used instead 
+end
+
 function SWEP:CanPrimaryAttack() return self:GetHolsterDelay() == 0 and self:GetActivity() != ACT_VM_HOLSTER end 
 function SWEP:CanBePickedUpByNPCs() return false end 
 function SWEP:Deploy() return weapons.Get("weapon_ugold_automag").Deploy(self) end 
 function SWEP:ShouldDropOnDie() return true end 
 function SWEP:SpecialThink() 
 	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
+	local owner = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
 	if SERVER then 
 		local StellarBlade_SelectedSkill = self.StellarBlade_SelectedSkill  
-		local CheckCooldown = self:GetOwner().SBAI_SkillTimers and self:GetOwner().SBAI_SkillTimers[StellarBlade_SelectedSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
+		local CheckCooldown = owner.SBAI_SkillTimers and owner.SBAI_SkillTimers[StellarBlade_SelectedSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
 		-- print(CheckCooldown) 
 		if CheckCooldown then 
 			self:SetAttackDelay(CheckCooldown) 
 		end 
 	end 
+	
+	if owner:KeyDown(IN_WALK) then
+        self:SetAttack(true)
+        
+        -- Allow scrolling through skills
+        if owner:KeyPressed(IN_ATTACK) then
+            -- Optional: Click to Instant Cast current selection while holding Reload
+            -- self:PrimaryAttack() 
+            -- return 
+        end 
+        
+        if owner:KeyPressed(IN_ATTACK) then
+            self:CycleSkill(1) -- Next Skill
+        elseif owner:KeyPressed(IN_ATTACK2) then
+            self:CycleSkill(-1) -- Prev Skill
+        end
+        
+    else
+        self:SetAttack(false)
+    end
+	
 	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
 end 
+
+function SWEP:CycleSkill(direction)
+    if #self.CachedSkillList == 0 then self:BuildSkillList() return end
+    
+    local cur = self:GetSelectedSkillIndex()
+    local nextIndex = cur + direction
+    
+    if nextIndex > #self.CachedSkillList then nextIndex = 1 end
+    if nextIndex < 1 then nextIndex = #self.CachedSkillList end
+    
+    self:SetSelectedSkillIndex(nextIndex)
+    
+    if IsFirstTimePredicted() then
+        self:EmitSound("buttons/lightswitch2.wav", 50, 150) -- Small click sound
+    end
+    
+    -- Update the actual string variable for the logic
+    local skillName = self.CachedSkillList[nextIndex]
+    self.StellarBlade_SelectedSkill = skillName
+end
 
 function SWEP:SpecialInit() 
 	self:SetSaveValue("m_fMaxRange1",64) 
@@ -135,27 +182,55 @@ function SWEP:SpecialInit()
 	local ef = EffectData() 
 	ef:SetEntity(self) 
 	ef:SetScale(0) -- sets time. 0 to make looping 
-	ef:SetFlags(0) 
+	ef:SetFlags(0) -- 1 to kill given effects 
 	ef:SetMagnitude(0) 
 	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
 	util.Effect("mi_a_gpusparks_01",ef) 
 	util.Effect("MI_A_Flares_01_23",ef) 
 	util.Effect("ne_ribbonm",ef) 
+	self.CachedSkillList = {} 
+	self:BuildSkillList() 
+	self:SetSelectedSkillIndex(1) 
+	self.StellarBlade_SelectedSkill = "M_Raven_Slash" 
 end 
+
+function SWEP:BuildSkillList()
+    -- Access the global table loaded by your JSON importer
+    if SB_CharacterStanceTable and SB_CharacterStanceTable[1] and SB_CharacterStanceTable[1].Rows then
+        local stanceData = SB_CharacterStanceTable[1].Rows.M_Raven_Default
+        if stanceData and stanceData.CommandArray then
+            self.CachedSkillList = stanceData.CommandArray
+            -- print("Raven Blade: Loaded " .. #self.CachedSkillList .. " skills.")
+        end
+    end
+end
 
 function SWEP:PrimaryAttack() 
 	-- determine next attack time, relative with anim play rate 
-	if !self:CanPrimaryAttack() then return false end 
-	if IsValid(self:GetOwner()) and self.StellarBlade_SelectedSkill then 
-		if !self:GetOwner().SBAI_SkillTable then 
-			StellarBlade.StartSkillCommand(self:GetOwner(),self.StellarBlade_SelectedSkill) 
-			-- self.StellarBlade_SelectedSkill = nil 
-			return 
-		end 
-	end 
-	if IsValid(self:GetOwner()) then 
-		if self:GetOwner().SBAI_ActiveSkill then return end 
-	end 
+	if !self:CanPrimaryAttack() then return false end
+    local owner = self:GetOwner()
+	if owner:KeyDown(IN_WALK) then return end
+    
+    -- 1. If holding RELOAD, standard M1 just cycles (handled in Think), or does nothing to prevent accidental fires.
+    -- if owner:KeyDown(IN_WALK) then return end
+
+    -- -- 2. Check if we have a skill Queued
+    -- if self.StellarBlade_SelectedSkill then
+        -- if !owner.SBAI_SkillTable then
+            -- local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill)
+            
+            -- -- If skill executed successfully, we might want to clear the selection 
+            -- -- OR keep it to allow spamming the same skill. Let's keep it.
+            -- if success then 
+                -- return 
+            -- end
+        -- end
+    -- end
+
+    -- 3. Standard Attack Fallback (If no skill selected or skill failed/cooldown)
+    if IsValid(owner) then
+        if owner.SBAI_ActiveSkill then return end
+    end
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Primary.Animation ) 
 	local Delay = vm:SequenceDuration(seq) 
@@ -179,6 +254,8 @@ function SWEP:SecondaryAttack()
 	-- if not self:CanSecondaryAttack() then return end
 	-- determine next attack time, relative with anim play rate 
 	if !self:CanPrimaryAttack() then return false end 
+	local owner = self:GetOwner()
+	if owner:KeyDown(IN_WALK) then return end
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Secondary.Animation ) -- play ACT_VM_MISSCENTER if secondary attack missed 
 	local Delay = vm:SequenceDuration(seq) 
@@ -198,23 +275,65 @@ function SWEP:SecondaryAttack()
 end 
 
 function SWEP:Reload() 
-	local owner = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
-	if owner:KeyPressed(IN_RELOAD) then 
-		local CommandArray = M_Raven_Default.CommandArray 
-		local SelectedRandomSkill = CommandArray[math.random(1,#CommandArray)] 
-		owner:ChatPrint(SelectedRandomSkill) 
-		self.StellarBlade_SelectedSkill = SelectedRandomSkill 
-		local CheckCooldown = self:GetOwner().SBAI_SkillTimers and self:GetOwner().SBAI_SkillTimers[SelectedRandomSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
-		if CheckCooldown then 
-			self:SetAttackDelay(CheckCooldown) 
-		end 
-	end 
+	if !self:CanPrimaryAttack() then return false end
+    local owner = self:GetOwner()
+    
+    -- 1. If holding RELOAD, standard M1 just cycles (handled in Think), or does nothing to prevent accidental fires.
+    if owner:KeyDown(IN_WALK) then return end
+
+    -- 2. Check if we have a skill Queued
+    if self.StellarBlade_SelectedSkill then
+        if !owner.SBAI_SkillTable then
+            local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill)
+            
+            -- If skill executed successfully, we might want to clear the selection 
+            -- OR keep it to allow spamming the same skill. Let's keep it.
+            if success then 
+                return 
+            end
+        end
+    end
 end 
 
 function SWEP:Holster(Other) 
 	-- local retVal = weapons.Get("weapon_ut99_base").Holster(self,Other) 
 	return true 
 end 
+
+function SWEP:DrawHUD()
+    weapons.Get("weapon_ut99_base").DrawHUD(self)
+    
+    if #self.CachedSkillList == 0 then 
+        self:BuildSkillList() -- Try building again if empty
+        return 
+    end
+    
+    local idx = self:GetSelectedSkillIndex()
+    local skillName = self.CachedSkillList[idx] or "None"
+    local inMode = self:GetAttack()
+    
+    -- Configuration
+    local x, y = ScrW() * 0.85, ScrH() * 0.85
+    local colText = inMode and Color(255, 200, 50, 255) or Color(255, 255, 255, 150)
+    local colBg = Color(0, 0, 0, 150)
+    
+    -- Draw Background Box
+    draw.RoundedBox(4, x - 10, y - 10, 250, 70, colBg)
+    
+    -- Draw "Skill Ready" Label
+    draw.SimpleText("ACTIVE SKILL [Hold ALT + Mouse Buttons]", "DermaDefault", x, y, Color(200,200,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+    
+    -- Clean up the name (Remove M_Raven_ prefix for cleaner UI)
+    local cleanName = string.Replace(skillName, "M_Raven_", "")
+    cleanName = string.Replace(cleanName, "_", " ")
+    
+    -- Draw Skill Name
+    surface.SetFont("DermaLarge")
+    local tw, th = surface.GetTextSize(cleanName)
+    draw.SimpleText(cleanName, "DermaLarge", x, y + 5, colText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    draw.SimpleText("Press RELOAD to activate", "DermaDefault", x, y + 40, Color(200,200,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    
+end
 
 -- ============================================================
 -- Niagara-style looping flare + lens object renderer
@@ -287,7 +406,7 @@ function SWEP:DrawWorldModelTranslucent(flags)
 end 
 
 function SWEP:Raven_Blade_Flare(mins,maxs,bonename) 
-	local ViewModel = IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and IsValid(GetViewEntity():GetActiveWeapon()) and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
+	local ViewModel = IsValid(self:GetOwner()) and self:GetOwner().GetActiveWeapon and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and GetViewEntity().GetActiveWeapon and IsValid(GetViewEntity():GetActiveWeapon()) and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
 	local renderer = ViewModel and self:GetOwner():IsPlayer() and !self:GetOwner():ShouldDrawLocalPlayer() and self:GetOwner():GetViewModel() or self 
 	local handBone = renderer:LookupBone(bonename)
 	if !handBone then return end
