@@ -182,6 +182,7 @@ end
 hook.Add("Think", "StellarBlade_RunSkills", function() 
 	if SERVER then 
 		for _,ENT in ents.Iterator() do 
+			StellarBlade.MaintainMoveTable(ENT) 
 			if !ENT.SBAI_SkillUseCount then ENT.SBAI_SkillUseCount = { } end 
 			if ENT.SBAI_ActiveSkill and ENT.SBAI_ActiveSkill.Name then 
 				StellarBlade.ProcessActiveSkill(ENT,ENT.SBAI_ActiveSkill) 
@@ -207,26 +208,16 @@ hook.Add("Think", "StellarBlade_RunSkills", function()
 	end 
 end) 
 
-hook.Add("Think","StellarBlade_MaintainMoveTable", function() 
-	for _,ent in ents.Iterator() do 
-		StellarBlade.MaintainMoveTable(ent) 
-	end 
-	-- StellarBlade.CheckWeaponCollision(Entity(1),{Entity(1)}) 
-end) 
-
 -- Helper: returns true if vecSpot is inside ent's forward 2D view cone.
 -- Uses ent:IsInViewCone for NPCs and mirrors the C++ logic for players/others.
 local function FInViewCone(ent, vecSpot)
 	-- Prefer the engine implementation for NPCs if present
-	if ent.IsNPC and ent:IsNPC() and ent.IsInViewCone then
-		-- some NPCs provide IsInViewCone(Vector)
-		return ent:IsInViewCone(vecSpot)
-	end
+	if ent.IsInViewCone then return ent:IsInViewCone(vecSpot) end
 
 	-- For players / other entities: replicate CBaseCombatCharacter::FInViewCone(Vector)
-	if not IsValid(ent) then return false end
+	if !IsValid(ent) then error("Entity expected, got "..tostring(ent)) end
 
-	local eyePos = ent.EyePos and ent:EyePos() or ent:GetPos()
+	local eyePos = ent:EyePos() 
 	local los = vecSpot - eyePos
 	los.z = 0
 	los = los:GetNormalized() -- returns a normalized vector
@@ -238,7 +229,7 @@ local function FInViewCone(ent, vecSpot)
 
 	-- m_flFieldOfView in Source is stored as a dot-product threshold (not degrees).
 	-- Many NPCs/players may not expose this var; fallback to 0.5 (≈60° cone) if missing.
-	local fov = ent.GetInternalVariable and ent:GetInternalVariable("m_flFieldOfView") or nil
+	local fov = ent:GetInternalVariable("m_flFieldOfView") or nil
 	if type(fov) ~= "number" then fov = 0.5 end
 
 	local dot = facingDir:Dot(los)
@@ -246,7 +237,9 @@ local function FInViewCone(ent, vecSpot)
 end
 
 
-hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo)
+hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo) 
+	local attacker = dmginfo:GetAttacker() 
+	local inflictor = dmginfo:GetInflictor() 
 	if target.SB_EffectAlias then
 		for Effect, EffectList in pairs(target.SB_EffectAlias) do
 			for i = #EffectList, 1, -1 do 
@@ -293,6 +286,28 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 		local Type = SkillStepTable.Type 
 		local SkillResultAlias = SkillStepTable.SkillResultAlias 
 		if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then 
+		
+			-- local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
+			-- if !TargetFilterAlias or TargetFilterAlias == "None" then 
+				-- if target.SBAI_SkillTable then TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
+			-- end 
+			
+			local TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias 
+			
+			-- SkillHitDetectionType_None               = 0,
+			-- SkillHitDetectionType_TargetFilter       = 1,
+			-- SkillHitDetectionType_ActiveCollision    = 2,
+			-- SkillHitDetectionType_TargetFilter_ActiveCollision = 3,
+			-- SkillHitDetectionType_MAX                = 4,
+			
+			local HitDetectionType = SkillStepTable.HitDetectionType 
+			-- if string.find(HitDetectionType,"TargetFilter") then 
+			local tableofhittargets = StellarBlade.TargetFilter(target,TargetFilterAlias) 
+			-- end 
+			print("TargetFilterAlias:",TargetFilterAlias) 
+			PrintTable(tableofhittargets) 
+			if !table.HasValue(tableofhittargets,attacker) then return end 
+		
 			local DamagePosition = dmginfo:GetReportedPosition() 
 			if DamagePosition:IsZero() then DamagePosition = dmginfo:GetDamagePosition() end 
 			if DamagePosition:IsZero() then 
@@ -315,6 +330,17 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 					StellarBlade.StartSkillSelfResult(target,SkillResultAlias) 
 					if IsValid(dmginfo:GetAttacker()) then 
 						StellarBlade.StartSkillTargetResult(dmginfo:GetAttacker(),SkillResultAlias) 
+					end 
+				end 
+				if IsValid(attacker) then 
+					if attacker:GetClass() == "npc_antlion" then 
+						attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
+					elseif attacker:GetClass() == "npc_hunter" then 
+						attacker:SetCondition(attacker:ConditionID("COND_HUNTER_STAGGERED")) 
+					elseif isbool(attacker:GetInternalVariable("m_fIsTorso")) then -- is based on npc_basezombie 
+						attacker:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
+					elseif attacker.SetSchedule and attacker:SelectWeightedSequence(ACT_SMALL_FLINCH) or attacker:SelectWeightedSequence(ACT_BIG_FLINCH) then 
+						attacker:SetSchedule(SCHED_BIG_FLINCH) 
 					end 
 				end 
 			end 
@@ -860,7 +886,6 @@ end
 local function ApplyRenderState(ent, hide)
 	if !IsValid(ent) then return end
 	if hide == nil then hide = false end 
-	print("hide",ent,hide) 
 
 	if hide then
 		ent:SetRenderMode(RENDERMODE_NONE)
@@ -1008,7 +1033,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 
 		-- Mark as triggered
 		SBAI_ActiveShow.TriggeredKeys[data.Name] = true
-		Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - SBAI_ActiveShow.Time)) 
+		-- Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - SBAI_ActiveShow.Time)) 
 		
 		local CheckShowKeyTag = data.Properties.CheckShowKeyTag 
 		-- static_assert(offsetof(USBShowKey, CheckShowKeyTag) == 0x000028, "Member 'USBShowKey::CheckShowKeyTag' has a wrong offset!");
@@ -1450,7 +1475,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				ef:SetScale(ParticleScale) -- scale 
 				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
 				util.Effect(AssetName,ef) 
-				debugoverlay.Cross(worldPos,10,2) 
+				-- debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
 				local PhysParticleSet = data.Properties.PhysParticleSet 
@@ -1815,6 +1840,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 		end 
 		
 		if string.find(HitDetectionType,"ActiveCollision") then 
+			if table.IsEmpty(tableofhittargets) then tableofhittargets = ents.FindInPVS(self) end 
 			-- originally, characters have a SBCollisionGroupComponent 
 			-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
 			-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
@@ -1880,30 +1906,32 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			end 
 		end 
 		for k,v in pairs(tableofhittargets) do 
-			local NearestPoint = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:GetShootPos()) 
-			local dmg = DamageInfo() 
-			dmg:SetAttacker(self) 
-			dmg:SetWeapon(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
-			dmg:SetInflictor(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
-			dmg:SetDamage(options) 
-			dmg:SetReportedPosition(self:GetShootPos()) 
-			dmg:SetDamageType(DMG_SLASH+DMG_ALWAYSGIB) 
-			dmg:SetDamagePosition(NearestPoint) 
-			scripted_ents.Get("npc_sb_raven").NPC_CalculateMeleeDamageForce(self,dmg,self:GetAimVector(),v:GetPos(),1) 
-			local tempTable = { -- even though we generate a table of a traceRes, this function uses only hitpos and hitnormal 
-			Entity = v, 
-			Hit = true, 
-			-- HitPos = v:NearestPoint(self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitNormal = self:GetAimVector(), 
-			HitWorld = false, 
-			HitMaterial = v:GetMaterial(), 
-			
-			-- Normal = (self:NearestPoint(v:EyePos()) - v:GetPos()):GetNormalized(), 
-			Normal = (scripted_ents.Get("cycler_actor2").NearestPoint2(self,v:EyePos()) - v:GetPos()):GetNormalized(), 
-			StartPos = nearestpoint 
-			} 
-			v:DispatchTraceAttack(dmg,tempTable) 
+			if v != self then 
+				local NearestPoint = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:GetShootPos()) 
+				local dmg = DamageInfo() 
+				dmg:SetAttacker(self) 
+				dmg:SetWeapon(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
+				dmg:SetInflictor(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
+				dmg:SetDamage(options) 
+				dmg:SetReportedPosition(self:GetShootPos()) 
+				dmg:SetDamageType(DMG_SLASH+DMG_ALWAYSGIB) 
+				dmg:SetDamagePosition(NearestPoint) 
+				scripted_ents.Get("npc_sb_raven").NPC_CalculateMeleeDamageForce(self,dmg,self:GetAimVector(),v:GetPos(),1) 
+				local tempTable = { -- even though we generate a table of a traceRes, this function uses only hitpos and hitnormal 
+				Entity = v, 
+				Hit = true, 
+				-- HitPos = v:NearestPoint(self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
+				HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
+				HitNormal = self:GetAimVector(), 
+				HitWorld = false, 
+				HitMaterial = v:GetMaterial(), 
+				
+				-- Normal = (self:NearestPoint(v:EyePos()) - v:GetPos()):GetNormalized(), 
+				Normal = (scripted_ents.Get("cycler_actor2").NearestPoint2(self,v:EyePos()) - v:GetPos()):GetNormalized(), 
+				StartPos = nearestpoint 
+				} 
+				v:DispatchTraceAttack(dmg,tempTable) 
+			end 
 		end 
 		local newHealth = enemy:Health() -- will have decreased if damage is applied
 
@@ -2068,9 +2096,9 @@ StellarBlade.TargetFilter = function(ent, filter)
     local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
 	if !IsValid(ent) then error("Expected Entity, got NULL Entity!") return end 
 	if !filter then print("input a filter") end 
+	if filter == "None" then return {} end 
     if !TargetFilterTable then return {ent:GetEnemy()} end 
 	
-	local tableInsert = table.insert
     local tableEmpty = table.Empty
     local ents_FindInSphere = ents.FindInSphere
     local ents_FindInCone = ents.FindInCone
@@ -2111,15 +2139,320 @@ StellarBlade.TargetFilter = function(ent, filter)
     end
     -- Step 1: Candidate pool
     local shape = TargetFilterTable.TargetCheckShape or ""
-    if shape == "ESBCheckShape::CheckShape_3DArc" then
-        local range = FarDistance or 0
-        local angle = math.max(0, math.min(TargetFilterTable.TargetCheckValue1 or 0, 180))
-        local angle_cos = math.cos(math.rad(angle))
-        candidates = ents.FindInCone(offsetOrigin, forward, range, angle_cos)
+	if shape == "ESBCheckShape::CheckShape_2DArc" then
+        local far = FarDistance or 0
+        local near = NearDistance or 0
+        local angleWidth = TargetCheckValue1 or 0        -- total degrees
+        local angleOffset = TargetCheckValue2 or 0       -- rotation offset in degrees
+        local centerRadius = TargetCheckValue3 or 0      -- optional fixed radius (0 = unused)
+        local tol = math.max(16, (far - near) * 0.25)    -- tolerance for fixed-radius checks (tweakable)
+
+        -- helper: rotate forward vector by yaw degrees (returns normalized vec)
+        local function RotateForwardYawVec(fwd, yawDeg)
+            local ang = fwd:Angle()
+            ang.y = ang.y + yawDeg
+            local v = ang:Forward()
+            v.z = 0
+            return v:GetNormalized()
+        end
+
+        -- build candidate list then filter
+        candidates = ents_FindInSphere(offsetOrigin, far) -- cheap broad-phase first
+        local kept = {}
+        for _, cand in ipairs(candidates) do
+            if cheapReject(cand) then goto cont end
+
+            -- 2D distance
+            -- local to = cand:NearestPoint(offsetOrigin) -- or cand:GetPos(); NearestPoint is safer for big objects
+            local to = scripted_ents.Get("cycler_actor2").NearestPoint2(cand,offsetOrigin)  -- or cand:GetPos(); NearestPoint is safer for big objects
+            local dir = to - offsetOrigin
+            local dist2d = Vector(dir.x, dir.y, 0):Length()
+
+            if dist2d < near or dist2d > far then goto cont end
+
+            -- fixed-center behavior (optional)
+            if centerRadius > 0 then
+                if math.abs(dist2d - centerRadius) > tol then goto cont end
+            end
+
+            -- if full circle, keep
+            if angleWidth >= 360 then
+                table.insert(kept, cand)
+                goto cont
+            end
+
+            -- angular check: rotate forward by offset, compare with target dir
+            local centerDir = RotateForwardYawVec(forward, angleOffset)
+            local targetDir = Vector(dir.x, dir.y, 0)
+            if targetDir:Length() == 0 then goto cont end
+            targetDir:Normalize()
+
+            local dot = math_max(-1, math_min(1, centerDir:Dot(targetDir)))
+            local angBetween = math.deg(math.acos(dot))
+
+            if angBetween <= (angleWidth * 0.5) then
+                table.insert(kept, cand)
+            end
+
+            ::cont::
+        end
+
+        -- replace candidates with filtered list
+        candidates = kept
+
+        -- --- Visualization 
+		local lifetime = 0.8
+		local segs = 36
+		local center = offsetOrigin
+		local fw2 = forward
+		fw2.z = 0
+		fw2:Normalize()
+		-- arc parameters
+		local half = angleWidth * 0.5
+		local startAng = -half + angleOffset
+		local endAng = half + angleOffset
+
+		-- rings / sector depending on centerRadius
+		if centerRadius > 0 then
+			-- draw ring at centerRadius (small thickness)
+			local innerR = math.max(0, centerRadius - 4)
+			local outerR = centerRadius + 4
+			for r = innerR, outerR, (outerR - innerR) do
+				local lastP = nil
+				for i = 0, segs do
+					local t = i / segs
+					local a = math.rad( startAng + (endAng - startAng) * t )
+					local p = center + Vector(math.cos(a), math.sin(a), 0) * r
+					if lastP then debugoverlay.Line(lastP, p, lifetime, Color(200,200,50,255)) end
+					lastP = p
+				end
+			end
+			debugoverlay.Text(center + fw2 * centerRadius, string.format("2DArc R=%.0f W=%.1f O=%.1f", centerRadius, angleWidth, angleOffset), lifetime)
+		else
+			-- draw sector between near and far as ring-ish sector
+			local segCount = segs
+			local lastOuter = nil
+			local lastInner = nil
+			for i = 0, segCount do
+				local t = i / segCount
+				local a = math.rad( startAng + (endAng - startAng) * t )
+				local dirv = Vector(math.cos(a), math.sin(a), 0)
+				local outerP = center + dirv * far
+				local innerP = center + dirv * near
+				if lastOuter then debugoverlay.Line(lastOuter, outerP, lifetime, Color(180,180,255,255)) end
+				if lastInner then debugoverlay.Line(lastInner, innerP, lifetime, Color(180,180,255,255)) end
+				debugoverlay.Line(innerP, outerP, lifetime, Color(120,220,120,255)) -- radial connector
+				lastOuter = outerP
+				lastInner = innerP
+			end
+			debugoverlay.Text(center + fw2 * ((near + far) * 0.5), string.format("2DArc N=%.0f F=%.0f W=%.1f O=%.1f", near, far, angleWidth, angleOffset), lifetime)
+		end
+
+		-- draw forward axis to see orientation
+		debugoverlay.Axis(center, forward:Angle(), 12, lifetime)
+		
+        -- done for this shape; candidates now contains arc-matching ents
+	elseif shape == "ESBCheckShape::CheckShape_3DArc" then
+        local far = FarDistance or 0
+        local near = NearDistance or 0
+        local rawAngle = TargetFilterTable.TargetCheckValue1 or 0    -- can be negative to indicate flip
+        local yawOffset = TargetFilterTable.TargetCheckValue2 or 0
+        local centerRadius = TargetFilterTable.TargetCheckValue3 or 0
+
+        -- Interpret angle: sign = flip axis (point backwards), magnitude = cone aperture (0..360)
+        local flip = (rawAngle < 0)
+        local coneAngle = math.min(360, math.abs(rawAngle or 0))
+        -- tolerance for ring matching when centerRadius > 0; tweak if you want thinner/thicker band
+        local ringTol = math.max(8, (far - near) * 0.25)
+
+        -- Broad-phase collect (cheap)
+        local rawCandidates = ents_FindInSphere(offsetOrigin, far)
+        local kept = {}
+
+        -- helper: make rotated axis direction (apply yaw offset and flip)
+        local function MakeAxisDir(baseForward, yawDeg, doFlip)
+            local a = baseForward:Angle()
+            a.y = a.y + yawDeg
+            if doFlip then a.y = a.y + 180 end
+            local v = a:Forward()
+            return v:GetNormalized()
+        end
+
+        local axisDir = MakeAxisDir(forward, yawOffset, flip)
+
+        for _, cand in ipairs(rawCandidates) do
+            if cheapReject(cand) then print("cheapReject ",cand) goto cont3 end
+
+            -- use nearest point for better accuracy with big entities
+			local p = scripted_ents.Get("cycler_actor2").NearestPoint2(cand,offsetOrigin)  -- or cand:GetPos(); NearestPoint is safer for big objects
+            local dir3 = p - offsetOrigin
+            local dist = dir3:Length()
+            if dist < near or dist > far then print("distance rejected:",cand) goto cont3 end
+
+            -- center-radius enforcement only if centerRadius is within [near, far]
+            local enforceRing = false
+            if centerRadius > 0 and centerRadius >= near and centerRadius <= far then
+                enforceRing = true
+            end
+
+            if enforceRing then
+                if math.abs(dist - centerRadius) > ringTol then
+                    -- rejected by ring
+                    -- print("rejected:", cand, ", math.abs(dist - centerRadius) > ringTol. dist:", dist, "centerRadius:", centerRadius, "ringTol:", ringTol)
+                    goto cont3
+                end
+            end
+
+
+            -- full-sphere shortcut
+            if coneAngle >= 360 then
+                table.insert(kept, cand)
+                goto cont3
+            end
+
+            -- angular check in 3D
+            if dir3:Length() == 0 then goto cont3 end
+            local dirNorm = dir3 / dir3:Length()
+            local dot = axisDir:Dot(dirNorm)
+            dot = math_max(-1, math_min(1, dot))
+            local angleBetween = math.deg(math.acos(dot))
+
+            if angleBetween <= (coneAngle * 0.5) then
+                table.insert(kept, cand)
+            else 
+				print("rejected ",cand,"angleBetween <= (coneAngle * 0.5). angleBetween:",angleBetween,"coneAngle:",coneAngle) 
+			end 
+
+            ::cont3::
+        end
+		print("candidates = kept:",#kept) 
+		PrintTable(candidates) 
+        candidates = kept
+
+        -- Visualization (server-side debugoverlay)
+        if SERVER and debugging then
+            local lifetime = 0.8
+            local segs = 36
+            local halfRad = math.rad(coneAngle * 0.5)
+
+            -- axis angle (for axis visual)
+            local axisAng = forward:Angle()
+            axisAng.y = axisAng.y + yawOffset
+            if flip then axisAng.y = axisAng.y + 180 end
+
+            -- draw axis that represents the cone's center direction
+            debugoverlay.Axis(offsetOrigin, axisAng, 16, lifetime)
+
+            -- draw near/far spherical bounds (wire-ish via circles)
+            local function DrawCircleAtDistance(dist, col)
+                if dist <= 0 then return end
+                local center = offsetOrigin + axisDir * dist
+                -- radius of circle (perpendicular to axis)
+                local radius = dist * math.tan(halfRad)
+                -- fallback for very narrow cones
+                if radius <= 0.001 then
+                    debugoverlay.Line(offsetOrigin, center, lifetime, col)
+                    return
+                end
+
+                local baseAng = axisDir:Angle()
+                local rightV = baseAng:Right()
+                local upV = baseAng:Up()
+                local lastP = nil
+                for i = 0, segs do
+                    local t = i / segs
+                    local a = t * math.pi * 2
+                    local p = center + rightV * math.cos(a) * radius + upV * math.sin(a) * radius
+                    if lastP then debugoverlay.Line(lastP, p, lifetime, col) end
+                    lastP = p
+                end
+            end
+
+            -- draw far and near rings (if near > 0 show inner ring)
+            DrawCircleAtDistance(far, Color(200,200,50,255))
+            if near > 0 then
+                DrawCircleAtDistance(near, Color(160,160,255,255))
+            end
+
+            -- if centerRadius specified, draw a highlighted ring at that distance
+            if centerRadius > 0 then
+                local ringActive = (centerRadius >= near and centerRadius <= far)
+                local center = offsetOrigin + axisDir * centerRadius
+                local radiusCenter = centerRadius * math.tan(halfRad)
+
+                if ringActive then
+                    -- active (enforced) ring color
+                    local colActive = Color(255,180,50,255)
+                    if radiusCenter > 0.001 then
+                        local baseAng = axisDir:Angle()
+                        local rightV = baseAng:Right()
+                        local upV = baseAng:Up()
+                        local lastP = nil
+                        for i = 0, segs do
+                            local t = i / segs
+                            local a = t * math.pi * 2
+                            local p = center + rightV * math.cos(a) * radiusCenter + upV * math.sin(a) * radiusCenter
+                            if lastP then debugoverlay.Line(lastP, p, lifetime, colActive) end
+                            lastP = p
+                        end
+                    else
+                        debugoverlay.Sphere(center, 6, lifetime, Color(255,180,50,255))
+                    end
+                    debugoverlay.Text(offsetOrigin + axisDir * math_min(far, math.max(16, centerRadius)), string.format("3DArc R=%.0f W=%.1f O=%.1f (ring ACTIVE)", centerRadius, coneAngle, yawOffset), lifetime)
+                else
+                    -- ignored ring color (dim/grey) — shows why ring wasn't enforced
+                    local colIgnored = Color(120,120,120,120)
+                    if radiusCenter > 0.001 then
+                        local baseAng = axisDir:Angle()
+                        local rightV = baseAng:Right()
+                        local upV = baseAng:Up()
+                        local lastP = nil
+                        for i = 0, segs do
+                            local t = i / segs
+                            local a = t * math.pi * 2
+                            local p = center + rightV * math.cos(a) * radiusCenter + upV * math.sin(a) * radiusCenter
+                            if lastP then debugoverlay.Line(lastP, p, lifetime, colIgnored) end
+                            lastP = p
+                        end
+                    else
+                        debugoverlay.Sphere(center, 6, lifetime, colIgnored)
+                    end
+                    debugoverlay.Text(offsetOrigin + axisDir * (far * 0.5), string.format("3DArc N=%.0f F=%.0f W=%.1f O=%.1f (ring IGNORED)", near, far, coneAngle, yawOffset), lifetime)
+                end
+            else
+                debugoverlay.Text(offsetOrigin + axisDir * (far * 0.5), string.format("3DArc N=%.0f F=%.0f W=%.1f O=%.1f", near, far, coneAngle, yawOffset), lifetime)
+            end
+
+            -- rim points / radial lines
+            if coneAngle > 0 and coneAngle < 360 then
+                local rimCenter = offsetOrigin + axisDir * far
+                local rimRadius = far * math.tan(halfRad)
+                if rimRadius > 0.001 then
+                    local baseAng = axisDir:Angle()
+                    local rightV = baseAng:Right()
+                    local upV = baseAng:Up()
+                    for i = 0, segs - 1 do
+                        local a1 = (i / segs) * math.pi * 2
+                        local a2 = ((i + 1) / segs) * math.pi * 2
+                        local p1 = rimCenter + rightV * math.cos(a1) * rimRadius + upV * math.sin(a1) * rimRadius
+                        local p2 = rimCenter + rightV * math.cos(a2) * rimRadius + upV * math.sin(a2) * rimRadius
+                        debugoverlay.Line(p1, p2, lifetime, Color(200,200,50,255))
+                        if (i % 4) == 0 then debugoverlay.Line(offsetOrigin, p1, lifetime, Color(120,220,120,255)) end
+                    end
+                else
+                    debugoverlay.Line(offsetOrigin, offsetOrigin + axisDir * far, lifetime, Color(255,100,100,255))
+                end
+            else
+                debugoverlay.Sphere(offsetOrigin, math_min(12, far * 0.05), lifetime, Color(180,180,255,255))
+            end
+        else
+            debugoverlay.Cross(offsetOrigin, 8, 1, Color(255,0,0,255))
+        end
+
     elseif shape == "ESBCheckShape::CheckShape_3DCircle" then
         local radius = FarDistance or (TargetCheckValue1 or 0)
         candidates = ents.FindInSphere(offsetOrigin, radius) 
-		debugoverlay.Sphere(offsetOrigin, radius, 0.5,Color(100,100,100,100)) 
+		-- debugoverlay.Sphere(offsetOrigin, radius, 0.5,Color(100,100,100,100)) 
 	elseif shape == "ESBCheckShape::CheckShape_3DBox" then
 		local val1 = TargetCheckValue1 or 0 -- half-size X (right)
 		local val2 = TargetCheckValue2 or 0 -- half-size Y (forward)
@@ -2144,7 +2477,7 @@ StellarBlade.TargetFilter = function(ent, filter)
 	--[[ 
 	Target_None                              = 0,
 	Target_Self                              = 1,
-	Target_SpecifiedTargetes                 = 2,
+	Target_SpecifiedTargetes                 = 2, -- unused 
 	Target_Ally                              = 3, -- kamikaze NPCs 
 	Target_AllyWithSelf                      = 4, -- only used by heal grenade 
 	Target_Enemy                             = 5,
@@ -2161,6 +2494,18 @@ StellarBlade.TargetFilter = function(ent, filter)
 	
 	if TargetType == "ESBTargetActor::Target_Self" then 
 		filtered[1] = ent 
+	elseif TargetType == "ESBTargetActor::Target_Enemy" then 
+		local enemy = ent.GetEnemy and ent:GetEnemy() 
+		if !IsValid(enemy) then 
+			for _,target in ipairs(candidates) do 
+				if target.GetEnemy and IsValid(target:GetEnemy()) and target:GetEnemy() == ent then 
+					table.insert(filtered,target) 
+				end 
+			end 
+		else 
+			table.insert(filtered,enemy) 
+		end 
+		-- table.insert(filtered,ent.GetEnemy and ent:GetEnemy() or ent.PickTarget) 
 	elseif TargetType == "ESBTargetActor::Target_Owner" then 
 		filtered[1] = IsValid(ent:GetOwner()) and ent:GetOwner() 
 	elseif TargetType == "ESBTargetActor::Target_All" then 
@@ -2181,6 +2526,14 @@ StellarBlade.TargetFilter = function(ent, filter)
 				table.insert(filtered, target) 
 			end 
 		end 
+	elseif TargetType == "ESBTargetActor::Target_AllyWithSelf" then 
+		for _, target in ipairs(candidates) do 
+			local Disposition = ent.Disposition and (ent:Disposition(target) == D_LI) or target.Disposition and target:Disposition(ent) == D_LI 
+			if Disposition then 
+				table.insert(filtered, target) 
+			end 
+		end 
+		table.insert(filtered,ent) 
 	else -- default action 
 		for _, target in ipairs(candidates) do
 			if IsValid(target)
@@ -2368,12 +2721,12 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
 
     -- 6. Visualization
     -- RED Rotated Box: Represents the precise visual weapon alignment (OBB)
-    debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
+    -- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
     
     -- BLUE Wireframe Box: Represents the actual detection area (AABB)
     -- Use SweptBox with 0 distance to draw a clean wireframe
     local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
-    debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
+    -- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
 
     return filtered
 end
@@ -2468,11 +2821,11 @@ StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitbox
 
     -- 7. Visualization (Identical style to Weapon Collision)
     -- RED Rotated Box: Represents the actual hitbox orientation (OBB)
-    debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
+    -- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
     
     -- BLUE Wireframe Box: Represents the actual detection area (AABB)
     local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
-    debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
+    -- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
 
     -- print("Hitbox collision count:", #filtered)
     return filtered
@@ -3375,7 +3728,8 @@ StellarBlade.SetMoveTable = function(self,strEffect)
     local newMoveStep = {
         ["MoveArrayName"] = strEffect,
         ["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0), 
-        ["RunTime"] = CurTime() 
+        ["RunTime"] = CurTime(), 
+		["LastVelocity"] = vector_origin 
     }
     table.insert(self.SBAI_MoveStep, newMoveStep)
 
@@ -3418,7 +3772,203 @@ StellarBlade.ShouldCancelMoveTable = function(self,moveStep)
     return false 
 end 
 
-StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between all entities, including players and npcs 
+-- EvaluateMoveStep (improved root-motion probe)
+-- Accepts moveStep table OR MoveArrayName string.
+-- flInterval: live-frame interval; if < 0 => special "full final" probe
+-- probeElapsed: optional explicit elapsed time (seconds) to simulate (overrides StartTime)
+-- Returns: success(boolean), movePosDelta(Vector), moveAngDelta(Angle)
+StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probeElapsed)
+    if not moveStepOrName then return false, Vector(0,0,0), Angle(0,0,0) end
+
+    local isTempStep = false
+    local moveStep = nil
+
+    if type(moveStepOrName) == "table" then
+        moveStep = moveStepOrName
+    elseif type(moveStepOrName) == "string" then
+        isTempStep = true
+        -- default start/run time now; may be adjusted below for probing
+        moveStep = {
+            MoveArrayName = moveStepOrName,
+            StartTime = CurTime(),
+            RunTime = CurTime()
+        }
+    else
+        return false, Vector(0,0,0), Angle(0,0,0)
+    end
+
+    -- Resolve CharacterMoveTable
+    local name = moveStep.MoveArrayName
+    if not name or not SB_CharacterMoveTable or not SB_CharacterMoveTable[1] or not SB_CharacterMoveTable[1].Rows[name] then
+        return false, Vector(0,0,0), Angle(0,0,0)
+    end
+    local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
+
+    local Time = CharacterMoveTable.Time or 0
+    local moveStartTimeCfg = CharacterMoveTable.MoveStartTime or 0
+    local moveEndTimeCfg = CharacterMoveTable.MoveEndTime or Time
+    local moveDuration = math.max(0, moveEndTimeCfg - moveStartTimeCfg)
+
+    -- If caller provided explicit probeElapsed, set StartTime so sampler sees that elapsed
+    if probeElapsed ~= nil and isTempStep then
+        moveStep.StartTime = CurTime() - probeElapsed
+        moveStep.RunTime = CurTime()
+    elseif flInterval and flInterval < 0 and isTempStep then
+        -- Full-final probe: set StartTime so elapsed == moveDuration
+        -- If duration is zero, set it to far past to force any rootmotion sampling to final frame (best-effort)
+        if moveDuration > 0 then
+            moveStep.StartTime = CurTime() - moveDuration
+            moveStep.RunTime = CurTime()
+        else
+            -- moveDuration == 0: sample as if finished — set StartTime to past
+            moveStep.StartTime = CurTime() - 1.0
+            moveStep.RunTime = CurTime()
+        end
+    end
+
+    -- If flInterval wasn't provided for live call, fall back to previous behaviour
+    if flInterval == nil and type(moveStepOrName) == "table" and moveStep.RunTime then
+        flInterval = CurTime() - (moveStep.RunTime or CurTime())
+    end
+
+    -- Compute normalized times
+    local normalizedTime, prevNormalizedTime = 0, 0
+    if flInterval and flInterval < 0 then
+        normalizedTime = 1
+        prevNormalizedTime = 0
+    else
+        local elapsedTime = nil
+        if probeElapsed ~= nil then
+            elapsedTime = probeElapsed
+        else
+            elapsedTime = CurTime() - (moveStep.StartTime or CurTime())
+        end
+
+        if moveDuration > 0 then
+            local usedInterval = flInterval or 0
+            normalizedTime = math.Clamp((elapsedTime - moveStartTimeCfg) / moveDuration, 0, 1)
+            prevNormalizedTime = math.Clamp(((elapsedTime - usedInterval) - moveStartTimeCfg) / moveDuration, 0, 1)
+        else
+            normalizedTime = 0
+            prevNormalizedTime = 0
+        end
+    end
+
+    local interpType = CharacterMoveTable.PositionInterpType
+    local easedNow = StellarBlade.GetEasedFraction(interpType, normalizedTime)
+    local easedPrev = StellarBlade.GetEasedFraction(interpType, prevNormalizedTime)
+
+    local movePosDelta = Vector(0,0,0)
+    local moveAngDelta = Angle(0,0,0)
+    local flRescale = 1
+
+    -- Determine direction basis (safe fallbacks)
+    local enemy = (self and self.GetEnemy and self:GetEnemy()) or nil
+    if not IsValid(enemy) and StellarBlade and StellarBlade.PickTarget then
+        enemy = StellarBlade.PickTarget(self)
+    end
+    if not IsValid(enemy) then enemy = Entity(0) end
+
+    local directionAxis = CharacterMoveTable.PositionDirectionAxis
+    local vecMoveDirection = Vector(1,0,0)
+    if self and self.GetAimVector then vecMoveDirection = self:GetAimVector() or vecMoveDirection
+    else vecMoveDirection = self:GetForward() end
+
+    if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Target" then
+        if IsValid(enemy) and enemy.GetAimVector then vecMoveDirection = enemy:GetAimVector() end
+    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then
+        if IsValid(enemy) then vecMoveDirection = (enemy:GetPos() - self:GetPos()):GetNormalized() end
+    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionWorld" then
+        vecMoveDirection = self:GetForward() 
+    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget2D" then
+        if IsValid(enemy) then
+            local epos = enemy:GetPos(); epos.z = 0
+            local spos = self:GetPos(); spos.z = 0
+            vecMoveDirection = (epos - spos):GetNormalized()
+        end
+    end
+
+    local MoveType = CharacterMoveTable.MoveType
+
+    -- Root motion: now uses moveStep.StartTime (which we adjusted above in probe mode)
+    if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
+        local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath or ""))
+        local RootMotion = _G["SB_" .. RootMotionDataPath]
+        if RootMotion then
+            local posOffset, angOffset = StellarBlade.GetRootMotionTransform(RootMotion, moveStep.StartTime)
+            if posOffset and angOffset then
+                moveStep.PrevPosOffset = moveStep.PrevPosOffset or Vector(0,0,0)
+                moveStep.PrevAngOffset = moveStep.PrevAngOffset or Angle(0,0,0)
+                local posDelta = posOffset - moveStep.PrevPosOffset
+                moveAngDelta = angOffset - moveStep.PrevAngOffset
+
+                local rightVec = vecMoveDirection:Cross(Vector(0,0,1))
+                local upVec = vecMoveDirection:Cross(Vector(0,1,0))
+                movePosDelta = vecMoveDirection * posDelta.x + rightVec * posDelta.y + upVec * posDelta.z
+
+                -- Update prev offsets on the temporary step so repeated probe calls that pass the same table can still be incremental
+                moveStep.PrevPosOffset = posOffset
+                moveStep.PrevAngOffset = angOffset
+            end
+        end
+
+    -- Static moves (curves or linear)
+    elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
+        if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
+            local target = (self.GetEnemy and self:GetEnemy()) and IsValid(self:GetEnemy()) and self:GetEnemy() or StellarBlade.PickTarget(self)
+            if IsValid(target) then
+                movePosDelta = target:WorldSpaceCenter() - (self and self.GetPos and self:GetPos() or Vector(0,0,0))
+            end
+        else
+            local rightDir = vecMoveDirection:Cross(Vector(0,0,1)):GetNormalized()
+            local forwardMove = CharacterMoveTable.ForwardValue or 0
+            local rightMove = CharacterMoveTable.RightValue or 0
+            local upMove = CharacterMoveTable.UpValue or 0
+            local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
+            local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
+
+            if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
+                local posMultiplier, prevPosMultiplier, zMultiplier, prevZMultiplier = 1,1,1,1
+                if posCurvePath and posCurvePath ~= "None" then
+                    local curveName = string.StripExtension(string.GetFileFromFilename(string.match(posCurvePath, "'(.-)'") or ""))
+                    posMultiplier = StellarBlade.ApplyCurveFloat(curveName, normalizedTime)
+                    prevPosMultiplier = StellarBlade.ApplyCurveFloat(curveName, prevNormalizedTime)
+                end
+                if zCurvePath and zCurvePath ~= "None" then
+                    local curveName = string.StripExtension(string.GetFileFromFilename(string.match(zCurvePath, "'(.-)'") or ""))
+                    zMultiplier = StellarBlade.ApplyCurveFloat(curveName, normalizedTime)
+                    prevZMultiplier = StellarBlade.ApplyCurveFloat(curveName, prevNormalizedTime)
+                end
+                local totalOffset = (vecMoveDirection * forwardMove + rightDir * rightMove)
+                local curvePosDelta = totalOffset * (posMultiplier - prevPosMultiplier)
+                local zDelta = Vector(0,0, upMove * (zMultiplier - prevZMultiplier))
+                movePosDelta = curvePosDelta + zDelta
+            else
+                local totalDisplacement = (vecMoveDirection * forwardMove) + (rightDir * rightMove) + (Vector(0,0,1) * upMove)
+                movePosDelta = totalDisplacement * (easedNow - easedPrev)
+            end
+        end
+
+    elseif MoveType == "ESBMoveTransformType::MoveTransformType_LocalAxis" then
+        local forwardMove = CharacterMoveTable.ForwardValue or 0
+        local rightMove = CharacterMoveTable.RightValue or 0
+        local upMove = CharacterMoveTable.UpValue or 0
+        local localDisplacementDelta = Vector(forwardMove, rightMove, upMove) * (easedNow - easedPrev)
+        local rightVec = vecMoveDirection:Cross(Vector(0,0,1))
+        local upVec = vecMoveDirection:Cross(Vector(0,1,0))
+        movePosDelta = vecMoveDirection * localDisplacementDelta.x + rightVec * localDisplacementDelta.y + upVec * localDisplacementDelta.z
+
+    elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then
+        local targetPos = Vector(CharacterMoveTable.ForwardValue or 0, CharacterMoveTable.RightValue or 0, CharacterMoveTable.UpValue or 0)
+        movePosDelta = targetPos
+    end
+
+    movePosDelta = movePosDelta * flRescale
+    return true, movePosDelta, moveAngDelta
+end
+
+
+StellarBlade.MaintainMoveTable = function(self) 
     if self.SBAI_MoveStep and #self.SBAI_MoveStep > 0 then
         local currentAng = self:GetLocalAngles() 
         local totalAngDelta = Angle(0, 0, 0) 
@@ -3427,13 +3977,22 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 
         -- Iterate backwards for safe removal
         for i = #self.SBAI_MoveStep, 1, -1 do
+			
             local moveStep = self.SBAI_MoveStep[i]
 			
 			local flInterval = CurTime() - moveStep.RunTime 
 			moveStep.RunTime = CurTime() 
 			
             if CurTime() < moveStep.StartTime then continue end
-
+			
+			local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(self, moveStep, flInterval)
+			local name = moveStep.MoveArrayName
+            local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+			local Time = CharacterMoveTable.Time
+            local CurEndTime = moveStep.StartTime + Time
+			-- print(ok,deltaPos,deltaAng) 
+			-- the code commented out here is now moved to EvaluateMoveStep 
+			--[[ 
             local name = moveStep.MoveArrayName
             local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
             local Time = CharacterMoveTable.Time
@@ -3486,13 +4045,17 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 			
 			end 
 			-- print("directionAxis:",directionAxis,self) 
-
+			
+			-- print("moveDuration,elapsedTime,normalizedTime,prevNormalizedTime:",moveDuration,elapsedTime,normalizedTime,prevNormalizedTime) 
             if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then 
-				-- print("root motion") 
-                local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath))
-                local RootMotion = _G["SB_" .. RootMotionDataPath]
-                if RootMotion then
-                    local posOffset, angOffset = StellarBlade.GetRootMotionTransform(RootMotion, moveStep.StartTime)
+				-- print("in ESBMoveTransformType::MoveTransformType_RootMotion") 
+        local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath or ""))
+		-- print("RootMotionDataPath",RootMotionDataPath) 
+        local RootMotion = _G["SB_" .. RootMotionDataPath]
+        if RootMotion then
+			-- print("moveStep.StartTime:",moveStep.StartTime) 
+            local posOffset, angOffset = StellarBlade.GetRootMotionTransform(RootMotion, moveStep.StartTime)
+			-- print("posOffset,angOffset:",posOffset,angOffset) 
                     if posOffset and angOffset then
                         if not moveStep.PrevPosOffset then
                             moveStep.PrevPosOffset = Vector(0, 0, 0)
@@ -3582,8 +4145,12 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_PathWay" then 
 			elseif MoveType == "ESBMoveTransformType::MoveTransformType_SwimmingDash" then 
 			end 
+			
+			--]] 
 			-- movePosDelta = movePosDelta * (easedNow - easedPrev)
 			-- print(easedNow,easedPrev) 
+			local velocity = movePosDelta
+			-- print(velocity) 
 			movePosDelta = movePosDelta * flRescale 
 			-- print(movePosDelta) 
 
@@ -3594,12 +4161,33 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                 local targetPosForThisMove = self:GetPos() + movePosDelta
 
                 if CharacterMoveTable.bOnGround and self.MoveGroundStep then 
-                    if self:MoveGroundStep(targetPosForThisMove) == 0 then moveSuccess = false end 
-                else 
-                    local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
-                    self:SetLocalPos(moveResult.vEndPosition)
-                    if moveResult.fStatus != "OK" then moveSuccess = false end
-                end
+					local MoveGroundStep = self:MoveGroundStep(targetPosForThisMove, enemy) 
+                    if MoveGroundStep == 0 then moveSuccess = false end 
+                else
+					local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
+					self:SetLocalPos(moveResult.vEndPosition) 
+
+					if moveResult.fStatus ~= "OK" then
+						moveSuccess = false
+					end
+				end
+				
+				-- compute per-frame velocity required to reach targetPosForThisMove
+					local desiredDelta = velocity
+					local desiredVelocity = desiredDelta / flInterval
+
+					-- remove only the scripted velocity contribution from last frame
+					local currentAbsVel = self:GetAbsVelocity()
+					local correctedVel = currentAbsVel - (moveStep.LastVelocity or Vector(0,0,0))
+
+					-- apply new scripted velocity on top of external forces
+					self:SetLocalVelocity(correctedVel + desiredVelocity) 
+					local phys = self:GetPhysicsObject() 
+					if phys:IsValid() then 
+						phys:SetVelocity(correctedVel + desiredVelocity) 
+					end 
+
+					moveStep.LastVelocity = desiredVelocity
 
                 if !moveSuccess and CharacterMoveTable.bStopWhenCollision then
                     -- print("removing motion due to collision for", name) 
@@ -3607,16 +4195,22 @@ StellarBlade.MaintainMoveTable = function(self) -- adapt this to work between al
                     collisionFailed = true
                 end
             end
+			-- print("self:GetPos():",self:GetPos()) 
 
             -- Only process expiration and add angle delta if the move wasn't removed for collision
             if !collisionFailed then
                 totalAngDelta = totalAngDelta + moveAngDelta
                 
                 if CurTime() > CurEndTime or StellarBlade.ShouldCancelMoveTable(self,moveStep) then
-                    if CharacterMoveTable.bZeroVelocityWhenEnd then
-                        self:SetLocalVelocity(Vector(0,0,0))
-                    end
-                    table.remove(self.SBAI_MoveStep, i)
+					if tobool(CharacterMoveTable.bZeroVelocityWhenEnd) then
+						-- remove only this step's contribution
+						local currentAbsVel = self:GetAbsVelocity()
+						local correctedVel = currentAbsVel - (moveStep.LastVelocity or Vector(0,0,0))
+						self:SetLocalVelocity(correctedVel)
+
+						moveStep.LastVelocity = Vector(0,0,0)
+					end
+					table.remove(self.SBAI_MoveStep, i)
                 end
             end
         end
