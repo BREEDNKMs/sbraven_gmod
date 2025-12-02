@@ -681,7 +681,20 @@ StellarBlade.AddEffect = function(self, strEffect, ...)
 				end
 			end
 		elseif self.StatType == "ESBActorStatType::ActorStatType_HitDefenseLevel" then 
-			dmginfo:ScaleDamage(1/CalculationValue) 
+			local level = self.CalculationValue
+			if level == 0 then return end -- nothing to do
+
+			local old = dmginfo:GetDamage() 
+			-- if old <= 0 then return end
+			-- level >= 0: factor = 1 / (1 + level)
+			-- level  < 0: factor = 1 - level    (so -1 -> 2x, -2 -> 3x, etc)
+			local factor = level >= 0 and 1 / (1 + level) or 1 - level
+			local newDamage = old * factor
+
+			-- safety clamp (optional): do not allow negative damage
+			-- if newDamage < 0 then newDamage = 0 end
+
+			dmginfo:SetDamage(newDamage)
 		end 
 		print("dmginfo:",dmginfo) 
 		
@@ -883,11 +896,11 @@ local test1 = false
 if test1 then 
 local ent = Entity(1) 
 	-- get stat value first 
-	local attribute = StellarBlade.EnsureStatProxy(ent)["ESBActorStatType::ActorStatType_HP"] 
+	local attribute = StellarBlade.ActorStats(ent)["ESBActorStatType::ActorStatType_HP"] 
 	-- calculate using ESBEffectCalculationType 
 	local calculatedattribute = ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_SetStatValue"](ent,200,ent:Health()) 
 	-- now apply calculated property 
-	StellarBlade.EnsureStatProxy(ent)["ESBActorStatType::ActorStatType_HP"] = calculatedattribute 
+	StellarBlade.ActorStats(ent)["ESBActorStatType::ActorStatType_HP"] = calculatedattribute 
 end 
 
 local test2 = false 
@@ -955,6 +968,11 @@ local statGetters = {
         -- store as percent (e.g. 75 means 75%)
         return rawget(proxy, "ESBActorStatType::ActorStatType_MinimumHP") or 0
     end,
+	
+	["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy)
+        -- store as percent (e.g. 75 means 75%)
+        return rawget(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel") or 0
+    end,
     -- add other getters as needed
 }
 
@@ -1019,6 +1037,12 @@ local statSetters = {
         -- rawset(proxy, "ESBActorStatType::ActorStatType_MinimumHP", value)
         hook.Run("SB_StatChanged", proxy.Outer, "MinimumHP", value)
     end,
+	
+	["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy, value)
+        -- store percent floor
+        rawset(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel", value)
+        hook.Run("SB_StatChanged", proxy.Outer, "MinimumHP", value)
+    end,
     -- add other setters as needed
 }
 
@@ -1069,7 +1093,7 @@ end
 -- end
 
 -- Utility: create/ensure proxy for an entity
-function StellarBlade.EnsureStatProxy(ent,forceReset) 
+function StellarBlade.ActorStats(ent,forceReset) 
     if !IsValid(ent) then return nil end
     if ent.ESBActorStatType and getmetatable(ent.ESBActorStatType) == statProxyMT and !forceReset then
         return ent.ESBActorStatType
@@ -1080,21 +1104,25 @@ function StellarBlade.EnsureStatProxy(ent,forceReset)
     setmetatable(proxy, statProxyMT)
     ent.ESBActorStatType = proxy 
     return proxy
-end
+end 
 
 StellarBlade.OnAddEffect = function(self,EffectTable) 
 	local StatType = EffectTable.StatType 
 	local StatCalculationType = EffectTable.StatCalculationType 
 	local CalculationValue = EffectTable.CalculationValue 
 	
-	local attribute = StellarBlade.EnsureStatProxy(self)[StatType] 
+	local attribute = StellarBlade.ActorStats(self)[StatType] 
 	print("attribute is:",attribute) 
 	if attribute then 
 		-- calculate using ESBEffectCalculationType 
 		local calculatedattribute = ESBEffectCalculationType[StatCalculationType](self,CalculationValue,attribute) 
 		print("calculatedattribute is:",calculatedattribute) 
+		
+		-- calculate previous 
+		EffectTable.previousactorstat = calculatedattribute - attribute 
+		print(EffectTable.previousactorstat) 
 		-- now apply calculated property 
-		StellarBlade.EnsureStatProxy(self)[StatType] = calculatedattribute 
+		StellarBlade.ActorStats(self)[StatType] = calculatedattribute 
 	end 
 
     StellarBlade.SetMoveTable(self, EffectTable.MoveAlias) 
@@ -1121,6 +1149,12 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable)
 	local StatType = EffectTable.StatType 
 	local StatCalculationType = EffectTable.StatCalculationType 
 	local CalculationValue = EffectTable.CalculationValue 
+	
+	local attribute = StellarBlade.ActorStats(self)[StatType] 
+	if EffectTable.bStatRestore and EffectTable.previousactorstat then 
+		print(EffectTable.previousactorstat) 
+		StellarBlade.ActorStats(self)[StatType] = StellarBlade.ActorStats(self)[StatType] - EffectTable.previousactorstat 
+	end 
 	
 	-- cleanup ActorState (1-5) 
 	for idx = 1, 10 do 
@@ -1279,7 +1313,9 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		end 
 		
 		function ActorState:EntityTakeDamage(target,dmginfo) 
-		
+			if target == self.Outer then 
+				
+			end 
 		end 
 		
 		function ActorState:PostEntityTakeDamage(target,dmginfo) 
@@ -1556,6 +1592,10 @@ StellarBlade.ActorApplyStat = function(self,StatType,StatCalculationType,Calcula
 	
 end 
 
+StellarBlade.CanStartSkill = function(self,SkillName) 
+
+end 
+
 StellarBlade.StartSkill = function(self,SkillName) 
 	local CheckCooldown = self.SBAI_SkillTimers and self.SBAI_SkillTimers[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
 	local UsableCount = self.SBAI_SkillUseCount and self.SBAI_SkillUseCount[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
@@ -1577,6 +1617,18 @@ StellarBlade.StartSkill = function(self,SkillName)
 		self.SBAI_SkillTimers[SkillName] = CurTime() + SkillTable.CoolTime 
 		self.SBAI_SkillUseCount[SkillName] = self.SBAI_SkillUseCount[SkillName] or 1 
 		Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())) 
+		self.SBAI_SkillTable.Remove = function() 
+			-- reset activity to ACT_IDLE 
+			self:ResetIdealActivity(ACT_IDLE) 
+			-- for players, reset attack gesture 
+			if self:IsPlayer() then 
+				self:AnimRestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_RESET, true ) 
+				BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then Entity("..self:EntIndex().."):AnimRestartGesture(0,ACT_RESET,true) end ") 
+			end 
+			-- destruct skill table 
+			self.SBAI_SkillTable = nil 
+			-- also destruct skill step table if exists 
+		end 
 		return true 
 	end 
 	return false 
