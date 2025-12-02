@@ -185,50 +185,9 @@ local function FInViewCone(ent, vecSpot)
 	return dot > fov
 end
 
-
 hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo) 
 	local attacker = dmginfo:GetAttacker() 
 	local inflictor = dmginfo:GetInflictor() 
-	-- if target.SB_EffectAlias then
-		-- for Effect, EffectList in pairs(target.SB_EffectAlias) do
-			-- for i = #EffectList, 1, -1 do 
-				-- local EffectTable = EffectList[i] 
-				
-				-- local Damage = dmginfo:GetDamage()
-				-- local CalculationValue = EffectTable.CalculationValue
-				-- local ActorState1, ActorState2, ActorState3, ActorState4, ActorState5, ActorState6, ActorState7, ActorState8, ActorState9, ActorState10 = EffectTable.ActorState1, EffectTable.ActorState2, EffectTable.ActorState3, EffectTable.ActorState4, EffectTable.ActorState5, EffectTable.ActorState6, EffectTable.ActorState7, EffectTable.ActorState8, EffectTable.ActorState9, EffectTable.ActorState10 
-				
-				-- if EffectTable.StatType == "ESBActorStatType::ActorStatType_MinimumHP" and CalculationValue then
-					-- local Health = target:Health()
-					-- local MaxHealth = target:GetMaxHealth()
-					-- local MinHealth = MaxHealth * (CalculationValue * 0.01)
-
-					-- -- predicted health after taking damage
-					-- local NewHealth = Health - Damage
-
-					-- -- if new health would go below minimum threshold
-					-- if NewHealth < MinHealth then
-						-- -- clamp the damage so HP stops at minimum
-						-- local AllowedDamage = math.max(0, Health - MinHealth)
-
-						-- if AllowedDamage <= 0 then
-							-- -- completely negate the damage
-							-- dmginfo:SetDamage(0)
-							-- return true
-						-- else
-							-- dmginfo:SetDamage(AllowedDamage)
-						-- end
-					-- end 
-				-- elseif EffectTable.StatType == "ESBActorStatType::ActorStatType_HitDefenseLevel" then 
-					-- dmginfo:ScaleDamage(CalculationValue) 
-				-- end 
-				
-				-- if ActorState1 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState2 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState3 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState4 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState5 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState6 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState7 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState8 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState9 == "ESBActorState::ActorState_NoDamageNoHit" or ActorState10 == "ESBActorState::ActorState_NoDamageNoHit" then 
-					-- return true 
-				-- end 			
-			-- end 
-		-- end
-	-- end 
 	
 	if target.SBAI_ActiveSkill and target.SBAI_ActiveSkill.Name then 
 		local SkillStepTable = target.SBAI_ActiveSkill.Data 
@@ -299,7 +258,7 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 						-- force NextStepAliasWhenJustParry 
 					
 					-- custom parry result data 
-					-- for Stellar Blade --> HL2 NPC Interaction 
+					-- for Stellar Blade Actor --> HL2 NPC Interaction 
 					elseif attacker:GetClass() == "npc_antlion" then 
 						attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
 					elseif attacker:GetClass() == "npc_hunter" then 
@@ -308,10 +267,13 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 						attacker:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
 						-- at that point, remove attacker's range and melee capabilities for 3 seconds 
 						-- or until the SBAI_SkillTable is done 
-					elseif attacker.SetSchedule and attacker:SelectWeightedSequence(ACT_SMALL_FLINCH) or attacker:SelectWeightedSequence(ACT_BIG_FLINCH) then 
+					elseif attacker.SetSchedule and attacker:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or attacker:SelectWeightedSequence(ACT_BIG_FLINCH) > 1 then 
 						attacker:SetSchedule(SCHED_BIG_FLINCH) 
-					else 
+					elseif attacker.TaskFail then 
+						attacker:TaskFail(tostring(target).. " parried attack") 
 						local thinkDelayed = attacker:SetSaveValue("m_flNextDecisionTime",3) 
+					else 
+						-- local thinkDelayed = attacker:SetSaveValue("m_flNextDecisionTime",3) 
 						-- if player, apply some viewpunch and drop player's active weapon 
 						-- most players will go regrab their dropped weapon 
 					end 
@@ -319,7 +281,7 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 			end 
 		end 
 	end 
-end)
+end) 
 
 game.AddParticles( "particles/raven.pcf" ) 
 PrecacheParticleSystem("ravencoreglow_2") 
@@ -1102,6 +1064,10 @@ statProxyMT.__call = function(self, key, value)
     return rawget(self, key)
 end
 
+-- statProxyMT.__gc = function(self, key, value)
+	-- print("garbage collector",self,key,value)
+-- end
+
 -- Utility: create/ensure proxy for an entity
 function StellarBlade.EnsureStatProxy(ent,forceReset) 
     if !IsValid(ent) then return nil end
@@ -1155,10 +1121,6 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable)
 	local StatType = EffectTable.StatType 
 	local StatCalculationType = EffectTable.StatCalculationType 
 	local CalculationValue = EffectTable.CalculationValue 
-	
-	if StatType == "ESBActorStatType::ActorStatType_MaxHPValue" then 
-		self:SetMaxHealth(-CalculationValue) 
-	end 
 	
 	-- cleanup ActorState (1-5) 
 	for idx = 1, 10 do 
@@ -1268,12 +1230,15 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 				-- Entity(1):ChatPrint("removing: "..self.Name) 
 				ProtectedCall(function() 
 				
+				hook.Remove("Think",ActorState) 
+				hook.Remove("EntityTakeDamage",ActorState) 
+				hook.Remove("PostEntityTakeDamage",ActorState) 
+				hook.Remove("SetupMove",ActorState) -- player only 
+				hook.Remove("Move",ActorState) -- player only 
+				hook.Remove("FinishMove",ActorState) -- player only 
+				
 				if self.Name == "ESBActorState::ActorState_BlockMove" then 
-					if self.Outer:IsPlayer() then 
-						self.Outer:Freeze(false) 
-					else 
-						self.Outer:SetMoveType(MOVETYPE_STEP) 
-					end 
+					
 				elseif self.Name == "ESBActorState::ActorState_BlockingBehavior" then 
 					if self.Outer:IsPlayer() then 
 						self.Outer:Freeze(false) 
@@ -1321,16 +1286,36 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		
 		end 
 		
+		function ActorState:SetupMove(target,mv,cmd) 
+			if self.Name == "ESBActorState::ActorState_BlockMove" then 
+				mv:SetVelocity( vector_origin ) 
+			end 
+		end 
+		
+		function ActorState:Move(target,mv) 
+			if self.Name == "ESBActorState::ActorState_BlockMove" then 
+				mv:SetVelocity( vector_origin ) 
+			end 
+		end 
+		
+		function ActorState:FinishMove(target,mv) 
+			if self.Name == "ESBActorState::ActorState_BlockMove" then 
+				-- print("in FinishMove",self.Name,target,mv) 
+				mv:SetVelocity( vector_origin ) 
+			end 
+		end 
+		
 		hook.Add("Think",ActorState,ActorState.Think) 
 		hook.Add("EntityTakeDamage",ActorState,ActorState.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",ActorState,ActorState.PostEntityTakeDamage) 
+		hook.Add("SetupMove",ActorState,ActorState.SetupMove) -- player only 
+		hook.Add("Move",ActorState,ActorState.Move) -- player only 
+		hook.Add("FinishMove",ActorState,ActorState.FinishMove) -- player only 
 		-- initialize state beneath 
 		-- ActorState_None                          = 0,
 		-- ActorState_BlockMove                     = 1,
 		if ActorState.Name == "ESBActorState::ActorState_BlockMove" then 
-			if self:IsPlayer() then 
-				self:Freeze(true) 
-			elseif self.SetMoveDelay then 
+			if self.SetMoveDelay then 
 				self:SetMoveDelay(1) 
 			end 
 		-- ActorState_BlockSkill                    = 2,
@@ -1856,8 +1841,11 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			if data.Type == "SBShowCharSESoundKey" then 
 				-- skip emitting char sounds on HL2 characters 
 				if self:IsPlayer() and self:GetModel() != "models/alvaroports/sbravenpm.mdl" then 
+					print("not raven",self) 
 					continue 
-				elseif !scripted_ents.IsBasedOn(self:GetClass(),"npc_sb_raven") and self:GetClass() != "npc_sb_raven" then 
+				end 
+				if !self:IsPlayer() and !scripted_ents.IsBasedOn(self:GetClass(),"npc_sb_raven") and self:GetClass() != "npc_sb_raven" then 
+					print("not raven",self) 
 					continue 
 				end 
 				local key = props.CharacterReactKey or props.CharacterVoiceKey 
@@ -2477,7 +2465,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	local Time = tbl.Time -- start time 
 	local Duration = SkillStepTable.Duration 
 	local EndTime = Time + Duration 
-	self.SBAI_ActiveSkill.Cycle = (CurTime() - Time)/Duration
+	self.SBAI_ActiveSkill.Cycle = math.Clamp((CurTime() - Time)/Duration,0,1) 
 	local Type = SkillStepTable.Type -- get skill step type 
     -- Determine the current target. Prioritize the locked target if it exists and is valid.
     local currentTarget = nil
@@ -2487,8 +2475,8 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
         else
             -- [NEW] Failsafe: If the locked target is dead, end the skill immediately.
             -- Entity(1):ChatPrint("Locked target died. Ending skill.")
-            self.SBAI_ActiveSkill = nil 
-            return
+            -- self.SBAI_ActiveSkill = nil 
+            -- return
         end
     else
         -- If there's no locked target, use the NPC's current enemy.
@@ -2500,16 +2488,12 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	-- otherwise, use bLookAtTarget value 
 	-- for some reason, bLookAtTarget is mostly false even in SkillActiveStepType_Hit 
 	-- something else may be controlling the boolean 
-	bLookAtTarget = Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" and true or bLookAtTarget 
+	bLookAtTarget = (Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" or Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry") and true or bLookAtTarget 
     if bLookAtTarget and IsValid(currentTarget) then
         local angleToTarget = (currentTarget:GetPos() - self:GetPos()):Angle().y
-        if self.SetIdealYawAndUpdate then self:SetIdealYawAndUpdate(angleToTarget, -1) end 
-		if !self.SetIdealYawAndUpdate then 
-			if self:IsFlagSet(FL_FROZEN) then -- unfreeze hack to enable eye angle snapping 
-				self:Freeze(false) 
-				self:SetEyeAngles(Angle(self:EyeAngles().x,angleToTarget,self:EyeAngles().z)) 
-				self:Freeze(true) 
-			end 
+        if self.SetIdealYawAndUpdate then self:SetIdealYawAndUpdate(angleToTarget, -1) 
+		else
+			self:SetEyeAngles(Angle(self:EyeAngles().x,angleToTarget,self:EyeAngles().z)) 
 		end 
     end 
 	if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then -- parries incoming attack, used by eve, raven and some other npcs 
@@ -2654,6 +2638,20 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			end 
 		end 
 		for k,v in pairs(tableofhittargets) do 
+			local dmgtype = DMG_SLASH+DMG_ALWAYSGIB 
+			if v:IsVehicle() then -- make vehicle driver npcs vulnerable to this slash 
+				local driver = v:GetDriver() 
+				if IsValid(driver) then 
+					if driver:IsNPC() then 
+						driver:SetSaveValue("m_takedamage",2) 
+					end 
+				end 
+			elseif v:GetClass() == "npc_combinegunship" or v:GetClass() == "npc_strider" then 
+				dmgtype = DMG_BLAST 
+			elseif v:GetClass() == "prop_dropship_container" then 
+				dmgtype = DMG_AIRBOAT + DMG_BLAST 
+			end 
+		
 			if v != self then 
 				local NearestPoint = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:GetShootPos()) 
 				local dmg = DamageInfo() 
@@ -2662,7 +2660,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				dmg:SetInflictor(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
 				dmg:SetDamage(options) 
 				dmg:SetReportedPosition(self:GetShootPos()) 
-				dmg:SetDamageType(DMG_SLASH+DMG_ALWAYSGIB) 
+				dmg:SetDamageType(dmgtype) 
 				dmg:SetDamagePosition(NearestPoint) 
 				scripted_ents.Get("npc_sb_raven").NPC_CalculateMeleeDamageForce(self,dmg,self:GetAimVector(),v:GetPos(),1) 
 				local tempTable = { -- even though we generate a table of a traceRes, this function uses only hitpos and hitnormal 
@@ -2728,7 +2726,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 
 	for k,v in pairs(tableofhittargets) do 
 	
-		if IsValid(v) and v != self then 
+		if IsValid(v) and v != self then 		
 			if self.SBAI_ActiveSkill then self.SBAI_ActiveSkill.Hit = true end 
 			local Disposition = self.Disposition and self:Disposition(v) or v.Disposition and v:Disposition(self) or D_NU 
 			-- Disposition = D_HT -- override temporarily 
