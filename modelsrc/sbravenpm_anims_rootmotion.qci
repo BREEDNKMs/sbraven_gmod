@@ -11921,6 +11921,36 @@ $sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBatt
 	//alignto "raven_base" 
 } 
 
+$sequence "Sword_Down_Attack" "sbravenpm_anims\Sword_Down_Attack.smd" { // frames 91
+	fps 30 
+	activity ACT_SPECIAL_ATTACK1 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
+$sequence "P_Eve_UIStudio_Default_Start" "sbravenpm_anims\P_Eve_UIStudio_Default_Start.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	
+	origin 0 0 42 
+	//alignto "raven_base" 
+	//addlayer gmod_breath_layer
+	blendlayer "P_Eve_UIStudio_Default_Loop" 43 45 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Default_Loop" "sbravenpm_anims\P_Eve_UIStudio_Default_Loop.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	loop 
+	realtime 
+	origin 0 0 42 
+	//alignto "raven_base" 
+} 
+
 $sequence "45A01" "sbravenpm_anims\45A01.smd" { // frames 170
 	fps 30
 	activity ACT_MP_VCD 1
