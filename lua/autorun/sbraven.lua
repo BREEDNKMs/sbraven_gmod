@@ -2,7 +2,7 @@ local tblWeapons = { "raven_blade" }
 
 player_manager.AddValidModel( "Raven", "models/alvaroports/SBRavenPM.mdl" ) 
 player_manager.AddValidHands( "Raven", "models/alvaroports/SBRavenVM.mdl", 0, "0000000" ) 
-list.Set( "PlayerOptionsAnimations", "Raven", { "Idle_subtle" } )
+list.Set( "PlayerOptionsAnimations", "Raven", { "P_Eve_UIStudio_Default_Start" } ) 
 
 local flRescale = 0.42 
 local flRescale = 1 
@@ -5155,3 +5155,4 @@ end
 
 
 StellarBlade.ClearMoveTable = function(self) self.SBAI_MoveStep = { } end 
+
