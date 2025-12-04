@@ -2,32 +2,10 @@ local tblWeapons = { "raven_blade" }
 
 player_manager.AddValidModel( "Raven", "models/alvaroports/SBRavenPM.mdl" ) 
 player_manager.AddValidHands( "Raven", "models/alvaroports/SBRavenVM.mdl", 0, "0000000" ) 
-list.Set( "PlayerOptionsAnimations", "Raven", { "P_Eve_UIStudio_Default_Start" } ) 
+list.Set( "PlayerOptionsAnimations", "Raven", { "P_Eve_UIStudio_Default_Start", "P_Eve_UIStudio_Look_ToBody", "P_Eve_UIStudio_Look_Start", "P_Eve_UIStudio_Look_End", "P_Eve_UIStudio_Body_ToLook", "P_Eve_UIStudio_Body_Start", "P_Eve_UIStudio_Body_End" } ) 
 
 local flRescale = 0.42 
 local flRescale = 1 
-
-local NPC = {
-	Name = "Raven (Friend)",
-	Class = "npc_sb_raven",
-	Category = "Other",
-	Weapons = tblWeapons,
-	Model = "models/alvaroports/sbravenpm.mdl",
-	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PLAYER }
-} 
-
-list.Set( "NPC", "CH_M_NA_53", NPC ) 
-
-NPC = {
-	Name = "Raven (Enemy)",
-	Class = "npc_sb_raven",
-	Category = "Other",
-	Weapons = tblWeapons,
-	Model = "models/alvaroports/sbravenpm.mdl",
-	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PORTAL_TURRET }
-} 
-
-list.Set( "NPC", "CH_M_NA_53_enemy", NPC ) 
 
 hook.Add("PostPlayerDraw","sbravenpm_coreglow",function(ply) 
 	if !IsValid(ply) then return end 
@@ -131,7 +109,7 @@ end
 hook.Add("Think", "StellarBlade_RunSkills", function() 
 	if SERVER then 
 		for _,ENT in ents.Iterator() do 
-			StellarBlade.MaintainMoveTable(ENT) 
+			-- StellarBlade.MaintainMoveTable(ENT) 
 			if !ENT.SBAI_SkillUseCount then ENT.SBAI_SkillUseCount = { } end 
 			if ENT.SBAI_ActiveSkill and ENT.SBAI_ActiveSkill.Name then 
 				StellarBlade.ProcessActiveSkill(ENT,ENT.SBAI_ActiveSkill) 
@@ -587,7 +565,7 @@ StellarBlade.AddEffect = function(self, strEffect, ...)
 			curEffect.IsMarkedForDeletion = true 
 			StellarBlade.OnRemoveEffect(curEffect.Outer,curEffect) 
 			table.remove(curEffects[strEffect],chosenIndex) 
-			print("removing effect:",strEffect,self) 
+			-- print("removing effect:",strEffect,self) 
 		end 
 	end 
 	
@@ -735,7 +713,7 @@ StellarBlade.AddEffect = function(self, strEffect, ...)
 	hook.Add("Think",curEffect,curEffect.Think) 
 	hook.Add("EntityTakeDamage",curEffect,curEffect.EntityTakeDamage) 
 	hook.Add("PostEntityTakeDamage",curEffect,curEffect.PostEntityTakeDamage) 
-	print("added effect:",strEffect,self) 
+	-- print("added effect:",strEffect,self) 
 	
 	-- fully initialized 
 	StellarBlade.OnAddEffect(self,curEffect) 
@@ -1112,20 +1090,20 @@ StellarBlade.OnAddEffect = function(self,EffectTable)
 	local CalculationValue = EffectTable.CalculationValue 
 	
 	local attribute = StellarBlade.ActorStats(self)[StatType] 
-	print("attribute is:",attribute) 
+	-- print("attribute is:",attribute) 
 	if attribute then 
 		-- calculate using ESBEffectCalculationType 
 		local calculatedattribute = ESBEffectCalculationType[StatCalculationType](self,CalculationValue,attribute) 
-		print("calculatedattribute is:",calculatedattribute) 
+		-- print("calculatedattribute is:",calculatedattribute) 
 		
 		-- calculate previous 
 		EffectTable.previousactorstat = calculatedattribute - attribute 
-		print(EffectTable.previousactorstat) 
+		-- print(EffectTable.previousactorstat) 
 		-- now apply calculated property 
 		StellarBlade.ActorStats(self)[StatType] = calculatedattribute 
 	end 
 
-    StellarBlade.SetMoveTable(self, EffectTable.MoveAlias) 
+    StellarBlade.AddMoveStep(self, EffectTable.MoveAlias) 
 
     for idx = 1, 5 do 
         local actKey = "Action" .. idx 
@@ -1324,20 +1302,24 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		
 		function ActorState:SetupMove(target,mv,cmd) 
 			if self.Name == "ESBActorState::ActorState_BlockMove" then 
-				mv:SetVelocity( vector_origin ) 
+				-- mv:SetVelocity( Vector(100,100,100)) 
 			end 
 		end 
 		
 		function ActorState:Move(target,mv) 
 			if self.Name == "ESBActorState::ActorState_BlockMove" then 
-				mv:SetVelocity( vector_origin ) 
+				mv:SetForwardSpeed(0) 
+				mv:SetSideSpeed(0) 
+				mv:SetUpSpeed(0) 
+				mv:SetFinalJumpVelocity(vector_origin) 
+				-- mv:SetVelocity( vector_origin ) 
 			end 
 		end 
 		
 		function ActorState:FinishMove(target,mv) 
 			if self.Name == "ESBActorState::ActorState_BlockMove" then 
 				-- print("in FinishMove",self.Name,target,mv) 
-				mv:SetVelocity( vector_origin ) 
+				-- mv:SetVelocity( vector_origin ) 
 			end 
 		end 
 		
@@ -2540,7 +2522,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	-- otherwise, use bLookAtTarget value 
 	-- for some reason, bLookAtTarget is mostly false even in SkillActiveStepType_Hit 
 	-- something else may be controlling the boolean 
-	bLookAtTarget = (Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" or Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry") and true or bLookAtTarget 
+	-- bLookAtTarget = (Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" or Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry") and true or bLookAtTarget 
     if bLookAtTarget and IsValid(currentTarget) then
         local angleToTarget = (currentTarget:GetPos() - self:GetPos()):Angle().y
         if self.SetIdealYawAndUpdate then self:SetIdealYawAndUpdate(angleToTarget, -1) 
@@ -2787,7 +2769,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				-- activate TargetMoveAliasArray on target 
 				
 				for _, TargetMoveAliasArray in ipairs(SkillStepTable.TargetMoveAliasArray) do 
-					StellarBlade.SetMoveTable(v,TargetMoveAliasArray) 
+					StellarBlade.AddMoveStep(v,TargetMoveAliasArray) 
 				end 
 	
 				-- activate TargetShowPath "TargetShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_Slash", 
@@ -3892,7 +3874,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetGroggyEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetGroggyShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetGroggyMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetGroggyMoveAlias) 
 			return true 
 		end 
 		if ResultTargetGroggyEffect != "" then 
@@ -3900,7 +3882,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetGroggyEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetGroggyShowPath) 
-		StellarBlade.SetMoveTable(target,HitLevelResultTargetGroggyMoveAlias) 
+		StellarBlade.AddMoveStep(target,HitLevelResultTargetGroggyMoveAlias) 
 		return true 
 	end 
 	
@@ -3913,7 +3895,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetDownEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetDownShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetDownMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetDownMoveAlias) 
 			return true 
 		end 
 		if ResultTargetDownEffect != "" then 
@@ -3921,7 +3903,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetDownEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetDownShowPath) 
-		StellarBlade.SetMoveTable(target,HitLevelResultTargetDownMoveAlias) 
+		StellarBlade.AddMoveStep(target,HitLevelResultTargetDownMoveAlias) 
 		return true 
 	end 
 	
@@ -3934,7 +3916,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetSwimmingEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetSwimmingShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetSwimmingMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetSwimmingMoveAlias) 
 			return true 
 		end 
 		if ResultTargetSwimmingEffect != "" then 
@@ -3942,7 +3924,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetSwimmingEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetSwimmingShowPath) 
-		StellarBlade.SetMoveTable(target,HitLevelResultTargetSwimmingMoveAlias) 
+		StellarBlade.AddMoveStep(target,HitLevelResultTargetSwimmingMoveAlias) 
 		return true 
 	end 
 	
@@ -3954,7 +3936,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetAirborneEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetAirborneShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetAirborneMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetAirborneMoveAlias) 
 			return true 
 		end 
 		if ResultTargetAirborneEffect != "" then 
@@ -3962,7 +3944,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetAirborneEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetAirborneShowPath) 
-		StellarBlade.SetMoveTable(target,HitLevelResultTargetAirborneMoveAlias) 
+		StellarBlade.AddMoveStep(target,HitLevelResultTargetAirborneMoveAlias) 
 		return true 
 	end 
 	
@@ -3974,7 +3956,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetAirEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetAirShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetAirMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetAirMoveAlias) 
 			return true 
 		end 
 		if ResultTargetAirEffect != "" then 
@@ -3982,7 +3964,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetAirEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetAirShowPath) 
-		StellarBlade.SetMoveTable(target,HitLevelResultTargetAirMoveAlias) 
+		StellarBlade.AddMoveStep(target,HitLevelResultTargetAirMoveAlias) 
 		return true 
 	end 
 	local bMoving = target.IsMoving and target:IsMoving() or !target:GetVelocity():IsZero() -- and no move aliases present 
@@ -3993,7 +3975,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetEventMovingEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetEventMovingShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetEventMovingMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetEventMovingMoveAlias) 
 			return true 
 		end 
 		if ResultTargetEventMovingEffect != "" then 
@@ -4001,7 +3983,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetEventMovingEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetEventMovingShowPath) 
-		StellarBlade.SetMoveTable(target,ResultTargetEventMovingMoveAlias) 
+		StellarBlade.AddMoveStep(target,ResultTargetEventMovingMoveAlias) 
 		return true 
 	end 
 	
@@ -4013,7 +3995,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetCommonEffect) 
 			end 
 			StellarBlade.SetShow_alt(target,ResultTargetCommonShowPath) 
-			StellarBlade.SetMoveTable(target,HitLevelResultTargetCommonMoveAlias) 
+			StellarBlade.AddMoveStep(target,HitLevelResultTargetCommonMoveAlias) 
 			return true 
 		end 
 		if ResultTargetCommonEffect != "" then 
@@ -4021,7 +4003,7 @@ StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel)
 			StellarBlade.AddEffectFromTable(target,table_ResultTargetCommonEffect) 
 		end 
 		StellarBlade.SetShow_alt(target,ResultTargetCommonShowPath) 
-		StellarBlade.SetMoveTable(target,ResultTargetCommonMoveAlias) 
+		StellarBlade.AddMoveStep(target,ResultTargetCommonMoveAlias) 
 		return true 
 	end 
 	
@@ -4111,7 +4093,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
     -- Apply the animation/movement for this step
     local SelfMoveAliasArray = SkillStepTable.SelfMoveAliasArray
     for _, SelfMoveAlias in pairs(SelfMoveAliasArray) do
-        StellarBlade.SetMoveTable(self,SelfMoveAlias)
+        StellarBlade.AddMoveStep(self,SelfMoveAlias)
     end 
 
 	if #SkillStepTable.UsableTargetProjectileAliasArray > 0 then 
@@ -4204,55 +4186,347 @@ StellarBlade.LookupCharacterSound = function(self,key)
     return nil
 end 
 
-StellarBlade.SetMoveTable = function(self,strEffect)
-    if !SB_CharacterMoveTable or not SB_CharacterMoveTable[1] or !SB_CharacterMoveTable[1].Rows then
-        print("ERROR: SB_CharacterMoveTable is not available.")
-        return false
-    end
+StellarBlade.AddMoveStep = function(self,strEffect) 
+    if !SB_CharacterMoveTable or !SB_CharacterMoveTable[1] or !SB_CharacterMoveTable[1].Rows then 
+        print("ERROR: SB_CharacterMoveTable is not available.") 
+        return false 
+    end 
 
-    local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect]
+    local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] 
     if !CharacterMoveTable then 
 		if strEffect != "None" then 
 			print("no move table", self, strEffect) 
 		end 
-        return false
-    end
+        return false 
+    end 
 
-    if !self.SBAI_MoveStep then
-        self.SBAI_MoveStep = {}
-    end
+    if !self.SBAI_MoveTable then 
+        self.SBAI_MoveTable = {["Outer"] = self} 
+    end 
+	
+	local SBAI_MoveTable = self.SBAI_MoveTable 
+	local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] -- get precached movetable 
+	if CharacterMoveTable.RootMotionDataPath and CharacterMoveTable.RootMotionDataPath != "None" then 
+		local RootMotionDataPath = string.sub(CharacterMoveTable.RootMotionDataPath, 6) 
+		RootMotionDataPath = "addons/sbraven/data_static/SB/Content" .. RootMotionDataPath .. ".json" 
+		SB_ImportJSON(RootMotionDataPath) 
+	end 
+	if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
+	end
+	if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
+	end
+	if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
+	end
+	if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
+	end
 
-    local newMoveStep = {
-        ["MoveArrayName"] = strEffect,
-        ["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0), 
-        ["RunTime"] = CurTime(), 
-		["LastVelocity"] = vector_origin 
-    }
-    table.insert(self.SBAI_MoveStep, newMoveStep)
+	local newMoveStep = { 
+		["CharacterMoveTable"] = CharacterMoveTable, 
+		["LastVelocity"] = vector_origin, 
+		["MoveArrayName"] = strEffect, 
+		["MoveStatus"] = true, 
+		["MoveTable"] = SBAI_MoveTable, 
+		["Outer"] = self, 
+		["RunTime"] = CurTime(), 
+		["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0) 
+	} 
+	
+	function newMoveStep:IsValid() 
+		return self.Outer:IsValid() and self.Outer:Alive() 
+	end 
+	
+	function SBAI_MoveTable:IsValid() 
+		if #self < 1 then return false end 
+		if self.IsMarkedForDeletion then return false end 
+		return self.Outer:IsValid() and self.Outer:Alive() 
+	end 
+	
+	function newMoveStep:IsActive() 
+		if CurTime() < self.StartTime then return false end 
+		if CurTime() >= self.StartTime + self.CharacterMoveTable.Time then return false end 
+		return true 
+	end 
+	
+	function newMoveStep:Evaluate() 
+	
+	end 
+	
+	function newMoveStep:Remove() 
+		if !self.IsMarkedForDeletion then 
+			self.IsMarkedForDeletion = true 
+			hook.Remove("Think",self) 
+			hook.Remove("SetupMove",self) 
+			hook.Remove("Move",self) 
+			hook.Remove("FinishMove",self) 
+			for i = 1,#self.Outer.SBAI_MoveTable do 
+				local iMoveStep = self.Outer.SBAI_MoveTable[i] 
+				if iMoveStep == self then 
+					table.remove(self.Outer.SBAI_MoveTable,i) 
+				end 
+			end 
+		end 
+	end 
+	
+	function SBAI_MoveTable:Remove() 
+		if !self.IsMarkedForDeletion then 
+			self.IsMarkedForDeletion = true 
+			hook.Remove("Think",self) 
+			hook.Remove("SetupMove",self) 
+			hook.Remove("Move",self) 
+			hook.Remove("FinishMove",self) 
+			if IsValid(self.Outer) then 
+				if self.Outer.SBAI_MoveTable == self then 
+					self.Outer.SBAI_MoveTable = nil 
+				end 
+			end 
+		end 
+	end 
+	
+	function SBAI_MoveTable:Think() -- npc and other things 
+		-- print(self,#self,self.Outer) 
+		
+		local ply = self.Outer 
+		self:Move(ply) 
+		-- print("move is:",ply) 
+		
+		local movePosDelta = Vector(0,0,0) 
+		local finalPos, finalAng = ply:GetLocalPos() + self.movePosDelta, self.moveAngDelta 
+		local moveResult = IterativeHybridMoveLimit(ply, ply:GetLocalPos(), finalPos) 
+		if ply:IsVehicle() then 
+			ply:GetPhysicsObject():SetPos(moveResult.vEndPosition) 
+		else 
+			ply:SetLocalPos(moveResult.vEndPosition) 
+		end 
+		ply:SetAbsVelocity(self.movePosDelta / FrameTime() + ply:GetVelocity()) 
+		
+		if finalAng != angle_zero then 
+			if ply.SetIdealYawAndUpdate then 
+				ply:SetIdealYawAndUpdate(finalAng.y, -1) 
+			else 
+				ply:SetAngles(Angle(ply:EyeAngles().p,finalAng.y,ply:EyeAngles().z)) 
+			end 
+		end 
+		
+		for i,moveStep in ipairs(self) do 
+			local name = moveStep.MoveArrayName 
+			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+			local Time = CharacterMoveTable.Time 
+			local CurEndTime = moveStep.StartTime + Time 
+			if CurTime() > CurEndTime then 
+				if tobool(CharacterMoveTable.bZeroVelocityWhenEnd) then
+					-- remove only this step's contribution
+					local currentAbsVel = ply:GetVelocity()
+					local correctedVel = currentAbsVel - (moveStep.LastVelocity or vector_origin)
+					-- self:SetLocalVelocity(vector_origin)
+					ply:SetAbsVelocity(vector_origin) 
+					moveStep.LastVelocity = vector_origin
+				else 
+					ply:SetVelocity(self.movePosDelta / FrameTime()) 
+				end 
+				moveStep:Remove() 
+			else 
+				-- check for movestep validity 
+			end 
+		end 
+		
+		if #self < 1 then self:Remove() end 
+		
+		--[[ 
+		if self.SBAI_MoveTable and #self.SBAI_MoveTable > 0 then
+			local currentAng = self:GetLocalAngles() 
+			local totalAngDelta = Angle(0, 0, 0) 
+			local enemy = self.GetEnemy and self:GetEnemy() or nil 
+			local enemyDir 
 
-    if CharacterMoveTable.RootMotionDataPath and CharacterMoveTable.RootMotionDataPath ~= "None" then
-        local RootMotionDataPath = string.sub(CharacterMoveTable.RootMotionDataPath, 6)
-        RootMotionDataPath = "addons/sbraven/data_static/SB/Content" .. RootMotionDataPath .. ".json"
-        SB_ImportJSON(RootMotionDataPath)
-    end
-    if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath != "None" then
-        StellarBlade.LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
-    end
-    if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then
-        StellarBlade.LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
-    end
-    if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath != "None" then
-        StellarBlade.LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
-    end
-    if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath != "None" then
-        StellarBlade.LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
-    end
+			-- Iterate backwards for safe removal
+			for i = #self.SBAI_MoveTable, 1, -1 do
+				
+				local moveStep = self.SBAI_MoveTable[i]
+				
+				local flInterval = CurTime() - moveStep.RunTime 
+				moveStep.RunTime = CurTime() 
+				
+				if CurTime() < moveStep.StartTime then continue end
+				
+				local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(self, moveStep, flInterval)
+				local name = moveStep.MoveArrayName
+				local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+				local Time = CharacterMoveTable.Time
+				local CurEndTime = moveStep.StartTime + Time
+				
+				local velocity = movePosDelta
+				-- print(velocity) 
+				movePosDelta = movePosDelta * flRescale 
+				-- print(movePosDelta) 
 
-    return true
+				-- Apply this move's delta and check for collision failure
+				local collisionFailed = false
+				if movePosDelta:LengthSqr() > 0.001 then
+					local moveSuccess = true
+					local targetPosForThisMove = self:GetPos() + movePosDelta
+
+					if CharacterMoveTable.bOnGround and self.MoveGroundStep then 
+						local MoveGroundStep = self:MoveGroundStep(targetPosForThisMove, enemy) 
+						if self.SetMoveVelocity then self:SetMoveVelocity(velocity / flInterval) end 
+						self:SetAbsVelocity(velocity / flInterval) 
+						if MoveGroundStep == 0 then moveSuccess = false end 
+					else
+						local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove)
+						self:SetLocalPos(moveResult.vEndPosition) 
+						
+						-- compute per-frame velocity required to reach targetPosForThisMove
+						local desiredDelta = velocity
+						local desiredVelocity = desiredDelta / flInterval
+
+						-- remove only the scripted velocity contribution from last frame
+						local currentAbsVel = self:GetVelocity()
+						local correctedVel = currentAbsVel - (moveStep.LastVelocity or Vector(0,0,0))
+
+						-- apply new scripted velocity on top of external forces
+						self:SetAbsVelocity(velocity / flInterval) 
+						if self.SetMoveVelocity then self:SetMoveVelocity(velocity / flInterval) end 
+						local phys = self:GetPhysicsObject() 
+						if phys:IsValid() then 
+							phys:SetVelocity(correctedVel + desiredVelocity) 
+						end 
+
+						if moveResult.fStatus ~= "OK" then
+							moveSuccess = false
+						end
+					end
+
+					moveStep.LastVelocity = desiredVelocity
+
+					if !moveSuccess and CharacterMoveTable.bStopWhenCollision then
+						-- print("removing motion due to collision for", name) 
+						table.remove(self.SBAI_MoveTable, i)
+						collisionFailed = true
+					end
+				end
+				-- print("self:GetPos():",self:GetPos()) 
+
+				-- Only process expiration and add angle delta if the move wasn't removed for collision
+				if !collisionFailed then
+					totalAngDelta = totalAngDelta + moveAngDelta
+					
+					if CurTime() > CurEndTime or StellarBlade.ShouldCancelMoveTable(self,moveStep) then
+						if tobool(CharacterMoveTable.bZeroVelocityWhenEnd) then
+							-- remove only this step's contribution
+							local currentAbsVel = self:GetVelocity()
+							local correctedVel = currentAbsVel - (moveStep.LastVelocity or vector_origin)
+							-- self:SetLocalVelocity(vector_origin)
+							self:SetAbsVelocity(vector_origin) 
+
+							moveStep.LastVelocity = vector_origin
+						else 
+							if self:IsPlayer() then 
+								self:SetLocalVelocity(velocity / flInterval) 
+							else 
+								self:SetVelocity(velocity / flInterval) 
+							end 
+						end 
+						table.remove(self.SBAI_MoveTable, i)
+					end
+				end
+			end
+
+			-- Apply total accumulated angle delta at the end
+			local targetAng = currentAng + totalAngDelta
+			if targetAng != currentAng then
+				self:SetLocalAngles(targetAng)
+			end
+		end
+		
+		--]] 
+	end 
+	
+	function SBAI_MoveTable:Move(ply,mv) -- player only 
+		-- print("in Move",ply,mv) 
+		self.movePosDelta = vector_origin 
+		self.moveAngDelta = angle_zero 
+		if #self > 0 then
+			for i = 1, #self do
+				local moveStep = self[i] 
+				local flInterval = CurTime() - moveStep.RunTime 
+				moveStep.RunTime = CurTime() 
+				if !moveStep:IsActive() then continue end 
+				local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(ply, moveStep, flInterval) 
+				moveStep.movePosDelta = movePosDelta 
+				moveStep.moveAngDelta = moveAngDelta 
+				self.movePosDelta = self.movePosDelta + movePosDelta 
+				self.moveAngDelta = self.moveAngDelta + moveAngDelta 
+				-- print("moveAngDelta",self.moveAngDelta) 
+			end 
+		end 
+	end 
+	
+	function SBAI_MoveTable:FinishMove(ply,mv) -- player only 
+		-- print(ply) 
+		-- if ply.GetVehicle and IsValid(ply:GetVehicle()) and ply:GetVehicle() then 
+			-- self.Outer = ply:GetVehicle() 
+			-- self:Think() 
+			-- return 
+		-- end 
+		-- local ply = ply.GetVehicle and IsValid(ply:GetVehicle()) and ply:GetVehicle() or ply 
+		-- print("in FinishMove",ply,mv) 
+		-- print(mv.Data) 
+		local movePosDelta = Vector(0,0,0) 
+		local finalPos, finalAng = mv:GetOrigin() + self.movePosDelta, self.moveAngDelta 
+		
+		local moveResult = IterativeHybridMoveLimit(ply, mv:GetOrigin(), finalPos) 
+		-- self:SetLocalPos(moveResult.vEndPosition) 
+		mv:SetOrigin(moveResult.vEndPosition) 
+		ply:SetAbsVelocity(self.movePosDelta / FrameTime() + mv:GetVelocity()) 
+		
+		if finalAng != angle_zero then 
+			ply:SetEyeAngles(Angle(ply:EyeAngles().x,self.moveAngDelta.y,ply:EyeAngles().z)) 
+		end 
+		
+		for i,moveStep in ipairs(self) do 
+			local name = moveStep.MoveArrayName 
+			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+			local Time = CharacterMoveTable.Time 
+			local CurEndTime = moveStep.StartTime + Time 
+			if CurTime() > CurEndTime then 
+				if tobool(CharacterMoveTable.bZeroVelocityWhenEnd) then
+					-- remove only this step's contribution
+					local currentAbsVel = ply:GetVelocity()
+					local correctedVel = currentAbsVel - (moveStep.LastVelocity or vector_origin)
+					-- self:SetLocalVelocity(vector_origin)
+					ply:SetAbsVelocity(vector_origin) 
+					moveStep.LastVelocity = vector_origin 
+				else 
+					mv:SetVelocity(self.movePosDelta / FrameTime()) 
+				end 
+				moveStep:Remove() 
+			else 
+				-- check for movestep validity 
+			end 
+		end 
+		
+		if #self < 1 then self:Remove() end 
+	end 
+	
+	-- define hooks only if they are not present 
+	if !self:IsPlayer() then 
+		hook.Add("Think",SBAI_MoveTable,SBAI_MoveTable.Think) 
+	else 
+		-- hook.Add("SetupMove",SBAI_MoveTable,SBAI_MoveTable.SetupMove) 
+		hook.Add("Move",SBAI_MoveTable,SBAI_MoveTable.Move) 
+		hook.Add("FinishMove",SBAI_MoveTable,SBAI_MoveTable.FinishMove) 
+	end 
+	
+	print("setup move",self,strEffect) 
+	
+	return table.insert(SBAI_MoveTable, newMoveStep) 
 end 
 
 StellarBlade.ShouldCancelMoveTable = function(self,moveStep) 
-    if not moveStep then return false end
+    if !moveStep then return false end
     local name = moveStep.MoveArrayName 
     local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] 
 	if self.GetEnemy then 
@@ -4275,7 +4549,7 @@ end
 -- probeElapsed: optional explicit elapsed time (seconds) to simulate (overrides StartTime)
 -- Returns: success(boolean), movePosDelta(Vector), moveAngDelta(Angle)
 StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probeElapsed)
-    if not moveStepOrName then return false, Vector(0,0,0), Angle(0,0,0) end
+    if !moveStepOrName then return false, Vector(0,0,0), Angle(0,0,0) end
 
     local isTempStep = false
     local moveStep = nil
@@ -4296,7 +4570,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 
     -- Resolve CharacterMoveTable
     local name = moveStep.MoveArrayName
-    if not name or not SB_CharacterMoveTable or not SB_CharacterMoveTable[1] or not SB_CharacterMoveTable[1].Rows[name] then
+    if !name or not SB_CharacterMoveTable or !SB_CharacterMoveTable[1] or !SB_CharacterMoveTable[1].Rows[name] then
         return false, Vector(0,0,0), Angle(0,0,0)
     end
     local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
@@ -4307,7 +4581,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     local moveDuration = math.max(0, moveEndTimeCfg - moveStartTimeCfg)
 
     -- If caller provided explicit probeElapsed, set StartTime so sampler sees that elapsed
-    if probeElapsed ~= nil and isTempStep then
+    if probeElapsed != nil and isTempStep then
         moveStep.StartTime = CurTime() - probeElapsed
         moveStep.RunTime = CurTime()
     elseif flInterval and flInterval < 0 and isTempStep then
@@ -4322,7 +4596,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
             moveStep.RunTime = CurTime()
         end
     end
-
+	elapsedTime = nil 
     -- If flInterval wasn't provided for live call, fall back to previous behaviour
     if flInterval == nil and type(moveStepOrName) == "table" and moveStep.RunTime then
         flInterval = CurTime() - (moveStep.RunTime or CurTime())
@@ -4334,8 +4608,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
         normalizedTime = 1
         prevNormalizedTime = 0
     else
-        local elapsedTime = nil
-        if probeElapsed ~= nil then
+        if probeElapsed != nil then
             elapsedTime = probeElapsed
         else
             elapsedTime = CurTime() - (moveStep.StartTime or CurTime())
@@ -4361,10 +4634,10 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 
     -- Determine direction basis (safe fallbacks)
     local enemy = (self and self.GetEnemy and self:GetEnemy()) or nil
-    if not IsValid(enemy) and StellarBlade and StellarBlade.PickTarget then
+    if !IsValid(enemy) then
         enemy = StellarBlade.PickTarget(self)
     end
-    if not IsValid(enemy) then enemy = Entity(0) end
+    if !IsValid(enemy) then enemy = Entity(0) end
 
     local directionAxis = CharacterMoveTable.PositionDirectionAxis
     local vecMoveDirection = Vector(1,0,0)
@@ -4413,9 +4686,9 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     elseif MoveType == "ESBMoveTransformType::MoveTransformType_Static" then
         if CharacterMoveTable.PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
             local target = (self.GetEnemy and self:GetEnemy()) and IsValid(self:GetEnemy()) and self:GetEnemy() or StellarBlade.PickTarget(self)
-            if IsValid(target) then
-                movePosDelta = target:WorldSpaceCenter() - (self and self.GetPos and self:GetPos() or Vector(0,0,0))
-            end
+            if IsValid(target) then 
+                movePosDelta = target:WorldSpaceCenter() - (self:GetPos() or Vector(0,0,0)) 
+            end 
         else
             local rightDir = vecMoveDirection:Cross(Vector(0,0,1)):GetNormalized()
             local forwardMove = CharacterMoveTable.ForwardValue or 0
@@ -4424,14 +4697,14 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
             local posCurvePath = CharacterMoveTable.PositionInterpCurveDataPath
             local zCurvePath = CharacterMoveTable.StaticMoveZVAlueCurveDataPath
 
-            if (posCurvePath and posCurvePath ~= "None") or (zCurvePath and zCurvePath ~= "None") then
+            if (posCurvePath and posCurvePath != "None") or (zCurvePath and zCurvePath != "None") then
                 local posMultiplier, prevPosMultiplier, zMultiplier, prevZMultiplier = 1,1,1,1
                 if posCurvePath and posCurvePath ~= "None" then
                     local curveName = string.StripExtension(string.GetFileFromFilename(string.match(posCurvePath, "'(.-)'") or ""))
                     posMultiplier = StellarBlade.ApplyCurveFloat(curveName, normalizedTime)
                     prevPosMultiplier = StellarBlade.ApplyCurveFloat(curveName, prevNormalizedTime)
                 end
-                if zCurvePath and zCurvePath ~= "None" then
+                if zCurvePath and zCurvePath != "None" then
                     local curveName = string.StripExtension(string.GetFileFromFilename(string.match(zCurvePath, "'(.-)'") or ""))
                     zMultiplier = StellarBlade.ApplyCurveFloat(curveName, normalizedTime)
                     prevZMultiplier = StellarBlade.ApplyCurveFloat(curveName, prevNormalizedTime)
@@ -4458,24 +4731,39 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then
         local targetPos = Vector(CharacterMoveTable.ForwardValue or 0, CharacterMoveTable.RightValue or 0, CharacterMoveTable.UpValue or 0)
         movePosDelta = targetPos
-    end
+    end 
+	
+	local RotationType = CharacterMoveTable.RotationType 
+	
+	if RotationType == "ESBMoveRotationType::MoveRotationType_Target" then 
+		if IsValid(enemy) then 
+			local dir = (enemy:GetPos() - self:GetPos()):GetNormalized() 
+			-- dir = self:GetForward() - dir 
+			dir = dir:Angle() 
+			-- print("moveAngDelta:",moveAngDelta) 
+			-- print("dir:",dir) 
+			moveAngDelta = moveAngDelta + dir 
+		end 
+	end 
+	
+	-- print(self,elapsedTime) 
 
-    movePosDelta = movePosDelta * flRescale
-    return true, movePosDelta, moveAngDelta
-end
+    movePosDelta = movePosDelta * flRescale 
+    return true, movePosDelta, moveAngDelta 
+end 
 
 
 StellarBlade.MaintainMoveTable = function(self) 
-    if self.SBAI_MoveStep and #self.SBAI_MoveStep > 0 then
+    if self.SBAI_MoveTable and #self.SBAI_MoveTable > 0 then
         local currentAng = self:GetLocalAngles() 
         local totalAngDelta = Angle(0, 0, 0) 
 		local enemy = self.GetEnemy and self:GetEnemy() or nil 
 		local enemyDir 
 
         -- Iterate backwards for safe removal
-        for i = #self.SBAI_MoveStep, 1, -1 do
+        for i = #self.SBAI_MoveTable, 1, -1 do
 			
-            local moveStep = self.SBAI_MoveStep[i]
+            local moveStep = self.SBAI_MoveTable[i]
 			
 			local flInterval = CurTime() - moveStep.RunTime 
 			moveStep.RunTime = CurTime() 
@@ -4691,7 +4979,7 @@ StellarBlade.MaintainMoveTable = function(self)
 
                 if !moveSuccess and CharacterMoveTable.bStopWhenCollision then
                     -- print("removing motion due to collision for", name) 
-                    table.remove(self.SBAI_MoveStep, i)
+                    table.remove(self.SBAI_MoveTable, i)
                     collisionFailed = true
                 end
             end
@@ -4717,7 +5005,7 @@ StellarBlade.MaintainMoveTable = function(self)
 							self:SetVelocity(velocity / flInterval) 
 						end 
 					end 
-					table.remove(self.SBAI_MoveStep, i)
+					table.remove(self.SBAI_MoveTable, i)
                 end
             end
         end
@@ -5154,5 +5442,4 @@ StellarBlade.PickTarget = function(self)
 end 
 
 
-StellarBlade.ClearMoveTable = function(self) self.SBAI_MoveStep = { } end 
-
+StellarBlade.ClearMoveTable = function(self) self.SBAI_MoveTable = { } end 
