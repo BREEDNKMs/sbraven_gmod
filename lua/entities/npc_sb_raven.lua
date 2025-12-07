@@ -4,6 +4,29 @@ AddCSLuaFile()
 IterativeHybridMoveLimit = include("includes/custommoveprobe.lua") 
 include("includes/raven_soundscripts.lua") 
 include("includes/curframe.lua") 
+local tblWeapons = { "raven_blade" } 
+local NPC = {
+	Name = "Raven (Friend)",
+	Class = "npc_sb_raven",
+	Category = "Other",
+	Weapons = tblWeapons,
+	Model = "models/alvaroports/sbravenpm.mdl",
+	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PLAYER }
+} 
+
+list.Set( "NPC", "CH_M_NA_53", NPC ) 
+
+NPC = {
+	Name = "Raven (Enemy)",
+	Class = "npc_sb_raven",
+	Category = "Other",
+	Weapons = tblWeapons,
+	Model = "models/alvaroports/sbravenpm.mdl",
+	KeyValues = { citizentype = 4, Numgrenades = 5, npcclass = CLASS_PORTAL_TURRET }
+} 
+
+list.Set( "NPC", "CH_M_NA_53_enemy", NPC ) 
+
 local filePath = "addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json"
 
 --[[
@@ -82,15 +105,20 @@ function SB_ImportJSON(path)
     end
 end
 
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillCommandTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillActiveStepTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/SkillResultTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/EffectTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/TargetFilterTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterAnimSetTable.json")
-SB_ImportJSON("addons/sbraven/data_static/SB/Content/Local/Data/CharacterMoveTable.json")
-
+SB_ImportJSON("data_static/SB/Content/Local/Data/SkillTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/SkillCommandTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/SkillActiveStepTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/SkillResultTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/EffectTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/TargetFilterTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAnimSetTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterMoveTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTable.json")
+local M_Raven_Default = "data_static/SB/Content/Local/Data/CharacterStanceTable.json" 
+SB_ImportJSON(M_Raven_Default) 
+M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default 
+-- table.Merge(ENT,M_Raven_Default) 
+table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) 
 print(SysTime()) 
 
 -- stuff related to health, shield is in CharacterTable.json 
@@ -2351,254 +2379,13 @@ ENT.SBAI_BehaviorTree = {
   }
 } 
 
-function ENT:SBAI_BuildSoundScript(parsedjson) 
-	if !istable(parsedjson) then
-		parsedjson = SB_ImportJSON(parsedjson)
-	end
-
-	local SoundScript = {
-		Entity = self,
-		Pos = vector_origin,
-		Volume = 1,
-		Pitch = 100,
-		SoundPath = Sound(""),
-		RawSoundPath = "",
-		Channel = CHAN_AUTO,
-		Delay = 0,
-		-- optional fields that may be filled from cue properties:
-		MaxDistance = nil,
-		Duration = nil,
-		Attenuation = nil,
-		SoundClass = nil,
-		Concurrency = nil,
-		Priority = nil
-	}
-
-	local function randBetween(a, b)
-		a = tonumber(a) or 0
-		b = tonumber(b) or a
-		if a == b then return a end
-		-- prefer math.Rand if available (GMod), else fallback
-		if math.Rand then return math.Rand(a, b) end
-		return a + math.random() * (b - a)
-	end
-
-	local function weightedChoice(weights)
-		if not weights or #weights == 0 then return math.random(1, 1) end
-		local total = 0
-		for i = 1, #weights do total = total + (weights[i] or 0) end
-		if total <= 0 then return math.random(1, #weights) end
-		local pick = math.random() * total
-		local cum = 0
-		for i = 1, #weights do
-			cum = cum + (weights[i] or 0)
-			if pick <= cum then return i end
-		end
-		return #weights
-	end
-
-	-- convert ObjectName string or table to node name (e.g. "SoundNodeMixer_0")
-	local function nodeNameFromObject(obj)
-		if not obj then return nil end
-		local s = (type(obj) == "table" and (obj.ObjectName or obj.ObjectPath) ) or tostring(obj)
-		-- try :NAME' pattern
-		local m = s:match(":([^']+)'")
-		if m and #m > 0 then return m end
-		-- trailing 'NAME' pattern
-		m = s:match("([^']+)'$")
-		if m and #m > 0 then return m end
-		-- fallback: if it contains a dot index or path, pick last segment after dot/slash
-		m = s:match("[^/%.%:]+$")
-		if m and #m > 0 then return m end
-		return s
-	end
-
-	-- convert Unreal asset path to game-file style:
-	-- 1) remove leading "/Game/"
-	-- 2) remove "L10N/<locale>/" if present
-	-- 3) strip trailing ".Name" suffix
-	local function unrealToGamePath(asset)
-		if not asset then return nil end
-		asset = tostring(asset)
-		-- strip surrounding whitespace
-		asset = asset:match("^%s*(.-)%s*$")
-		-- strip trailing ".Name" portion if present
-		asset = asset:gsub("%.[^%.%/]+$", "")
-		-- remove leading /Game/
-		asset = asset:gsub("^/Game/", "")
-		-- remove localization prefix like "L10N/it/" or "L10N/de/"
-		asset = asset:gsub("^L10N/[^/]+/", "")
-		-- Also if localization appears after an initial folder (rare), remove any "/L10N/<loc>/" occurrences
-		asset = asset:gsub("/L10N/[^/]+/", "/")
-		-- final clean
-		asset = asset:gsub("^/+", ""):gsub("/+", "/") 
-		asset = asset..".wav"
-		asset = string.sub(asset,7) 
-		return asset
-	end
-
-	-- build lookup table
-	local nodes = {}
-	for _, node in ipairs(parsedjson) do
-		if node and node.Name then nodes[node.Name] = node end
-	end
-
-	-- find SoundCue root
-	local cue
-	for _, node in ipairs(parsedjson) do
-		if node.Type == "SoundCue" then cue = node; break end
-	end
-	if not cue or not cue.Properties or not cue.Properties.FirstNode then
-		return SoundScript
-	end
-
-	-- populate SoundScript with cue-level properties if available
-	local cprops = cue.Properties or {}
-	if cprops.MaxDistance then SoundScript.MaxDistance = tonumber(cprops.MaxDistance) end
-	if cprops.Duration then SoundScript.Duration = tonumber(cprops.Duration) end
-	if cprops.AttenuationSettings then
-		SoundScript.Attenuation = cprops.AttenuationSettings.ObjectPath or cprops.AttenuationSettings.ObjectName or cprops.AttenuationSettings
-	end
-	if cprops.SoundClassObject then
-		SoundScript.SoundClass = cprops.SoundClassObject.ObjectPath or cprops.SoundClassObject.ObjectName or cprops.SoundClassObject
-	end
-	if cprops.ConcurrencySet then
-		SoundScript.Concurrency = cprops.ConcurrencySet
-	end
-	if cprops.ConcurrencyOverrides then
-		SoundScript.Concurrency = cprops.ConcurrencyOverrides
-	end
-	if cprops.Priority then SoundScript.Priority = tonumber(cprops.Priority) end
-	-- cue-level volume multiplier (used as initial volume)
-	local cueVolMul = tonumber(cprops.VolumeMultiplier or cprops.Volume or 1) or 1
-
-	-- recursive traversal function
-	local function TraverseNodeByName(nodeName, curVolume, curPitch, curDelay)
-		if not nodeName then return nil end
-		local node = nodes[nodeName]
-		if not node or not node.Type then return nil end
-		local props = node.Properties or {}
-
-		curVolume = tonumber(curVolume) or 1
-		curPitch = tonumber(curPitch) or 1
-		curDelay = tonumber(curDelay) or 0
-
-		if node.Type == "SoundNodeModulator" then
-			local vmin = props.VolumeMin or props.Volume or props.VolumeMultiplier
-			local vmax = props.VolumeMax or props.Volume or props.VolumeMultiplier or vmin
-			local pmin = props.PitchMin or props.Pitch or props.PitchMultiplier
-			local pmax = props.PitchMax or props.Pitch or props.PitchMultiplier or pmin
-			if not vmin then vmin = 1 end
-			if not vmax then vmax = vmin end
-			if not pmin then pmin = 1 end
-			if not pmax then pmax = pmin end
-			local chosenVol = randBetween(vmin, vmax)
-			local chosenPitch = randBetween(pmin, pmax)
-			local child = props.ChildNodes and props.ChildNodes[1]
-			if child then
-				local childName = nodeNameFromObject(child)
-				return TraverseNodeByName(childName, curVolume * chosenVol, curPitch * chosenPitch, curDelay)
-			end
-			return nil
-
-		elseif node.Type == "SoundNodeDelay" then
-			local dmin = props.DelayMin or props.Delay or 0
-			local dmax = props.DelayMax or props.Delay or dmin
-			local chosenDelay = randBetween(dmin, dmax)
-			local child = props.ChildNodes and props.ChildNodes[1]
-			if child then
-				local childName = nodeNameFromObject(child)
-				return TraverseNodeByName(childName, curVolume, curPitch, curDelay + chosenDelay)
-			end
-			return nil
-
-		elseif node.Type == "SoundNodeRandom" then
-			local children = props.ChildNodes or {}
-			local weights = props.Weights or {}
-			if #children == 0 then return nil end
-			local idx = weightedChoice(weights)
-			if idx < 1 then idx = 1 end
-			if idx > #children then idx = #children end
-			local chosen = children[idx]
-			local childName = nodeNameFromObject(chosen)
-			return TraverseNodeByName(childName, curVolume, curPitch, curDelay)
-
-		elseif node.Type == "SoundNodeMixer" then
-			local children = props.ChildNodes or {}
-			local inputVolume = props.InputVolume or {}
-			if #children == 0 then return nil end
-			local idx = math.random(1, #children)
-			local volMul = 1
-			if #inputVolume == #children then
-				volMul = tonumber(inputVolume[idx]) or volMul
-			elseif #inputVolume == 2 then
-				volMul = randBetween(inputVolume[1], inputVolume[2])
-			elseif #inputVolume >= 1 then
-				volMul = tonumber(inputVolume[1]) or volMul
-			end
-			local chosen = children[idx]
-			local childName = nodeNameFromObject(chosen)
-			return TraverseNodeByName(childName, curVolume * volMul, curPitch, curDelay)
-
-		elseif node.Type == "SoundNodeWavePlayer" then
-			local asset = nil
-			if props.SoundWaveAssetPtr and props.SoundWaveAssetPtr.AssetPathName then
-				asset = props.SoundWaveAssetPtr.AssetPathName
-			elseif node.SoundWave and node.SoundWave.ObjectPath then
-				asset = node.SoundWave.ObjectPath
-			end
-			if asset and asset ~= "" then
-				-- convert to game-file path according to your rules
-				local gamePath = unrealToGamePath(asset)
-				if gamePath and gamePath ~= "" then
-					-- store both raw converted path and Sound() object if available
-					local ok, s = pcall(function() return Sound(gamePath) end)
-					local looping = false
-					if props.bLooping ~= nil then
-						looping = (props.bLooping == true)
-					elseif node.SoundWave and node.SoundWave.bLooping ~= nil then
-						looping = (node.SoundWave.bLooping == true)
-					end
-
-					return {
-						SoundPath = (ok and s) or gamePath,
-						Raw = gamePath,
-						Volume = curVolume,
-						Pitch = curPitch * 100,
-						Delay = curDelay,
-						Looping = looping,          -- <-- new field added
-					}
-				end
-			end
-			return nil
-
-		else
-			-- unknown node: attempt to follow first child
-			local child = props.ChildNodes and props.ChildNodes[1]
-			if child then
-				local childName = nodeNameFromObject(child)
-				return TraverseNodeByName(childName, curVolume, curPitch, curDelay)
-			end
-			return nil
-		end
-	end
-
-	-- start traversal
-	local firstObj = cue.Properties.FirstNode
-	local startNodeName = nodeNameFromObject(firstObj)
-	local result = TraverseNodeByName(startNodeName, cueVolMul, 1, 0)
-
-	if result then
-		SoundScript.Volume = tonumber(result.Volume) or SoundScript.Volume
-		SoundScript.Pitch = tonumber(result.Pitch) or SoundScript.Pitch
-		SoundScript.Delay = tonumber(result.Delay) or SoundScript.Delay
-		-- RawSoundPath (converted)
-		SoundScript.RawSoundPath = result.Raw or tostring(result.SoundPath or "")
-		-- SoundPath as Sound() object if conversion succeeded above
-		pcall(function() SoundScript.SoundPath = result.SoundPath end)
-	end
-
-	return SoundScript
+function ENT:Initialize() 
+	scripted_ents.Get("npc_unreali_female").Initialize(self) 
+	-- start effects in CharacterStanceTable 
+	if M_Raven_Default then 
+		local StartEffect = StellarBlade.ParseTableStrings(M_Raven_Default.StartEffect) 
+		StellarBlade.AddEffectFromTable(self,StartEffect) 
+	end 
 end 
 
 function ENT:SBAI_GetEffectTable(strEffect) 
@@ -3008,6 +2795,7 @@ end
 
 function ENT:NPC_ShouldConductBehaviorTree() 
 	-- likely performing a skill 
+	if self["ESBActorState::ActorState_BlockingBehavior"] then return false end 
 	if self:GetCurrentSchedule() == SCHED_SCENE_GENERIC then -- may be in a skill task 
 		if self.SBAI_ActiveSkill and self.SBAI_ActiveSkill.Name then 
 			if !self.SBAI_ActiveSkill.Stopped then 
@@ -3027,6 +2815,8 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	if pos.z < -800 or pos.z > 800 then return false end 
 	if IsValid(self:GetActiveWeapon()) then 
 		if self:GetActiveWeapon():GetClass() != "raven_blade" then return false end 
+	else 
+		return false 
 	end 
 	-- has raven melee weapon 
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
