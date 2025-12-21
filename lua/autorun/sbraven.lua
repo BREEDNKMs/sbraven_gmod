@@ -625,7 +625,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		local chosenIndex = curEffect.chosenIndex 
 		if !curEffect.IsMarkedForDeletion then 
 			curEffect.IsMarkedForDeletion = true 
-			StellarBlade.OnRemoveEffect(curEffect.Outer,curEffect) 
+			pcall(StellarBlade.OnRemoveEffect,curEffect.Outer,curEffect) -- prevent script being halt on error 
 			table.remove(curEffects[strEffect],chosenIndex) 
 			-- print("removing effect:",strEffect,self) 
 		end 
@@ -780,7 +780,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	hook.Add("Think",curEffect,curEffect.Think) 
 	hook.Add("EntityTakeDamage",curEffect,curEffect.EntityTakeDamage) 
 	hook.Add("PostEntityTakeDamage",curEffect,curEffect.PostEntityTakeDamage) 
-	-- print("added effect:",strEffect,self) 
+	print("added effect:",strEffect,self) 
 	
 	-- fully initialized 
 	StellarBlade.OnAddEffect(self,curEffect,tableOptional) 
@@ -973,7 +973,7 @@ StellarBlade.CanAddEffect = function(self, EffectTable, tableOptional) -- Effect
 	
 	-- check whether the effects in CheckNoneEffectAliasArray do not exist in actor's ef table 
 	for _, f in ipairs(EffectTable.ConditionActive_CheckNoneEffectAliasArray) do 
-		if self.SB_EffectAlias[f] then 
+		if self.SB_EffectAlias and self.SB_EffectAlias[f] then 
 			if !table.IsEmpty(self.SB_EffectAlias[f]) then 
 				return false 
 			end 
@@ -1349,7 +1349,9 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 			end 
 			
 			if !table.IsEmpty(ActiveTargetEffectAliasArray) then 
-				StellarBlade.AddEffect(Target,ActiveTargetEffectAliasArray) 
+				for k,v in ipairs(ActiveTargetEffectAliasArray) do 
+					StellarBlade.AddEffect(Target,v) 
+				end 
 			end 
 			
 		end 
@@ -1381,6 +1383,24 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable)
 	local attribute = StellarBlade.ActorStats(self)[StatType] 
 	if EffectTable.bStatRestore and EffectTable.previousactorstat then 
 		StellarBlade.ActorStats(self)[StatType] = StellarBlade.ActorStats(self)[StatType] - EffectTable.previousactorstat 
+	end 
+	
+	local DeactiveTargetFilterAlias = EffectTable.DeactiveTargetFilterAlias 
+	local DeactiveTargetEffectAliasArray = EffectTable.DeactiveTargetEffectAliasArray 
+	local DeactiveTargetResultShowPath = EffectTable.DeactiveTargetEffectAliasArray 
+	if DeactiveTargetResultShowPath != "" or !table.IsEmpty(DeactiveTargetResultShowPath) then 
+		for k,Target in ipairs(StellarBlade.TargetFilter(self,DeactiveTargetFilterAlias)) do 
+			if DeactiveTargetResultShowPath != "" then 
+				StellarBlade.SetShow(Target,DeactiveTargetResultShowPath) 
+			end 
+			
+			if !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
+				for k,v in ipairs(DeactiveTargetEffectAliasArray) do 
+					StellarBlade.AddEffect(Target,v) 
+				end
+			end 
+			
+		end 
 	end 
 	
 	-- cleanup ActorState (1-5) 
@@ -2205,7 +2225,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					self:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
 					-- at that point, remove self's range and melee capabilities for "Duration" seconds 
 					-- or until the SBAI_SkillTable is done 
-				elseif self.SetSchedule and (self:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or self:SelectWeightedSequence(ACT_BIG_FLINCH) > 1) then 
+				elseif self.SetSchedule and (isnumber(self:SelectWeightedSequence(ACT_SMALL_FLINCH)) and (self:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or self:SelectWeightedSequence(ACT_BIG_FLINCH) > 1)) then 
 					self:SetSchedule(SCHED_BIG_FLINCH) 
 				elseif self.TaskFail then 
 					self:TaskFail(tostring(target).. " parried attack") 
