@@ -890,7 +890,7 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	end 
 end 
 
-StellarBlade.CanAddEffect = function(self, EffectTable, tableOptional) 
+StellarBlade.CanAddEffect = function(self, EffectTable, tableOptional) -- EffectTable is the table of effect index, i.e. M_Raven_BackJumpCombo_HitWave_Damage 
 	
 	local CHECK_TRUE  = "ESBConditionCheckType::ConditionCheckType_True"
 	local CHECK_FALSE = "ESBConditionCheckType::ConditionCheckType_False"
@@ -970,6 +970,15 @@ StellarBlade.CanAddEffect = function(self, EffectTable, tableOptional)
             end
         end
     end
+	
+	-- check whether the effects in CheckNoneEffectAliasArray do not exist in actor's ef table 
+	for _, f in ipairs(EffectTable.ConditionActive_CheckNoneEffectAliasArray) do 
+		if self.SB_EffectAlias[f] then 
+			if !table.IsEmpty(self.SB_EffectAlias[f]) then 
+				return false 
+			end 
+		end 
+	end 
 
 	-- other generic checks could go here...
 
@@ -1328,6 +1337,23 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 	end 
 
     StellarBlade.AddMoveStep(self, EffectTable.MoveAlias) 
+	
+	-- ActiveTargetEffectAliasArray, ActiveTargetResultShowPath 
+	local ActiveTargetFilterAlias = EffectTable.ActiveTargetFilterAlias 
+	local ActiveTargetEffectAliasArray = EffectTable.ActiveTargetEffectAliasArray 
+	local ActiveTargetResultShowPath = EffectTable.ActiveTargetResultShowPath 
+	if ActiveTargetResultShowPath != "" or !table.IsEmpty(ActiveTargetEffectAliasArray) then 
+		for k,Target in ipairs(StellarBlade.TargetFilter(self,ActiveTargetFilterAlias)) do 
+			if ActiveTargetResultShowPath != "" then 
+				StellarBlade.SetShow(Target,ActiveTargetResultShowPath) 
+			end 
+			
+			if !table.IsEmpty(ActiveTargetEffectAliasArray) then 
+				StellarBlade.AddEffect(Target,ActiveTargetEffectAliasArray) 
+			end 
+			
+		end 
+	end 
 
     for idx = 1, 5 do 
         local actKey = "Action" .. idx 
@@ -1505,10 +1531,15 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		end 
 		
 		function ActorState:Think() 
+			local Outer = self.Outer 
 			if self.Name == "ESBActorState::ActorState_BlockRevival" then 
-				if self.Outer.NextSpawnTime then 
-					self.Outer.NextSpawnTime = CurTime() + 1 
+				if Outer.NextSpawnTime then 
+					Outer.NextSpawnTime = CurTime() + 1 
 				end 
+			elseif self.Name == "ESBActorState::ActorState_BlockMove" then -- npc block move 
+				if self.SetMoveDelay then self:SetMoveDelay(0.1) end 
+			elseif self.Name == "ESBActorState::ActorState_BlockRotation" then 
+				if self.Outer.SetEyeAngles then self.Outer:SetEyeAngles(self.CacheAngles) else self.Outer:SetLocalAngles(self.CacheAngles) end 
 			end 
 		end 
 		
@@ -1589,6 +1620,7 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockShieldRegen" then 
 		-- ActorState_BlockRotation                 = 12,
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockRotation" then 
+			ActorState.CacheAngles = self.GetEyeAngles and self:GetEyeAngles() or self:GetAngles() 
 		-- ActorState_ImmuneBlockMove               = 13,
 		elseif ActorState.Name == "ESBActorState::ActorState_ImmuneBlockMove" then 
 		-- ActorState_ImmuneBlockSkill              = 14,
@@ -1706,6 +1738,8 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		elseif ActorState.Name == "ESBActorState::ActorState_ActiveWeakPointDamage" then 
 		-- ActorState_PeacefulMode                  = 65,
 		elseif ActorState.Name == "ESBActorState::ActorState_PeacefulMode" then 
+			self:SetActiveWeapon(NULL) 
+			if self.SetNPCState then self:SetNPCState(1) end 
 		-- ActorState_DisableAutoLockOnWhenUnlockon = 66,
 		elseif ActorState.Name == "ESBActorState::ActorState_DisableAutoLockOnWhenUnlockon" then 
 		-- ActorState_BlockItemUseHeal              = 67,
@@ -1788,8 +1822,6 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockInteractionWithNotiUI" then 
 		-- ActorState_Max                           = 106,
 		elseif ActorState.Name == "ESBActorState::ActorState_Max" then 
-		
-		else 
 		end 
 	end 
 end 
@@ -1989,7 +2021,7 @@ StellarBlade.SetShow = function(self,showpath,slot)
 	end 
 	
 	function SBAI_ActiveShow:Tick() 
-		print("ticking:",self.Outer,self) 
+		-- print("ticking:",self.Outer,self) 
 		StellarBlade.MaintainShow(self.Outer,self) 
 	end 
 	
@@ -2010,7 +2042,7 @@ StellarBlade.SetShow = function(self,showpath,slot)
 	-- cache some data paths to decrease loops 
 	SBAI_ActiveShow.index = table.insert(self.SBAI_ActiveShows,SBAI_ActiveShow) 
 	for _, SBShowData in pairs(showdata) do 
-		print(SBShowData) 
+		-- print(SBShowData) 
 		if istable(SBShowData) and SBShowData.Type == "SBShowData" then 
 			SBAI_ActiveShow.SBShowData = SBShowData 
 			break 
@@ -2130,21 +2162,63 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 		end
 		
 		-- === Handle key types ===
-		if data.Type == "SBShowAnimKey" then
+		if data.Type == "SBShowAnimKey" then 
 			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor"
-			local anim = props.AnimResourcePath and string.GetFileFromFilename(props.AnimResourcePath)
-			if anim then
+			local AnimResourcePath = props.AnimResourcePath and string.GetFileFromFilename(props.AnimResourcePath) 
+			local bCheckHitLevel = props.bCheckHitLevel 
+			if AnimResourcePath then 
+				-- print(self:LookupSequence(AnimResourcePath) != ACT_INVALID) 
 				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
-					if self:IsPlayer() then 
-						self:AddVCDSequenceToGestureSlot(0,self:LookupSequence(anim),0,true) 
-						BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then Entity("..self:EntIndex().."):AddVCDSequenceToGestureSlot(0,"..self:LookupSequence(anim)..",0,true) end") 
-					else 
-						scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(self,anim, true) 
-					end 
+					Target = self 
 				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
-					-- Optional: handle other actor animations 
+					Target = StellarBlade.PickTarget(self) 
+				end 
+				
+				if Target:IsPlayer() then 
+					Target:AddVCDSequenceToGestureSlot(0,Target:LookupSequence(AnimResourcePath),0,true) 
+					BroadcastLua("if IsValid(Entity("..Target:EntIndex()..")) then Entity("..Target:EntIndex().."):AddVCDSequenceToGestureSlot(0,"..Target:LookupSequence(AnimResourcePath)..",0,true) end") 
+				else 
+					if Target:LookupSequence(AnimResourcePath) != ACT_INVALID then 
+						scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(Target,AnimResourcePath, true) 
+					end 
 				end 
 			end 
+
+			if bCheckHitLevel then 
+				if self.SetCondition then 
+					self:SetCondition(COND.HEAR_DANGER) 
+				end 
+				if self.SBAI_SkillStep and self.SBAI_SkillStep.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+					-- force NextStepAliasWhenJustParry 
+				
+				-- custom parry result data 
+				-- for Stellar Blade Actor --> HL2 NPC Interaction 
+				elseif self:GetClass() == "npc_antlion" then 
+					self:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
+				elseif self:GetClass() == "npc_antlionguard" then 
+					self:SetSaveValue("m_nFlinchActivity",util.GetActivityIDByName("ACT_ANTLIONGUARD_CHARGE_CRASH")) 
+					self:SetSchedule(ai.GetScheduleID("SCHED_ANTLIONGUARD_PHYSICS_DAMAGE_HEAVY")) 
+					-- print(self:GetCurrentSchedule()) 
+				elseif self:GetClass() == "npc_hunter" then 
+					self:SetCondition(self:ConditionID("COND_HUNTER_STAGGERED")) 
+				elseif isbool(self:GetInternalVariable("m_fIsTorso")) then -- is based on npc_basezombie 
+					self:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
+					-- at that point, remove self's range and melee capabilities for "Duration" seconds 
+					-- or until the SBAI_SkillTable is done 
+				elseif self.SetSchedule and (self:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or self:SelectWeightedSequence(ACT_BIG_FLINCH) > 1) then 
+					self:SetSchedule(SCHED_BIG_FLINCH) 
+				elseif self.TaskFail then 
+					self:TaskFail(tostring(target).. " parried attack") 
+					local thinkDelayed = self:SetSaveValue("m_flNextDecisionTime",3) 
+				else 
+					local thinkDelayed = self:SetSaveValue("m_flNextAttack",3) 
+					-- local thinkDelayed = self:SetSaveValue("m_flNextDecisionTime","Duration") 
+					-- if player, apply some viewpunch and drop player's active weapon 
+					-- most players will go regrab their dropped weapon 
+				end 
+			end 
+
+
 
 		elseif data.Type == "SBShowActorKey" then 
 			local bUseActorHidden = props.bUseActorHidden 
@@ -3298,6 +3372,9 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 	if !IsValid(ent) then error("Expected Entity, got NULL Entity!") return end 
 	if !filter then print("input a filter") end 
 	if filter == "None" then return {} end 
+	-- shortcuts to simple checks 
+	if filter == "Self" then return {ent} end 
+	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and ent:GetEnemy() or StellarBlade.PickTarget(ent) end 
     if !TargetFilterTable then return {ent:GetEnemy()} end 
 	
     local ents_FindInSphere = ents.FindInSphere
@@ -4112,408 +4189,203 @@ StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitbox
     -- print("Hitbox collision count:", #filtered)
     return filtered
 end 
+-- Helper function to determine active states for an entity
+-- Returns a table where keys are state names and values are booleans
+local function GetEntityStates(entity)
+	local physobj = entity:GetPhysicsObject()
+	
+	-- 1. Calculate Moving
+	local bMoving = (entity.IsMoving and entity:IsMoving()) or (!entity:GetVelocity():IsZero())
+	
+	-- 2. Calculate Air
+	local bAir = not entity:IsOnGround()
+	if physobj and physobj:IsValid() then
+		-- Use friction snapshot for physics objects if applicable
+		if (entity.GetMoveType and entity:GetMoveType() == MOVETYPE_VPHYSICS) or not entity.GetMoveType then
+			bAir = table.IsEmpty(physobj:GetFrictionSnapshot())
+		end
+	end
 
-StellarBlade.StartSkillSelfResult = function(self,SkillResultAlias,HitLevel,bCritical,tableOptional) 
+	-- 3. Calculate Airborne (Fly)
+	local bAirborne = (entity:GetMoveType() == MOVETYPE_FLY) 
+		or (entity.GetNavType and entity:GetNavType() == NAV_FLY) 
+		or (entity:IsFlagSet(FL_FLY))
+
+	-- 4. Calculate Swimming
+	local bSwimming = (entity:WaterLevel() > 0)
+
+	-- Return state map matching JSON key segments
+	return {
+		Groggy = false, -- Logic for Groggy detection goes here if automated, currently passed via flags usually
+		Down = false,   -- Logic for Down detection goes here
+		Swimming = bSwimming,
+		Airborne = bAirborne,
+		Air = bAir,
+		EventMoving = bMoving, -- JSON uses "EventMoving", logical check is "Moving"
+		Common = true -- Common is always true
+	}
+end
+
+-- Shared function to resolve keys and apply actions
+local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget, HitLevel, tableOptional)
+	-- The Priority Order: High to Low
+	local priorityOrder = { "Groggy", "Down", "Swimming", "Airborne", "Air", "EventMoving", "Common" }
+
+	-- The "Slots" we need to fill
+	local selectedActions = {
+		Effect = nil,
+		ShowPath = nil,
+		MoveStep = nil
+	}
+
+	-- Iterate through priority list
+	for _, stateName in ipairs(priorityOrder) do
+		-- Only check if this state is actually active on the entity
+		-- Note: Groggy/Down/Weakpoint are usually passed in, but here we assume the boolean flags 
+		-- from the original script logic (bDown/bGroggy) would be set. 
+		-- Since the original script set bGroggy/bDown inside the function based on external flags not shown,
+		-- we will assume the state map is updated before this loop or defaults to false.
+		
+		if activeStates[stateName] then
+			
+			-- Construct JSON Key Prefixes
+			-- Target keys example: "HitLevelResultTargetCommonEffect" vs "ResultTargetCommonEffect"
+			-- Self keys example: "ResultSelfCommonEffect" (Self usually ignores HitLevel prefix based on your JSON)
+			
+			local prefix = "Result" .. (isTarget and "Target" or "Self") .. stateName
+			local hitLevelPrefix = "HitLevelResult" .. (isTarget and "Target" or "Self") .. stateName
+			
+			-- 1. Resolve EFFECT
+			if selectedActions.Effect == nil then
+				local val = ""
+				if isTarget and HitLevel then
+					val = SkillResult[hitLevelPrefix .. "Effect"]
+				else
+					val = SkillResult[prefix .. "Effect"]
+				end
+				
+				if val and val ~= "" then selectedActions.Effect = val end
+			end
+
+			-- 2. Resolve SHOWPATH
+			if selectedActions.ShowPath == nil then
+				-- ShowPath usually doesn't have a HitLevel prefix in the provided JSON, but we check just in case or default to standard
+				local val = SkillResult[prefix .. "ShowPath"]
+				if val and val ~= "" then selectedActions.ShowPath = val end
+			end
+
+			-- 3. Resolve MOVESTEP (Targets only)
+			if isTarget and selectedActions.MoveStep == nil then
+				local val = ""
+				if HitLevel then
+					val = SkillResult[hitLevelPrefix .. "MoveAlias"]
+				else
+					val = SkillResult[prefix .. "MoveAlias"]
+				end
+				
+				-- "None" is treated as a valid value in JSON, but we usually want to treat it as 'not set' 
+				-- if we want to fall back. However, if "None" is an explicit instruction to Stop, 
+				-- keep it. Assuming empty string or missing key is the fallback trigger.
+				if val and val ~= "" and val ~= "None" then selectedActions.MoveStep = val end
+			end
+		end
+		
+		-- Optimization: Break if all slots are filled
+		if selectedActions.Effect and selectedActions.ShowPath and (not isTarget or selectedActions.MoveStep) then
+			break
+		end
+	end
+
+	-- EXECUTE SELECTED ACTIONS
+	
+	-- Apply Effect
+	if selectedActions.Effect and selectedActions.Effect != "" then
+		local table_Effects = StellarBlade.ParseTableStrings(selectedActions.Effect)
+		StellarBlade.AddEffectFromTable(entity, table_Effects, tableOptional)
+	end
+
+	-- Apply ShowPath
+	if selectedActions.ShowPath and selectedActions.ShowPath != "" then
+		StellarBlade.SetShow(entity, selectedActions.ShowPath, tableOptional)
+	end
+
+	-- Apply MoveStep (Target Only)
+	if isTarget and selectedActions.MoveStep and selectedActions.MoveStep != "" and selectedActions.MoveStep != "None" then
+		StellarBlade.AddMoveStep(entity, selectedActions.MoveStep, tableOptional)
+	end
+end
+
+StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, bCritical, tableOptional) 
 	-- print("StartSkillSelfResult") 
-	local physobj = self:GetPhysicsObject() 
 	local SkillResult = SB_SkillResultTable[1].Rows[SkillResultAlias] 
-	-- priority: critical, weakpoint, groggy, down, swimming, airborne, air, moving, common 
-
-	local ResultSelfCriticalEffect = SkillResult.ResultSelfCriticalEffect 
-	local ResultSelfCriticalShowPath = SkillResult.ResultSelfCriticalShowPath 
 	
-	local ResultSelfWeakpointHitEffect = SkillResult.ResultSelfWeakpointHitEffect 
-	
-	local ResultSelfGroggyEffect = SkillResult.ResultSelfGroggyEffect 
-	local ResultSelfGroggyShowPath = SkillResult.ResultSelfGroggyShowPath 
-	
-	local ResultSelfDownEffect = SkillResult.ResultSelfDownEffect 
-	local ResultSelfDownShowPath = SkillResult.ResultSelfDownShowPath 
-	
-	local ResultSelfSwimmingEffect = SkillResult.ResultSelfSwimmingEffect 
-	local ResultSelfSwimmingShowPath = SkillResult.ResultSelfSwimmingShowPath 
-	
-	local ResultSelfAirborneEffect = SkillResult.ResultSelfAirborneEffect 
-	local ResultSelfAirborneShowPath = SkillResult.ResultSelfAirborneShowPath 
-	
-	local ResultSelfAirEffect = SkillResult.ResultSelfAirEffect 
-	local ResultSelfAirShowPath = SkillResult.ResultSelfAirShowPath 
-	
-	local ResultSelfEventMovingEffect = SkillResult.ResultSelfEventMovingEffect 
-	local ResultSelfEventMovingShowPath = SkillResult.ResultSelfEventMovingShowPath 
-	
-	local ResultSelfCommonEffect = SkillResult.ResultSelfCommonEffect 
-	local ResultSelfCommonShowPath = SkillResult.ResultSelfCommonShowPath 
-	
+	-- 1. Additive: Critical (Always runs if true)
 	if bCritical then 
-		if ResultSelfCriticalEffect != "" then 
-			local table_ResultSelfCriticalEffect = StellarBlade.ParseTableStrings(ResultSelfCriticalEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfCriticalEffect,tableOptional) 
+		local critEffect = SkillResult.ResultSelfCriticalEffect
+		if critEffect and critEffect != "" then 
+			local table_ResultSelfCriticalEffect = StellarBlade.ParseTableStrings(critEffect) 
+			StellarBlade.AddEffectFromTable(self, table_ResultSelfCriticalEffect, tableOptional) 
 		end 
-		StellarBlade.SetShow(self,ResultSelfCriticalShowPath,tableOptional) 
-		-- return true 
+		StellarBlade.SetShow(self, SkillResult.ResultSelfCriticalShowPath, tableOptional) 
 	end 
-	
-	local bWeakpoint = false 
-	
+
+	-- 2. Additive: Weakpoint (Always runs if true)
+	local bWeakpoint = false -- Define your weakpoint logic here
 	if bWeakpoint then 
-		if ResultSelfWeakpointHitEffect != "" then 
-			local table_ResultSelfWeakpointHitEffect = StellarBlade.ParseTableStrings(ResultSelfWeakpointHitEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfWeakpointHitEffect,tableOptional) 
+		local weakEffect = SkillResult.ResultSelfWeakpointHitEffect
+		if weakEffect and weakEffect != "" then 
+			local table_ResultSelfWeakpointHitEffect = StellarBlade.ParseTableStrings(weakEffect) 
+			StellarBlade.AddEffectFromTable(self, table_ResultSelfWeakpointHitEffect, tableOptional) 
 		end 
 	end 
+
+	-- 3. Calculate States
+	local activeStates = GetEntityStates(self)
+	-- Inject manual states that depend on external flags if necessary
+	activeStates.Groggy = false -- (Set your Groggy logic)
+	activeStates.Down = false   -- (Set your Down logic)
 	
-	local bGroggy = false 
-	
-	if bGroggy then 
-		if HitLevel then 
-			if ResultSelfGroggyEffect != "" then 
-				local table_ResultSelfGroggyEffect = StellarBlade.ParseTableStrings(ResultSelfGroggyEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfGroggyEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfGroggyShowPath,tableOptional)  
-			return true 
-		end 
-		if ResultSelfGroggyEffect != "" then 
-			local table_ResultSelfGroggyEffect = StellarBlade.ParseTableStrings(ResultSelfGroggyEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfGroggyEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfGroggyShowPath,tableOptional) 
-		return true 
-	end 
-	
-	local bDown = false 
-	
-	if bDown then 
-		if HitLevel then 
-			if ResultSelfDownEffect != "" then 
-				local table_ResultSelfDownEffect = StellarBlade.ParseTableStrings(ResultSelfDownEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfDownEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfDownShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfDownEffect != "" then 
-			local table_ResultSelfDownEffect = StellarBlade.ParseTableStrings(ResultSelfDownEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfDownEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfDownShowPath,tableOptional) 
-		return true 
-	end 
-	
-	local bSwimming = self:WaterLevel() > 0 
-	
-	if bSwimming then 
-		if HitLevel then 
-			if ResultSelfSwimmingEffect != "" then 
-				local table_ResultSelfSwimmingEffect = StellarBlade.ParseTableStrings(ResultSelfSwimmingEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfSwimmingEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfSwimmingShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfSwimmingEffect != "" then 
-			local table_ResultSelfSwimmingEffect = StellarBlade.ParseTableStrings(ResultSelfSwimmingEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfSwimmingEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfSwimmingShowPath,tableOptional) 
-		return true 
-	end 
-	
-	local bAirborne = self:GetMoveType() == MOVETYPE_FLY or self.GetNavType and self:GetNavType() == NAV_FLY or self:IsFlagSet(FL_FLY) 
-	if bAirborne then 
-		if HitLevel then 
-			if ResultSelfAirborneEffect != "" then 
-				local table_ResultSelfAirborneEffect = StellarBlade.ParseTableStrings(ResultSelfAirborneEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfAirborneEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfAirborneShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfAirborneEffect != "" then 
-			local table_ResultSelfAirborneEffect = StellarBlade.ParseTableStrings(ResultSelfAirborneEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfAirborneEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfAirborneShowPath,tableOptional) 
-		return true 
-	end 
-	
-	local bAir = !self:IsOnGround() 
-	if physobj:IsValid() then 
-		bAir = table.IsEmpty(physobj:GetFrictionSnapshot()) 
-	end 
-	if bAir then 
-		if HitLevel then 
-			if ResultSelfAirEffect != "" then 
-				local table_ResultSelfAirEffect = StellarBlade.ParseTableStrings(ResultSelfAirEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfAirEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfAirShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfAirEffect != "" then 
-			local table_ResultSelfAirEffect = StellarBlade.ParseTableStrings(ResultSelfAirEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfAirEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfAirShowPath,tableOptional) 
-		return true 
-	end 
-	local bMoving = self.IsMoving and self:IsMoving() or !self:GetVelocity():IsZero() -- and no move aliases present 
-	if bMoving then 
-		if HitLevel then 
-			if ResultSelfEventMovingEffect != "" then 
-				local table_ResultSelfEventMovingEffect = StellarBlade.ParseTableStrings(ResultSelfEventMovingEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfEventMovingEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfEventMovingShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfEventMovingEffect != "" then 
-			local table_ResultSelfEventMovingEffect = StellarBlade.ParseTableStrings(ResultSelfEventMovingEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfEventMovingEffect,tableOptional) 
-		end  
-		StellarBlade.SetShow(self,ResultSelfEventMovingShowPath,tableOptional) 
-		return true 
-	end 
-	
-	local bCommon = true 
-	if bCommon then 
-		if HitLevel then 
-			if ResultSelfCommonEffect != "" then 
-				local table_ResultSelfCommonEffect = StellarBlade.ParseTableStrings(ResultSelfCommonEffect) 
-				StellarBlade.AddEffectFromTable(self,table_ResultSelfCommonEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(self,ResultSelfCommonShowPath,tableOptional) 
-			return true 
-		end 
-		if ResultSelfCommonEffect != "" then 
-			local table_ResultSelfCommonEffect = StellarBlade.ParseTableStrings(ResultSelfCommonEffect) 
-			StellarBlade.AddEffectFromTable(self,table_ResultSelfCommonEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(self,ResultSelfCommonShowPath,tableOptional) 
-		return true 
-	end 
+	-- 4. Process Waterfall Logic
+	ApplyCascadingActions(self, SkillResult, activeStates, false, HitLevel, tableOptional)
+
+	return true
 end 
 
-StellarBlade.StartSkillTargetResult = function(target,SkillResultAlias,HitLevel,bCritical,tableOptional) 
-	HitLevel = false 
-	local physobj = target:GetPhysicsObject() 
+StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLevel, bCritical, tableOptional) 
+	-- HitLevel = false 	
 	local SkillResult = SB_SkillResultTable[1].Rows[SkillResultAlias] 
-	-- priority: critical, weakpoint, groggy, down, swimming, airborne, air, moving, common 
-
-	local ResultTargetCriticalEffect = SkillResult.ResultTargetCriticalEffect 
-	local ResultTargetCriticalShowPath = SkillResult.ResultTargetCriticalShowPath 
 	
-	local ResultTargetWeakpointHitEffect = SkillResult.ResultTargetWeakpointHitEffect 
-	
-	local ResultTargetGroggyEffect = SkillResult.ResultTargetGroggyEffect 
-	local HitLevelResultTargetGroggyEffect = SkillResult.HitLevelResultTargetGroggyEffect 
-	local ResultTargetGroggyShowPath = SkillResult.ResultTargetGroggyShowPath 
-	local HitLevelResultTargetGroggyMoveAlias = SkillResult.HitLevelResultTargetGroggyMoveAlias 
-	local ResultTargetGroggyMoveAlias = SkillResult.ResultTargetGroggyMoveAlias 
-	
-	local ResultTargetDownEffect = SkillResult.ResultTargetDownEffect 
-	local HitLevelResultTargetDownEffect = SkillResult.HitLevelResultTargetDownEffect 
-	local ResultTargetDownShowPath = SkillResult.ResultTargetDownShowPath 
-	local HitLevelResultTargetDownMoveAlias = SkillResult.HitLevelResultTargetDownMoveAlias 
-	local ResultTargetDownMoveAlias = SkillResult.ResultTargetDownMoveAlias 
-	
-	local ResultTargetSwimmingEffect = SkillResult.ResultTargetSwimmingEffect 
-	local HitLevelResultTargetSwimmingEffect = SkillResult.HitLevelResultTargetSwimmingEffect 
-	local ResultTargetSwimmingShowPath = SkillResult.ResultTargetSwimmingShowPath 
-	local HitLevelResultTargetSwimmingMoveAlias = SkillResult.HitLevelResultTargetSwimmingMoveAlias 
-	local ResultTargetSwimmingMoveAlias = SkillResult.ResultTargetSwimmingMoveAlias 
-
-	local ResultTargetAirborneEffect = SkillResult.ResultTargetAirborneEffect 
-	local HitLevelResultTargetAirborneEffect = SkillResult.HitLevelResultTargetAirborneEffect 
-	local ResultTargetAirborneShowPath = SkillResult.ResultTargetAirborneShowPath 
-	local HitLevelResultTargetAirborneMoveAlias = SkillResult.HitLevelResultTargetAirborneMoveAlias 
-	local ResultTargetAirborneMoveAlias = SkillResult.ResultTargetAirborneMoveAlias 
-	
-	local ResultTargetAirEffect = SkillResult.ResultTargetAirEffect 
-	local HitLevelResultTargetAirEffect = SkillResult.HitLevelResultTargetAirEffect 
-	local ResultTargetAirShowPath = SkillResult.ResultTargetAirShowPath 
-	local HitLevelResultTargetAirMoveAlias = SkillResult.HitLevelResultTargetAirMoveAlias 
-	local ResultTargetAirMoveAlias = SkillResult.ResultTargetAirMoveAlias 
-	
-	local ResultTargetEventMovingEffect = SkillResult.ResultTargetEventMovingEffect 
-	local HitLevelResultTargetEventMovingEffect = SkillResult.HitLevelResultTargetEventMovingEffect 
-	local ResultTargetEventMovingShowPath = SkillResult.ResultTargetEventMovingShowPath 
-	local HitLevelResultTargetEventMovingMoveAlias = SkillResult.HitLevelResultTargetEventMovingMoveAlias 
-	local ResultTargetEventMovingMoveAlias = SkillResult.ResultTargetEventMovingMoveAlias 
-	
-	local ResultTargetCommonEffect = SkillResult.ResultTargetCommonEffect 
-	local HitLevelResultTargetCommonEffect = SkillResult.HitLevelResultTargetCommonEffect 
-	local ResultTargetCommonShowPath = SkillResult.ResultTargetCommonShowPath 
-	local HitLevelResultTargetCommonMoveAlias = SkillResult.HitLevelResultTargetCommonMoveAlias 
-	local ResultTargetCommonMoveAlias = SkillResult.ResultTargetCommonMoveAlias 
-	
+	-- 1. Additive: Critical
 	if bCritical then 
-		if ResultTargetCriticalEffect != "" then 
-			local table_ResultTargetCriticalEffect = StellarBlade.ParseTableStrings(ResultTargetCriticalEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetCriticalEffect,tableOptional) 
+		local critEffect = SkillResult.ResultTargetCriticalEffect
+		if critEffect and critEffect != "" then 
+			local table_ResultTargetCriticalEffect = StellarBlade.ParseTableStrings(critEffect) 
+			StellarBlade.AddEffectFromTable(target, table_ResultTargetCriticalEffect, tableOptional) 
 		end 
-		StellarBlade.SetShow(target,ResultTargetCriticalShowPath,tableOptional) 
-		-- return true 
+		StellarBlade.SetShow(target, SkillResult.ResultTargetCriticalShowPath, tableOptional) 
 	end 
 	
+	-- 2. Additive: Weakpoint
 	local bWeakpoint = false 
-	
 	if bWeakpoint then 
-		if ResultTargetWeakpointHitEffect != "" then 
-			local table_ResultTargetWeakpointHitEffect = StellarBlade.ParseTableStrings(ResultTargetWeakpointHitEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetWeakpointHitEffect,tableOptional) 
+		local weakEffect = SkillResult.ResultTargetWeakpointHitEffect
+		if weakEffect and weakEffect != "" then 
+			local table_ResultTargetWeakpointHitEffect = StellarBlade.ParseTableStrings(weakEffect) 
+			StellarBlade.AddEffectFromTable(target, table_ResultTargetWeakpointHitEffect, tableOptional) 
 		end 
 	end 
 	
-	local bGroggy = false 
+	-- 3. Calculate States
+	local activeStates = GetEntityStates(target)
+	-- Inject manual states
+	activeStates.Groggy = false 
+	activeStates.Down = false   
 	
-	if bGroggy then 
-		if HitLevel then 
-			if HitLevelResultTargetGroggyEffect != "" then 
-				local table_HitLevelResultTargetGroggyEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetGroggyEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetGroggyEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetGroggyShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetGroggyMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetGroggyEffect != "" then 
-			local table_ResultTargetGroggyEffect = StellarBlade.ParseTableStrings(ResultTargetGroggyEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetGroggyEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetGroggyShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,HitLevelResultTargetGroggyMoveAlias,tableOptional) 
-		return true 
-	end 
+	-- 4. Process Waterfall Logic
+	ApplyCascadingActions(target, SkillResult, activeStates, true, HitLevel, tableOptional)
 	
-	local bDown = false 
-	
-	if bDown then 
-		if HitLevel then 
-			if HitLevelResultTargetDownEffect != "" then 
-				local table_HitLevelResultTargetDownEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetDownEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetDownEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetDownShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetDownMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetDownEffect != "" then 
-			local table_ResultTargetDownEffect = StellarBlade.ParseTableStrings(ResultTargetDownEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetDownEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetDownShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,HitLevelResultTargetDownMoveAlias,tableOptional) 
-		return true 
-	end 
-	
-	local bSwimming = target:WaterLevel() > 0 
-	
-	if bSwimming then 
-		if HitLevel then 
-			if HitLevelResultTargetSwimmingEffect != "" then 
-				local table_HitLevelResultTargetSwimmingEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetSwimmingEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetSwimmingEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetSwimmingShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetSwimmingMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetSwimmingEffect != "" then 
-			local table_ResultTargetSwimmingEffect = StellarBlade.ParseTableStrings(ResultTargetSwimmingEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetSwimmingEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetSwimmingShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,HitLevelResultTargetSwimmingMoveAlias,tableOptional) 
-		return true 
-	end 
-	
-	local bAirborne = target:GetMoveType() == MOVETYPE_FLY or target.GetNavType and target:GetNavType() == NAV_FLY or target:IsFlagSet(FL_FLY) 
-	if bAirborne then 
-		if HitLevel then 
-			if HitLevelResultTargetAirborneEffect != "" then 
-				local table_HitLevelResultTargetAirborneEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetAirborneEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetAirborneEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetAirborneShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetAirborneMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetAirborneEffect != "" then 
-			local table_ResultTargetAirborneEffect = StellarBlade.ParseTableStrings(ResultTargetAirborneEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetAirborneEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetAirborneShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,HitLevelResultTargetAirborneMoveAlias,tableOptional) 
-		return true 
-	end 
-	
-	local bAir = !target:IsOnGround() 
-	if physobj:IsValid() and target:GetMoveType() == MOVETYPE_VPHYSICS then 
-		bAir = table.IsEmpty(physobj:GetFrictionSnapshot()) 
-	end 
-	if bAir then 
-		if HitLevel then 
-			if HitLevelResultTargetAirEffect != "" then 
-				local table_HitLevelResultTargetAirEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetAirEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetAirEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetAirShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetAirMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetAirEffect != "" then 
-			local table_ResultTargetAirEffect = StellarBlade.ParseTableStrings(ResultTargetAirEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetAirEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetAirShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,HitLevelResultTargetAirMoveAlias,tableOptional) 
-		return true 
-	end 
-	local bMoving = target.IsMoving and target:IsMoving() or !target:GetVelocity():IsZero() -- and no move aliases present 
-	if bMoving then 
-		if HitLevel then 
-			if HitLevelResultTargetEventMovingEffect != "" then 
-				local table_HitLevelResultTargetEventMovingEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetEventMovingEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetEventMovingEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetEventMovingShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetEventMovingMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetEventMovingEffect != "" then 
-			local table_ResultTargetEventMovingEffect = StellarBlade.ParseTableStrings(ResultTargetEventMovingEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetEventMovingEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetEventMovingShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,ResultTargetEventMovingMoveAlias,tableOptional) 
-		return true 
-	end 
-	
-	local bCommon = true 
-	if bCommon then 
-	print("bCommon:",true,target) 
-		if HitLevel then 
-			if HitLevelResultTargetCommonEffect != "" then 
-				local table_HitLevelResultTargetCommonEffect = StellarBlade.ParseTableStrings(HitLevelResultTargetCommonEffect) 
-				StellarBlade.AddEffectFromTable(target,table_HitLevelResultTargetCommonEffect,tableOptional) 
-			end 
-			StellarBlade.SetShow(target,ResultTargetCommonShowPath,tableOptional) 
-			StellarBlade.AddMoveStep(target,HitLevelResultTargetCommonMoveAlias,tableOptional) 
-			return true 
-		end 
-		if ResultTargetCommonEffect != "" then 
-			local table_ResultTargetCommonEffect = StellarBlade.ParseTableStrings(ResultTargetCommonEffect) 
-			StellarBlade.AddEffectFromTable(target,table_ResultTargetCommonEffect,tableOptional) 
-		end 
-		StellarBlade.SetShow(target,ResultTargetCommonShowPath,tableOptional) 
-		StellarBlade.AddMoveStep(target,ResultTargetCommonMoveAlias,tableOptional) 
-		return true 
-	end 
-	
-	return false -- unlikely, when not handled 
-end 
+	return true 
+end
 
 StellarBlade.JustParryAnticipation = function(ent) -- just parry: the parry you properly calculate its timespan 
 	--- START: Added Damage Check Logic ---
