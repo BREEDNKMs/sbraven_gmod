@@ -141,14 +141,13 @@ ENT.NPC_MeleeHitSound = "Unreali_Nali.MeleeHit"
 ENT.NPC_PainSound 	= "NPC_Raven.PainSound" 
 ENT.NPC_PainSoundWater 	= "Unreali_Female.HurtUnderWater" 
 ENT.npc_health 		= 248304 -- "MaxHP": 248304, "MaxShield": 4805, 
-ENT.npc_model		= "models/alvaroports/sbraven2.mdl" 
+ENT.npc_model		= "models/alvaroports/sbravenpm.mdl" 
 ENT.PhysicAttackPower = 1600  
 ENT.bHasInnateMelee1 = true 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
 ENT.SB_EffectAlias = { } 
-ENT.SBAI_ActiveSkill = { } -- SkillStepTable 
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
 ENT.CharacterSoundSetPath = "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
@@ -316,7 +315,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_29 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_BuffFX",
                         bActive = true,
                         bInverseCondition = true
@@ -499,7 +498,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_35 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Common_HitProjectileResult",
                         bActive = true,
                         bInverseCondition = false
@@ -587,7 +586,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_54 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_RushWaitTime",
                         FlowAbortMode = "Self",
                         bActive = true,
@@ -634,7 +633,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "FirstTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_60 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_NoGuardCheck",
                           "M_Raven_NoGuardCheck2",
@@ -668,13 +667,13 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_73 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain1",
                         bActive = true,
                         bInverseCondition = false
                       },
                       SBBTDecorator_SbCheckActorEffect_74 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain2",
                         bActive = true,
                         bInverseCondition = true
@@ -698,13 +697,13 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_61 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryChain",
                         bActive = true,
                         bInverseCondition = false
                       },
                       SBBTDecorator_SbCheckActorEffect_62 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain2",
                         bActive = true,
                         bInverseCondition = true
@@ -714,7 +713,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_65 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             EffectAlias = "M_Raven_BetaGrabCheck",
                             bActive = true,
                             bInverseCondition = true
@@ -737,7 +736,7 @@ ENT.SBAI_BehaviorTree = {
                               {
                                 Condition = {
                                   SBBTDecorator_SbCheckActorEffect_15 = {
-                                    ActorType = "Target",
+                                    ActorType = "Self",
                                     EffectAlias = "M_Raven_GrabChain",
                                     bActive = true,
                                     bInverseCondition = false
@@ -757,7 +756,7 @@ ENT.SBAI_BehaviorTree = {
                           {
                             Condition = {
                               SBBTDecorator_SbCheckActorEffect_64 = {
-                                ActorType = "Target",
+                                ActorType = "Self",
                                 OrCheck_EffectAliasArray = {
                                   "M_Raven_GrabChain",
                                   "M_Raven_NoGuardCheck2"
@@ -780,7 +779,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_63 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_GrabChain",
                               "M_Raven_NoGuardCheck2"
@@ -804,7 +803,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_39 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_EvadeParryCheck",
                           "M_Raven_ParryChain",
@@ -838,13 +837,13 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_76 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain2",
                         bActive = true,
                         bInverseCondition = false
                       },
                       SBBTDecorator_SbCheckActorEffect_77 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain1",
                         bActive = true,
                         bInverseCondition = true
@@ -868,7 +867,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_25 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_ParryChain",
                           "M_Raven_GrabChain",
@@ -891,7 +890,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_38 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_NoGuardCheck",
                               "M_Raven_NoGuardShortCheck"
@@ -931,7 +930,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "FirstTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_13 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_EvadeParryCheck",
                           "M_Raven_ParryChain",
@@ -981,7 +980,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "FirstTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_7 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_NoGuardCheck",
                           "M_Raven_NoGuardShortCheck",
@@ -1001,7 +1000,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_40 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             EffectAlias = "M_Raven_BetaGrabCheck",
                             bActive = true,
                             bInverseCondition = true
@@ -1024,7 +1023,7 @@ ENT.SBAI_BehaviorTree = {
                               {
                                 Condition = {
                                   SBBTDecorator_SbCheckActorEffect_42 = {
-                                    ActorType = "Target",
+                                    ActorType = "Self",
                                     EffectAlias = "M_Raven_GrabChain",
                                     bActive = true,
                                     bInverseCondition = false
@@ -1044,7 +1043,7 @@ ENT.SBAI_BehaviorTree = {
                           {
                             Condition = {
                               SBBTDecorator_SbCheckActorEffect_36 = {
-                                ActorType = "Target",
+                                ActorType = "Self",
                                 OrCheck_EffectAliasArray = {
                                   "M_Raven_GrabChain",
                                   "M_Raven_NoGuardCheck2"
@@ -1067,7 +1066,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_5 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_GrabChain",
                               "M_Raven_NoGuardCheck2"
@@ -1091,7 +1090,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_47 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_ParryChain",
                           "M_Raven_GrabChain",
@@ -1129,7 +1128,7 @@ ENT.SBAI_BehaviorTree = {
                             bInverseCondition = true
                           },
                           SBBTDecorator_SbCheckActorEffect_16 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             FlowAbortMode = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_ParryPreviewChain1",
@@ -1175,7 +1174,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_24 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_ParryChain",
                           "M_Raven_GrabChain",
@@ -1208,7 +1207,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_4 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_ParryChain",
                           "M_Raven_GrabChain",
@@ -1250,7 +1249,7 @@ ENT.SBAI_BehaviorTree = {
                             bInverseCondition = true
                           },
                           SBBTDecorator_SbCheckActorEffect_28 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             FlowAbortMode = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_ParryPreviewChain1",
@@ -1439,7 +1438,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_30 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Common_HitProjectileResult",
                         bActive = true,
                         bInverseCondition = false
@@ -1558,7 +1557,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_43 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_RushWaitTime",
                         FlowAbortMode = "Self",
                         bActive = true,
@@ -1605,7 +1604,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "SecondTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_19 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_EvadeParryCheck",
                           "M_Raven_GrabChain"
@@ -1632,13 +1631,13 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_67 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain1",
                         bActive = true,
                         bInverseCondition = false
                       },
                       SBBTDecorator_SbCheckActorEffect_68 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain2",
                         bActive = true,
                         bInverseCondition = true
@@ -1667,7 +1666,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "SecondTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_81 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_EvadeParryCheck",
                           "M_Raven_GrabChain",
@@ -1698,7 +1697,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_18 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_EvadeParryCheck",
                           "M_Raven_GrabChain",
@@ -1731,13 +1730,13 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_69 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain2",
                         bActive = true,
                         bInverseCondition = false
                       },
                       SBBTDecorator_SbCheckActorEffect_70 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         EffectAlias = "M_Raven_ParryPreviewChain1",
                         bActive = true,
                         bInverseCondition = true
@@ -1761,7 +1760,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_129 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -1795,7 +1794,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_6 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -1828,7 +1827,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_2 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ChaseCheck",
@@ -1848,7 +1847,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_17 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_NoGuardCheck",
                               "M_Raven_NoGuardShortCheck"
@@ -1885,7 +1884,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "SecondTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_37 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -1931,7 +1930,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "SecondTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_11 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -1964,7 +1963,7 @@ ENT.SBAI_BehaviorTree = {
                         KeyName = "SecondTime"
                       },
                       SBBTDecorator_SbCheckActorEffect_23 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_NoGuardCheck",
                           "M_Raven_EvadeParryCheck",
@@ -1980,7 +1979,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_33 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             EffectAlias = "M_Raven_BetaGrabCheck",
                             bActive = true,
                             bInverseCondition = true
@@ -2003,7 +2002,7 @@ ENT.SBAI_BehaviorTree = {
                               {
                                 Condition = {
                                   SBBTDecorator_SbCheckActorEffect_34 = {
-                                    ActorType = "Target",
+                                    ActorType = "Self",
                                     EffectAlias = "M_Raven_GrabChain",
                                     bActive = true,
                                     bInverseCondition = false
@@ -2023,7 +2022,7 @@ ENT.SBAI_BehaviorTree = {
                           {
                             Condition = {
                               SBBTDecorator_SbCheckActorEffect_32 = {
-                                ActorType = "Target",
+                                ActorType = "Self",
                                 OrCheck_EffectAliasArray = {
                                   "M_Raven_GrabChain",
                                   "M_Raven_NoGuardCheck2"
@@ -2046,7 +2045,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_31 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_GrabChain",
                               "M_Raven_NoGuardCheck2"
@@ -2070,7 +2069,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_10 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_BackMoveCheck",
@@ -2088,7 +2087,7 @@ ENT.SBAI_BehaviorTree = {
                           {
                             Condition = {
                               SBBTDecorator_SbCheckActorEffect_9 = {
-                                ActorType = "Target",
+                                ActorType = "Self",
                                 EffectAlias = "M_Raven_SwordAuraCheck",
                                 bActive = true,
                                 bInverseCondition = true
@@ -2212,7 +2211,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_12 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -2226,7 +2225,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_0 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             EffectAlias = "M_Raven_ComboCheck",
                             bActive = true,
                             bInverseCondition = true
@@ -2253,7 +2252,7 @@ ENT.SBAI_BehaviorTree = {
                       {
                         Condition = {
                           SBBTDecorator_SbCheckActorEffect_3 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             EffectAlias = "M_Raven_MoveComboCheck",
                             bActive = true,
                             bInverseCondition = true
@@ -2274,7 +2273,7 @@ ENT.SBAI_BehaviorTree = {
                   {
                     Condition = {
                       SBBTDecorator_SbCheckActorEffect_22 = {
-                        ActorType = "Target",
+                        ActorType = "Self",
                         OrCheck_EffectAliasArray = {
                           "M_Raven_GrabChain",
                           "M_Raven_ParryPreviewChain1",
@@ -2312,7 +2311,7 @@ ENT.SBAI_BehaviorTree = {
                             bInverseCondition = true
                           },
                           SBBTDecorator_SbCheckActorEffect_78 = {
-                            ActorType = "Target",
+                            ActorType = "Self",
                             FlowAbortMode = "Self",
                             OrCheck_EffectAliasArray = {
                               "M_Raven_ParryPreviewChain1",
@@ -2377,7 +2376,8 @@ ENT.SBAI_BehaviorTree = {
     },
     ObjectName = "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_32'"
   }
-} 
+}
+local M_Raven_AI = SB_ImportJSON("data_static/SB/Content/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI.json") 
 
 function ENT:Initialize() 
 	scripted_ents.Get("npc_unreali_female").Initialize(self) 
@@ -2423,7 +2423,7 @@ end
 
 -- Recursively clear running state in a subtree (used by flow-abort)
 function ENT:SBAI_ClearRunning(node)
-    if not node then return end
+    if !node then return end
     node._running = false
     node._result = nil
     node._startTime = nil
@@ -2438,7 +2438,6 @@ function ENT:SBAI_ClearRunning(node)
     -- This prevents stale coroutine-local control flow from continuing on a pruned subtree.
     self._sbaico = nil
 end
-
 
 -- Coroutine-friendly, stack-based Behavior Tree selector/sequence executor.
 -- Call this function *inside* a coroutine (NextBot coroutine think).
@@ -2754,6 +2753,522 @@ function ENT:SBAI_RunBehavior()
     end
 
     return false
+end 
+
+-- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
+function ENT:SBAI_RunBehavior() 
+    -- Create coroutine if missing or dead
+    if !self._sbaico or coroutine.status(self._sbaico) == "dead" then 
+        -- Ensure tree is indexed and state is reset
+        if !self.SBAI_RuntimeState then self:SBAI_InitTree() end
+
+        -- Safety check for the Root ID
+        if !self.SBAI_TreeRootID then
+            print("[SBAI] Error: Cannot run behavior, TreeRootID is missing!") return 
+        end
+
+        print("constructing coroutine starting at:", self.SBAI_TreeRootID) 
+        self._sbaico = coroutine.create(function()
+            -- CHANGED: Pass the Root ID string, not a table
+            return self:SBAI_SelectTask(self.SBAI_TreeRootID)
+        end)
+    end
+
+    -- Resume coroutine safely
+    if coroutine.status(self._sbaico) == "suspended" then
+		self:SBAI_CheckObservers() 
+        local ok, ret = coroutine.resume(self._sbaico)
+        if !ok then
+            print("[SBAI] behavior coroutine error:", ret)
+            self._sbaico = nil
+            self.SBAI_RuntimeState = {} -- Reset state on crash
+            self.SBAI_ExecutionStack = {}
+            return false
+        else
+            if coroutine.status(self._sbaico) == "dead" then
+                self._sbaico = nil
+                print("[SBAI] Tree finished with result:", ret)
+                return ret
+            else
+                return nil
+            end
+        end
+    end
+    return false
+end
+
+-- Phase 1: The One-Time Indexer
+-- Call this in Initialize or OnEntityCreated, before trying to run the AI.
+function ENT:SBAI_IndexTree()
+    -- Ensure the global raw table exists (imported via "M_Raven_AI = SB_ImportJSON(...)")
+    local rawTable = M_Raven_AI
+    if !rawTable then
+        ErrorNoHalt("[SBAI] M_Raven_AI global table not found! Cannot index Behavior Tree.\n")
+        return false
+    end
+
+    -- 1. Create the Global Lookup Table
+    self.SBAI_NodeLookup = {}
+    self.SBAI_TreeRootID = nil
+
+    print("[SBAI] Indexing Behavior Tree Nodes...")
+
+    for _, node in ipairs(rawTable) do
+        -- 2. Map Keys to Nodes
+        -- We must reconstruct the unique string ID that Unreal uses in its references.
+        -- Format: Type'Outer:Name'
+        -- Example: BTComposite_Selector'M_Raven_AI:BTComposite_Selector_38'
+        
+        local t = node.Type
+        local name = node.Name
+        local outer = node.Outer
+
+        -- Only index nodes that are relevant parts of the tree (have an Outer package)
+        if t and name and outer then
+            local fullID = string.format("%s'%s:%s'", t, outer, name)
+            
+            -- Store reference to the raw node data
+            self.SBAI_NodeLookup[fullID] = node
+        end
+
+        -- 3. Find the Root
+        -- The entry with t "BehaviorTree" holds the pointer to the start of the logic.
+        if t == "BehaviorTree" and node.Properties and node.Properties.RootNode then
+            self.SBAI_TreeRootID = node.Properties.RootNode.ObjectName
+            print("[SBAI] Found Root Node ID:", self.SBAI_TreeRootID)
+        end
+    end
+
+    -- Validation
+    if !self.SBAI_TreeRootID then
+        ErrorNoHalt("[SBAI] Error: Could not find 'BehaviorTree' entry or RootNode property in JSON.\n")
+        return false
+    end
+    
+    if table.Count(self.SBAI_NodeLookup) == 0 then
+         ErrorNoHalt("[SBAI] Error: Lookup table is empty. Check JSON format (Type/Name/Outer fields).\n")
+         return false
+    end
+
+    print("[SBAI] Successfully indexed " .. table.Count(self.SBAI_NodeLookup) .. " nodes.")
+    return true 
+end 
+
+-- Phase 2: State Segregation
+-- Call this to reset the AI state (e.g., on spawn or when the tree resets)
+function ENT:SBAI_InitTree()
+    -- 1. Create the Runtime Registry
+    -- Key = NodeID (string), Value = Table { _running=bool, _result=var, _startTime=float, _currentChild=int }
+    self.SBAI_RuntimeState = {}
+
+    -- 2. Reset the Execution Stack
+    -- This will replace the recursive coroutine stack. It holds the path of NodeIDs currently being traversed.
+    self.SBAI_ExecutionStack = {}
+
+    -- 3. Standard Reset
+    self.SBAI_bInBackgroundTask = false
+    self.CurrentBranch = nil
+    self._sbaico = nil
+    
+    -- Safety check: Ensure the static indexer has run
+    if !self.SBAI_NodeLookup then
+        self:SBAI_IndexTree()
+    end
+end
+
+-- Helper: safely set a state value for a node
+function ENT:SBAI_SetNodeState(nodeID, key, value)
+    if !self.SBAI_RuntimeState[nodeID] then
+        self.SBAI_RuntimeState[nodeID] = {}
+    end
+    self.SBAI_RuntimeState[nodeID][key] = value
+end
+
+-- Helper: safely get a state value (returns nil if state doesn't exist)
+function ENT:SBAI_GetNodeState(nodeID, key)
+    local state = self.SBAI_RuntimeState[nodeID]
+    if state then return state[key] end
+    return nil
+end
+
+-- Helper: Evaluate all decorators on a specific child link (Edge)
+-- Returns: boolean (True = Allowed, False = Blocked)
+function ENT:SBAI_EvaluateEdge(childEntry)
+    if !childEntry.Decorators then return true end
+
+    for _, decoRef in ipairs(childEntry.Decorators) do
+        local decoID = decoRef.ObjectName
+        local decoNode = self.SBAI_NodeLookup[decoID]
+
+        if decoNode then
+            local rawName = decoNode.Type or decoNode.Name
+            local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
+			
+			print("Decorator is:",funcName) 
+            if self[funcName] then
+                -- Check condition
+                local success = self[funcName](self, decoNode.Properties, decoID) 
+				print("Decorator result is:", success) 
+				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
+                if !success then return false end
+            end
+        end
+    end
+    return true
+end
+
+-- Runs every tick to check for interrupts (Flow Abort)
+-- Returns: Boolean (Did we abort something?)
+function ENT:SBAI_CheckObservers()
+    if #self.SBAI_ExecutionStack == 0 then return false end
+
+    -- Iterate down the stack (from Root -> Current Leaf)
+    -- We use a numeric loop because we might modify the stack during the loop
+    for stackIdx, frame in ipairs(self.SBAI_ExecutionStack) do
+        local nodeID = frame.NodeID
+        local nodeData = self.SBAI_NodeLookup[nodeID]
+        local currentChildIdx = frame.Index
+        
+        if not nodeData or not nodeData.Properties.Children then goto next_frame end
+        local children = nodeData.Properties.Children
+
+        -- === 1. Check "LowerPriority" & "Both" (Higher Priority Siblings) ===
+        -- Look at all siblings to the LEFT of the current running child
+        for i = 1, currentChildIdx - 1 do
+            local sibling = children[i]
+            local abortMode = nil
+            
+            -- Scan decorators for Abort Mode
+            if sibling.Decorators then
+                for _, d in ipairs(sibling.Decorators) do
+                    local dNode = self.SBAI_NodeLookup[d.ObjectName]
+                    if dNode and dNode.Properties.FlowAbortMode then
+                        local mode = dNode.Properties.FlowAbortMode
+                        if string.find(mode, "LowerPriority") or string.find(mode, "Both") then
+                            abortMode = true 
+                            break 
+                        end
+                    end
+                end
+            end
+
+            -- If this sibling is set to Abort Lower Priority, we check its condition
+            if abortMode then
+                if self:SBAI_EvaluateEdge(sibling) then
+                    -- CRITICAL INTERRUPT: A higher priority node is now valid!
+                    -- 1. Clear running state of the *previous* path (the one we are executing now)
+                    local runningChildEntry = children[currentChildIdx]
+                    local runningID = runningChildEntry.ChildComposite and runningChildEntry.ChildComposite.ObjectName or runningChildEntry.ChildTask and runningChildEntry.ChildTask.ObjectName
+                    if runningID then self:SBAI_ClearRunning(runningID) end
+
+                    -- 2. Prune the stack back to this level
+                    while #self.SBAI_ExecutionStack > stackIdx do
+                        table.remove(self.SBAI_ExecutionStack)
+                    end
+
+                    -- 3. Set the index to this sibling (Restart execution here)
+                    frame.Index = i
+                    
+                    -- print("[SBAI] Observer Abort: LowerPriority interrupt at index " .. i)
+                    return true -- We interrupted, stop checking
+                end
+            end
+        end
+
+        -- === 2. Check "Self" & "Both" (Current Active Branch) ===
+        -- Look at the CURRENT running child
+        local currentEntry = children[currentChildIdx]
+        local checkSelf = false
+
+        if currentEntry.Decorators then
+            for _, d in ipairs(currentEntry.Decorators) do
+                local dNode = self.SBAI_NodeLookup[d.ObjectName]
+                if dNode and dNode.Properties.FlowAbortMode then
+                    local mode = dNode.Properties.FlowAbortMode
+                    if string.find(mode, "Self") or string.find(mode, "Both") then
+                        checkSelf = true
+                        break
+                    end
+                end
+            end
+        end
+
+        if checkSelf then
+            -- Re-evaluate the current condition
+            if !self:SBAI_EvaluateEdge(currentEntry) then
+                -- CRITICAL FAILURE: The node we are inside is no longer allowed!
+                
+                -- 1. Clear running state of the subtree we are killing
+                local runningID = currentEntry.ChildComposite and currentEntry.ChildComposite.ObjectName or currentEntry.ChildTask and currentEntry.ChildTask.ObjectName
+                if runningID then self:SBAI_ClearRunning(runningID) end
+
+                -- 2. Prune stack back to this level
+                while #self.SBAI_ExecutionStack > stackIdx do
+                    table.remove(self.SBAI_ExecutionStack)
+                end
+
+                -- 3. Handle Failure Logic
+                local isSelector = string.find(nodeData.Type, "Selector")
+                if isSelector then
+                    -- If Selector, try next sibling
+                    frame.Index = frame.Index + 1
+                else
+                    -- If Sequence, the whole sequence fails immediately
+                    -- We force the result to fail and pop this frame too
+                    frame.ForceResult = false
+                    frame.Index = #children + 1 -- This ensures SelectTask pops it
+                end
+
+                -- print("[SBAI] Observer Abort: Self condition failed")
+                return true
+            end
+        end
+
+        ::next_frame::
+    end
+
+    return false
+end
+
+-- Recursive State Clearer
+-- 1. Looks up the STATIC structure to find children relationships.
+-- 2. Deletes the DYNAMIC state in the registry for those children.
+function ENT:SBAI_ClearRunning(nodeID)
+    if !nodeID then return end
+
+    -- 1. Clear the runtime state for this specific node
+    if self.SBAI_RuntimeState[nodeID] then
+        -- We explicitly nil these out to reset the node completely
+        self.SBAI_RuntimeState[nodeID]._running = false
+        self.SBAI_RuntimeState[nodeID]._result = nil
+        self.SBAI_RuntimeState[nodeID]._startTime = nil
+        self.SBAI_RuntimeState[nodeID]._currentChild = nil
+        
+        -- Optional: Remove the entry entirely to save memory, 
+        -- though keeping the table can reduce garbage collection churn.
+        -- self.SBAI_RuntimeState[nodeID] = nil 
+    end
+
+    -- 2. Find children using the STATIC Lookup Table
+    local staticNode = self.SBAI_NodeLookup[nodeID]
+    
+    -- Use the static definition to find what *could* be running below this node
+    if staticNode and staticNode.Properties and staticNode.Properties.Children then
+        for _, childEntry in ipairs(staticNode.Properties.Children) do
+            local childID = nil
+            
+            -- Resolve child ID based on type
+            if childEntry.ChildComposite then
+                childID = childEntry.ChildComposite.ObjectName
+            elseif childEntry.ChildTask then
+                childID = childEntry.ChildTask.ObjectName
+            end
+
+            -- Recursively clear state for the child
+            if childID then
+                self:SBAI_ClearRunning(childID)
+            end
+        end
+    end
+
+    -- 3. Coroutine Safety
+    -- If we are clearing the root or the currently running branch, the existing coroutine 
+    -- is now invalid because its local variables refer to states we just wiped.
+    if self._sbaico and nodeID == self.SBAI_TreeRootID then
+        self._sbaico = nil
+    end
+end 
+
+-- Phase 3: The Runner Logic (FIXED)
+function ENT:SBAI_SelectTask(startNodeID)
+    -- Initialize stack if empty
+    if #self.SBAI_ExecutionStack == 0 then
+        table.insert(self.SBAI_ExecutionStack, { NodeID = startNodeID, Index = 1 })
+    end
+
+    -- SAFETY: Prevent infinite loops if the tree resolves instantly
+    local ops = 0
+    local max_ops = 500 
+
+    while #self.SBAI_ExecutionStack > 0 do
+        ops = ops + 1
+        if ops > max_ops then
+            print("[SBAI] Infinite Loop Detected! Tree resolved too many nodes without yielding.")
+            return nil -- Force a yield/break
+        end
+
+        -- 1. Get the current Stack Frame
+        local frame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
+        local nodeID = frame.NodeID
+        local nodeData = self.SBAI_NodeLookup[nodeID] 
+        
+        -- Safety Check
+        if !nodeData or !nodeData.Properties.Children then
+            table.remove(self.SBAI_ExecutionStack)
+            goto continue_loop
+        end
+		print(nodeData.Name) 
+		if nodeData.Name == "BTComposite_Sequence_13" then Entity(1):ChatPrint("BTComposite_Sequence_13") end -- debug
+
+        local children = nodeData.Properties.Children
+        local idx = frame.Index
+        
+        -- Helper to identify composite type
+        local isSelector = string.find(nodeData.Type, "Selector")
+
+        -- 2. Check if we have processed all children (Pop Logic)
+        if idx > #children then
+            table.remove(self.SBAI_ExecutionStack)
+            
+            -- Default Results: Selector=False (Fail), Sequence=True (Success)
+            local compositeResult = !isSelector 
+            
+            -- OVERRIDE: Did we force a result? (Used when decorators fail in a sequence)
+            if frame.ForceResult != nil then
+                compositeResult = frame.ForceResult
+            end
+            
+            -- Propagate result to parent
+            if #self.SBAI_ExecutionStack > 0 then
+                local parentFrame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
+                local parentNode = self.SBAI_NodeLookup[parentFrame.NodeID]
+                local parentIsSelector = string.find(parentNode.Type, "Selector")
+                
+                -- Standard Propagation:
+                -- Parent Selector + Child Success = Parent Success (Stop)
+                -- Parent Sequence + Child Fail    = Parent Fail (Stop)
+                if (parentIsSelector and compositeResult == true) or (!parentIsSelector and compositeResult == false) then
+                    -- Force Parent to finish early
+                    parentFrame.ForceResult = compositeResult
+                    parentFrame.Index = #parentNode.Properties.Children + 1 -- Move index to end to trigger pop next loop
+                else
+                    -- Parent continues to next sibling
+                    parentFrame.Index = parentFrame.Index + 1
+                end
+            end
+            
+            if #self.SBAI_ExecutionStack == 0 then return compositeResult end
+            goto continue_loop
+        end
+
+        -- 3. Look at the Child
+        local childEntry = children[idx]
+        local canExecute = true
+
+        -- 4. Edge Decorators 
+		--[[ 
+        if childEntry.Decorators then
+            for _, decoRef in ipairs(childEntry.Decorators) do
+                local decoID = decoRef.ObjectName
+                local decoNode = self.SBAI_NodeLookup[decoID]
+
+                if decoNode then
+                    local rawName = decoNode.Type or decoNode.Name
+                    local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
+                    
+                    if self[funcName] then 
+					print("decorator is:",funcName) 
+                        local success = self[funcName](self, decoNode.Properties)
+						print("decorator result is:",success) 
+                        if !success then
+                            canExecute = false
+                            break 
+                        end
+                    end
+                end
+            end
+        end
+		--]] 
+		
+		-- 4. Edge Decorators
+		-- We use the same helper, but here we check ALL decorators (blocking logic)
+		local canExecute = self:SBAI_EvaluateEdge(childEntry)
+
+        -- 5. Decorator Handling (THE FIX)
+        if !canExecute then
+			if backgroundtask then 
+			-- [NEW] Safety Check: If we are aborting a node that was ALREADY running, we must clear its state!
+				local childID = nil
+				if childEntry.ChildComposite then 
+					childID = childEntry.ChildComposite.ObjectName
+				elseif childEntry.ChildTask then 
+					childID = childEntry.ChildTask.ObjectName 
+				end
+            
+				if childID and self:SBAI_GetNodeState(childID, "_running") then
+					 -- print("[SBAI] Aborting running node due to decorator failure:", childID)
+					 self:SBAI_ClearRunning(childID)
+				end
+			end 
+            -- [END NEW]
+		
+            if isSelector then
+                -- Selector: Child blocked? Just try the next one.
+                frame.Index = frame.Index + 1
+            else
+                -- Sequence: Child blocked? THE SEQUENCE FAILS.
+                frame.ForceResult = false
+                frame.Index = #children + 1 -- Force pop
+            end
+            goto continue_loop
+        end
+
+        -- 6. Execute Child
+        if childEntry.ChildComposite then
+            local nextID = childEntry.ChildComposite.ObjectName
+            table.insert(self.SBAI_ExecutionStack, { NodeID = nextID, Index = 1 })
+            goto continue_loop
+
+        elseif childEntry.ChildTask then
+            local taskID = childEntry.ChildTask.ObjectName
+            local taskNode = self.SBAI_NodeLookup[taskID]
+            local taskName = string.gsub(taskNode.Type, "^SBBTTask_", "")
+            
+            -- Manage Running State
+            local isRunning = self:SBAI_GetNodeState(taskID, "_running")
+            if !isRunning then
+                self:SBAI_SetNodeState(taskID, "_running", true)
+                self:SBAI_SetNodeState(taskID, "_startTime", CurTime())
+            end
+
+            -- Run Task
+            if self[taskName] then 
+				print("Task is:",taskName) 
+                local result = self[taskName](self, taskNode.Properties, taskID) 
+				print("Task result is:",result) 
+                
+                if result == nil then
+                    coroutine.yield() -- Running
+                else
+                    self:SBAI_SetNodeState(taskID, "_running", false)
+                    
+                    -- Handle Result
+                    if isSelector then
+                        if result == true then
+                            frame.ForceResult = true
+                            frame.Index = #children + 1 -- Selector Succeeded, Stop
+                        else
+                            frame.Index = frame.Index + 1 -- Selector Failed, Try Next
+                        end
+                    else -- Sequence
+                        if result == true then
+                            frame.Index = frame.Index + 1 -- Sequence Succeeded, Next
+                        else
+                            frame.ForceResult = false
+                            frame.Index = #children + 1 -- Sequence Failed, Stop
+                        end
+                    end
+                end
+            else
+                print("[SBAI] Missing Task: " .. taskName)
+                frame.Index = frame.Index + 1
+            end
+        end
+
+        ::continue_loop::
+    end
+    
+    return false
 end
 
 function ENT:NPC_GetRunActivity( act ) 
@@ -2797,11 +3312,8 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	-- likely performing a skill 
 	if self["ESBActorState::ActorState_BlockingBehavior"] then return false end 
 	if self:GetCurrentSchedule() == SCHED_SCENE_GENERIC then -- may be in a skill task 
-		if self.SBAI_ActiveSkill and self.SBAI_ActiveSkill.Name then 
-			if !self.SBAI_ActiveSkill.Stopped then 
-				-- print("self.SBAI_ActiveSkill.Name:",self.SBAI_ActiveSkill.Name) 
-				return true 
-			end 
+		if self.SBAI_SkillStep and self.SBAI_SkillStep.Name then 
+			if !self.SBAI_SkillStep:IsActive() then return true end 
 		end 
 	end 
 	-- if true then return false end 
@@ -2843,7 +3355,7 @@ function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
 end 
 
 function ENT:CustomRunAI() 
-	-- self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
+	-- self:SBAI_ProcessActiveSkill(self.SBAI_SkillStep) 
 	local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
 	if NPC_ShouldConductBehaviorTree then 
 		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
@@ -2859,15 +3371,15 @@ end
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
-    local arr = tbl.CompareAggroLevelArray
-    if not arr then return false end
+    local CompareAggroLevelArray = tbl.CompareAggroLevelArray
+    if !CompareAggroLevelArray then return false end
 
     -- Defensive: ensure we can iterate
-    if type(arr) != "table" then
-        arr = { arr }
+    if type(CompareAggroLevelArray) != "table" then
+        CompareAggroLevelArray = { CompareAggroLevelArray }
     end
 
-    for _, level in ipairs(arr) do
+    for _, level in ipairs(CompareAggroLevelArray) do
 
         -- if level == "AIAggroLevel_Peaceful" and self:GetNPCState() < 2 then
         if level == "AIAggroLevel_Peaceful" then
@@ -2886,54 +3398,50 @@ function ENT:SbAimMe(tbl) -- doesn't have any additional properties
 end 
 
 function ENT:SbBlackboard(tbl) 
-	if !isbool(tbl.bReturnSucceeded) then -- decorators don't have bReturnSucceeded, attempt to retrieve from blackboard 
-		local CheckValue = tbl.KeyName 
-		local testvalue = tbl.IntValue or 1 -- 1 means true 
-		local CompareOP = tbl.CompareOP or "Equal" 
-		local lookup = self.SBAI_BlackBoard[CheckValue] or 0 -- do not compare nil 
-		
-		if CompareOP == "Equal" then 
-			result = testvalue == lookup 
-		elseif CompareOP == "LessOrEqual" then 
-			result = testvalue <= lookup 
-		elseif CompareOP == "Greater" then 
-			result = testvalue > lookup 
-		elseif CompareOP == "GreaterOrEqual" then 
-			result = testvalue >= lookup 
-		elseif CompareOP == "Less" then 
-			result = testvalue < lookup 
-		elseif CompareOP == "NotEqual" then 
-			result = testvalue != lookup 
-		end 
-	return result 
-	
-	else -- task, save KeyName 
-		Entity(1):ChatPrint("saving to SBBlackBoard: "..tbl.KeyName..tostring(tbl.IntValue)..tbl.CompareOP) 
-		self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
-		return tbl.bReturnSucceeded 
-	end 
-	
-end -- key - value retriever 
+	-- PrintTable(tbl) 
+	-- 1. Default IntValue should be 0 
+    local testvalue = tbl.IntValue or 0 
+    local CompareOP = tbl.CompareOP or "ESBCompare::Equal" 
+    
+    -- 2. Retrieve value, treating nil as 0 (for integer checks)
+    local lookup = self.SBAI_BlackBoard[tbl.KeyName]
+    local val = lookup 
+    if val == nil then val = 0 end -- Treat uninitialized keys as 0
+    
+    -- If we are in "Task" mode (writing), this field bReturnSucceeded exists
+    if tbl.bReturnSucceeded != nil then 
+        -- Task: Write to Blackboard 
+        -- print("[SBAI] Writing BB:", tbl.KeyName, tbl.IntValue) 
+		Entity(1):ChatPrint("saving to SBAI_BlackBoard: "..tbl.KeyName..tostring(tbl.IntValue).." ") 
+        self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
+        return tbl.bReturnSucceeded 
+    end 
+    
+    -- Decorator: Compare
+    -- print("Checking BB:", tbl.KeyName, "Val:", val, "Op:", CompareOP, "Target:", testvalue) 
+    return StellarBlade.ESBCompare(val,testvalue,CompareOP) 
+end 
 
-function ENT:SbCheckActorEffect(tbl)
-    local ActorType          = tbl.ActorType or "Self"
-    local EffectAlias        = tbl.EffectAlias
-    local OrCheckArray       = tbl.OrCheck_EffectAliasArray or {}
-    local bActive            = tbl.bActive 
-    local bInverseCondition  = tbl.bInverseCondition or false
+function ENT:SbCheckActorEffect(tbl) 
+	PrintTable(tbl) 
+    local ActorType          = tbl.ActorType or "ESBAIActorType::Self" 
+    local EffectAlias        = tbl.EffectAlias 
+    local OrCheckArray       = tbl.OrCheck_EffectAliasArray or {} 
+    local bActive            = tbl.bActive or true 
+    local bInverseCondition  = tbl.bInverseCondition or false 
 
     -- if decorator disabled, always allow
     if bActive == false then return false end
 
     -- resolve actor
     local ent = self 
-    if ActorType == "Target" then
+    if ActorType == "ESBAIActorType::Target" then
         ent = self:GetEnemy()
-    elseif ActorType == "Self" then
+    elseif ActorType == "ESBAIActorType::Self" then
         ent = self
-    elseif ActorType == "Owner" then
+    elseif ActorType == "ESBAIActorType::Owner" then
         ent = self:GetOwner()
-    elseif ActorType == "SubTarget" then
+    elseif ActorType == "ESBAIActorType::SubTarget" then
         for _, subent in pairs(self:GetKnownEnemies() or {}) do
             if IsValid(subent) and subent != self:GetEnemy() then
                 ent = subent
@@ -2987,51 +3495,46 @@ function ENT:SbCheckActorEffect(tbl)
 end
 
 function ENT:SbCheckActorStat(tbl) 
+	-- PrintTable(tbl) 
 	local CheckStat = tbl.CheckStat -- ActorStatType_AttackSpeed       ActorStatType_StaminaAttackPower        ActorStatType_CriticalPercentage        ActorStatType_HitDefenseLevel   ActorStatType_ShieldIgnorePercentage    ActorStatType_CriticalValueRate ActorStatType_ShieldRegenPerSecond      ActorStatType_AdditiveSkillDamageRate   ActorStatType_ShieldRegenPerSecondRate  ActorStatType_ShieldRegenPerSecondValue ActorStatType_ShieldRegenPerSecondWhenBattleValue       ActorStatType_ShieldRegenPerSecondWhenBattle    ActorStatType_StaminaRegenPerSecond     ActorStatType_ShieldRegenPerSecondWhenBattleRate        ActorStatType_HPRegenPerSecondValue     ActorStatType_HPRegenPerSecond  ActorStatType_SmallWeightTypeDamageAdditiveRate ActorStatType_HPRegenPerSecondRate      ActorStatType_RangeAttackDamageAdditiveRate     ActorStatType_LargeWeightTypeDamageAdditiveRate ActorStatType_RangeAttackDamageReductionRate    ActorStatType_MeleeAttackDamageReductionRate    ActorStatType_GroggyStateDamageAdditiveRate     ActorStatType_DownStateDamageAdditiveRate       ActorStatType_FireAttributeDamageReductionRate  ActorStatType_AirborneStateDamageAdditiveRate   ActorStatType_LightningAttributeDamageReductionRate     ActorStatType_IceAttributeDamageReductionRate   ActorStatType_BetaGaugeAdditiveRate     ActorStatType_PoisonAttributeDamageReductionRate        ActorStatType_LowHpDamageAdditiveRate   ActorStatType_AdditiveFixedDamage       ActorStatType_DOTDamageAdditiveRate     ActorStatType_HighHpDamageAdditiveRate  ActorStatType_TachyGaugeReduceConsumeRate       ActorStatType_TachyGaugeAdditiveGainRate        ActorStatType_FinalShieldDamageReduceRate       ActorStatType_FinalHPDamageReduceRate   ActorStatType_AdditiveSkillDamageGroup1 ActorStatType_Luck      ActorStatType_AdditiveSkillDamageGroup3 ActorStatType_AdditiveSkillDamageGroup2 ActorStatType_AdditiveSkillDamageGroup5 ActorStatType_AdditiveSkillDamageGroup4 ActorStatType_AdditiveSkillDamageGroup7 ActorStatType_AdditiveSkillDamageGroup6 ActorStatType_AdditiveSkillDamageGroup9 ActorStatType_AdditiveSkillDamageGroup8 ActorStatType_DrainHpByAttackPowerRate  ActorStatType_AdditiveSkillDamageGroup10        ActorStatType_SprintableStaminaValue    ActorStatType_DrainHpFixedValue ActorStatType_ItemStackBullet1  ActorStatType_ItemStackRecoveryPotion   ActorStatType_ItemStackBullet3  ActorStatType_ItemStackBullet2  ActorStatType_ItemStackBullet5  ActorStatType_ItemStackBullet4  ActorStatType_ItemStackConsumable1      ActorStatType_ItemStackBullet6  ActorStatType_ItemStackConsumable3      ActorStatType_ItemStackConsumable2      ActorStatType_ItemStackConsumable5      ActorStatType_ItemStackConsumable4      
 	local CheckValue = tbl.CheckValue -- 60.0, 
-	local CompareOP = tbl.CompareOP -- Greater 
+	local CompareOP = tbl.CompareOP or "ESBCompare::Equal" -- Greater 
 	local bRateValue = tbl.bRateValue or false -- true 
 	local NodeName = tbl.NodeName -- SB_CheckActorStat(HP>60) 
 	-- handle only ActorStatType_HP for now, Raven only looks for this 
 	local testvalue, result 
-	if CheckStat == "ActorStatType_HP" then 
+	if CheckStat == "ESBActorStatType::ActorStatType_HP" then 
 		testvalue = self:Health() 
 		testvalue = (testvalue / self:GetMaxHealth()) * 100 
 	else 
 		testvalue = 0 
 	end 
-	if CompareOP == "Equal" then 
-		result = testvalue == CheckValue 
-	elseif CompareOP == "LessOrEqual" then 
-		result = testvalue <= CheckValue 
-	elseif CompareOP == "Greater" then 
-		result = testvalue > CheckValue 
-	elseif CompareOP == "GreaterOrEqual" then 
-		result = testvalue >= CheckValue 
-	elseif CompareOP == "Less" then 
-		result = testvalue < CheckValue 
-	elseif CompareOP == "NotEqual" then 
-		result = testvalue != CheckValue 
-	end 
 	-- Entity(1):ChatPrint("CheckStat: "..CheckStat.." CheckValue: "..tostring(CheckValue).. "..CompareOP:"..CompareOP.." "..tostring(result)) 
 	-- print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
-	return result 
+	return StellarBlade.ESBCompare(testvalue,CheckValue,CompareOP) 
 end 
 
 function ENT:SbCheckStance(tbl) -- M_Raven_Phase2, M_Raven_Default 
-	if true then return true end 
-	if true then 
-		return "M_Raven_Default" == tbl.StanceName 
-	end 
-	return self.StanceName == tbl.StanceName 
+	return true -- stance switcing doesn't exist yet, default to true 
+	-- if true then 
+		-- return "M_Raven_Default" == tbl.StanceName 
+	-- end 
+	-- return self.StanceName == tbl.StanceName 
 end 
 
 function ENT:SbDetectResult(tbl) 
-	-- AIDetectResult_NotDetect AIDetectResult_Observe AIDetectResult_Doubt	AIDetectResult_Detect 
-	local CompareDetectResult = tbl.CompareDetectResult 
-	-- right now, check whether there is an enemy (AIDetectResult_Detect) 
-	-- print("SbDetectResult will directly return true") 
-	return IsValid(self:GetEnemy()) 
+	-- ESBAIDetectResultType::AIDetectResult_NotDetect ESBAIDetectResultType::AIDetectResult_Observe AIDetectResult_Doubt	AIDetectResult_Detect 
+	local CompareDetectResult = tbl.CompareDetectResult -- e.g., "AIDetectResult_Detect"
+    local hasEnemy = IsValid(self:GetEnemy()) 
+
+    if CompareDetectResult == "ESBAIDetectResultType::AIDetectResult_Detect" then 
+        return hasEnemy 
+    elseif CompareDetectResult == "ESBAIDetectResultType::AIDetectResult_NotDetect" then 
+        return !hasEnemy 
+    end 
+
+    -- Default fallback 
+    return hasEnemy 
 end 
 
 function ENT:SbDistanceToTarget(tbl) -- distance to enemy 
@@ -3039,37 +3542,24 @@ function ENT:SbDistanceToTarget(tbl) -- distance to enemy
 	local dist = tbl.Distance 
 	local operator = tbl.CompareOP -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
 	local FlowAbortMode = tbl.FlowAbortMode or "None" 
-	local result 
-	if operator == "Equal" then 
-		result = self.enemyDist == dist 
-	elseif operator == "LessOrEqual" then 
-		result = self.enemyDist <= dist 
-	elseif operator == "Greater" then 
-		result = self.enemyDist > dist 
-	elseif operator == "GreaterOrEqual" then 
-		result = self.enemyDist >= dist 
-	elseif operator == "Less" then 
-		result = self.enemyDist < dist 
-	elseif operator == "NotEqual" then 
-		result = self.enemyDist != dist 
-	end 
 	-- print("DistanceToTarget:",dist,operator,FlowAbortMode) 
-	return result 
+	return StellarBlade.ESBCompare(self.enemyDist,dist,operator) 
 end 
 
 function ENT:SbIsAlive(tbl) 
-	local ActorType = tbl.ActorType -- Target, Self, SubTarget, Owner. Default: Self 
-	local CheckType = tbl.CheckType -- Coma, Dead, Alive. Default: Alive 
+	-- PrintTable(tbl) 
+	local ActorType = tbl.ActorType or "ESBAIActorType::Target" -- Target, Self, SubTarget, Owner. Default: Self 
+	local CheckType = tbl.CheckType or "ESBBTDecoratorAliveCheckType::Alive" -- Coma, Dead, Alive. Default: Alive 
 	-- print("ActorType",ActorType) 
 	local ent = self 
-	if ActorType == "Target" then 
+	if ActorType == "ESBAIActorType::Target" then 
 		ent = self:GetEnemy() 
-	elseif ActorType == "Self" then 
+	elseif ActorType == "ESBAIActorType::Self" then 
 		ent = self 
-	elseif ActorType == "Owner" then 
+	elseif ActorType == "ESBAIActorType::Owner" then 
 		ent = self:GetOwner() 
 	-- print(self, "checking ent:",ent) 
-	elseif ActorType == "SubTarget" then 
+	elseif ActorType == "ESBAIActorType::SubTarget" then 
 		for _,subent in pairs(self:GetKnownEnemies()) do 
 			if IsValid(subent) then 
 				if IsValid(self:GetEnemy()) then 
@@ -3081,37 +3571,22 @@ function ENT:SbIsAlive(tbl)
 		end 
 	end 
 	
-    if CheckType == "Coma" then
+    if CheckType == "ESBBTDecoratorAliveCheckType::Coma" then
         return IsValid(ent) and ent:GetInternalVariable("m_lifeState") == 1
-    elseif CheckType == "Dead" then
-        return IsValid(ent) and not ent:Alive()
-    elseif CheckType == "Alive" then
+    elseif CheckType == "ESBBTDecoratorAliveCheckType::Dead" then
+        return IsValid(ent) and !ent:Alive()
+    elseif CheckType == "ESBBTDecoratorAliveCheckType::Alive" then
         return IsValid(ent) and ent:Alive()
     end
 	
-
     return false
 end 
 
 function ENT:SbRandom(tbl) 
 	local RandomRange = math.random(0,tbl.RandomRange) 
 	local CheckValue = tbl.CheckValue 
-	local operator = tbl.CompareOP -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
-	local result 
-	if operator == "Equal" then 
-		result = RandomRange == CheckValue 
-	elseif operator == "LessOrEqual" then 
-		result = RandomRange <= CheckValue 
-	elseif operator == "Greater" then 
-		result = RandomRange > CheckValue 
-	elseif operator == "GreaterOrEqual" then 
-		result = RandomRange >= CheckValue 
-	elseif operator == "Less" then 
-		result = RandomRange < CheckValue 
-	elseif operator == "NotEqual" then 
-		result = RandomRange != CheckValue 
-	end 
-	return result 
+	local CompareOP = tbl.CompareOP or "ESBCompare::Equal" -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
+	return StellarBlade.ESBCompare(RandomRange,CheckValue,CompareOP) 
 end 
 
 function ENT:SbTimeLimit(tbl)
@@ -3158,36 +3633,29 @@ function ENT:SbTimeLimit(tbl)
     return true
 end
 
-function ENT:SbUseableTime(tbl)
+function ENT:SbUseableTime(tbl) 
     local KeyName = tbl.KeyName
     self.SBAI_Timers = self.SBAI_Timers or {}
 
     local expireTime = self.SBAI_Timers[KeyName]
-    local cycle      = self.SBAI_Timers[KeyName.."_Cycle"]
+    
+    -- REMOVE "Cycle" logic from here. The Decorator just asks "Is it ready?".
+    -- The Task (Reset) or the Skill execution logic should handle the cycling.
 
     if expireTime then
         if CurTime() < expireTime then
-            -- Timer still active → block this branch
-            return false
-        else
-            -- Timer expired
-            if cycle and cycle > 0 then
-                -- Auto - rearm: push expiry forward by cycle time
-                self.SBAI_Timers[KeyName] = CurTime() + cycle
-                return false  -- still blocked this tick, will open next time
-            end
+            return false -- Blocked
         end
     end
 
-    -- No timer or expired with no cycle → allow entry
-    return true
+    return true -- Allowed
 end
 
 
 -- skills 
 
 -- SbCautionToTarget: property-driven adaptation (no spawn hacks)
-function ENT:SbCautionToTarget(tbl)
+function ENT:SbCautionToTarget(tbl) 
     -- small helpers
     local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
     local function randFloat(a,b) return a + math.random() * (b - a) end
@@ -3220,44 +3688,44 @@ function ENT:SbCautionToTarget(tbl)
     local bStayTargetView = SafeGet("bStayTargetView", false)
     local CheckSkillFlag = SafeGet("CheckSkillFlag", nil) -- not acted on here
 
-    -- initialize per-task cached fields (only once)
-    if not tbl._started then
-        tbl._started = true
-        tbl.startTime = CurTime()
-        tbl.attempts = 0
-        tbl.navSet = false
-        tbl.waitEnd = nil
-        tbl.returnSucceeded = false
+    -- initialize per-task cached fields (only once) 
+	if !self:SBAI_GetNodeState(nodeID, "hasStarted") then 
+		self:SBAI_SetNodeState(nodeID, "hasStarted", true) 
+		self:SBAI_SetNodeState(nodeID, "startTime", CurTime()) 
+		self:SBAI_SetNodeState(nodeID, "attempts", 0) 
+		self:SBAI_SetNodeState(nodeID, "navSet", false) 
+		self:SBAI_SetNodeState(nodeID, "waitEnd", nil) 
+		self:SBAI_SetNodeState(nodeID, "returnSucceeded", false) 
 
         -- compute wait time (possibly randomized)
         if WaitCheckTime > 0 then
             if bWaitRandom then
-                tbl.waitTime = randFloat(WaitRandMin, WaitRandMax)
+				self:SBAI_SetNodeState(nodeID, "waitTime", randFloat(WaitRandMin, WaitRandMax)) 
             else
-                tbl.waitTime = WaitCheckTime
+				self:SBAI_SetNodeState(nodeID, "waitTime", WaitCheckTime) 
             end
         else
-            tbl.waitTime = 0
+			self:SBAI_SetNodeState(nodeID, "waitTime", 0) 
         end
 
-        -- group repetition counter
-        tbl.waitGroupRemaining = WaitCountByGroup
+        -- group repetition counter 
+		self:SBAI_SetNodeState(nodeID, "waitGroupRemaining", WaitCheckTime) 
 
         -- side repeat counter
-        tbl.sideRepeatRemaining = SideRepeat
+		self:SBAI_SetNodeState(nodeID, "sideRepeatRemaining", SideRepeat) 
 
         -- preserved random choices if bIgnoreRestartSelf; re-roll only if absent or not preserving
-        if not (bIgnoreRestartSelf and tbl.chosenMoveChoice) then
-            tbl.chosenMoveChoice = nil -- will choose below
+        if !(bIgnoreRestartSelf and self:SBAI_GetNodeState(nodeID, "chosenMoveChoice")) then
+			self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", nil) 
         end
-        if not (bIgnoreRestartSelf and tbl.sideSign) then
-            tbl.sideSign = (math.random() < 0.5) and -1 or 1
+        if !(bIgnoreRestartSelf and self:SBAI_GetNodeState(nodeID, "sideSign")) then
+			self:SBAI_SetNodeState(nodeID, "sideSign", (math.random() < 0.5) and -1 or 1) 
         end
-        if not (bIgnoreRestartSelf and tbl.sideDist) then
-            tbl.sideDist = math.Rand(SideMin, SideMax)
+        if !(bIgnoreRestartSelf and self:SBAI_GetNodeState(nodeID, "sideDist")) then
+			self:SBAI_SetNodeState(nodeID, "sideDist", math.Rand(SideMin, SideMax)) 
         end
-        if not (bIgnoreRestartSelf and tbl.forwardDist) then
-            tbl.forwardDist = math.Rand(MinDistance, math.max(MinDistance, MaxDistance))
+        if !(bIgnoreRestartSelf and self:SBAI_GetNodeState(nodeID, "forwardDist")) then
+			self:SBAI_SetNodeState(nodeID, "forwardDist", math.Rand(MinDistance, math.max(MinDistance, MaxDistance))) 
         end
 
         -- yaw lock
@@ -3266,11 +3734,11 @@ function ENT:SbCautionToTarget(tbl)
         end
 
         -- choose movement style now (set tbl.chosenMoveChoice if not set)
-        if not tbl.chosenMoveChoice then
+        if !self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") then
             if SetMoveType == "ESBCautionToTargetMoveType::Side" then
-                tbl.chosenMoveChoice = "side"
+				self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", "side")
             elseif SetMoveType == "ESBCautionToTargetMoveType::ForwardAndSide" then
-                tbl.chosenMoveChoice = "forwardandside"
+				self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", "forwardandside") 
             else -- All or unknown: decide probabilistically by declared ranges
                 local forwardRange = math.max(0, (MaxDistance or 0) - (MinDistance or 0))
                 local sideRange = math.max(0, (SideMax or 0) - (SideMin or 0))
@@ -3279,10 +3747,12 @@ function ENT:SbCautionToTarget(tbl)
                 -- avoid zero division
                 if forwardRange + sideRange <= 0 then
                     -- fallback: choose forward if MinDistance small, else side
-                    tbl.chosenMoveChoice = (MinDistance <= SideMin) and "forward" or "side"
+					self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", (MinDistance <= SideMin) and "forward" or "side" ) 
                 else
                     local pForward = forwardRange / (forwardRange + sideRange)
-                    if math.random() < pForward then tbl.chosenMoveChoice = "forward" else tbl.chosenMoveChoice = "side" end
+                    if math.random() < pForward then 
+						self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", "forward") else self:SBAI_SetNodeState(nodeID, "chosenMoveChoice", "side") 
+					end
                 end
             end
         end
@@ -3291,8 +3761,8 @@ function ENT:SbCautionToTarget(tbl)
         tbl.attempts = tbl.attempts + 1
     end -- init done
 
-    -- if nav not set, create nav goal according to chosenMoveChoice
-    if not tbl.navSet then
+    -- if nav not set, create nav goal according to chosenMoveChoice 
+	if !self:SBAI_GetNodeState(nodeID,"navSet") then 
         local myPos = self:GetPos()
         local tgtPos = target:GetPos()
         local dir = (tgtPos - myPos)
@@ -3300,7 +3770,7 @@ function ENT:SbCautionToTarget(tbl)
         if dir2D:Length() > 0.001 then dir2D:Normalize() else dir2D = Vector(1,0,0) end
         local rightVec = dir2D:Angle():Right()
 
-        local chosen = tbl.chosenMoveChoice
+        local chosen = self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") 
 
         local goalPos = tgtPos
 		print("chosen",chosen) 
@@ -3320,15 +3790,9 @@ function ENT:SbCautionToTarget(tbl)
             local minPathLen = math.Clamp(tbl.sideDist * 0.5, 100, 2000)
             self:NavSetRandomGoal(minPathLen, (tgtPos - myPos):GetNormalized()) 
         else
-            if self.NavSetGoalPos then
-                self:NavSetGoalPos(goalPos) 
-            elseif self.NavSetGoalTarget then
-                -- fallback: offset from target
-                local offset = goalPos - tgtPos
-                self:NavSetGoalTarget(target, offset) 
-            end
-        end
-        tbl.navSet = true
+			self:NavSetGoalPos(goalPos) 
+		end 
+		self:SBAI_SetNodeState(nodeID,"navSet",true) 
 		self:SetMovementActivity(ACT_MP_WALK_MELEE) 
         return nil -- running while nav completes
     end
@@ -3356,60 +3820,60 @@ function ENT:SbCautionToTarget(tbl)
         success = true
     else
         -- if we were performing side moves, consider success when side repeats exhausted
-        if tbl.chosenMoveChoice == "side" or tbl.chosenMoveChoice == "forwardandside" then
-            if tbl.sideRepeatRemaining and tbl.sideRepeatRemaining <= 1 then
+        if self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") == "side" or self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") == "forwardandside" then
+            if self:SBAI_GetNodeState(nodeID, "sideRepeatRemaining") and self:SBAI_GetNodeState(nodeID, "sideRepeatRemaining") <= 1 then
                 success = true
             end
         end
     end
 
     -- if we did side movement and have repeats remaining, decrement and prepare another side move
-    if not tbl.waitEnd and (tbl.chosenMoveChoice == "side" or tbl.chosenMoveChoice == "forwardandside") and tbl.sideRepeatRemaining and tbl.sideRepeatRemaining > 1 then
-        tbl.sideRepeatRemaining = tbl.sideRepeatRemaining - 1
+    if !self:SBAI_GetNodeState(nodeID, "waitEnd") and (self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") == "side" or self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") == "forwardandside") and self:SBAI_GetNodeState(nodeID, "sideRepeatRemaining") and self:SBAI_GetNodeState(nodeID, "sideRepeatRemaining") > 1 then
+        self:SBAI_SetNodeState(nodeID, "sideRepeatRemaining",self:SBAI_GetNodeState(nodeID, "sideRepeatRemaining") - 1) 
         -- pick new lateral sign unless preserving with bIgnoreRestartSelf
-        if not bIgnoreRestartSelf then tbl.sideSign = (math.random() < 0.5) and -1 or 1 end
-        tbl.navSet = false
-        tbl.attempts = tbl.attempts + 1
+        if !bIgnoreRestartSelf then self:SBAI_SetNodeState(nodeID, "sideSign",(math.random() < 0.5) and -1 or 1) end 
+		self:SBAI_SetNodeState(nodeID,"navSet",false) 
+		self:SBAI_SetNodeState(nodeID,"attempts",self:SBAI_GetNodeState(nodeID,"attempts") +1) 
         return nil
     end
 
     -- Start wait phase when movement finished (or attempts exhausted)
-    if not tbl.waitEnd then
-        tbl.returnSucceeded = success
-        tbl.waitEnd = CurTime() + (tbl.waitTime or 0)
+    if !self:SBAI_GetNodeState(nodeID, "waitEnd") then 
+		self:SBAI_SetNodeState(nodeID,"returnSucceeded",success) 
+		self:SBAI_SetNodeState(nodeID, "waitEnd",CurTime() + (self:SBAI_GetNodeState(nodeID, "waitEnd" or 0)))
         -- maybe play a show/gesture with PlayShowRateWhenWait probability
         if PlayShowRateWhenWait and PlayShowRateWhenWait > 0 and math.random() * 100 <= PlayShowRateWhenWait then
             -- safe-call a generic "gesture" if present (you can replace with your own)
-            pcall(function() if self.PlayGesture then self:PlayGesture(ACT_GESTURE_TURN_RIGHT) end end)
+            -- pcall(function() if self.PlayGesture then self:PlayGesture(ACT_GESTURE_TURN_RIGHT) end end)
         end
     end
 
-    -- during wait: keep looking at target if requested
-    if tbl.waitEnd and CurTime() < tbl.waitEnd then
-        if bStayTargetView then
-            -- if NPC API offers SetEyeTarget / look functions, use them safely
-            pcall(function()
-                if self.SetEyeTarget then self:SetEyeTarget(target:GetPos()) end
-            end)
-        end
-        return nil -- still waiting
-    end
+    -- during wait: keep looking at target if requested 
+    if self:SBAI_GetNodeState(nodeID, "waitEnd") and CurTime() < self:SBAI_GetNodeState(nodeID, "waitEnd") then 
+        if bStayTargetView then 
+            -- if NPC API offers SetEyeTarget / look functions, use them safely 
+            -- pcall(function() 
+                -- if self.SetEyeTarget then self:SetEyeTarget(target:GetPos()) end 
+            -- end) 
+        end 
+        return nil -- still waiting 
+    end 
 
     -- wait finished: decrement group counter and either finish or iterate another cycle
-    if tbl.waitEnd and CurTime() >= tbl.waitEnd then
-        tbl.waitEnd = nil
-        tbl.waitGroupRemaining = math.max(0, (tbl.waitGroupRemaining or 1) - 1)
+    if self:SBAI_GetNodeState(nodeID, "waitEnd") and CurTime() >= self:SBAI_GetNodeState(nodeID, "waitEnd") then
+        self:SBAI_SetNodeState(nodeID, "waitEnd",nil) 
+		self:SBAI_SetNodeState(nodeID, "waitGroupRemaining",math.max(0, (self:SBAI_GetNodeState(nodeID, "waitGroupRemaining") or 1) - 1)) 
 
         -- if group cycles remain, prepare for another caution move
-        if tbl.waitGroupRemaining > 0 then
-            tbl.navSet = false
-            tbl.sideRepeatRemaining = SideRepeat
+        if self:SBAI_GetNodeState(nodeID, "waitGroupRemaining") > 0 then
+            self:SBAI_SetNodeState(nodeID, "navSet",false) 
+			self:SBAI_SetNodeState(nodeID, "sideRepeatRemaining",SideRepeat) 
             -- if not preserving, re-roll movement choices to create variety
-            if not bIgnoreRestartSelf then
-                tbl.chosenMoveChoice = nil
-                tbl.sideSign = (math.random() < 0.5) and -1 or 1
-                tbl.sideDist = math.Rand(SideMin, SideMax)
-                tbl.forwardDist = math.Rand(MinDistance, math.max(MinDistance, MaxDistance))
+            if !bIgnoreRestartSelf then
+				self:SBAI_SetNodeState(nodeID, "chosenMoveChoice",nil) 
+				self:SBAI_SetNodeState(nodeID, "sideSign",(math.random() < 0.5) and -1 or 1) 
+				self:SBAI_SetNodeState(nodeID, "sideDist",math.Rand(SideMin, SideMax)) 
+				self:SBAI_SetNodeState(nodeID, "forwardDist",math.Rand(MinDistance, math.max(MinDistance, MaxDistance))) 
             end
             return nil
         end
@@ -3420,7 +3884,7 @@ function ENT:SbCautionToTarget(tbl)
         self:ClearGoal() 
         if bLockOn then self:SetMoveYawLocked(false) end
 
-        if tbl.returnSucceeded then
+        if self:SBAI_GetNodeState(nodeID, "returnSucceeded") then
             return true
         else
             return false
@@ -3443,7 +3907,7 @@ function ENT:SbDetectTarget(tbl)
         -- "Check_Detect"
       -- ],
 	
-	return IsValid(self:GetEnemy()) 
+	return !IsValid(self:GetEnemy()) 
 end 
 
 function ENT:SbMoveToTarget(tbl) 
@@ -3454,7 +3918,7 @@ function ENT:SbMoveToTarget(tbl)
 	if enemyDist < DistanceOfApproach then 
 		return true 
 	else 
-		local bBackgroundTask = tbl.bBackgroundTask
+		local bBackgroundTask = tbl.bBackgroundTask 
 		local NodeName = tbl.NodeName 
 		local navSet = self:IsGoalActive() 
 		if !navSet then 
@@ -3464,9 +3928,8 @@ function ENT:SbMoveToTarget(tbl)
 				navSet = self:NavSetGoalPos(self:GetPos() + (self:GetForward()*300)) 
 			end 
 		end 
-		print(self:GetCurWaypointPos()) 
-		if !navSet then return false end 
 		self:SetMovementActivity(ACT_MP_WALK_MELEE) 
+		if !navSet then return false end 
 	end 
 end 
 
@@ -3477,7 +3940,9 @@ function ENT:SbUseEffect(tbl) -- add effect
 	local target = self:GetEnemy() 
 	if bSelfActor then target = self end 
 	if IsValid(target) then 
-		StellarBlade.AddEffect(target,EffectAlias) 
+		for _, EffectTable in ipairs(EffectAlias) do 
+			StellarBlade.AddEffect(target,EffectTable) 
+		end 
 	end 
 	return true 
 end 
@@ -3493,67 +3958,46 @@ end
 
 function ENT:SbUseSkill(tbl)
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
-	
-    if !tbl.Started then
-        for k, v in RandomPairs(tbl) do
-            if isnumber(k) then -- do not accidentally start variables
-				local CheckCooldown = self.SBAI_SkillTimers[v] -- returns Time, ["M_Raven_SlashChain"] = 216 
-				local SkillCommandTable = SB_SkillCommandTable[1].Rows[v]
-				local SkillNameFromSkillCommandTable = SkillCommandTable.SkillAlias
-				local SkillTable = SB_SkillTable[1].Rows[SkillNameFromSkillCommandTable]
-				if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then 
-					-- This logic correctly finds the *first* skill step to execute 
-					-- clear out old skill effects 
-					
-					StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
-					StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_StepDependent") 
-					
-					-- add effects from SkillTable 
-					self.SBAI_SkillTable = SkillTable 
-					-- StellarBlade.AddEffect(self,effect,name) 
-					if SkillCommandTable then 
-						local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
-						-- This now correctly handles all the data-driven setup for the first step 
-						-- self:SBAI_SetSkillStep(FirstSkillActiveAlias) 
-						StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
-						self.SBAI_SkillTimers[v] = CurTime() + SkillTable.CoolTime 
-						Entity(1):ChatPrint("starting "..v.." at CurTime:"..tostring(CurTime())) 
-						-- Entity(1):ChatPrint("added cooldown to: "..v.." "..tostring(SkillTable.CoolTime)) 
-						tbl.Started = true 
-						break -- Start with the first valid skill found 
-					else -- does not use SkillCommandTable, directly refer to SkillTable 
-					
-					end 
+	-- PrintTable(tbl) 
+	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted")
+    if !Started then 
+        for k, v in RandomPairs(tbl.SkillName) do 
+            if isnumber(k) then -- do not accidentally start variables 
+				if bUseSkillCommand then 
+					if StellarBlade.StartSkillCommand(self,v) then 
+						self:SBAI_SetNodeState(nodeID, "hasStarted", true) 
+						break 
+					end  
+					-- return true 
 				else 
-					-- Entity(1):ChatPrint(v.." is in cooldown. "..tostring(CurTime()).." "..tostring(CheckCooldown)) 
+					if StellarBlade.StartSkill(self,v) then 
+						self:SBAI_SetNodeState(nodeID, "hasStarted", true) 
+						break 
+					end 
+					-- return true 
 				end 
 			end 
 		end 
 	end 
+	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted")
 
-    if tbl.Started then
-        -- Process the currently active skill step
-        -- self:SBAI_ProcessActiveSkill(self.SBAI_ActiveSkill) 
-
-        -- If the active skill was cleared (e.g., skill finished or target died), the task is complete
-        if !self.SBAI_ActiveSkill or !self.SBAI_ActiveSkill.Name then
-             -- Entity(1):ChatPrint("task complete")
+    if Started then 
+        -- If the active skill was cleared (e.g., skill finished or target died), the task is complete 
+        if !self.SBAI_SkillStep or self.SBAI_SkillStep and !self.SBAI_SkillStep:IsActive() then 
+             -- Entity(1):ChatPrint("task complete") 
              self:NPC_StopScriptedActivity() 
 			 self:ResetIdealActivity(ACT_IDLE) 
-			 self.SBAI_SkillTable = nil  
-             return true
-        end
-
-        -- Check if the animation sequence itself has finished
-        if self:IsSequenceFinished() then
-            -- This condition might be too simple, as some skills might end based on
-            -- duration rather than the animation finishing. We rely on the duration check for now.
-        end
-    else -- no skill activated, maybe all of them are in cooldown 
-		return true -- to continue the procedure 
+			 -- self.SBAI_SkillTable = nil 
+             return true 
+        else 
+			return nil -- Task is still running 
+		end 
+    else 
+		if !self.SBAI_SkillTable then return false end 
+		return nil -- not started, maybe all tasks are in delay? 
 	end 
 
-    return nil -- Task is still running
+    return false -- no task selected  
 end 
 
 function ENT:SbUseableTimeReset(tbl)
@@ -3577,22 +4021,25 @@ function ENT:SbUseableTimeReset(tbl)
 end
 
 
-function ENT:SbWait(data)
-    local waitTime = data.WaitTime or 0
-    local returnSucceeded = data.bReturnSucceeded or false
+function ENT:SbWait(tbl)
+    local waitTime = tbl.WaitTime or 0
+    local returnSucceeded = tbl.bReturnSucceeded or false
 
-    if !data.startTime then
-        data.startTime = CurTime()
+    -- Use Runtime Registry instead of writing to JSON 'data'
+    local startTime = self:SBAI_GetNodeState(nodeID, "startTime")
+    
+    if !startTime then
+        startTime = CurTime()
+        self:SBAI_SetNodeState(nodeID, "startTime", startTime)
     end
 
-    local elapsed = CurTime() - data.startTime
+    local elapsed = CurTime() - startTime
     print("in SbWait", elapsed, waitTime)
 
     if elapsed < waitTime then
         return nil -- still running
     else
-		if true then return true end -- temporary: remove this when branch selection issues are solved 
-        data.startTime = nil
+		-- if true then return true end -- temporary: remove this when branch selection issues are solved 
         if returnSucceeded then
             return true  -- wait succeeded
         else
@@ -3626,7 +4073,7 @@ function ENT:M_Common_HitProjectileResult(ent) return self:NPC_IsNPCAttacking(en
 
 function ENT:ON_LIGHT_DAMAGE() 
 	-- get current skill step if available and see whether NextStepAliasWhenAttacked is set 
-	local SkillStepTable = self.SBAI_ActiveSkill 
+	local SkillStepTable = self.SBAI_SkillStep 
 	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
 	if !SkillStepTable.Name then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
 	SkillStepTable = SB_SkillActiveStepTable[1].Rows[SkillStepTable] 
