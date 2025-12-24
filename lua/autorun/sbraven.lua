@@ -479,30 +479,40 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 
     local chosenIndex = nil 
 
-    if Overlap == "ESBEffectOverlap::EffectOverlap_Overlap" then
-        -- If there is already an instance, merge into the first one (numeric fields are added, others overridden).
-        if #curEffects[strEffect] >= 1 then
-            chosenIndex = 1
-            local exist = curEffects[strEffect][chosenIndex]
-            -- Merge numeric values: add numbers; otherwise override/assign
-            for k, v in pairs(newInstance) do
-                if k == "Time" then continue end
-                local ev = exist[k]
-                if type(v) == "number" and type(ev) == "number" then
-                    exist[k] = ev + v
-                else
-                    exist[k] = v
-                end
-            end
-            -- preserve (or update) Overlap field if provided
-            if EffectTable.Overlap then
-                exist.Overlap = EffectTable.Overlap
-            end
-        else
-            -- no existing instance: append new one
-            table.insert(curEffects[strEffect], newInstance)
-            chosenIndex = #curEffects[strEffect]
-        end
+	if Overlap == "ESBEffectOverlap::EffectOverlap_Overlap" then
+		-- If there is already an instance, merge into the first one.
+		if #curEffects[strEffect] >= 1 then
+			chosenIndex = 1
+			local exist = curEffects[strEffect][chosenIndex]
+			
+			-- BLACKLIST: Numeric keys here will Overwrite instead of Add
+			local NoSumKeys = {
+				["CalculationMultipleValue"] = true,
+				["CalculationMultipleWhenBacksideHit"] = true
+			}
+
+			-- Merge numeric values: add numbers; otherwise override/assign
+			for k, v in pairs(newInstance) do
+				if k == "Time" then continue end
+				local ev = exist[k]
+				
+				-- Only add if it's a number AND not in our blacklist
+				if type(v) == "number" and type(ev) == "number" and !NoSumKeys[k] then
+					exist[k] = ev + v
+				else
+					exist[k] = v
+				end
+			end
+			
+			-- preserve (or update) Overlap field if provided
+			if EffectTable.Overlap then
+				exist.Overlap = EffectTable.Overlap
+			end
+		else
+			-- no existing instance: append new one
+			table.insert(curEffects[strEffect], newInstance)
+			chosenIndex = #curEffects[strEffect]
+		end
 
     elseif Overlap == "ESBEffectOverlap::EffectOverlap_Change" then
         -- Insert new instance at index 1 (becomes the primary / changed effect)
@@ -625,7 +635,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		local chosenIndex = curEffect.chosenIndex 
 		if !curEffect.IsMarkedForDeletion then 
 			curEffect.IsMarkedForDeletion = true 
-			pcall(StellarBlade.OnRemoveEffect,curEffect.Outer,curEffect) -- prevent script being halt on error 
+			pcall(StellarBlade.OnRemoveEffect,curEffect.Outer,curEffect,tableOptional) -- prevent script being halt on error 
 			table.remove(curEffects[strEffect],chosenIndex) 
 			-- print("removing effect:",strEffect,self) 
 		end 
@@ -693,8 +703,20 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		if self.LoopTargetFilterAlias != "None" then 
 			for _, target in pairs(StellarBlade.TargetFilter(self.Outer,self.LoopTargetFilterAlias,self.Cycle)) do 
 				for k,v in ipairs(self.LoopTargetEffectAliasArray) do 
-					StellarBlade.AddEffect(target,v) 
+					StellarBlade.AddEffect(target,v,tableOptional) 
 				end 
+			end 
+		end 
+		
+		if !self.bPlayOnDead then 
+			if !self.Outer:Alive() then self:Remove() end 
+		end 
+		
+		if self.bStopOnRevival then 
+			if !self.Outer:Alive() then 
+				self.OuterDead = true 
+			elseif self.OuterDead then -- outerdead was set and outer is alive 
+				self:Remove() 
 			end 
 		end 
 	end 
@@ -747,34 +769,45 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	end 
 	
 	function curEffect:PostEntityTakeDamage(target,dmginfo) 
+		-- 1. Validate Attacker
 		local attacker = dmginfo:GetAttacker() 
-		if IsValid(attacker) and attacker.SB_EffectAlias then 
-			for EffectName, EffectInstances in pairs(attacker.SB_EffectAlias) do 
-				for EffectInstance, EffectTable in pairs(EffectInstances) do 
-					local ConditionChainType = EffectTable.ConditionChainType 
-					local ConditionChainSelfEffectAliasArray, ConditionChainTargetEffectAliasArray = EffectTable.ConditionChainSelfEffectAliasArray, EffectTable.ConditionChainTargetEffectAliasArray 
-					if ConditionChainType == "ESBEffectConditionChainType::EffectConditionChainType_HitTarget" then 
-						for k,v in ipairs(ConditionChainSelfEffectAliasArray) do 
-							StellarBlade.AddEffect(attacker,v,tableOptional) 
-						end 
-						
-						for k,v in ipairs(ConditionChainTargetEffectAliasArray) do 
-							StellarBlade.AddEffect(target,v,tableOptional) 
-						end 
-					end 
-					
-					if ConditionChainType == "ESBEffectConditionChainType::EffectConditionChainType_DeadTarget" and !target:Alive() then 
-						for k,v in ipairs(ConditionChainSelfEffectAliasArray) do 
-							StellarBlade.AddEffect(attacker,v,tableOptional) 
-						end 
-						
-						for k,v in ipairs(ConditionChainTargetEffectAliasArray) do 
-							StellarBlade.AddEffect(target,v,tableOptional) 
-						end 
-					end 
-				end 
-			end 
-		end 
+		if !IsValid(attacker) then return end 
+
+		-- 2. Validate Ownership (CRITICAL)
+		-- We must check if the attacker is the actual owner of THIS effect instance (self).
+		-- This prevents the hook from firing when other entities deal damage.
+		-- Ensure you added 'EffectTable.Outer = self' inside 'StellarBlade.OnAddEffect'
+		if attacker != self.Outer then return end 
+
+		-- 3. Execute Logic for THIS effect only
+		-- Do NOT loop through 'attacker.SB_EffectAlias'. Use 'self' directly.
+		local EffectTable = self 
+		local ConditionChainType = EffectTable.ConditionChainType
+
+		local ConditionChainSelfEffectAliasArray = EffectTable.ConditionChainSelfEffectAliasArray
+		local ConditionChainTargetEffectAliasArray = EffectTable.ConditionChainTargetEffectAliasArray
+		
+		-- Hit Target Logic
+		if ConditionChainType == "ESBEffectConditionChainType::EffectConditionChainType_HitTarget" then
+			for k, v in ipairs(ConditionChainSelfEffectAliasArray) do
+				StellarBlade.AddEffect(attacker, v, tableOptional)
+			end
+			
+			for k, v in ipairs(ConditionChainTargetEffectAliasArray) do
+				StellarBlade.AddEffect(target, v, tableOptional)
+			end
+		end
+		
+		-- Dead Target Logic
+		if ConditionChainType == "ESBEffectConditionChainType::EffectConditionChainType_DeadTarget" and !target:Alive() then
+			for k, v in ipairs(ConditionChainSelfEffectAliasArray) do
+				StellarBlade.AddEffect(attacker, v, tableOptional)
+			end
+			
+			for k, v in ipairs(ConditionChainTargetEffectAliasArray) do
+				StellarBlade.AddEffect(target, v, tableOptional)
+			end
+		end
 	end 
 	
 	hook.Add("Think",curEffect,curEffect.Think) 
@@ -1031,8 +1064,30 @@ ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_Effect
 	end 
 	return StatValue + (CalculationValue * AttackPower) 
 end 
-ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_MaxShieldRate"] = function(ent,CalculationValue,StatValue) return 0 end 
-ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_HealStatic"] = function(ent,CalculationValue,StatValue) return CalculationValue+StatValue end -- clamp this 
+
+ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_MaxShieldRate"] = function(ent,CalculationValue,StatValue) 
+	local maxShield = 0
+
+	-- 1. Try Standard GMod Max Armor
+	if ent.GetMaxArmor then
+		maxShield = ent:GetMaxArmor()
+		
+	-- 2. Try Internal Max Shield Variable
+	elseif ent.MaxShield then
+		maxShield = ent.MaxShield
+		
+	-- 3. Default Fallback
+	else
+		maxShield = 100 
+	end
+
+	-- Calculate amount based on percentage (e.g., 100.0 becomes 1.0 multiplier)
+	-- This returns the MAGNITUDE of shield to be applied.
+	local rate = (CalculationValue) / 100.0
+	return maxShield * rate
+end 
+
+ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_HealStatic"] = function(ent,CalculationValue,StatValue) return ent:Health() >= ent:GetMaxHealth() and ent:Health() or math.min(CalculationValue+StatValue,ent:GetMaxHealth()) end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_HealMaxHPRate"] = function(ent,CalculationValue,StatValue) return 0 end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_CurrentTachyGaugeRate"] = function(ent,CalculationValue,StatValue) return 0 end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_SetStatValue"] = function(ent,CalculationValue,StatValue) return CalculationValue end 
@@ -1105,7 +1160,7 @@ local statGetters = {
 
     ["ESBActorStatType::ActorStatType_Shield"] = function(proxy)
         local ent = proxy.Outer
-        if IsValid(ent) then
+        if ent.Armor then
             return ent:Armor()
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_Shield") or 0
@@ -1214,11 +1269,13 @@ local statSetters = {
     end,
 
     ["ESBActorStatType::ActorStatType_Shield"] = function(proxy, value)
-        local ent = proxy.Outer
-        if IsValid(ent) then
-            ent:SetArmor(math.floor(value))
-        end
-        -- rawset(proxy, "ESBActorStatType::ActorStatType_Shield", value)
+		-- print("ESBActorStatType::ActorStatType_Shield",value) 
+		local ent = proxy.Outer
+		if ent.SetArmor then
+			ent:SetArmor(math.floor(value))
+		else 
+			rawset(proxy, "ESBActorStatType::ActorStatType_Shield", value) 
+		end 
         hook.Run("SB_StatChanged", ent, "Shield", value)
     end,
 
@@ -1321,7 +1378,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 		-- rawset(ActorStats,DamageInfo,tableOptional.dmginfo) 
 	end 
 	
-	-- print("attribute is:",attribute) 
+	print("attribute is:",attribute) 
 	if attribute then 
 		attribute = attribute * CalculationMultipleValue 
 		-- calculate using ESBEffectCalculationType 
@@ -1375,7 +1432,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 	end 
 end 
 
-StellarBlade.OnRemoveEffect = function(self,EffectTable) 
+StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional) 
 	local StatType = EffectTable.StatType 
 	local StatCalculationType = EffectTable.StatCalculationType 
 	local CalculationValue = EffectTable.CalculationValue 
@@ -1396,7 +1453,7 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable)
 			
 			if !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
 				for k,v in ipairs(DeactiveTargetEffectAliasArray) do 
-					StellarBlade.AddEffect(Target,v) 
+					StellarBlade.AddEffect(Target,v,tableOptional) 
 				end
 			end 
 			
@@ -1852,11 +1909,6 @@ StellarBlade.ActorApplyStat = function(self,StatType,StatCalculationType,Calcula
 end 
 
 StellarBlade.CanStartSkill = function(self,SkillName) 
-
-end 
-
-StellarBlade.StartSkill = function(self,SkillName) 
-	print("skill name is:",SkillName) 
 	local CheckCooldown = self.SBAI_SkillTimers and self.SBAI_SkillTimers[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
 	local UsableCount = self.SBAI_SkillUseCount and self.SBAI_SkillUseCount[SkillName] -- returns Time, ["M_Raven_SlashChain"] = 216 
 	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
@@ -1867,6 +1919,15 @@ StellarBlade.StartSkill = function(self,SkillName)
 	
 	if self["ESBActorState::ActorState_BlockSkill"] then return false end 
 	if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then 
+		return true 
+	end 
+	
+	return false 
+end 
+
+StellarBlade.StartSkill = function(self,SkillName) 
+	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
+	if StellarBlade.CanStartSkill(self,SkillName) then 
 		self.SBAI_SkillTable = SkillTable 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 		-- This now correctly handles all the data-driven setup for the first step 
@@ -2194,12 +2255,15 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					Target = StellarBlade.PickTarget(self) 
 				end 
 				
-				if Target:IsPlayer() then 
-					Target:AddVCDSequenceToGestureSlot(0,Target:LookupSequence(AnimResourcePath),0,true) 
-					BroadcastLua("if IsValid(Entity("..Target:EntIndex()..")) then Entity("..Target:EntIndex().."):AddVCDSequenceToGestureSlot(0,"..Target:LookupSequence(AnimResourcePath)..",0,true) end") 
-				else 
-					if Target:LookupSequence(AnimResourcePath) != ACT_INVALID then 
-						scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(Target,AnimResourcePath, true) 
+				if IsValid(Target) then 
+				
+					if Target:IsPlayer() then 
+						Target:AddVCDSequenceToGestureSlot(0,Target:LookupSequence(AnimResourcePath),0,true) 
+						BroadcastLua("if IsValid(Entity("..Target:EntIndex()..")) then Entity("..Target:EntIndex().."):AddVCDSequenceToGestureSlot(0,"..Target:LookupSequence(AnimResourcePath)..",0,true) end") 
+					else 
+						if Target:LookupSequence(AnimResourcePath) != ACT_INVALID then 
+							scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(Target,AnimResourcePath, true) 
+						end 
 					end 
 				end 
 			end 
@@ -4518,10 +4582,10 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 			StellarBlade.AddEffectFromTable(enemy,CreateEffectTargetPosition) 
 		end 
 	end 
-	
-	if SkillStepTable.ShowPath != "None" then 
+	local ShowPath = SkillStepTable.ShowPath 
+	if ShowPath != "None" then 
 		local showpath = "addons/sbraven/data_static/SB/Content/Art/Show/" 
-		showpath = showpath..SkillStepTable.ShowPath..".json" 
+		showpath = showpath..ShowPath..".json" 
 		StellarBlade.SetShow(self,showpath) 
 	end 
 
@@ -5884,6 +5948,33 @@ StellarBlade.GetRootMotionTransform = function(rootMotionTable, startTime)
     return interpolatedPos, interpolatedAngle
 end 
 
+StellarBlade.ESBAIActorType = function(self,ESBAIActorType) 
+	if ESBAIActorType == "ESBAIActorType::ActorType_None" then return 
+	elseif ESBAIActorType == "ESBAIActorType::ActorType_Self" then return self 
+	elseif ESBAIActorType == "ESBAIActorType::ActorType_Target" then return self:GetEnemy() 
+	elseif ESBAIActorType == "ESBAIActorType::ActorType_Owner" then return self:GetOwner() 
+	elseif ESBAIActorType == "ESBAIActorType::ActorType_SubTarget" then 
+	end 
+end 
+
+StellarBlade.ESBCompare = function(val1,val2,operator) 
+	local result = false 
+	if operator == "ESBCompare::Equal" then 
+		result = val1 == val2 
+	elseif operator == "ESBCompare::LessOrEqual" then 
+		result = val1 <= val2 
+	elseif operator == "ESBCompare::Greater" then 
+		result = val1 > val2 
+	elseif operator == "ESBCompare::GreaterOrEqual" then 
+		result = val1 >= val2 
+	elseif operator == "ESBCompare::Less" then 
+		result = val1 < val2 
+	elseif operator == "ESBCompare::NotEqual" then 
+		result = val1 != val2 
+	end 
+	return result 
+end 
+
 StellarBlade.PickTarget = function(self) 
 	local Time = CurTime() 
 	-- print("PickTarget",Time) 
@@ -5923,3 +6014,4 @@ StellarBlade.PickTarget = function(self)
 end 
 
 StellarBlade.ClearMoveTable = function(self) self.SBAI_MoveTable = { } end 
+-- [SBAI] behavior coroutine error:	addons/sbraven/lua/entities/npc_sb_raven.lua:2882: table index is nil
