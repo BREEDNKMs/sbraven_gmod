@@ -114,10 +114,12 @@ SB_ImportJSON("data_static/SB/Content/Local/Data/TargetFilterTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAnimSetTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterMoveTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTable.json")
-local M_Raven_Default = "data_static/SB/Content/Local/Data/CharacterStanceTable.json" 
-SB_ImportJSON(M_Raven_Default) 
-M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default 
--- table.Merge(ENT,M_Raven_Default) 
+local CharacterStanceTable = "data_static/SB/Content/Local/Data/CharacterStanceTable.json" 
+SB_ImportJSON(CharacterStanceTable) 
+local M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default  
+local M_Raven_Phase2 = SB_CharacterStanceTable[1].Rows.M_Raven_Phase2  
+table.Merge(ENT,M_Raven_Phase2) 
+-- table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) 
 table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) 
 print(SysTime()) 
 
@@ -2382,8 +2384,8 @@ local M_Raven_AI = SB_ImportJSON("data_static/SB/Content/GameDesign/Combat/Behav
 function ENT:Initialize() 
 	scripted_ents.Get("npc_unreali_female").Initialize(self) 
 	-- start effects in CharacterStanceTable 
-	if M_Raven_Default then 
-		local StartEffect = StellarBlade.ParseTableStrings(M_Raven_Default.StartEffect) 
+	if self.StartEffect then 
+		local StartEffect = StellarBlade.ParseTableStrings(self.StartEffect) 
 		StellarBlade.AddEffectFromTable(self,StartEffect) 
 	end 
 end 
@@ -2412,7 +2414,8 @@ end
 -- attack power: 1600 
 -- skill min / max distances and activate cases are in TargetFilterTable.json 
 
--- Initialize a working copy of the master tree and reset coroutine state
+-- Initialize a working copy of the master tree and reset coroutine state 
+--[[ 
 function ENT:SBAI_InitTree()
     self.SBAI_CurBehaviorStack = table.Copy(self.SBAI_BehaviorTree)
     self.CurrentBranch = nil
@@ -2693,7 +2696,7 @@ function ENT:SBAI_SelectTask(taskTable, startIndex)
     -- If stack emptied and nothing returned true/running, return false
     return false
 end
-
+--]] 
 
 --[[ 
 -- Tick the runtime tree
@@ -2715,6 +2718,7 @@ end
 --]] 
 
 -- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
+--[[ 
 function ENT:SBAI_RunBehavior() 
     -- Create coroutine if missing or dead
     if !self._sbaico or coroutine.status(self._sbaico) == "dead" then 
@@ -2754,6 +2758,7 @@ function ENT:SBAI_RunBehavior()
 
     return false
 end 
+--]] 
 
 -- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
 function ENT:SBAI_RunBehavior() 
@@ -3107,8 +3112,6 @@ function ENT:SBAI_SelectTask(startNodeID)
             table.remove(self.SBAI_ExecutionStack)
             goto continue_loop
         end
-		print(nodeData.Name) 
-		if nodeData.Name == "BTComposite_Sequence_13" then Entity(1):ChatPrint("BTComposite_Sequence_13") end -- debug
 
         local children = nodeData.Properties.Children
         local idx = frame.Index
@@ -3155,30 +3158,6 @@ function ENT:SBAI_SelectTask(startNodeID)
         local childEntry = children[idx]
         local canExecute = true
 
-        -- 4. Edge Decorators 
-		--[[ 
-        if childEntry.Decorators then
-            for _, decoRef in ipairs(childEntry.Decorators) do
-                local decoID = decoRef.ObjectName
-                local decoNode = self.SBAI_NodeLookup[decoID]
-
-                if decoNode then
-                    local rawName = decoNode.Type or decoNode.Name
-                    local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
-                    
-                    if self[funcName] then 
-					print("decorator is:",funcName) 
-                        local success = self[funcName](self, decoNode.Properties)
-						print("decorator result is:",success) 
-                        if !success then
-                            canExecute = false
-                            break 
-                        end
-                    end
-                end
-            end
-        end
-		--]] 
 		
 		-- 4. Edge Decorators
 		-- We use the same helper, but here we check ALL decorators (blocking logic)
@@ -3296,6 +3275,7 @@ function ENT:NPC_TranslateActivity(act)
 			return ACT_MP_WALK_MELEE 
 		end 
 	end 
+	return scripted_ents.Get("npc_unreali_female").NPC_TranslateActivity(self,act) 
 end 
 
 function ENT:NPC_TranslateLuaSchedule(oldsched) 
@@ -3363,11 +3343,14 @@ function ENT:CustomRunAI()
 	local retVal = scripted_ents.Get("npc_unreali_female").CustomRunAI(self) 
 end 
 
--- FlowAbortMode: 
--- LowerPriority: If the condition becomes true, the Behavior Tree will abort any currently running tasks in lower-priority branches. It does not abort the current branch where the decorator lives.
--- Self: interrupt current task when decorator meets criteria. proceeds to next tasks   
--- Both: LowerPriority + Self: abort current task and nexttasks whenever this meets true. isalive check 
--- None: do not interrupt task structure, leaving Condition useless 
+function ENT:OnKilled(dmginfo) 
+	local attacker = dmginfo:GetAttacker() 
+	if self.AttackerEffectWhenDead then 
+		local AttackerEffectWhenDead = StellarBlade.ParseTableStrings(self.AttackerEffectWhenDead) 
+		StellarBlade.AddEffectFromTable(attacker,AttackerEffectWhenDead) 
+	end 
+	return scripted_ents.Get("npc_unreali_female").OnKilled(self,dmginfo) -- baseclass 
+end 
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
@@ -3655,7 +3638,7 @@ end
 -- skills 
 
 -- SbCautionToTarget: property-driven adaptation (no spawn hacks)
-function ENT:SbCautionToTarget(tbl) 
+function ENT:SbCautionToTarget(tbl, nodeID) 
     -- small helpers
     local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
     local function randFloat(a,b) return a + math.random() * (b - a) end
@@ -3956,7 +3939,7 @@ end
 -- FirstSkillActiveAlias contains dir to animation data in FirstSkillActiveAlias, "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_ParryPreview" 
 -- inside anim metadata, actual animation exists in SBShowAnimKey's Properties["AnimResourcePath"] = "/Game/Art/Character/Monster/CH_M_NA_53/Animation/M_Raven_BurstAreaSlashEnd" 
 
-function ENT:SbUseSkill(tbl)
+function ENT:SbUseSkill(tbl, nodeID) 
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
 	-- PrintTable(tbl) 
 	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted")
@@ -4021,12 +4004,12 @@ function ENT:SbUseableTimeReset(tbl)
 end
 
 
-function ENT:SbWait(tbl)
-    local waitTime = tbl.WaitTime or 0
-    local returnSucceeded = tbl.bReturnSucceeded or false
+function ENT:SbWait(tbl, nodeID)
+    local WaitTime = tbl.WaitTime or 0
+    local bReturnSucceeded = tbl.bReturnSucceeded or false
 
     -- Use Runtime Registry instead of writing to JSON 'data'
-    local startTime = self:SBAI_GetNodeState(nodeID, "startTime")
+    local startTime = self:SBAI_GetNodeState(nodeID, "startTime") 
     
     if !startTime then
         startTime = CurTime()
@@ -4034,12 +4017,11 @@ function ENT:SbWait(tbl)
     end
 
     local elapsed = CurTime() - startTime
-    print("in SbWait", elapsed, waitTime)
+    print("in SbWait", elapsed, WaitTime)
 
-    if elapsed < waitTime then
+    if elapsed < WaitTime then
         return nil -- still running
     else
-		-- if true then return true end -- temporary: remove this when branch selection issues are solved 
         if returnSucceeded then
             return true  -- wait succeeded
         else
@@ -4057,10 +4039,15 @@ function ENT:SbMoveToHome(data)
 end 
 
 function ENT:SB_LookAtTarget(data) end 
-function ENT:SbWaitTimeRandom(data) -- only in tachy ai 
+function ENT:SbWaitTimeRandom(data, nodeID) -- only in tachy ai 
 	local MinTime = data.MinTime 
 	local MaxTime = data.MaxTime 
 	local bReturnSucceeded = data.bReturnSucceeded 
+	if !self:SBAI_GetNodeState(nodeID, "SbWaitTimeRandom") then 
+		return CurTime() > self:SBAI_GetNodeState(nodeID, "SbWaitTimeRandom") and true or nil 
+	else 
+		self:SBAI_SetNodeState(nodeID, "SbWaitTimeRandom",math.Rand(MinTime,MaxTime))
+	end 
 end 
 
 -- function ENT:Item_Resurrection_Ground(ent) return false end 
