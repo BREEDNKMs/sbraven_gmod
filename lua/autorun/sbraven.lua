@@ -1496,7 +1496,9 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 		ActorState = EffectTable[ActorState] 
 		DelayActorState = EffectTable[DelayActorState] 
 		StellarBlade.ActorApplyState(self,ActorState,DelayActorState) 
+		if ActorState != "ESBActorState::ActorState_None" then 
 		BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.ActorApplyState(Entity("..self:EntIndex().."),'"..ActorState.."',"..DelayActorState..") end") 
+		end 
 	end 
 end 
 
@@ -1560,7 +1562,7 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 		DelayActorState = EffectTable[DelayActorState] 
 		if self[ActorState] then 
 			self[ActorState]:Remove() 
-			BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then Entity("..self:EntIndex()..")['"..ActorState.."']:Remove() end") 
+			BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) and Entity("..self:EntIndex()..")['"..ActorState.."'] then Entity("..self:EntIndex()..")['"..ActorState.."']:Remove() end") 
 		end 
 		-- StellarBlade.ActorApplyState(self,ActorState,DelayActorState) 
 	end 
@@ -2090,7 +2092,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 		Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())) 
 		self.SBAI_SkillTable.Remove = function() 
 			-- reset activity to ACT_IDLE 
-			self:ResetIdealActivity(ACT_IDLE) 
+			if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end 
 			-- for players, reset attack gesture 
 			if self:IsPlayer() then 
 				self:AnimRestartGesture( GESTURE_SLOT_ATTACK_AND_RELOAD, ACT_RESET, true ) 
@@ -2158,56 +2160,6 @@ StellarBlade.IsRaven = function(self)
 		return true 
 	end 
 	return false 
-end 
-
-StellarBlade.SetShow = function(self,showpath) 
-	-- scripted_ents.Get("npc_sb_raven").SBAI_SetShow(self,showPath) 
-	if !showpath then return false end 
-	if #showpath == 0 then return false end 
-	if !string.find(showpath,"data_static") then -- append correct path if setshow has been directly called 
-		showpath = "data_static/SB/Content/Art/Show/"..showpath..".json" 
-	end 
-	SB_ImportJSON(showpath) 
-	self.SBAI_ActiveShow = {["Time"] = CurTime(),["RunTime"] = CurTime(), ["Cycle"] = 0} 
-	self.SBAI_ActiveShow.Dir = showpath 
-	local showname = string.GetFileFromFilename( showpath ) 
-	showname = string.StripExtension(showname) 
-	self.SBAI_ActiveShow.Name = showname 
-	self.SBAI_ActiveShow.Frame = 0 
-	self.SBAI_ActiveShow.Stopped = false 
-	self.SBAI_ActiveShow.Outer = self 
-	function self.SBAI_ActiveShow:Remove() 
-	
-	end 
-	showname = "SB_"..showname 
-	-- self:SBAI_MaintainShow() 
-	-- scripted_ents.Get("npc_sb_raven").SBAI_MaintainShow(self) 
-	StellarBlade.MaintainShow(self,self.SBAI_ActiveShow) 
-	return showname -- return true on animation play, false on not play 
-end 
-
-
-
-StellarBlade.SetShow = function(self,showpath) 
-	-- scripted_ents.Get("npc_sb_raven").SBAI_SetShow(self,showPath) 
-	if !showpath then return false end 
-	if #showpath == 0 then return false end 
-	if !string.find(showpath,"data_static") then -- append correct path if setshow has been directly called 
-		showpath = "data_static/SB/Content/Art/Show/"..showpath..".json" 
-	end 
-	SB_ImportJSON(showpath) 
-	self.SBAI_ActiveShow_alt = {["Time"] = CurTime(),["RunTime"] = CurTime(), ["Cycle"] = 0} 
-	self.SBAI_ActiveShow_alt.Dir = showpath 
-	local showname = string.GetFileFromFilename( showpath ) 
-	showname = string.StripExtension(showname) 
-	self.SBAI_ActiveShow_alt.Name = showname 
-	self.SBAI_ActiveShow_alt.Frame = 0 
-	self.SBAI_ActiveShow_alt.Stopped = false 
-	showname = "SB_"..showname 
-	-- self:SBAI_MaintainShow() 
-	-- scripted_ents.Get("npc_sb_raven").SBAI_MaintainShow(self) 
-	StellarBlade.MaintainShow(self,self.SBAI_ActiveShow_alt) 
-	return showname -- return true on animation play, false on not play 
 end 
 
 StellarBlade.SetShow = function(self,showpath,slot) 
@@ -2342,7 +2294,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 		if SBAI_ActiveShow.Elapsed < StartTime then
 			continue
 		end
-		if SBAI_ActiveShow.TriggeredKeys[data.Name] then
+		if isbool(SBAI_ActiveShow.TriggeredKeys[data.Name]) or istable(SBAI_ActiveShow.TriggeredKeys[data.Name]) and SBAI_ActiveShow.TriggeredKeys[data.Name].Stopped then
 			continue
 		end
 
@@ -2350,7 +2302,47 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 		SBAI_ActiveShow.TriggeredKeys[data.Name] = true
 		-- Entity(1):ChatPrint("SBShowAnimKey: Triggered "..data.Name.." at time: "..(CurTime() - SBAI_ActiveShow.Time)) 
 		
-		local CheckShowKeyTag = data.Properties.CheckShowKeyTag 
+		if props.CheckShowKeyTag or props.CheckNoneShowKeyTag then 
+			local ShowKeyTagMap = StellarBlade.ShowKeyTagMap(self) 
+			if props.CheckShowKeyTag then -- check whether the tag exists, i.e. TachyNPC 
+				local succeeded = false 
+				for k,v in ipairs(props.CheckShowKeyTag) do 
+					for k2,v2 in ipairs(ShowKeyTagMap) do 
+						if v == v2 then 
+							succeeded = true 
+							break 
+						end 
+					end 
+				end 
+				if !succeeded then continue end 
+			end 
+			
+			if props.CheckNoneShowKeyTag then -- check whether the tag doesn't exist, i.e. NoReactionSlug 
+				local succeeded = true 
+				for k,v in ipairs(props.CheckNoneShowKeyTag) do 
+					for k2,v2 in ipairs(ShowKeyTagMap) do 
+						if v == v2 then 
+							succeeded = false 
+							break 
+						end 
+					end 
+				end 
+				if !succeeded then continue end 
+			end 
+		end 
+		
+		local IsBattle = props.IsBattle 
+		if IsBattle then 
+			if StellarBlade.IsBattle(self) then -- player holding weapon, npc has enemy 
+				if IsBattle == "ESBConditionCheckType::ConditionCheckType_False" then continue end 
+			else 
+				if IsBattle == "ESBConditionCheckType::ConditionCheckType_True" then continue end 
+			end 
+		end 
+		
+		local bEnable = props.bEnable 
+		if bEnable == false then continue end 
+		
 		-- static_assert(offsetof(USBShowKey, CheckShowKeyTag) == 0x000028, "Member 'USBShowKey::CheckShowKeyTag' has a wrong offset!");
 		-- static_assert(offsetof(USBShowKey, CheckNoneShowKeyTag) == 0x000038, "Member 'USBShowKey::CheckNoneShowKeyTag' has a wrong offset!");
 		-- static_assert(offsetof(USBShowKey, IsBattle) == 0x000048, "Member 'USBShowKey::IsBattle' has a wrong offset!");
@@ -2364,7 +2356,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 		-- SCHEDULE END: determine duration and schedule end-handling
 		local duration = props.Duration
 		-- If no duration (or <=0) make it last until end of the show
-		if not duration or duration <= 0 then
+		if !duration or duration <= 0 then
 			-- last until show end
 			-- EndAt is the elapsed-time in show where it should end
 			local EndAt = endTime
@@ -2372,7 +2364,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			-- If we already passed EndAt, end immediately
 			if SBAI_ActiveShow.Elapsed >= EndAt then
 				-- immediate end
-				if not SBAI_ActiveShow.EndedKeys[data.Name] then
+				if !SBAI_ActiveShow.EndedKeys[data.Name] then
 					SBAI_ActiveShow.EndedKeys[data.Name] = true
 					HandleShowKeyEnd(data)
 					SBAI_ActiveShow.ScheduledEndKeys[data.Name] = nil
@@ -2384,7 +2376,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			SBAI_ActiveShow.ScheduledEndKeys[data.Name] = { EndAt = EndAt, Data = data }
 			-- If duration is zero or already passed, end immediately
 			if SBAI_ActiveShow.Elapsed >= EndAt then
-				if not SBAI_ActiveShow.EndedKeys[data.Name] then
+				if !SBAI_ActiveShow.EndedKeys[data.Name] then
 					SBAI_ActiveShow.EndedKeys[data.Name] = true
 					HandleShowKeyEnd(data)
 					SBAI_ActiveShow.ScheduledEndKeys[data.Name] = nil
@@ -2451,15 +2443,12 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					-- most players will go regrab their dropped weapon 
 				end 
 			end 
-
-
-
 		elseif data.Type == "SBShowActorKey" then 
 			local bUseActorHidden = props.bUseActorHidden 
 			if isstring(bUseActorHidden) then 
 				bUseActorHidden = tobool(bUseActorHidden) 
 			-- Apply immediately (no timer here; revert is scheduled via ScheduledEndKeys above)
-				print("hidden is:",bUseActorHidden) 
+				-- print("hidden is:",bUseActorHidden) 
 				ApplyRenderState(self, bUseActorHidden)
 
 			-- (previous timer.Simple revert removed because we now schedule end above)
@@ -2468,65 +2457,87 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 
 
 		elseif data.Type == "SBShowSoundKey" or data.Type == "SBShowCharSESoundKey" then 
-			local CuePath
-			local TargetForCharacterVoice = data.Properties.TargetForCharacterVoice 
-			if TargetForCharacterVoice and TargetForCharacterVoice == "ESBShowCharacterParticleTarget::ShowCharParticleTarget_OtherActor" then 
-				if self.GetEnemy and IsValid(self:GetEnemy()) then 
-					TargetForCharacterVoice = self:GetEnemy() 
-				elseif IsValid(self.PickTarget) then 
-					TargetForCharacterVoice = self.PickTarget
-				else 
-					TargetForCharacterVoice = self 
-				end 
-			end 
-			if !TargetForCharacterVoice then TargetForCharacterVoice = self end 
-			if data.Type == "SBShowCharSESoundKey" then 
-				-- skip emitting char sounds on HL2 characters 
-				if self:IsPlayer() and self:GetModel() != "models/alvaroports/sbravenpm.mdl" then 
-					print("not raven",self) 
-					continue 
-				end 
-				if !self:IsPlayer() and !scripted_ents.IsBasedOn(self:GetClass(),"npc_sb_raven") and self:GetClass() != "npc_sb_raven" then 
-					print("not raven",self) 
-					continue 
-				end 
-				local key = props.CharacterReactKey or props.CharacterVoiceKey 
-				if key then 
-					local lookup = StellarBlade.LookupCharacterSound(self,key) 
-					CuePath = lookup and lookup.ObjectPath 
-				else 
-					if data.Properties.Sound then 
-						CuePath = string.StripExtension(data.Properties.Sound.ObjectPath) 
+		
+			local cachedState = SBAI_ActiveShow.TriggeredKeys[data.Name]
+			if istable(cachedState) and cachedState.SoundScript then
+				-- We have a cached script. Only check the time.
+				if SBAI_ActiveShow.Elapsed >= cachedState.TriggerTime then
+					local SoundScript = cachedState.SoundScript
+					local Target = cachedState.Target
+
+					if IsValid(Target) then
+						Target:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume)
+					end
+					
+					-- Mark as fully complete (boolean true) so the main loop skips this key next time
+					SBAI_ActiveShow.TriggeredKeys[data.Name] = true
+				end
+			-- If time isn't reached yet, we do nothing and return.
+			-- This skips all the intense string manipulation below.
+
+			else
+				local CuePath
+				local TargetForCharacterVoice = data.Properties.TargetForCharacterVoice 
+				if TargetForCharacterVoice and TargetForCharacterVoice == "ESBShowCharacterParticleTarget::ShowCharParticleTarget_OtherActor" then 
+					if self.GetEnemy and IsValid(self:GetEnemy()) then 
+						TargetForCharacterVoice = self:GetEnemy() 
+					elseif IsValid(self.PickTarget) then 
+						TargetForCharacterVoice = self.PickTarget
+					else 
+						TargetForCharacterVoice = self 
 					end 
 				end 
-				if CuePath then
-					CuePath = string.gsub(CuePath, "/L10N/[^/]+", "")
-				end
-			else
-				CuePath = props.SoundSoftObject and props.SoundSoftObject.AssetPathName
-				if !CuePath and props.Sound then
-					CuePath = props.Sound.ObjectPath
-				end
-			end
-
-			if CuePath then
-				CuePath = string.sub(CuePath, 6)
-				CuePath = "addons/sbraven/data_static/SB/Content" .. CuePath
-				CuePath = string.StripExtension(CuePath) .. ".json"
-
-				local SoundScript = StellarBlade.BuildSoundScript(self,CuePath)
-				if SoundScript then
-					if SoundScript.Delay and SoundScript.Delay != 0 then
-						timer.Simple(SoundScript.Delay, function()
-							if IsValid(self) then
-								TargetForCharacterVoice:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume)
-							end
-						end)
-					else
-						TargetForCharacterVoice:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume)
+				if !TargetForCharacterVoice then TargetForCharacterVoice = self end 
+				if data.Type == "SBShowCharSESoundKey" then 
+					-- skip emitting char sounds on HL2 characters 
+					if !StellarBlade.IsRaven(self) then 
+						-- print("not raven",self) 
+						continue 
+					end 
+					local key = props.CharacterReactKey or props.CharacterVoiceKey 
+					if key then 
+						local lookup = StellarBlade.LookupCharacterSound(self,key) 
+						CuePath = lookup and lookup.ObjectPath 
+					else 
+						if data.Properties.Sound then 
+							CuePath = string.StripExtension(data.Properties.Sound.ObjectPath) 
+						end 
+					end 
+					if CuePath then
+						CuePath = string.gsub(CuePath, "/L10N/[^/]+", "")
+					end
+				else
+					CuePath = props.SoundSoftObject and props.SoundSoftObject.AssetPathName
+					if !CuePath and props.Sound then
+						CuePath = props.Sound.ObjectPath
 					end
 				end
-			end
+
+				if CuePath then
+					CuePath = string.sub(CuePath, 6)
+					CuePath = "addons/sbraven/data_static/SB/Content" .. CuePath
+					CuePath = string.StripExtension(CuePath) .. ".json"
+
+					local SoundScript = StellarBlade.BuildSoundScript(self,CuePath) 
+					if SoundScript then 
+						local Delay = SoundScript.Delay or 0
+						local TriggerTime = StartTime + Delay
+
+						-- Logic: If there is a delay and we haven't reached it, CACHE everything.
+						if Delay > 0 and SBAI_ActiveShow.Elapsed < TriggerTime then
+							SBAI_ActiveShow.TriggeredKeys[data.Name] = {
+								SoundScript = SoundScript,   -- Cache the heavy table
+								TriggerTime = TriggerTime,   -- Cache the calculated time
+								Target      = TargetForCharacterVoice -- Cache the target (optional, but saves IsValid checks)
+							}
+							-- Note: We leave TriggeredKeys as a TABLE. 
+							-- The main loop check `istable(...)` must allow this to continue processing next frame.
+						else
+							TargetForCharacterVoice:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume) 
+						end
+					end
+				end 
+			end 
 		elseif data.Type == "SBShowActorAnimKey" then -- used for Eve in Menu mode, for her facial expressions 
 		elseif data.Type == "SBShowActorCompVisibleKey" then -- used to draw or hide actors and children in Menu mode 
 		elseif data.Type == "SBShowActorEventNotificationKey" then -- fires Properties.EventName in Menu mode 
@@ -2536,7 +2547,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local animData = {
 				Name = data.Name,
 				StartTime = data.StartTime or 0,
-				Duration = data.Duration or 0,
+				Duration = duration,
 				CurveKeys = (data.Value and data.Value.EditorCurveData and data.Value.EditorCurveData.Keys) or {},
 				RecoverValue = data.RecoverValue,
 				RecoverTime = data.RecoverTime,
@@ -2561,7 +2572,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			end
 
 			local function ApplyValue(ent, varName, value)
-				if not IsValid(ent) then return end
+				if !IsValid(ent) then return end
 				-- You can replace this with your custom AnimBP binding handler
 				ent[varName] = value
 			end
@@ -2594,7 +2605,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					if animData.RecoverValue != nil then
 						timer.Simple(animData.RecoverWaitTime or 0, function()
 							if not IsValid(self) or not IsValid(targetEnt) then return end
-							if SBAI_ActiveShow ~= currentShow then return end
+							if SBAI_ActiveShow != currentShow then return end
 
 							local startVal = value
 							local endVal = animData.RecoverValue
@@ -2790,7 +2801,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					-- then try the actor/player (self)
 					if (not boneID or boneID == -1) and IsValid(self) and self.LookupBone then
 						local bid = self:LookupBone(fallbackBoneName)
-						if bid and bid ~= -1 then
+						if bid and bid != -1 then
 							boneID = bid
 							boneEntity = self
 						end
@@ -2856,10 +2867,10 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local ObjectPath = data.Properties and data.Properties.ShowData and data.Properties.ShowData.ObjectPath 
 			if ObjectPath then 
 				ObjectPath = string.StripExtension(ObjectPath) 
-				print("object path is:",ObjectPath) 
+				-- print("object path is:",ObjectPath) 
 				ObjectPath = string.sub(ObjectPath,7) 
 				ObjectPath = "data_static/SB/Content/"..ObjectPath..".json" 
-				print("updated object path is:",ObjectPath) 
+				-- print("updated object path is:",ObjectPath) 
 				StellarBlade.SetShow(self,ObjectPath) 
 			end 
 		elseif data.Type == "SBShowPlayTheaterKey" then -- play scripted event 
@@ -2873,16 +2884,13 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 		-- M_Raven_SwordAuraCombo 
 		elseif data.Type == "SBShowRadialForceKey" then
 			local props = data.Properties or {}
-			if not props.bFireImpulse then continue end
-
-			local base = self
-			if !IsValid(base) then continue end
+			if !props.bFireImpulse then continue end
 
 			-- Compute blast origin
 			local rel = props.RelativeLocation or { X = 0, Y = 0, Z = 0 }
-			local origin = base:GetPos() + base:GetForward() * (rel.X or 0)
-			origin = origin + base:GetRight() * (rel.Y or 0)
-			origin = origin + base:GetUp() * (rel.Z or 0)
+			local origin = self:GetPos() + self:GetForward() * (rel.X or 0)
+			origin = origin + self:GetRight() * (rel.Y or 0)
+			origin = origin + self:GetUp() * (rel.Z or 0)
 
 			local radius = props.Radius or 300
 			local impulse = props.ImpulseStrength or 500
@@ -2891,8 +2899,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local dmgRadius = props.DestructibleCheckRadius or radius
 			local ignoreOwner = props.bIgnoreOwningActor or false
 
-			local attacker = base
-			local dir = Vector(0, 0, 1)
+			local dir = Vector(0, 0, 1) 
 
 			-- Debug
 			Entity(1):ChatPrint(string.format("[SBAI-ShowData] RadialForce blast at %s (R=%.0f, Impulse=%.0f)", tostring(origin), radius, impulse))
@@ -2901,12 +2908,12 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local affected = ents.FindInSphere(origin, radius)
 			for _, ent in ipairs(affected) do
 				if not IsValid(ent) then continue end
-				if ignoreOwner and ent == base then continue end
+				if ignoreOwner and ent == self then continue end
 
 				-- Compute direction and strength falloff
 				local dirVec = (ent:GetPos() + ent:OBBCenter() - origin)
 				local dist = dirVec:Length()
-				dirVec:Normalize()
+				dirVec = dirVec:GetNormalized()
 				local falloff = 1 - math.Clamp(dist / radius, 0, 1)
 				local strength = impulse * falloff
 
@@ -2924,8 +2931,8 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				if destructDmg > 0 and dist <= dmgRadius then
 					local dmginfo = DamageInfo()
 					dmginfo:SetDamage(destructDmg * falloff)
-					dmginfo:SetAttacker(IsValid(attacker) and attacker or ent)
-					dmginfo:SetInflictor(IsValid(self) and self or attacker)
+					dmginfo:SetAttacker(IsValid(self) and self or ent)
+					dmginfo:SetInflictor(IsValid(self) and self or self)
 					dmginfo:SetDamageType(DMG_BLAST)
 					dmginfo:SetDamageForce(dirVec * strength * 30)
 
@@ -2933,7 +2940,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					local tr = util.TraceLine({
 						start = origin,
 						endpos = ent:GetPos() + ent:OBBCenter(),
-						filter = base
+						filter = self
 					})
 					if tr.Hit then
 						ent:DispatchTraceAttack(dmginfo, tr, dirVec)
@@ -2974,7 +2981,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local startTime = props.StartTime or 0
 
 			local showName = data.Outer or "UnknownShow"
-			SBAI_ActiveShow = SBAI_ActiveShow or showName
+			SBAI_ActiveShow = SBAI_ActiveShow.Name or showName
 			self.SBAI_TimeScaleKeys = self.SBAI_TimeScaleKeys or {}
 
 			-- Create key state
@@ -3213,7 +3220,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	end 
 	
 	if string.find(HitDetectionType,"ActiveCollision") then 
-		if table.IsEmpty(tableofhittargets) then tableofhittargets = ents.FindInPVS(self) end 
+		if table.IsEmpty(tableofhittargets) then tableofhittargets = ents.FindInPVS and ents.FindInPVS(self) or ents.FindInSphere(self:GetPos(),100) end 
 		-- originally, characters have a SBCollisionGroupComponent 
 		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
 		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
@@ -4565,7 +4572,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	
 	function SBAI_SkillStep:OnRemove() 
 		hook.Remove("Think",self) 
-		hook.Remove("EntityTakeDamage",self) 
+		hook.Remove("PostEntityTakeDamage",self) 
 	end 
 	
 	function SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDamageTaken) 
@@ -6002,6 +6009,24 @@ StellarBlade.GetRootMotionTransform = function(rootMotionTable, startTime)
     return interpolatedPos, interpolatedAngle
 end 
 
+-- returns all show key tags a character has been attributed via effects 
+StellarBlade.ShowKeyTagMap = function(self) 
+	local ShowKeyTag, _ShowKeyTag = { }, { } 
+	if self.SB_EffectAlias then 
+		for k,v in pairs(self.SB_EffectAlias) do 
+			for k2,v2 in ipairs(v) do 
+				if v2.ShowKeyTag != "None" then 
+					if !_ShowKeyTag[v2.ShowKeyTag] then -- avoid adding same value 
+						table.insert(ShowKeyTag,v2.ShowKeyTag) 
+						_ShowKeyTag[v2.ShowKeyTag] = true 
+					end 
+				end 
+			end 
+		end 
+	end 
+	return ShowKeyTag 
+end 
+
 StellarBlade.ESBAIActorType = function(self,ESBAIActorType) 
 	if ESBAIActorType == "ESBAIActorType::ActorType_None" then return 
 	elseif ESBAIActorType == "ESBAIActorType::ActorType_Self" then return self 
@@ -6069,6 +6094,30 @@ StellarBlade.PickTarget = function(self)
 	else 
 		return self.SB_PickTarget 
 	end 
+end 
+
+local tableofpassiveweapons = {["weapon_physgun"] = true, ["gmod_camera"] = true, ["gmod_tool"] = true, ["weapon_cubemap"] = true} 
+
+StellarBlade.IsBattle = function(self) 
+	if self:IsPlayer() then 
+		if IsValid(self:GetActiveWeapon()) then 
+			if tableofpassiveweapons[self:GetActiveWeapon():GetClass()] then return false end 
+			local GetHoldType = self:GetActiveWeapon():GetHoldType() 
+			if GetHoldType == "camera" or GetHoldType == "normal" or GetHoldType == "passive" then return false end 
+			return true 
+		else 
+			return false 
+		end 
+		
+		return IsValid(self:GetActiveWeapon()) 
+	end 
+	if self.GetNPCState then 
+		if self:GetNPCState() == NPC_STATE_DEAD then return false end 
+		if self:GetNPCState() > NPC_STATE_IDLE then return true end 
+	elseif self.GetEnemy then 
+		if IsValid(self:GetEnemy()) then return true end 
+	end 
+	return false -- add nextbot support 
 end 
 
 StellarBlade.IsGroggy = function(self) return self["ESBActorState::ActorState_Groggy"] end 
