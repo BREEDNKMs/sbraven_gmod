@@ -1509,9 +1509,9 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 		local DelayActorState = "DelayActorState"..idx 
 		ActorState = EffectTable[ActorState] 
 		DelayActorState = EffectTable[DelayActorState] 
-		StellarBlade.ActorApplyState(self,ActorState,DelayActorState) 
+		StellarBlade.ActorApplyState(self,ActorState,DelayActorState,EffectTable) 
 		if ActorState != "ESBActorState::ActorState_None" then 
-		BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.ActorApplyState(Entity("..self:EntIndex().."),'"..ActorState.."',"..DelayActorState..") end") 
+		-- BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.ActorApplyState(Entity("..self:EntIndex().."),'"..ActorState.."',"..DelayActorState..") end") 
 		end 
 	end 
 end 
@@ -1574,11 +1574,19 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 		local DelayActorState = "DelayActorState"..idx 
 		ActorState = EffectTable[ActorState] 
 		DelayActorState = EffectTable[DelayActorState] 
-		if self[ActorState] then 
-			self[ActorState]:Remove() 
-			BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) and Entity("..self:EntIndex()..")['"..ActorState.."'] then Entity("..self:EntIndex()..")['"..ActorState.."']:Remove() end") 
-		end 
-		-- StellarBlade.ActorApplyState(self,ActorState,DelayActorState) 
+		if self[ActorState] then
+			local st = self[ActorState]
+			-- print("calling ActorState:Remove() ", ActorState, EffectTable.Name)
+			local ok, res = pcall(function()
+				return st:Remove(EffectTable)
+			end)
+			if !ok then
+				-- print("ActorState:Remove pcall failed:", res)
+			else
+				-- print("removal status:", res)
+			end
+			-- print("post ActorState.Remove")
+		end
 	end 
 	hook.Remove("Think",EffectTable) 
 	hook.Remove("EntityTakeDamage",EffectTable) 
@@ -1660,62 +1668,96 @@ StellarBlade.CanActorApplyState = function(self,ActorState)
 	return true 
 end 
 
-StellarBlade.ActorApplyState = function(self,ActorState) 
+StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTable) 
 	-- lookup whether the state is set in character's table 
 	if !StellarBlade.CanActorApplyState(self,ActorState) then return false end 
 	if !self[ActorState] then 
-		self[ActorState] = {["Name"] = ActorState, ["Users"] = 1} 
+		self[ActorState] = {["Name"] = ActorState} 
 		local ActorState = self[ActorState] 
 		ActorState.Time = CurTime() 
 		ActorState.Outer = self 
 		ActorState.IsMarkedForDeletion = false 
+		ActorState.Users = { } 
+		if EffectTable then
+            table.insert(ActorState.Users, EffectTable)
+        end
 		
-		function ActorState:Remove() 
-			if self.Users >= 2 then 
-				self.Users = self.Users -1 
-				return 
-			end 
+		function ActorState:Remove(effectOrName) 
+			-- effectOrName may be nil / table / string
+            local t = type(effectOrName)
+            local targetName = nil
+            if t == "table" then
+                targetName = effectOrName.Name
+            elseif t == "string" then
+                targetName = effectOrName
+            end
+
+            -- debug print
+            -- print("in ActorState:Remove(", targetName or "<none>", ")")
+
+            -- ensure Users is a table
+			self.Users = self.Users or { } 
+			-- if an effect was specified: remove any matching entries (by reference first, then by name)
+            if effectOrName then
+                for i = #self.Users, 1, -1 do
+                    local u = self.Users[i]
+                    if u == effectOrName then
+                        table.remove(self.Users, i)
+                    elseif type(u) == "table" and targetName and u.Name == targetName then
+                        table.remove(self.Users, i)
+                    end
+                end
+            end
+
+            -- if there are still users, do not remove the state
+            if #self.Users > 0 then
+                return false
+            end
+			
 			if !self.IsMarkedForDeletion then 
 				self.IsMarkedForDeletion = true 
 				-- Entity(1):ChatPrint("removing: "..self.Name) 
-				ProtectedCall(function() 
+				local ok, err = pcall(function() 
 				
-				hook.Remove("Think",ActorState) 
-				hook.Remove("EntityTakeDamage",ActorState) 
-				hook.Remove("PostEntityTakeDamage",ActorState) 
-				hook.Remove("SetupMove",ActorState) -- player only 
-				hook.Remove("Move",ActorState) -- player only 
-				hook.Remove("FinishMove",ActorState) -- player only 
-				hook.Remove("CalcMainActivity",ActorState) -- player only 
-				hook.Remove("CalcView",ActorState) -- player only 
-				hook.Remove("CalcViewModelView",ActorState) -- player only 
-				
-				if self.Name == "ESBActorState::ActorState_BlockMove" then 
+					hook.Remove("Think",ActorState) 
+					hook.Remove("EntityTakeDamage",ActorState) 
+					hook.Remove("PostEntityTakeDamage",ActorState) 
+					hook.Remove("SetupMove",ActorState) -- player only 
+					hook.Remove("Move",ActorState) -- player only 
+					hook.Remove("FinishMove",ActorState) -- player only 
+					hook.Remove("CalcMainActivity",ActorState) -- player only 
+					hook.Remove("CalcView",ActorState) -- player only 
+					hook.Remove("CalcViewModelView",ActorState) -- player only 
 					
-				elseif self.Name == "ESBActorState::ActorState_BlockingBehavior" then 
-					if self.Outer:IsPlayer() then 
-						self.Outer:Freeze(false) 
-					else 
-						-- self.Outer:SetMoveType(MOVETYPE_STEP) 
+					if self.Name == "ESBActorState::ActorState_BlockMove" then 
+						if self.SetMoveDelay then self:SetMoveDelay(0) end 
+					elseif self.Name == "ESBActorState::ActorState_BlockingBehavior" then 
+						if self.Outer:IsPlayer() then 
+							self.Outer:Freeze(false) 
+						else 
+							-- self.Outer:SetMoveType(MOVETYPE_STEP) 
+						end 
+					elseif self.Name == "ESBActorState::ActorState_BlockSprint" then 
+						if self.Outer:IsPlayer() then 
+							self.Outer:SprintEnable() 
+						end 
+					elseif self.Name == "ESBActorState::ActorState_Cloaking" then 
+						self.Outer:RemoveFlags(FL_NOTARGET) 
+					elseif self.Name == "ESBActorState::ActorState_NoDamageNoHit" then 
+						self.Outer:SetSaveValue("m_takedamage",2) 
+					elseif self.Name == "ESBActorState::ActorState_NoDamage" then 
+						self.Outer:SetSaveValue("m_takedamage",2) 
 					end 
-				elseif self.Name == "ESBActorState::ActorState_BlockSprint" then 
-					if self.Outer:IsPlayer() then 
-						self.Outer:SprintEnable() 
-					end 
-				elseif self.Name == "ESBActorState::ActorState_Cloaking" then 
-					self.Outer:RemoveFlags(FL_NOTARGET) 
-				elseif self.Name == "ESBActorState::ActorState_NoDamageNoHit" then 
-					self.Outer:SetSaveValue("m_takedamage",2) 
-				elseif self.Name == "ESBActorState::ActorState_NoDamage" then 
-					self.Outer:SetSaveValue("m_takedamage",2) 
-				end 
 				
 				end) 
+				if !ok then print("error within removal:",err) end 
 				
-				if self.Outer[ActorState.Name] then 
-					self.Outer[ActorState.Name] = nil 
-				end 
+				if self.Outer and self.Outer[self.Name] then
+                    self.Outer[self.Name] = nil
+                end
+				return true 
 			end 
+			return false 
 		end 
 		
 		function ActorState:IsValid() 
@@ -1764,6 +1806,39 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		function ActorState:SetupMove(target,mv,cmd) -- called only for players 
 			if self.Name == "ESBActorState::ActorState_BlockMove" then 
 				-- mv:SetVelocity( Vector(100,100,100)) 
+			elseif self.Name == "ESBActorState::ActorState_DoubleJump" then 
+				local JumpCount = 2 
+				if target:GetMoveType() != MOVETYPE_WALK then return end -- don't accidentally jump in noclip 
+
+				-- Step 1: Reset JumpCount when the player touches the ground.
+				if target:OnGround() then
+					self.JumpCount = 0
+				else
+					-- Step 2: Handle Air Jumping
+					-- Check if the Jump key was *just* pressed (prevent holding)
+					if mv:KeyPressed(IN_JUMP) then
+						
+						-- Initialize JumpCount if it doesn't exist
+						self.JumpCount = self.JumpCount or 0
+						
+						-- Check if we have jumps left.
+						-- We subtract 1 from jumpCount because the first jump is the normal ground jump.
+						-- So if jumpCount is 2, we allow 1 extra air jump.
+						if self.JumpCount < (JumpCount - 1) then
+							
+							-- The Trick: Make the player think they are on the ground (Entity(0) is the world).
+							-- This tricks the CGameMovement::CheckJumpButton logic in the engine to allow the jump.
+							-- References gamemovement.cpp: "if (player->GetGroundEntity() == NULL) ... return false;"
+							target:SetGroundEntity(Entity(0))
+							
+							-- Increment the jump counter
+							self.JumpCount = self.JumpCount + 1
+							-- mv:SetUpSpeed(500) -- did not work 
+							-- mv:SetVelocity(mv:GetVelocity() + Vector(0,0,-mv:GetUpSpeed()*10)) -- did not work for up vel 
+							-- mv:SetFinalJumpVelocity(Vector(200,200,200)) -- doesn't work in here 
+						end
+					end
+				end
 			end 
 		end 
 		
@@ -1959,6 +2034,7 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		elseif ActorState.Name == "ESBActorState::ActorState_DisableHitStop" then 
 		-- ActorState_DoubleJump                    = 51,
 		elseif ActorState.Name == "ESBActorState::ActorState_DoubleJump" then 
+			-- for Eve: Enable player's double jump ability 
 		-- ActorState_DisableLockonTarget           = 52,
 		elseif ActorState.Name == "ESBActorState::ActorState_DisableLockonTarget" then 
 		-- ActorState_DisableMountingEquipment      = 53,
@@ -2071,10 +2147,31 @@ StellarBlade.ActorApplyState = function(self,ActorState)
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockInteractionWithNotiUI" then 
 		-- ActorState_Max                           = 106,
 		elseif ActorState.Name == "ESBActorState::ActorState_Max" then 
-		end 
+		end  
 	else 
-		self[ActorState].Users = self[ActorState].Users + 1 
-	end 
+		-- state exists - add EffectTable to Users if provided
+        if EffectTable then
+            local s = self[ActorState]
+            if not s.Users then s.Users = {} end
+
+            -- add only if not already tracked (first check by reference, then by name)
+            local already = false
+            for _, u in ipairs(s.Users) do
+                if u == EffectTable then
+                    already = true
+                    break
+                elseif type(u) == "table" and u.Name and EffectTable.Name and u.Name == EffectTable.Name then
+                    already = true
+                    break
+                end
+            end
+            if not already then
+                table.insert(s.Users, EffectTable)
+            end
+        end
+    end
+
+    return true
 end 
 
 StellarBlade.ActorApplyStat = function(self,StatType,StatCalculationType,CalculationMultipleValue,CalculationValue) 
@@ -3173,7 +3270,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	local EndTime = Time + Duration 
 	local Type = SkillStepTable.Type -- get skill step type 
     -- Determine the current target. Prioritize the locked target if it exists and is valid.
-    local currentTarget = nil 
+    local currentTarget, CheckTarget, Hit, Parry, JustParry = nil 
 	currentTarget = StellarBlade.PickTarget(self) 
     -- [NEW] Handle persistent "bLookAtTarget": Keep looking at the target during the step
 	local bLookAtTarget = SkillStepTable.bLookAtTarget 
@@ -3193,7 +3290,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	-- to be filled 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
 		local bEveryFrameHitCheck = SkillStepTable.bEveryFrameHitCheck 
-		local CheckTarget, Hit, Parry, JustParry = StellarBlade.CheckSkillHit(self,SkillStepTable,bEveryFrameHitCheck) 
+		CheckTarget, Hit, Parry, JustParry = StellarBlade.CheckSkillHit(self,SkillStepTable,bEveryFrameHitCheck) 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hold" then -- unused 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_SuperParry" then -- unused 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Item" then -- eve only: use item 
@@ -3201,18 +3298,25 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then -- default action 
 	
 	end 
+	if Parry then Hit = false end -- quick fix, fix inside function to either Hit or Parry. Hit should be set only if something takes damage 
+	print("CheckTarget, Hit, Parry, JustParry:,",CheckTarget, Hit, Parry, JustParry) 
 	
 	local NextStepCheckEffectArray = StellarBlade.ParseTableStrings(SkillStepTable.NextStepCheckEffectArray) 
 	-- "NextStepCheckEffectArray": "[{\"Effect\":\"M_Raven_QTECheck\", \"NextStepAlias\":\"M_Raven_ChaseComboQTE_Cast1\", \"bCheckTarget\":0, \"bHit\":0, \"bParry\":1, \"bJustParry\":1}]", 
 	-- "NextStepCheckEffectArray": "[{\"Effect\":\"M_Raven_BetaCounterReady\", \"NextStepAlias\":\"P_Eve_ShieldBreakerCounterRaven1_Cast1\", \"bCheckTarget\":1, \"bHit\":1, \"bParry\":1, \"bJustParry\":1}, {\"Effect\":\"M_Raven_BetaCounterCheckNoCoolTime\", \"NextStepAlias\":\"P_Eve_ShieldBreakerCounterRaven1_Cast1\", \"bCheckTarget\":1, \"bHit\":1, \"bParry\":1, \"bJustParry\":1}]", 
 	
-	for k,v in ipairs(NextStepCheckEffectArray) do 
-		if self.SB_EffectAlias and self.SB_EffectAlias[v.Effect] and !table.IsEmpty(self.SB_EffectAlias[v.Effect]) then 
-			local bCheckTarget, bHit, bParry, bJustParry = tobool(v.bCheckTarget), tobool(v.bHit), tobool(v.bParry), tobool(v.bJustParry) 
-			if bCheckTarget == CheckTarget and bHit == Hit and bParry == Parry and bJustParry == JustParry then 
-			
+	if istable(NextStepCheckEffectArray) then 
+		for k,v in ipairs(NextStepCheckEffectArray) do 
+			local hCheckTarget, bHit, bParry, bJustParry = tobool(v.bCheckTarget) and currentTarget or self, tobool(v.bHit), tobool(v.bParry), tobool(v.bJustParry) 
+			if hCheckTarget.SB_EffectAlias and hCheckTarget.SB_EffectAlias[v.Effect] and !table.IsEmpty(hCheckTarget.SB_EffectAlias[v.Effect]) then 
+				if v.bCheckTarget and !IsValid(hCheckTarget) then break end 
+				print("bHit, bParry, bJustParry:",bHit, bParry, bJustParry) 
+				if bHit == Hit and bParry == Parry and bJustParry == JustParry then 
+					print("calling effect next step") 
+					StellarBlade.SetSkillStep(self,v.NextStepAlias) 
+					break 
+				end 
 			end 
-			-- if all operations equal to operators then StellarBlade.SetSkillStep(self,v.NextStepAlias) end 
 		end 
 	end 
 
@@ -3221,7 +3325,13 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	if CurTime() >= EndTime then 
 		StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_StepDependent") 
 		-- step finished: advance to next step or clear
-		local NextStepAlias = SkillStepTable.NextStepAlias
+		local NextStepAlias = SkillStepTable.NextStepAlias 
+		local NextStepAliasWhenNoTarget = SkillStepTable.NextStepAliasWhenNoTarget 
+		
+		local Step = NextStepAlias 
+		if !IsValid(currentTarget) and NextStepAliasWhenNoTarget != "None" then 
+			Step = NextStepAliasWhenNoTarget 
+		end 
 		if NextStepAlias and NextStepAlias != "None" then
 			-- Transition to the next skill step
 			StellarBlade.SetSkillStep(self,NextStepAlias) 
@@ -3547,6 +3657,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			local SkillResultAlias = SkillStepTable.SkillResultAlias 
 			local SkillResultAliasWhenParry = SkillStepTable.SkillResultAliasWhenParry 
 			local bDamageBlocked = StellarBlade.JustParryAnticipation(self,v) 
+			print("bDamageBlocked:",v,bDamageBlocked) 
 			
 			-- prioritize SkillResultAliasWhenParry, JustParry, PerfectParry, Guard, BreakGuard, Default 
 			
@@ -3555,26 +3666,30 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				if SkillResultAliasWhenParry != "None" then 
 					StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
 					StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
+					print("target result:",v,SkillResultAliasWhenParry) 
 				end 
 			else 
 			
 				if SkillResultAlias != "None" then -- applied on self and target 
 					-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
-					StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillResultAlias.bCritical,tableOptional) 
-					StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillResultAlias.bCritical,tableOptional) 
-					-- print("target result:",v,SkillResultAlias) 
+					StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
+					StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
+					print("target result:",v,SkillResultAlias) 
 				end 
 			end 
 			
+			print("NextStepAliasWhenParry:",SkillStepTable.NextStepAliasWhenParry) 
 			if SkillStepTable.NextStepAliasWhenParry != "None" then -- player blocked your attack. 
 			-- this will be reinterpreted as: trace attack to GetEnemy hit something else 
+				StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenParry) 
+				break 
 			end 
 			
 			if SkillStepTable.NextStepAliasWhenParryJust != "None" then -- interpret as: getenemy is invincible or total damage is lesser than %10 
-				if bDamageBlocked then 
-					StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenParryJust) 
-					Entity(1):ChatPrint("Enemy in JustParry, calling "..SkillStepTable.NextStepAliasWhenParryJust) 
-				end 
+				-- if bDamageBlocked then 
+					-- StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenParryJust) 
+					-- Entity(1):ChatPrint("Enemy in JustParry, calling "..SkillStepTable.NextStepAliasWhenParryJust) 
+				-- end 
 			end 
 			
 			if SkillStepTable.NextStepAliasWhenPerfectParry != "None" then -- player performed parry right at HitTime 
@@ -4660,30 +4775,27 @@ StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLeve
 	return true 
 end
 
-StellarBlade.JustParryAnticipation = function(self,ent) -- just parry: the parry you properly calculate its timespan 
-	--- START: Added Damage Check Logic ---
+StellarBlade.JustParryAnticipation = function(self, target)
+    local bDamageBlocked = false -- Initialize the variable to false.
 
-	local bDamageBlocked = false -- Initialize the variable to false.
+    -- Condition 1: The ent is a player and the GM:PlayerShouldTakeDamage hook returns false.
+    local playerHookBlocked = target:IsPlayer() and hook.Run("PlayerShouldTakeDamage", target, self) == false
 
-	-- Check various conditions to see if damage was blocked or prevented.
-	-- We set bDamageBlocked to true if ANY of these conditions are met.
+    -- Condition 2: Damage is blocked for AI (if target is NPC and ai_block_damage cvar is true)
+    local ai_block_damage = target:IsNPC() and cvars.Bool("ai_block_damage")
 
-	-- Condition 1: The ent is a player and the GM:PlayerShouldTakeDamage hook returns false.
-	local playerHookBlocked = ent:IsPlayer() and hook.Run("GM:PlayerShouldTakeDamage", ent, self) == false
-	local ai_block_damage = ent:IsNPC() and cvars.Bool("ai_block_damage") == false 
+    -- Condition 3: The ent has God Mode enabled.
+    local isGodMode = target:IsFlagSet(FL_GODMODE)
 
-	-- Condition 2: The ent has God Mode enabled.
-	local isGodMode = ent:IsFlagSet(FL_GODMODE)
+    -- Condition 4: The target's internal takedamage variable is set to 0 (DAMAGE_NO) or less.
+    local takeDamageDisabled = (target:GetInternalVariable("m_takedamage") or 1) < 1
 
-	-- Condition 3: The ent's internal takedamage variable is set to 0 (DAMAGE_NO) or less.
-	-- (or 1) is a safeguard in case the variable is missing, defaulting to DAMAGE_EVENTS_ONLY.
-	local takeDamageDisabled = (ent:GetInternalVariable("m_takedamage") or 1) < 1
+    if playerHookBlocked or ai_block_damage or isGodMode or takeDamageDisabled then
+        bDamageBlocked = true
+    end
+    return bDamageBlocked
+end
 
-	if playerHookBlocked or isGodMode or takeDamageDisabled or ai_block_damage then
-		bDamageBlocked = true
-	end
-	return bDamageBlocked 
-end 
 
 StellarBlade.SetSkillStep = function(self,strSkill) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
@@ -4781,7 +4893,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 				if target.SBAI_MoveTable then target.SBAI_MoveTable:Remove() end 
 				local tableOptional = { } 
 				tableOptional.DamageInfo = dmginfo  
-				tableOptional.Constructor = IsValid(target:GetAttacker()) and target:GetAttacker() or NULL  
+				tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL  
 				tableOptional.Target = target 
 				StellarBlade.CompleteTableOptional(target,tableOptional) 
 				StellarBlade.AddEffect(target,"Item_C_GrenadeAreaKnockBack",tableOptional) -- has movealias Item_C_GrenadeAreaKnockBack M_Common_KnockBackWeak
