@@ -142,9 +142,9 @@ ENT.NPC_GroupIdleSound 	= ""
 ENT.NPC_MeleeHitSound = "Unreali_Nali.MeleeHit" 
 ENT.NPC_PainSound 	= "NPC_Raven.PainSound" 
 ENT.NPC_PainSoundWater 	= "Unreali_Female.HurtUnderWater" 
-ENT.npc_health 		= 248304 -- "MaxHP": 248304, "MaxShield": 4805, 
+ENT.npc_health 		= ENT.MaxHP -- "MaxHP": 248304, "MaxShield": 4805, 
 ENT.npc_model		= "models/alvaroports/sbravenpm.mdl" 
-ENT.PhysicAttackPower = 1600  
+-- ENT.PhysicAttackPower = 1600 
 ENT.bHasInnateMelee1 = true 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
@@ -2378,12 +2378,19 @@ ENT.SBAI_BehaviorTree = {
     },
     ObjectName = "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_32'"
   }
-}
-local M_Raven_AI = SB_ImportJSON("data_static/SB/Content/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI.json") 
+} 
+-- local M_Raven_AI = SB_ImportJSON("data_static/SB/Content/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI.json") 
+local BehaviorTreeRes = ENT.BehaviorTreeRes 
+BehaviorTreeRes = string.sub(BehaviorTreeRes,6) 
+BehaviorTreeRes = "data_static/SB/Content"..BehaviorTreeRes..".json" 
+SB_ImportJSON(BehaviorTreeRes) 
+-- print(BehaviorTreeRes)  
+-- "BehaviorTreeRes": "/Game/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI", 
 
 function ENT:Initialize() 
 	scripted_ents.Get("npc_unreali_female").Initialize(self) 
 	-- start effects in CharacterStanceTable 
+	StellarBlade.ActorStats(self) -- initialize stats if we haven't 
 	if self.StartEffect then 
 		local StartEffect = StellarBlade.ParseTableStrings(self.StartEffect) 
 		StellarBlade.AddEffectFromTable(self,StartEffect) 
@@ -2805,10 +2812,11 @@ end
 -- Phase 1: The One-Time Indexer
 -- Call this in Initialize or OnEntityCreated, before trying to run the AI.
 function ENT:SBAI_IndexTree()
-    -- Ensure the global raw table exists (imported via "M_Raven_AI = SB_ImportJSON(...)")
-    local rawTable = M_Raven_AI
+    -- Ensure the global raw table exists (imported via "BehaviorTreeRes = SB_ImportJSON(...)")
+	local AITable = "SB_"..string.StripExtension(string.GetFileFromFilename(BehaviorTreeRes)) 
+    local rawTable = _G[AITable] 
     if !rawTable then
-        ErrorNoHalt("[SBAI] M_Raven_AI global table not found! Cannot index Behavior Tree.\n")
+        ErrorNoHalt("[SBAI] BehaviorTreeRes global table not found! Cannot index Behavior Tree.\n")
         return false
     end
 
@@ -3281,9 +3289,9 @@ end
 function ENT:NPC_TranslateLuaSchedule(oldsched) 
 	local retVal = scripted_ents.Get("npc_unreali_female").NPC_TranslateLuaSchedule(self,oldsched) 
 	if retVal and retVal.DebugName == "LUASCHED_FLEE_FROM_BEST_SOUND" then 
-		return LUASCHED_RAVEN_BLINK_FROM_BESTSOUND 
+		return LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND 
 	elseif retVal and retVal.DebugName == "LUASCHED_TAKE_COVER_FROM_BEST_SOUND" then 
-		return LUASCHED_RAVEN_BLINK_FROM_BESTSOUND 
+		return LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND 
 	end 
 	return retVal 
 end 
@@ -3305,12 +3313,12 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	-- vertical distance between 800 
 	local pos = self:WorldToLocal(self:GetEnemy():WorldSpaceCenter()) 
 	if pos.z < -800 or pos.z > 800 then return false end 
+	-- has raven melee weapon 
 	if IsValid(self:GetActiveWeapon()) then 
 		if self:GetActiveWeapon():GetClass() != "raven_blade" then return false end 
 	else 
 		return false 
 	end 
-	-- has raven melee weapon 
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
 	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
 	if self:NPC_HasCondition(COND.ENEMY_OCCLUDED) then return false end 
@@ -3329,7 +3337,7 @@ end
 function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
 	-- when blocked (true), it calls Lua schedules 
 	-- when not blocked (false), it calls Engine schedules 
-	if self.CurrentSchedule and self.CurrentSchedule.DebugName == "LUASCHED_RAVEN_BLINK" then return true end 
+	if self.CurrentSchedule and self.CurrentSchedule.DebugName == "LUASCHED_RAVEN_RAPIDEVADE" then return true end 
 	if self:NPC_ShouldConductBehaviorTree() then return true end 
 	return scripted_ents.Get("npc_unreali_female").NPC_ShouldBlockRunAI(self) 
 end 
@@ -3406,7 +3414,7 @@ function ENT:SbBlackboard(tbl)
 end 
 
 function ENT:SbCheckActorEffect(tbl) 
-	PrintTable(tbl) 
+	-- PrintTable(tbl) 
     local ActorType          = tbl.ActorType or "ESBAIActorType::Self" 
     local EffectAlias        = tbl.EffectAlias 
     local OrCheckArray       = tbl.OrCheck_EffectAliasArray or {} 
@@ -3741,7 +3749,8 @@ function ENT:SbCautionToTarget(tbl, nodeID)
         end
 
         -- increment attempts
-        tbl.attempts = tbl.attempts + 1
+        -- tbl.attempts = tbl.attempts + 1
+		self:SBAI_SetNodeState(nodeID, "attempts", self:SBAI_GetNodeState(nodeID,"attempts") +1) 
     end -- init done
 
     -- if nav not set, create nav goal according to chosenMoveChoice 
@@ -3758,18 +3767,18 @@ function ENT:SbCautionToTarget(tbl, nodeID)
         local goalPos = tgtPos
 		print("chosen",chosen) 
         if chosen == "side" then
-            goalPos = tgtPos + rightVec * (tbl.sideDist * tbl.sideSign)
+            goalPos = tgtPos + rightVec * (self:SBAI_GetNodeState(nodeID,"sideDist") * self:SBAI_GetNodeState(nodeID,"sideSign"))
         elseif chosen == "forward" then
-            goalPos = tgtPos - dir2D * tbl.forwardDist
+            goalPos = tgtPos - dir2D * self:SBAI_GetNodeState(nodeID,"forwardDist") 
         elseif chosen == "forwardandside" then
-            goalPos = tgtPos - dir2D * tbl.forwardDist + rightVec * (tbl.sideDist * tbl.sideSign)
+            goalPos = tgtPos - dir2D * self:SBAI_GetNodeState(nodeID,"forwardDist") + rightVec * (self:SBAI_GetNodeState(nodeID,"sideDist") * self:SBAI_GetNodeState(nodeID,"sideSign"))
         else
             -- defensive fallback to forward
-            goalPos = tgtPos - dir2D * tbl.forwardDist
+            goalPos = tgtPos - dir2D * self:SBAI_GetNodeState(nodeID,"forwardDist") 
         end
 
         -- Prefer NavSetRandomGoal for side moves to create natural paths; otherwise NavSetGoalPos.
-        if chosen == "side" and self.NavSetRandomGoal then
+        if chosen == "side" then
             local minPathLen = math.Clamp(tbl.sideDist * 0.5, 100, 2000)
             self:NavSetRandomGoal(minPathLen, (tgtPos - myPos):GetNormalized()) 
         else
@@ -3778,7 +3787,7 @@ function ENT:SbCautionToTarget(tbl, nodeID)
 		self:SBAI_SetNodeState(nodeID,"navSet",true) 
 		self:SetMovementActivity(ACT_MP_WALK_MELEE) 
         return nil -- running while nav completes
-    end
+    end 
 
     -- -- While nav is set, keep running until movement stops; try to detect movement using available API:
     -- if self.IsMoving and type(self.IsMoving) == "function" then
@@ -3942,7 +3951,8 @@ end
 function ENT:SbUseSkill(tbl, nodeID) 
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
 	-- PrintTable(tbl) 
-	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted")
+	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted") 
+	-- print("Started:",nodeID,Started) 
     if !Started then 
         for k, v in RandomPairs(tbl.SkillName) do 
             if isnumber(k) then -- do not accidentally start variables 
@@ -3962,7 +3972,7 @@ function ENT:SbUseSkill(tbl, nodeID)
 			end 
 		end 
 	end 
-	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted")
+	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted") 
 
     if Started then 
         -- If the active skill was cleared (e.g., skill finished or target died), the task is complete 
@@ -3971,15 +3981,20 @@ function ENT:SbUseSkill(tbl, nodeID)
              self:NPC_StopScriptedActivity() 
 			 self:ResetIdealActivity(ACT_IDLE) 
 			 -- self.SBAI_SkillTable = nil 
+			 self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
              return true 
         else 
 			return nil -- Task is still running 
 		end 
     else 
-		if !self.SBAI_SkillTable then return false end 
+		if !self.SBAI_SkillTable then 
+			self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
+			return false 
+		end 
 		return nil -- not started, maybe all tasks are in delay? 
 	end 
-
+	
+	self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
     return false -- no task selected  
 end 
 
@@ -4341,16 +4356,16 @@ end
 
 -- create single-task schedule to use the master task
 if SERVER then
-    LUASCHED_RAVEN_BLINK = ai_schedule.New("LUASCHED_RAVEN_BLINK")
+    LUASCHED_RAVEN_RAPIDEVADE = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE")
     -- single master task; ensures the whole 1.4s timeline is controlled here
-    LUASCHED_RAVEN_BLINK:AddTaskEx("TASK_BLINK", "TASK_BLINK", 0)
+    LUASCHED_RAVEN_RAPIDEVADE:AddTaskEx("TASK_BLINK", "TASK_BLINK", 0)
 	
-	LUASCHED_RAVEN_BLINK_FROM_BESTSOUND = ai_schedule.New("LUASCHED_RAVEN_BLINK_FROM_BESTSOUND")
-	LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_STOP_MOVING",0) 
-    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_SET_FAIL_SCHEDULE",SCHED_COWER) 
-    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_STORE_BESTSOUND_REACTORIGIN_IN_SAVEPOSITION",0) 
-    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:EngTask("TASK_GET_PATH_AWAY_FROM_BEST_SOUND",3000) 
-    LUASCHED_RAVEN_BLINK_FROM_BESTSOUND:AddTaskEx("TASK_BLINK", "TASK_BLINK", 1)
+	LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND")
+	LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_STOP_MOVING",0) 
+    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_SET_FAIL_SCHEDULE",SCHED_COWER) 
+    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_STORE_BESTSOUND_REACTORIGIN_IN_SAVEPOSITION",0) 
+    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_GET_PATH_AWAY_FROM_BEST_SOUND",3000) 
+    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:AddTaskEx("TASK_BLINK", "TASK_BLINK", 1)
 end
 
 local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
