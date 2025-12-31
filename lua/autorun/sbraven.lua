@@ -1,4 +1,46 @@
-local tblWeapons = { "raven_blade" } 
+-- ===== Add these client receivers near the top of the file (or anywhere in shared scope) =====
+if CLIENT then
+    StellarBlade = StellarBlade or {} 
+	StellarBlade.NetworkBranchBlocked = false 
+    StellarBlade.NetworkedEffects = StellarBlade.NetworkedEffects or {}
+
+    net.Receive("SB_AddEffect", function(len, ent)
+        local ent = net.ReadEntity()
+        local effectAlias = net.ReadString()
+        local networkID = net.ReadString()
+
+        if !IsValid(ent) then return end
+
+        -- store networked info locally; clients can hook into these if needed
+        StellarBlade.NetworkedEffects[networkID] = {
+            Entity = ent,
+            Alias  = effectAlias,
+            Time   = CurTime()
+        }
+		
+		StellarBlade.AddEffect(ent,effectAlias) 
+
+        -- Optional client-side hook
+        if StellarBlade.OnNetworkAddEffect then
+            pcall(StellarBlade.OnNetworkAddEffect, ent, effectAlias, networkID)
+        end
+    end)
+
+    net.Receive("SB_RemoveEffect", function(len, ent)
+        local networkID = net.ReadString()
+        local ent = net.ReadEntity()
+
+        if StellarBlade.NetworkedEffects and StellarBlade.NetworkedEffects[networkID] then
+            StellarBlade.NetworkedEffects[networkID] = nil
+        end
+
+        -- Optional client-side hook
+        if StellarBlade.OnNetworkRemoveEffect then
+            pcall(StellarBlade.OnNetworkRemoveEffect, ent, networkID)
+        end
+    end)
+end
+-- ===== end client receivers =====
 
 player_manager.AddValidModel( "Raven", "models/alvaroports/SBRavenPM.mdl" ) 
 player_manager.AddValidHands( "Raven", "models/alvaroports/SBRavenVM.mdl", 0, "0000000" ) 
@@ -45,9 +87,8 @@ local function GetIntervalMovement(ent, flIntervalUsed, layerID)
         playbackRate = ent:GetLayerPlaybackRate(layerID) or ent:GetPlaybackRate() or 1
         duration = ent:SequenceDuration(sequence) or 0
     else
-        local sequenceFromOuter = seq -- keep previous behavior if `seq` exists in outer scope
-        sequence = sequenceFromOuter or ent:GetSequence()
-        if !sequence or sequence < 0 then
+        local sequenceFromOuter = ent:GetSequence() -- keep previous behavior if `seq` exists in outer scope 
+        if !sequenceFromOuter or sequenceFromOuter < 0 then
             return false, ent:GetPos(), ent:GetLocalAngles(), false
         end
         cycle = ent:GetCycle() 
@@ -166,7 +207,7 @@ local function FInViewCone(ent, vecSpot)
 	-- m_flFieldOfView in Source is stored as a dot-product threshold (not degrees).
 	-- Many NPCs/players may not expose this var; fallback to 0.5 (≈60° cone) if missing.
 	local fov = ent:GetInternalVariable("m_flFieldOfView") or nil
-	if type(fov) ~= "number" then fov = 0.5 end
+	if type(fov) != "number" then fov = 0.5 end
 
 	local dot = facingDir:Dot(los)
 	return dot > fov
@@ -447,6 +488,11 @@ StellarBlade.ParseTableStrings = function(input)
     return out
 end
 
+if SERVER then 
+util.AddNetworkString("SB_AddEffect")
+util.AddNetworkString("SB_RemoveEffect") 
+end 
+
 StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...) 
     local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, strEffect) 
     if !EffectTable then error("EffectTable not found for "..strEffect) end 
@@ -547,7 +593,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	-- getmetatable(curEffect).__index = function(self,key) end 
 
     -- timestamp / lifetime anchor 
-	-- getmetatable(curEffect).
+	curEffect.IsNetworkedOrigin = false 
 	curEffect.IsMarkedForDeletion = false 
 	curEffect.Name = strEffect 
 	curEffect.Outer = self 
@@ -557,6 +603,42 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	if tableOptional and tableOptional.TraceResult then 
 		curEffect.TraceResult = tableOptional.TraceResult 
 	end 
+	
+	if CLIENT then
+        local stack_level = 0
+        while true do
+            local info = debug.getinfo(stack_level, "S")
+            if not info then break end
+
+            if info.short_src then
+                local filename = string.GetFileFromFilename(info.short_src)
+                -- If we find net.lua, this effect is a ROOT Networked effect.
+                if filename == "net.lua" then
+                    curEffect.IsNetworkedOrigin = true
+                    break
+                end
+            end
+            stack_level = stack_level + 1
+        end
+    end
+	
+	-- Generate a unique network identifier for this effect instance and store it
+    local netID = "SBFX_" .. tostring(CurTime()) .. "_" .. tostring(math.random(0, 1e9))
+    curEffect.NetworkID = netID
+
+    -- store mapping on EffectTable for lookup by network identifier (optional)
+    EffectTable._NetworkedInstances = EffectTable._NetworkedInstances or {}
+    EffectTable._NetworkedInstances[netID] = curEffect
+
+    -- Broadcast to all clients that a new effect has been added (ignore varargs/tableOptional per request)
+    if SERVER then
+        -- ensure netstrings exist (pcall used earlier)
+        net.Start("SB_AddEffect")
+            net.WriteEntity(self)        -- the affected entity
+            net.WriteString(strEffect)   -- effect alias
+            net.WriteString(netID)       -- unique id for this instance
+        net.Broadcast()
+    end
 
     -- Process vararg key/value pairs and write into chosen instance
     local args = { ... }
@@ -666,7 +748,9 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		if self.LoopTargetFilterAlias != "None" then 
 			for _, target in pairs(StellarBlade.TargetFilter(self.Outer,self.LoopTargetFilterAlias,self.Cycle)) do 
 				for k,v in ipairs(self.LoopTargetEffectAliasArray) do 
-					StellarBlade.AddEffect(target,v,tableOptional) 
+					if !self.IsNetworkedOrigin then 
+						StellarBlade.AddEffect(target,v,tableOptional) 
+					end 
 				end 
 			end 
 		end 
@@ -731,7 +815,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		end 
 	end 
 	
-	function curEffect:PostEntityTakeDamage(target,dmginfo) 
+	function curEffect:PostEntityTakeDamage(target,dmginfo) -- SERVER only 
 		-- 1. Validate Attacker
 		local attacker = dmginfo:GetAttacker() 
 		if !IsValid(attacker) then return end 
@@ -777,15 +861,17 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		hook.Add("Think",curEffect,curEffect.Think) 
 		hook.Add("EntityTakeDamage",curEffect,curEffect.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",curEffect,curEffect.PostEntityTakeDamage) 
+		print("added effect",curEffect.Name, SERVER and "SERVER" or "CLIENT") 
 		
 		-- fully initialized 
 		StellarBlade.OnAddEffect(self,curEffect,tableOptional) 
 	
 	end 
 	
-	if StartDelayTime == 0 then 
+	if StartDelayTime == 0 or curEffect.IsNetworkedOrigin then 
 		Activate() 
 	else 
+		print("delayed effect",curEffect.Name) 
 		hook.Add("Think",curEffect,function() 
 			if CurTime() >= curEffect.Time + StartDelayTime then 
 				curEffect.EndTime = CurTime() + curEffect.LifeTime 
@@ -826,7 +912,7 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	elseif Action == "ESBEffectAction::EffectAction_RecoveryItems" then 
 	elseif Action == "ESBEffectAction::EffectAction_AreaTimeScale" then 
 	elseif Action == "ESBEffectAction::EffectAction_TargetEncroachment" then 
-	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillCommandCoolTime" then 
+	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillCommandCoolTime" then -- unused 
 	elseif Action == "ESBEffectAction::EffectAction_AdditiveSkillCoolTime" then 
 	elseif Action == "ESBEffectAction::EffectAction_ShowUI" then 
 	elseif Action == "ESBEffectAction::EffectAction_PlayTheater" then 
@@ -844,6 +930,9 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	elseif Action == "ESBEffectAction::EffectAction_ConstructorActorSkillCancelWhenDispel" then 
 	elseif Action == "ESBEffectAction::EffectAction_CancelEventMove" then 
 	elseif Action == "ESBEffectAction::EffectAction_Revival" then 
+		local Pos = self:GetPos() -- Cache the location the player had died last time 
+		self:Spawn() 
+		self:SetPos(Pos) -- Teleport to cached pos 
 	elseif Action == "ESBEffectAction::EffectAction_TransformCharacter" then -- unused 
 	elseif Action == "ESBEffectAction::EffectAction_Possess" then -- unused 
 	elseif Action == "ESBEffectAction::EffectAction_ChangeTribe" then 
@@ -882,7 +971,8 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	elseif Action == "ESBEffectAction::EffectAction_ForceLOD0" then 
 	elseif Action == "ESBEffectAction::EffectAction_BlockCamera" then 
 	elseif Action == "ESBEffectAction::EffectAction_SelfiePhotoMode" then 
-	elseif Action == "ESBEffectAction::EffectAction_UseSkill" then 
+	elseif Action == "ESBEffectAction::EffectAction_UseSkill" then -- Scarlet only 
+		StellarBlade.StartSkill(self,ActionValue) 
 	elseif Action == "ESBEffectAction::EffectAction_SkillCoolTimeScale" then 
 	elseif Action == "ESBEffectAction::EffectAction_ResetTPSAimPosition" then 
 	elseif Action == "ESBEffectAction::EffectAction_HideAllProjectile" then 
@@ -900,6 +990,17 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 end 
 
 StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional) -- EffectTable is the table of effect index, i.e. M_Raven_BackJumpCombo_HitWave_Damage 
+	
+	-- if the incoming effect is from network initially, permit 
+	-- if the incoming effect is not networked (directly added), permit effect processing as usual 
+	-- if the incoming effect roots from a networked effect, block children of root effect 
+	if CLIENT then
+        -- If we are currently running code inside an effect that originated from the network,
+        -- we block any further AddEffect calls (branching).
+        if StellarBlade.NetworkBranchBlocked then
+            return false 
+        end
+    end
 	
 	local CHECK_TRUE  = "ESBConditionCheckType::ConditionCheckType_True"
 	local CHECK_FALSE = "ESBConditionCheckType::ConditionCheckType_False"
@@ -920,7 +1021,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 			return !self:IsOnGround()
 		end,
 		ConditionActive_BattleMode = function()
-			local st = self:GetNPCState() or 0
+			local st = self.GetNPCState and self:GetNPCState() or 1 
 			return (st > 1) and (st < 3)
 		end,
 	}
@@ -1465,10 +1566,11 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 			
 			if !table.IsEmpty(ActiveTargetEffectAliasArray) then 
 				for k,v in ipairs(ActiveTargetEffectAliasArray) do 
-					StellarBlade.AddEffect(Target,v,tableOptional) 
+					if !EffectTable.IsNetworkedOrigin then 
+						StellarBlade.AddEffect(Target,v,tableOptional) 
+					end 
 				end 
 			end 
-			
 		end 
 	end 
 	
@@ -1557,15 +1659,19 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 			
 			if !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
 				for k,v in ipairs(DeactiveTargetEffectAliasArray) do 
-					StellarBlade.AddEffect(Target,v,tableOptional) 
-				end
+					if !EffectTable.IsNetworkedOrigin then 
+						StellarBlade.AddEffect(Target,v,tableOptional) 
+					end 
+				end 
 			end 
 			
 		end 
 	end 
 	
 	for k,EffectAlias in ipairs(EffectTable.ChainEffectAliasArray) do 
-		StellarBlade.AddEffect(self,EffectAlias,tableOptional) 
+		if !EffectTable.IsNetworkedOrigin then 
+			StellarBlade.AddEffect(self,EffectAlias,tableOptional) 
+		end 
 	end 
 	
 	-- cleanup ActorState (1-5) 
@@ -1602,12 +1708,14 @@ StellarBlade.AddEffectFromTable = function(self, tblEffect, tableOptional)
             -- build vararg list from all keys except Alias
             local args = {}
             for k, val in pairs(v) do
-                if k ~= "Alias" then
+                if k != "Alias" then
+					if k == "Time" then k = "LifeTime" end 
+					if k == "startDelayTime" then k = "StartDelayTime" end 
                     table.insert(args, k)
                     -- convert numeric-like strings to numbers (to match ParseTableStrings behavior)
                     if type(val) == "string" then
                         local num = tonumber(val)
-                        if num ~= nil then
+                        if num != nil then
                             val = num
                         end
                     end
@@ -2201,7 +2309,8 @@ StellarBlade.StartSkill = function(self,SkillName)
 	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
 	if StellarBlade.CanStartSkill(self,SkillName) then 
 		self.SBAI_SkillTable = table.Copy(SkillTable) 
-		self.SBAI_SkillTable.Outer = self 
+		local SBAI_SkillTable = self.SBAI_SkillTable 
+		SBAI_SkillTable.Outer = self 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 		-- This now correctly handles all the data-driven setup for the first step 
 		local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
@@ -2219,14 +2328,20 @@ StellarBlade.StartSkill = function(self,SkillName)
 		if !self.SBAI_SkillUseCount then self.SBAI_SkillUseCount = { } end 
 		self.SBAI_SkillTimers[SkillName] = CurTime() + SkillTable.CoolTime 
 		self.SBAI_SkillUseCount[SkillName] = self.SBAI_SkillUseCount[SkillName] or 1 
-		self.SBAI_SkillTable.IsValid = function() 
-			if !self.SBAI_SkillStep then 
-				self.SBAI_SkillTable:Remove(true) 
+		
+		function SBAI_SkillTable:IsValid() 
+			if !IsValid(self.Outer) then return false end 
+			if !self.Outer.SBAI_SkillTable then return false end 
+			if !self.Outer.SBAI_SkillStep then 
+				self:Remove(true) 
 				return false 
 			end 
-			return IsValid(self) 
+			if self.IsMarkedForDeletion then return false end 
+			return true 
 		end 
-		self.SBAI_SkillTable.Remove = function(tbl,stopAnimations)  
+		
+		SBAI_SkillTable.Remove = function(tbl,stopAnimations)  
+			self.SBAI_SkillTable.IsMarkedForDeletion = true 
 			-- reset activity to ACT_IDLE 
 			if stopAnimations then 
 				if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end 
@@ -2241,8 +2356,8 @@ StellarBlade.StartSkill = function(self,SkillName)
 			-- also destruct skill step table if exists 
 		end 
 		
-		self.SBAI_SkillTable.Tick = function() end 
-		hook.Add("Tick",self.SBAI_SkillTable, self.SBAI_SkillTable.Tick) 
+		SBAI_SkillTable.Tick = function() end 
+		hook.Add("Tick",SBAI_SkillTable, SBAI_SkillTable.Tick) 
 		return true 
 	end 
 	return false 
@@ -2894,7 +3009,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				end 
 				
 				local ef = EffectData() 
-				local EffectEntity = bUseTargetEquipment and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self 
+				local EffectEntity = bUseTargetEquipment and self.GetActiveWeapon and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self 
 				
 				local worldPos = EffectEntity:GetPos() 
 				local worldAng = EffectEntity:GetLocalAngles() -- use world-space angles, not GetLocalAngles()
@@ -3299,7 +3414,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	
 	end 
 	if Parry then Hit = false end -- quick fix, fix inside function to either Hit or Parry. Hit should be set only if something takes damage 
-	print("CheckTarget, Hit, Parry, JustParry:,",CheckTarget, Hit, Parry, JustParry) 
+	-- print("CheckTarget, Hit, Parry, JustParry:,",CheckTarget, Hit, Parry, JustParry) 
 	
 	local NextStepCheckEffectArray = StellarBlade.ParseTableStrings(SkillStepTable.NextStepCheckEffectArray) 
 	-- "NextStepCheckEffectArray": "[{\"Effect\":\"M_Raven_QTECheck\", \"NextStepAlias\":\"M_Raven_ChaseComboQTE_Cast1\", \"bCheckTarget\":0, \"bHit\":0, \"bParry\":1, \"bJustParry\":1}]", 
@@ -3610,7 +3725,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			Entity = v, 
 			Hit = true, 
 			-- HitPos = v:NearestPoint(self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
+			HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()), 
 			HitNormal = self:GetAimVector(), 
 			HitWorld = false, 
 			HitMaterial = v:GetMaterial(), 
@@ -5466,10 +5581,10 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     if !IsValid(enemy) then enemy = Entity(0) end 
 	-- print("post StellarBlade.PickTarget:",SysTime()) 
 
-    local directionAxis = CharacterMoveTable.PositionDirectionAxis
-    local vecMoveDirection = Vector(1,0,0)
-    if self and self.GetAimVector then vecMoveDirection = self:GetAimVector() or vecMoveDirection
-    else vecMoveDirection = self:GetForward() end
+    local directionAxis = CharacterMoveTable.PositionDirectionAxis 
+    local vecMoveDirection = Vector(1,0,0) 
+    if self.GetAimVector then vecMoveDirection = self:GetAimVector() or vecMoveDirection 
+    else vecMoveDirection = self:GetForward() end 
 
     if directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Target" then
         if IsValid(enemy) and enemy.GetAimVector then vecMoveDirection = enemy:GetAimVector() end
