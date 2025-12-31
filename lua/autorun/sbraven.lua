@@ -4,7 +4,7 @@ if CLIENT then
 	StellarBlade.NetworkBranchBlocked = false 
     StellarBlade.NetworkedEffects = StellarBlade.NetworkedEffects or {}
 
-    net.Receive("SB_AddEffect", function(len, ent)
+    net.Receive("SB_AddEffect", function(len)
         local ent = net.ReadEntity()
         local effectAlias = net.ReadString()
         local networkID = net.ReadString()
@@ -498,16 +498,13 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
     if !EffectTable then error("EffectTable not found for "..strEffect) end 
 	
 	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then return false end 
-
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
-
     -- Ensure per-effect list exists (always treat as array of instances)
-    if !curEffects[strEffect] then
-        curEffects[strEffect] = {}
-    end
-
+    if !curEffects[strEffect] then 
+        curEffects[strEffect] = {} 
+    end 
     -- Prepare a fresh instance from canonical table (copy)
     local template = SB_EffectTable and SB_EffectTable[1] and SB_EffectTable[1].Rows and SB_EffectTable[1].Rows[strEffect]
     local newInstance = template and table.Copy(template) or {}
@@ -570,7 +567,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
         curEffects[strEffect][1] = newInstance
         chosenIndex = 1
     end
-
     -- The instance we're working with
     local curEffect = curEffects[strEffect][chosenIndex]
 
@@ -603,12 +599,11 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	if tableOptional and tableOptional.TraceResult then 
 		curEffect.TraceResult = tableOptional.TraceResult 
 	end 
-	
 	if CLIENT then
         local stack_level = 0
         while true do
             local info = debug.getinfo(stack_level, "S")
-            if not info then break end
+            if !info then break end
 
             if info.short_src then
                 local filename = string.GetFileFromFilename(info.short_src)
@@ -621,14 +616,13 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
             stack_level = stack_level + 1
         end
     end
-	
 	-- Generate a unique network identifier for this effect instance and store it
     local netID = "SBFX_" .. tostring(CurTime()) .. "_" .. tostring(math.random(0, 1e9))
     curEffect.NetworkID = netID
 
     -- store mapping on EffectTable for lookup by network identifier (optional)
-    EffectTable._NetworkedInstances = EffectTable._NetworkedInstances or {}
-    EffectTable._NetworkedInstances[netID] = curEffect
+    -- EffectTable._NetworkedInstances = EffectTable._NetworkedInstances or {}
+    -- EffectTable._NetworkedInstances[netID] = curEffect
 
     -- Broadcast to all clients that a new effect has been added (ignore varargs/tableOptional per request)
     if SERVER then
@@ -639,7 +633,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
             net.WriteString(netID)       -- unique id for this instance
         net.Broadcast()
     end
-
     -- Process vararg key/value pairs and write into chosen instance
     local args = { ... }
     local n = #args
@@ -657,7 +650,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
             curEffect[tostring(key)] = val
         end
     end
-
     -- Handle life type if you need to perform special registration/tracking
     local LifeType = curEffect.LifeType
     if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
@@ -670,7 +662,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
         -- curEffect.ExpireTime = CurTime() + (EffectTable.LifeTime or curEffect.LifeTime or 0)
     end
     -- (extend cases as you need) 
-	
 	curEffect.Remove = function() 
 		-- if !curEffects[strEffect][chosenIndex] then return end 
 		-- if curEffects[strEffect][chosenIndex] != curEffect then return end 
@@ -683,7 +674,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 			-- print("removing effect:",strEffect,self) 
 		end 
 	end 
-	
 	function curEffect:CanActivate() -- passes activation conditions 
 		return true 
 	end 
@@ -739,7 +729,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 			self:Remove() 
 			return false 
 		end 
-		return IsValid(curEffect.Outer) or !self.IsMarkedForDeletion 
+		return IsValid(curEffect.Outer) and !self.IsMarkedForDeletion 
 	end 
 	
 	function curEffect:Think() 
@@ -828,11 +818,10 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 
 		-- 3. Execute Logic for THIS effect only
 		-- Do NOT loop through 'attacker.SB_EffectAlias'. Use 'self' directly.
-		local EffectTable = self 
-		local ConditionChainType = EffectTable.ConditionChainType
+		local ConditionChainType = self.ConditionChainType
 
-		local ConditionChainSelfEffectAliasArray = EffectTable.ConditionChainSelfEffectAliasArray
-		local ConditionChainTargetEffectAliasArray = EffectTable.ConditionChainTargetEffectAliasArray
+		local ConditionChainSelfEffectAliasArray = self.ConditionChainSelfEffectAliasArray
+		local ConditionChainTargetEffectAliasArray = self.ConditionChainTargetEffectAliasArray
 		
 		-- Hit Target Logic
 		if ConditionChainType == "ESBEffectConditionChainType::EffectConditionChainType_HitTarget" then
@@ -856,18 +845,14 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 			end
 		end
 	end 
-	
 	local function Activate() 
 		hook.Add("Think",curEffect,curEffect.Think) 
 		hook.Add("EntityTakeDamage",curEffect,curEffect.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",curEffect,curEffect.PostEntityTakeDamage) 
-		print("added effect",curEffect.Name, SERVER and "SERVER" or "CLIENT") 
-		
 		-- fully initialized 
 		StellarBlade.OnAddEffect(self,curEffect,tableOptional) 
 	
 	end 
-	
 	if StartDelayTime == 0 or curEffect.IsNetworkedOrigin then 
 		Activate() 
 	else 
@@ -880,7 +865,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 			end 
 		end ) 
 	end 
-	
     -- Optionally return chosenIndex and curEffect for caller convenience
     return chosenIndex, curEffect
 end
@@ -1574,7 +1558,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 		end 
 	end 
 	
-		    -- Process dispel flags: curEffect.DispelFlagsArray may be an array of strings/flags
+	-- Process dispel flags: curEffect.DispelFlagsArray may be an array of strings/flags
     local DispelFlagsArray = EffectTable.DispelFlagsArray
     if !table.IsEmpty(DispelFlagsArray) then
         -- local toRemoveAliases = {}
@@ -1687,9 +1671,9 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 				return st:Remove(EffectTable)
 			end)
 			if !ok then
-				-- print("ActorState:Remove pcall failed:", res)
+				print("ActorState:Remove pcall failed:", res)
 			else
-				-- print("removal status:", res)
+				-- print("removal status:", ok, res)
 			end
 			-- print("post ActorState.Remove")
 		end
