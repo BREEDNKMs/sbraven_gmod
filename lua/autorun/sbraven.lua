@@ -4954,7 +4954,6 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	
 	function SBAI_SkillStep:Remove(stopAnimations) 
 		self.IsMarkedForDeletion = true 
-		print("removed SkillStep",CurTime()) 
 		pcall(self.OnRemove,self) 
 		if IsValid(self.Outer) then 
 			self.Outer.SBAI_SkillStep = nil 
@@ -5105,22 +5104,22 @@ end
     @param curveDataPath The raw path string from the CharacterMoveTable.
 ]]-- 
 
-StellarBlade.LoadCurveData = function(curveDataPath)
-    if not curveDataPath or curveDataPath == "None" then return end
+StellarBlade.LoadCurveData = function(curveDataPath) 
+    if !curveDataPath or curveDataPath == "None" then return end 
 
     -- Extract the path between the single quotes, e.g., /Game/GameDesign/...
-    local extractedPath = string.match(curveDataPath, "'(.-)'")
-    if not extractedPath then return end
+    local extractedPath = string.match(curveDataPath, "'(.-)'") 
+    if not extractedPath then return end 
 
     -- Strip the duplicate object name at the end, which acts like an extension.
-	extractedPath = string.sub(extractedPath,6) 
-    extractedPath = string.StripExtension(extractedPath)
+	extractedPath = string.sub(extractedPath,6)  
+    extractedPath = string.StripExtension(extractedPath) 
 
     -- Construct the final file path.
-    local finalPath = "addons/sbraven/data_static/SB/Content" .. extractedPath .. ".json"
+    local finalPath = "addons/sbraven/data_static/SB/Content" .. extractedPath .. ".json" 
 
     -- This external function is expected to load the JSON into a global table.
-    SB_ImportJSON(finalPath)
+    SB_ImportJSON(finalPath) 
 end 
 
 StellarBlade.LookupCharacterSound = function(self,key) 
