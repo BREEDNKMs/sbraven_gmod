@@ -4213,7 +4213,7 @@ $sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd
 	walkframe 58 LX LY LM
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
-	
+	loop 
 	origin 0 0 42 
 } 
 
@@ -4341,7 +4341,7 @@ $sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { 
 	walkframe 135 LX LY LM
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
-	
+	loop 
 	origin 0 0 42 
 	node "result_state_groggy_l" 
 } 
@@ -5434,15 +5434,65 @@ $sequence "Hit_Sawshark_GuardSuccess" "sbravenpm_anims\Hit_Sawshark_GuardSuccess
 	origin 0 0 42 
 }
 
-$sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68
-	fps 30 
+$sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68 
+	fps 35 
 	activity ACT_MELEE_ATTACK_SWING 1 
 	addlayer inverse_proportions
-	
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	
 	origin 0 0 42 
 } 
+
+//$animation "a_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" frames 0 0 origin 0 0 42 
+
+//$sequence "layer_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68
+//	fps 35 
+//	activity ACT_GESTURE_MELEE_ATTACK1 1 
+//	addlayer inverse_proportions
+//	LX LY LM
+//	blendlayer LightAttack_v1_01_05 0 5 37 68 spline 
+//	delta 
+//	subtract a_LightAttack_v1_01_05 0 
+//	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+//	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+//	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+//	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+//	origin 0 0 42 
+//} 
+
+$Weightlist PelvisOnly { "ValveBiped.Bip01_Pelvis" 1.0
+	"ValveBiped.Bip01_L_Thigh" 0.0
+	"ValveBiped.Bip01_R_Thigh" 0.0
+	"ValveBiped.Bip01_Spine" 0.0
+	}
+$Weightlist MeleeShove {
+	"ValveBiped.Bip01_Pelvis" 0.0
+	"ValveBiped.Bip01_L_Thigh" 0.0
+	"ValveBiped.Bip01_R_Thigh" 0.0
+	"ValveBiped.Bip01_Spine" 1.0
+	"ValveBiped.Bip01_R_Hand" 1.0
+	"ValveBiped.Bip01_R_Finger0" 0.0
+	"ValveBiped.Bip01_R_Finger1" 0.0
+	"ValveBiped.Bip01_R_Finger2" 0.0
+	"ValveBiped.Bip01_R_Finger3" 0.0
+	"ValveBiped.Bip01_R_Finger4" 0.0
+	"ValveBiped.Bip01_L_UpperArm" 0.0
+	}
+
+$definemacro MakeSplineGestureLockFeet splinename filename pelvisweights baseweights peak tail end \\
+$sequence $splinename$_original					$filename$ hidden \\
+$animation a_$splinename$_pelvis_layer 			$filename$ subtract $splinename$_original 0 \\
+$sequence $splinename$_pelvis_layer 			a_$splinename$_pelvis_layer delta weightlist $pelvisweights$ fadeout 0.1 hidden \\
+$sequence $splinename$_base_layer 				$filename$ weightlist $baseweights$ fadeout 0.1 hidden \\
+$sequence $splinename$ "sbravenpm_anims/raven_base" noanimation blendlayer $splinename$_pelvis_layer 0 $peak$ $tail$ $end$ spline blendlayer $splinename$_base_layer 0 $peak$ $tail$ $end$ spline numframes $end$ iklock rfoot 1 0 iklock lfoot 1 0 fadeout 0.1 ikrule lhand release range 0 $peak$ $tail$ $end$ ikrule rhand release range 0 $peak$ $tail$ $end$ \\
+$continue $splinename$
+
+$MakeSplineGestureLockFeet layer_LightAttack_v1_01_05 "sbravenpm_anims\LightAttack_v1_01_05.smd" PelvisOnly MeleeShove 5 37 68 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 16 "35" } 	{ event 3 16 "35" } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven.smd" { // frames 369
 	fps 60 
@@ -11930,14 +11980,45 @@ $sequence "Sword_Down_Attack" "sbravenpm_anims\Sword_Down_Attack.smd" { // frame
 	//alignto "raven_base" 
 } 
 
-$sequence "P_Eve_UIStudio_Default_Start" "sbravenpm_anims\P_Eve_UIStudio_Default_Start.smd" { // frames 45
+$sequence "P_Eve_UIStudio_Body_End" "sbravenpm_anims\P_Eve_UIStudio_Body_End.smd" { // frames 45
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
 	
 	origin 0 0 42 
-	//alignto "raven_base" 
-	//addlayer gmod_breath_layer
+	blendlayer "P_Eve_UIStudio_Default_Loop" 32 33 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Body_Loop" "sbravenpm_anims\P_Eve_UIStudio_Body_Loop.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	loop 
+	realtime 
+	origin 0 0 42 
+} 
+
+$sequence "P_Eve_UIStudio_Body_Start" "sbravenpm_anims\P_Eve_UIStudio_Body_Start.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Body_Loop" 32 33 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Body_ToLook" "sbravenpm_anims\P_Eve_UIStudio_Body_ToLook.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Look_Loop" 29 30 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Default_Start" "sbravenpm_anims\P_Eve_UIStudio_Default_Start.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
 	blendlayer "P_Eve_UIStudio_Default_Loop" 43 45 47 47 xfade 
 } 
 
@@ -11948,7 +12029,73 @@ $sequence "P_Eve_UIStudio_Default_Loop" "sbravenpm_anims\P_Eve_UIStudio_Default_
 	loop 
 	realtime 
 	origin 0 0 42 
-	//alignto "raven_base" 
+} 
+
+$sequence "P_Eve_UIStudio_Hair_Loop" "sbravenpm_anims\P_Eve_UIStudio_Hair_Loop.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	loop 
+	realtime 
+} 
+
+$sequence "P_Eve_UIStudio_Look_End" "sbravenpm_anims\P_Eve_UIStudio_Look_End.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Default_Loop" 35 36 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Look_Loop" "sbravenpm_anims\P_Eve_UIStudio_Look_Loop.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	loop 
+	realtime 
+} 
+
+$sequence "P_Eve_UIStudio_Look_Start" "sbravenpm_anims\P_Eve_UIStudio_Look_Start.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Look_Loop" 35 36 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Look_ToBody" "sbravenpm_anims\P_Eve_UIStudio_Look_ToBody.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Body_Loop" 29 30 47 47 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Weapon_End" "sbravenpm_anims\P_Eve_UIStudio_Weapon_End.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Default_Loop" 55 60 100 100 xfade 
+} 
+
+$sequence "P_Eve_UIStudio_Weapon_Loop" "sbravenpm_anims\P_Eve_UIStudio_Weapon_Loop.smd" { // frames 45
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	loop 
+	realtime 
+} 
+
+$sequence "P_Eve_UIStudio_Weapon_Start" "sbravenpm_anims\P_Eve_UIStudio_Weapon_Start.smd" { // frames 237
+	fps 30 
+	activity ACT_IDLE_PREVIEW 1 
+	addlayer inverse_proportions
+	origin 0 0 42 
+	blendlayer "P_Eve_UIStudio_Weapon_Loop" 42 43 100 100 xfade 
 } 
 
 $sequence "45A01" "sbravenpm_anims\45A01.smd" { // frames 170
