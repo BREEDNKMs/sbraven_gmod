@@ -43,7 +43,9 @@ end
 function EFFECT:GetRenderEntity() 
 	if !IsValid(GetViewEntity():GetActiveWeapon()) then return self.Entity end 
 	if self.Entity == GetViewEntity():GetActiveWeapon() then 
-		return GetViewEntity():GetViewModel() 
+		if GetViewEntity():IsPlayer() and !GetViewEntity():ShouldDrawLocalPlayer() then 
+			return GetViewEntity():GetViewModel() 
+		end 
 	end 
 	return self.Entity 
 end 
@@ -69,7 +71,7 @@ function EFFECT:GetAttachmentPos(id)
     end
 
     local matrix = GetRenderEntity:GetBoneMatrix(handBone)
-    if not matrix then return end
+    if !matrix then return end
 
     local pos = matrix:GetTranslation()
     local ang = matrix:GetAngles()
@@ -234,7 +236,7 @@ function EFFECT:Render()
         local pos2 = seg.pos2
         local lifeMultiplier = SampleCurve(self.WidthCurve, lifeFrac)
 
-        if self.WidthMultiplier ~= 1.0 or lifeMultiplier ~= 1.0 then
+        if self.WidthMultiplier != 1.0 or lifeMultiplier != 1.0 then
             local midPoint = (pos1 + pos2) * 0.5
             local direction = pos2 - pos1
             if direction:LengthSqr() > 0.01 then

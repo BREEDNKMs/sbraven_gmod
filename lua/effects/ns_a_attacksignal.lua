@@ -27,33 +27,34 @@ EFFECT.Mat[6] = Material("sprites/MA_A_ParShapeBlur_01")
 
 function EFFECT:Init(data)
     local pos   = data:GetOrigin()
-    local norm  = data:GetNormal()
-    local scale = data:GetScale()
+    local life = math.max(0.01, data:GetMagnitude() or 0.6) 
+    local scale = data:GetScale() 
+	scale = scale * 10 
     self.Emitter = ParticleEmitter(pos, false)
 
     -- Cross Flare (bluish white)
-    self:CreateParticle(pos, norm, scale*1.5, self.Mat[2], 0.2, 200, 45, false, Color(200,220,255), 0, "shrink")
+    self:CreateParticle(pos, scale*1.5, self.Mat[2], 0.2, 200, 45, false, Color(200,220,255), 0, "shrink")
 
     -- Sharp Lens Flare (neutral white, no velocity)
-    self:CreateParticle(pos, norm, scale*1.2, self.Mat[3], 0.25, 230, 0, false, Color(255,255,255), 0, "steady")
+    self:CreateParticle(pos, scale*1.2, self.Mat[3], 0.25, 230, 0, false, Color(255,255,255), 0, "steady")
 
     -- Blurred Lens Flare (slight magenta tint)
-    self:CreateParticle(pos, norm, scale * 2.0, self.Mat[4], 0.3, 220, 90, false, Color(255,200,220), 0)
+    self:CreateParticle(pos, scale * 2.0, self.Mat[4], 0.3, 220, 90, false, Color(255,200,220), 0)
 
     -- Secondary Lens Flare (warm tint)
-    self:CreateParticle(pos, norm, scale * 1.8, self.Mat[5], 0.3, 255, 25, false, Color(255,220,200), 0)
+    self:CreateParticle(pos, scale * 1.8, self.Mat[5], 0.3, 255, 25, false, Color(255,220,200), 0)
 
     -- Rainbow Rings (rotating, additive)
-    -- self:CreateParticle(pos, norm, scale*1.0, self.Mat[1], 0.4, 180, 0, true, Color(255,255,255), 0, "expand")
+    -- self:CreateParticle(pos, scale*1.0, self.Mat[1], 0.4, 180, 0, true, Color(255,255,255), 0, "expand")
 
     -- Tertiary Lens Flare (cool tint)
-    self:CreateParticle(pos, norm, scale * 2.2, self.Mat[5], 0.35, 255, -25, false, Color(200,240,255), 0)
+    self:CreateParticle(pos, scale * 2.2, self.Mat[5], 0.35, 255, -25, false, Color(200,240,255), 0)
 
     -- Background Shape Blur (soft, faint)
-    self:CreateParticle(pos, norm, scale * 2.5, self.Mat[6], 0.25, 150, 0, false, Color(255,255,255), 0)
+    self:CreateParticle(pos, scale * 2.5, self.Mat[6], 0.25, 150, 0, false, Color(255,255,255), 0)
 end
 
-function EFFECT:CreateParticle(pos, norm, size, mat, lifetime, start_alpha, angle, should_rotate, col, velMag, mode)
+function EFFECT:CreateParticle(pos, size, mat, lifetime, start_alpha, angle, should_rotate, col, velMag, mode)
     local particle = self.Emitter:Add(mat, pos)
     if not particle then return end
 

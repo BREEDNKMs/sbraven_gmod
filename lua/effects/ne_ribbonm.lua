@@ -7,11 +7,11 @@
 
 -- === PARAMETERS DERIVED FROM JSON ===
 
--- From NiagaraRibbonRendererProperties_2 -> Material -> MI_D_RibbonDefault_01
-EFFECT.Mat = Material("trails/T_A_StreakSwirl_01")
+-- From NiagaraRibbonRendererProperties_2 -> Material -> MI_D_RibbonDefault_01 
+EFFECT.Mat = Material("sprites/T_A_StreakSwirl_01") 
 
--- Derived from the average of the Lifetime module in NS_D_RavenHuman_WPBuffTrail_01 (Min: 0.3, Max: 0.5)
-EFFECT.SegmentLifetime = 0.4
+-- Derived from the average of the Lifetime module in NS_D_RavenHuman_WPBuffTrail_01 (Min: 0.3, Max: 0.5) 
+EFFECT.SegmentLifetime = 0.4 
 
 -- Derived from the RibbonWidth module (Value: 10.0)
 EFFECT.BaseWidth = 10.0
@@ -50,13 +50,13 @@ function EFFECT:Init(data)
     self.AttachmentID = data:GetAttachment()
     self.DieTime = -1 -- Loop indefinitely by default
 
-    if not IsValid(self.Entity) then return end
+    if !IsValid(self.Entity) then return end
 
     self.TrailPoints = {}
     self.TotalLength = 0
     self.LastPos = self:GetTrailPos()
 
-    if not self.LastPos then return end
+    if !self.LastPos then return end
 
     -- Add the very first point to start the trail
     self:AddPoint(self.LastPos)
@@ -65,9 +65,25 @@ function EFFECT:Init(data)
 end
 
 function EFFECT:GetTrailPos()
-    if !IsValid(self.Entity) then return vector_origin end
-    local att = self.Entity:GetAttachment(self.AttachmentID)
-    return att and att.Pos
+    local ent = self.Entity
+    if !IsValid(ent) then
+        return vector_origin
+    end
+	
+	local ent = self:GetRenderEntity() 
+	-- temp: use hand bone Position instead of attachment variable 
+	-- until attachments are added to the weapon qc 
+	local pos = ent:LookupBone("ValveBiped.Bip01_R_Hand") 
+	if !pos then return ent:EyePos() end 
+	pos = ent:GetBoneMatrix(pos) 
+	if pos then pos = pos:GetTranslation() end 
+	-- print(ent,ent:LookupBone("ValveBiped.Bip01_R_Hand"),ent:GetBoneMatrix(1):GetTranslation()) 
+	-- local pos = ent:GetBoneMatrix(ent:LookupBone("ValveBiped.Bip01_R_Hand")):GetTranslation() 
+	if pos then return pos end 
+	local att = ent:GetAttachment(self.AttachmentID)
+	if att and att.Pos then return att.Pos end
+
+    return ent:EyePos() 
 end
 
 function EFFECT:AddPoint(pos)
@@ -92,13 +108,13 @@ function EFFECT:AddPoint(pos)
 end
 
 function EFFECT:Think()
-    if not IsValid(self.Entity) or not self.Entity:Alive() then return false end
+    if !IsValid(self.Entity) or !self.Entity:Alive() then return false end
 
     local currentPos = self:GetTrailPos()
-    if not currentPos then return true end -- Continue trying if attachment is temporarily invalid
+    if !currentPos then return true end -- Continue trying if attachment is temporarily invalid
 
     -- To replicate 'bInterpolatedSpawning', we add a point only when it has moved.
-    if not currentPos:IsEqualTol(self.LastPos, 1) then
+    if !currentPos:IsEqualTol(self.LastPos, 1) then
         self:AddPoint(currentPos)
         self.LastPos = currentPos
     end
@@ -133,9 +149,58 @@ local function RotateVectorAroundAxis(v, k, theta)
     )
 end
 
+function EFFECT:GetRenderEntity()
+    if !IsValid(self.Entity) then return nil end
+
+    -- If it's a weapon whose owner is the local player in first-person, prefer the viewmodel
+    if self.Entity:IsWeapon() then
+        local owner = self.Entity:GetOwner()
+        if IsValid(owner) and owner:IsPlayer() and owner == LocalPlayer() and !owner:ShouldDrawLocalPlayer() then
+            local vm = owner:GetViewModel()
+            if IsValid(vm) then return vm end
+        end
+    end
+
+    return self.Entity
+end 
+
+-- Transform UVs using Material "$basetexturetransform" style:
+-- centerX, centerY :: pivot point (0..1)
+-- scaleX, scaleY   :: scale multipliers (1 = no scale)
+-- rotateDeg         :: degrees (positive = CCW), negative = CW (matches VMT rotate)
+-- transX, transY    :: translation in UV space
+local function TransformUV(u, v, centerX, centerY, scaleX, scaleY, rotateDeg, transX, transY)
+    -- defaults
+    centerX = centerX or 0.5
+    centerY = centerY or 0.5
+    scaleX  = scaleX  or 1
+    scaleY  = scaleY  or 1
+    rotateDeg = rotateDeg or 0
+    transX = transX or 0
+    transY = transY or 0
+
+    -- move to center and apply scale
+    local x = (u - centerX) * scaleX
+    local y = (v - centerY) * scaleY
+
+    -- rotate
+    local rad = math.rad(rotateDeg)
+    local cosT = math.cos(rad)
+    local sinT = math.sin(rad)
+    local xr = x * cosT - y * sinT
+    local yr = x * sinT + y * cosT
+
+    -- move back and apply translation
+    local uf = xr + centerX + transX
+    local vf = yr + centerY + transY
+
+    return uf, vf
+end
+
+
 function EFFECT:Render()
     local pts = self.TrailPoints
-    if not pts or #pts < 2 then return end
+    if !pts or #pts < 2 then return end
 
     -- Cache some locals for speed
     local mat = self.Mat
@@ -143,125 +208,131 @@ function EFFECT:Render()
     local segLife = self.SegmentLifetime
     local baseWidth = self.BaseWidth or 10
     local tilingLength = self.TilingLength or 250
-    local hdrBoost = self.HDRMultiplier or 1.0
+    local hdrBoost = self.HDRMultiplier or 10.0
 
     -- Precompute cumulative length table (if you don't store it per-seg)
     -- Your AddSegment already records cumulative length as seg.cumulative - use that.
-    -- We will compute U using seg.cumulative / tilingLength
+    -- We will compute U using seg.cumulative / tilingLength	
     render.SetMaterial(mat)
 
-    -- We'll build triangle strip: 2 verts per segment
-    mesh.Begin(MATERIAL_TRIANGLE_STRIP, #pts * 2)
-
-    -- For camera-facing perpendicular calculation
-    local eyePos = EyePos()
-
-    -- iterate oldest->newest (so strip winding is consistent)
+    local segInfos = {}
     for i = #pts, 1, -1 do
-		-- print("in iteration",i) 
         local seg = pts[i]
         local lifeFrac = math.Clamp((now - seg.timestamp) / segLife, 0, 1)
         local invLife = 1 - lifeFrac
 
-        -- Alpha: ease-in/out using sine
         local alpha = math.sin(math.pi * invLife)
-		-- print("alpha:",alpha) 
-        -- Intensity / color: similar to your original
-        local intensity = Lerp(invLife, 1.5, 0.2) -- brighter when younger
+        local intensity = Lerp(invLife, 1.5, 0.2)
         local rcol = 0
         local gcol = math.Clamp(180 * intensity * hdrBoost, 0, 255)
         local bcol = math.Clamp(255 * intensity * hdrBoost, 0, 255)
         local acol = math.Clamp(255 * alpha, 0, 255)
 
-        -- width from your width curve (multiplier)
         local widthMul = SampleCurve(self.WidthCurve, lifeFrac)
         local halfWidth = (baseWidth * widthMul * (self.WidthMultiplier or 1)) * 0.5
 
-        -- positions (two endpoints of segment)
         local p1 = seg.pos1
         local p2 = seg.pos2
 
-        -- safety: if degenerate, skip
-        if not p1 or not p2 or p1 == p2 then
-			-- print("skipping degenerate segment") 
-			-- print("p1 == p1",p1 == p1) 
-			-- print("p2 == p2",p2 == p2) 
-			-- print("p1",p1) 
-			-- print("p2",p2) 
-        else
-			-- print("computing tangent along the segment. i:",i)
-            -- compute tangent along the segment
+        if p1 and p2 and p1 ~= p2 then
             local tangent = (p2 - p1)
-            local tlen2 = tangent:LengthSqr()
-            if tlen2 < 1e-6 then
+            if tangent:LengthSqr() < 1e-6 then
                 tangent = Vector(0,0,1)
             else
                 tangent:Normalize()
             end
 
-            -- compute a camera-facing right vector (perpendicular)
-            -- prefer EyePos to get a stable view-facing normal
-            local viewDir = (eyePos - ((p1 + p2) * 0.5)):GetNormalized()
-            local right = viewDir:Cross(tangent) -- cross(view,tangent) gives perpendicular in plane
-            if right:LengthSqr() < 1e-6 then
-                -- fallback axis if camera aligns with tangent
-                right = Vector(0,0,1):Cross(tangent)
-            end
-            right:Normalize()
+            local viewDir = (EyePos() - ((p1 + p2) * 0.5)):GetNormalized()
+            local right = viewDir:Cross(tangent)
+            if right:LengthSqr() < 1e-6 then right = Vector(0,0,1):Cross(tangent) end
+			right = right:GetNormalized()
 
-            -- compute local twist angle (radians)
-            -- Use a twist curve if present, otherwise derive small twist from seg.rand or velocity
             local twistAngle = 0
             if self.TwistCurve then
-                -- prefer using seg.rand for variation, fallback 0
-                local randSeed = seg.rand or 0
-                local twistNormalized = SampleCurve(self.TwistCurve, lifeFrac) -- [-1..1] ideally
-                -- scale twist; you can tune 0.5 -> 0.5 radians
+                local twistNormalized = SampleCurve(self.TwistCurve, lifeFrac)
                 twistAngle = twistNormalized * (seg.twistStrength or 1.0)
             else
-                -- fallback: derive twist from local tangent yaw change between neighbors
                 if i < #pts then
                     local nextSeg = pts[i+1]
                     if nextSeg then
                         local nextT = (nextSeg.pos2 - nextSeg.pos1)
                         if nextT:LengthSqr() > 1e-6 then
                             nextT:Normalize()
-                            -- angle between tangents
                             local dot = math.Clamp(tangent:Dot(nextT), -1, 1)
                             local ang = math.acos(dot)
-                            -- small twist proportional to angle
                             twistAngle = ang * 0.5 * (seg.rand or 1.0)
                         end
                     end
                 end
             end
 
-            -- rotate right vector around tangent by twistAngle
             if math.abs(twistAngle) > 1e-6 then
                 right = RotateVectorAroundAxis(right, tangent, twistAngle)
-                right:Normalize()
+                right = right:GetNormalized()
             end
 
-            -- final offset vectors for the two vertices
             local off = right * halfWidth
 
-            -- UV: compute u using cumulative distance / tiling length
-            local uCoord = (seg.cumulative or 0) / tilingLength
-			
-			-- print("colors:",rcol,gcol,bcol,acol) 
-            -- vertex 1 (side A)
-            mesh.Position(p1 - off)
-            mesh.TexCoord(0, 0, uCoord)
-            mesh.Color(rcol, gcol, bcol, acol)
-            mesh.AdvanceVertex()
+            -- Per-vertex basis:
+            local t = Vector(tangent.x, tangent.y, tangent.z)
+            t = t:GetNormalized()
 
-            -- vertex 2 (side B)
-            mesh.Position(p2 + off)
-            mesh.TexCoord(0, 1, uCoord)
-            mesh.Color(rcol, gcol, bcol, acol)
-            mesh.AdvanceVertex()
+            local b = Vector(right.x, right.y, right.z)
+            b = b:GetNormalized()
+
+            local n = t:Cross(b)
+            if n:LengthSqr() < 1e-6 then
+                n = Vector(0,0,1)
+            else
+                n = n:GetNormalized()
+            end
+
+            local uCoord = (seg.cumulative or 0) / tilingLength
+            local uA, vA = 0, uCoord
+            local uB, vB = 1, uCoord
+            local tuA, tvA = TransformUV(uA, vA, 0.5, 0.5, 1, 1, -90, 0, 0)
+            local tuB, tvB = TransformUV(uB, vB, 0.5, 0.5, 1, 1, -90, 0, 0)
+			-- self.Mat:SetVector("$color2",Vector(rcol/255,gcol/255,bcol/255)) 
+			-- self.Mat:SetVector("$emissiveblendtint",Vector(rcol/255,gcol/255,bcol/255)) 
+			-- self.Mat:SetInt("$emissiveblendstrength",acol) 
+
+            table.insert(segInfos, {
+                left = { pos = p1 - off, u = tuA, v = tvA },
+                right = { pos = p2 + off, u = tuB, v = tvB },
+                -- color = Color(rcol, gcol, bcol, acol),
+				-- color = Color(math.random(0,255), math.random(0,255), math.random(0,255), math.random(0,255)), 
+                normal = n,
+                tangent = t,
+                binormal = b
+            })
         end
     end
 
-    mesh.End()
+    if #segInfos < 2 then return end
+
+    local tris = {}
+    for i = 1, #segInfos - 1 do
+        local a = segInfos[i]
+        local b = segInfos[i + 1]
+
+        -- Triangle 1
+		-- print(a.color) 
+        table.insert(tris, { pos = a.left.pos,  u = a.left.u,  v = a.left.v,  color = a.color, normal = a.normal, tangent = a.tangent, binormal = a.binormal })
+        table.insert(tris, { pos = a.right.pos, u = a.right.u, v = a.right.v, color = a.color, normal = a.normal, tangent = a.tangent, binormal = a.binormal })
+        table.insert(tris, { pos = b.left.pos,  u = b.left.u,  v = b.left.v,  color = b.color, normal = b.normal, tangent = b.tangent, binormal = b.binormal })
+
+        -- Triangle 2
+        table.insert(tris, { pos = b.left.pos,  u = b.left.u,  v = b.left.v,  color = b.color, normal = b.normal, tangent = b.tangent, binormal = b.binormal })
+        table.insert(tris, { pos = a.right.pos, u = a.right.u, v = a.right.v, color = a.color, normal = a.normal, tangent = a.tangent, binormal = a.binormal })
+        table.insert(tris, { pos = b.right.pos, u = b.right.u, v = b.right.v, color = b.color, normal = b.normal, tangent = b.tangent, binormal = b.binormal })
+    end
+
+    local meshObj = Mesh(mat) 
+    meshObj:BuildFromTriangles(tris) 
+    meshObj:Draw() 
+    meshObj:Destroy() 
+	-- self.Mat:SetUndefined("$color") 
+	-- self.Mat:SetUndefined("$color2") 
+	-- self.Mat:SetUndefined("$emissiveblendtint") 
+	-- self.Mat:SetUndefined("$emissiveblendstrength") 
 end

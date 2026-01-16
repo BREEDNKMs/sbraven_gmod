@@ -24,11 +24,11 @@ function EFFECT:Init(data)
 
     -- resolve world-space origin
     local origin = entPos or localPos or vector_origin
-    if localPos and localPos ~= vector_origin then
+    if localPos and localPos != vector_origin then
         origin = localPos
-        if entPos and localPos:Distance(entPos) > 10000 then
-            origin = entPos + localPos
-        end
+        -- if entPos and localPos:Distance(entPos) > 10000 then
+            -- origin = entPos + localPos
+        -- end
     end
 	
 	self.Attachment = data:GetAttachment() 

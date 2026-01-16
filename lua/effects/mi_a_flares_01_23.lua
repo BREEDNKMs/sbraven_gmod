@@ -50,7 +50,7 @@ end
 -- This is the main loop where we check the entity's status and emit particles.
 -- @returns {boolean} false to kill the effect, true to continue.
 --
-function EFFECT:Think()
+function EFFECT:Think() 
     -- If the entity is no longer valid or is dead, stop the effect.
     if not IsValid(self.Entity) or not self.Entity:Alive() then
         -- Gracefully release the emitter to let existing particles finish.

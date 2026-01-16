@@ -1007,9 +1007,12 @@ end
 
 function EFFECT:Init(data)
     -- Get position and angles from the effect data
-    local pos = data:GetOrigin()
-    local ang = data:GetAngles()
+    local pos = data:GetOrigin() 
+    local ang = data:GetAngles() 
+	local localOffset = data:GetStart() 
 	local ent = data:GetEntity() 
+	local boneID = data:GetHitBox() 
+	print("pos",pos,"ang:",ang,"localOffset:",localOffset,"ent:",ent,"boneID:",boneID) 
     self:SetPos(pos)
 	-- data:SetAngles(Angle(data:GetAngles().y,data:GetAngles().p,data:GetAngles().z)) 
     self:SetAngles(ang)
@@ -1025,9 +1028,37 @@ function EFFECT:Init(data)
 
     -- Set render properties for a bright, additive effect
     self:SetRenderMode(1)
-	if IsValid(ent) then 
-		self:SetParent(ent) 
-	end 
+	if IsValid(ent) then
+        if boneID and boneID > 0 then
+            -- 1. Parent to the specific Bone/Attachment ID as requested
+			print("boneid is:",boneID) 
+            self:SetParent(ent, boneID)
+            
+            -- 2. Apply Local Positioning
+            -- Since we are now parented to the bone, '0,0,0' is the center of that bone.
+            -- We use localOffset (RelativeLocation) to maintain the offset defined in JSON.
+            if localOffset and localOffset ~= Vector(0,0,0) then
+                self:SetLocalPos(localOffset)
+            else
+                self:SetLocalPos(Vector(0,0,0))
+            end
+            
+            -- 3. Align Rotation
+            -- SetLocalAngles(Angle(0,0,0)) aligns the effect exactly with the bone's rotation.
+            -- If you passed RelativeRotation, you would apply it here.
+            self:SetLocalAngles(Angle(0,0,0))
+            
+        else
+            -- Fallback: Parent to entity root if no specific bone was found
+            self:SetParent(ent)
+            self:SetPos(pos)
+            self:SetAngles(ang)
+        end
+    else
+        -- No entity to parent to? Just spawn at the calculated world position.
+        self:SetPos(pos)
+        self:SetAngles(ang)
+    end
 
     -- Initialize timing
     self.StartTime = CurTime()
@@ -1051,7 +1082,9 @@ end
 function EFFECT:InitHemisphere(data) 
 	local pos = data:GetOrigin()
     local ang = data:GetAngles()
-    local ent = data:GetEntity()
+    local localOffset = data:GetStart() 
+	local ent = data:GetEntity() 
+	local boneID = data:GetHitBox() 
     local count = math.random(1, 2) -- spawn 1-2 hemispheres (tweak to 1-3)
     local baseScale = (data:GetScale() ~= 0) and data:GetScale() or 1
 	baseScale = baseScale * 0.1 
@@ -1061,7 +1094,8 @@ function EFFECT:InitHemisphere(data)
     for i = 1, count do
 		local hem = ClientsideModel("models/stellarblade/SM_B_HemiSphere_02.mdl", RENDERGROUP_BOTH)
 		hem:SetPos(pos)
-		hem:SetParent(ent) 
+		hem:SetParent(ent,boneID) 
+		hem:SetLocalPos(localOffset) 
 		hem:SetAngles(ang + Angle(0, math.Rand(-15,15), 0)) -- small yaw variation
 		hem.Scale = baseScale * Lerp(i/count, 0.9, 1.1)
 		hem.LifeTime = baseLife * Lerp(i/count, 0.95, 1.05)
