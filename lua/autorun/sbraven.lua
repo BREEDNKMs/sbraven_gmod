@@ -494,8 +494,18 @@ util.AddNetworkString("SB_RemoveEffect")
 end 
 
 StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...) 
+	if strEffect then 
+		if strEffect == "DownFaceUP" then strEffect = "DownFaceUp" end 
+	end 
     local EffectTable = scripted_ents.Get("npc_sb_raven").SBAI_GetEffectTable(self, strEffect) 
     if !EffectTable then error("EffectTable not found for "..strEffect) end 
+	if !EffectTable then 
+		for keyEffect,valEffect in pairs(SB_EffectCombinationTable[1].Rows) do 
+			if keyEffect == "strEffect" then 
+			
+			end 
+		end 
+	end 
 	
 	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then return false end 
     -- Ensure our container exists 
@@ -694,6 +704,9 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 				return false 
 				-- StellarBlade.RemoveEffect(self, Effect) 
 			end
+			if self.LifeTime > 0 and CurTime() > self.EndTime then 
+				return false 
+			end 
 		elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
 			if !self.Outer.SBAI_SkillStep or self.Outer.SBAI_SkillStep and !self.Outer.SBAI_SkillStep:IsActive() then 
 				return false 
@@ -851,12 +864,10 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		hook.Add("PostEntityTakeDamage",curEffect,curEffect.PostEntityTakeDamage) 
 		-- fully initialized 
 		StellarBlade.OnAddEffect(self,curEffect,tableOptional) 
-	
 	end 
 	if StartDelayTime == 0 or curEffect.IsNetworkedOrigin then 
 		Activate() 
 	else 
-		print("delayed effect",curEffect.Name) 
 		hook.Add("Think",curEffect,function() 
 			if CurTime() >= curEffect.Time + StartDelayTime then 
 				curEffect.EndTime = CurTime() + curEffect.LifeTime 
@@ -1924,7 +1935,8 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 							target:SetGroundEntity(Entity(0))
 							
 							-- Increment the jump counter
-							self.JumpCount = self.JumpCount + 1
+							self.JumpCount = self.JumpCount + 1 
+							target:DoCustomAnimEvent(PLAYERANIMEVENT_DOUBLEJUMP,0) -- not implemented in GM:DoAnimationEvent but may work later 
 							-- mv:SetUpSpeed(500) -- did not work 
 							-- mv:SetVelocity(mv:GetVelocity() + Vector(0,0,-mv:GetUpSpeed()*10)) -- did not work for up vel 
 							-- mv:SetFinalJumpVelocity(Vector(200,200,200)) -- doesn't work in here 
@@ -2296,17 +2308,35 @@ StellarBlade.StartSkill = function(self,SkillName)
 		local SBAI_SkillTable = self.SBAI_SkillTable 
 		SBAI_SkillTable.Outer = self 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
+		local target 
 		-- This now correctly handles all the data-driven setup for the first step 
-		local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
-		if !bSkillStep then 
-			Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) 
-			if self.SBAI_SkillStep then self.SBAI_SkillStep:Remove() end 
-			return false 
+		if FirstSkillActiveAlias == "M_Raven_BetaSkillCounter_Cast1" then 
+			target = self:GetEyeTrace().Entity 
+			local _PickTarget = StellarBlade.PickTarget 
+			StellarBlade.PickTarget = function() return self end 
+			local success = StellarBlade.SetSkillStep(target,"P_Eve_BetaCounterRaven1_Cast1") 
+			StellarBlade.PickTarget = _PickTarget 
+			StellarBlade.AddEffect(self,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
+			-- return success 
+		elseif FirstSkillActiveAlias == "M_Raven_ShieldBreakerCounter_Cast1" then 
+			target = self:GetEyeTrace().Entity 
+			local _PickTarget = StellarBlade.PickTarget 
+			StellarBlade.PickTarget = function() return self end 
+			local success = StellarBlade.SetSkillStep(target,"P_Eve_ShieldBreakerCounterRaven1_Cast1") 
+			StellarBlade.PickTarget = _PickTarget 
+			StellarBlade.AddEffect(self,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
 		else 
-			if !IsFirstTimePredicted() then -- in SINGLEPLAYER, doesn't call for CLIENT. 
-			BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.SetSkillStep(Entity("..self:EntIndex().."),'"..FirstSkillActiveAlias.."') end") 
+			local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
+			if !bSkillStep then 
+				Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) 
+				if self.SBAI_SkillStep then self.SBAI_SkillStep:Remove() end 
+				return false 
+			else 
+				if !IsFirstTimePredicted() then -- in SINGLEPLAYER, doesn't call for CLIENT. 
+				BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.SetSkillStep(Entity("..self:EntIndex().."),'"..FirstSkillActiveAlias.."') end") 
+				end 
+				Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())..Realm) 
 			end 
-			Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())..Realm) 
 		end 
 		if !self.SBAI_SkillTimers then self.SBAI_SkillTimers = { } end 
 		if !self.SBAI_SkillUseCount then self.SBAI_SkillUseCount = { } end 
@@ -2342,6 +2372,13 @@ StellarBlade.StartSkill = function(self,SkillName)
 		
 		SBAI_SkillTable.Tick = function() end 
 		hook.Add("Tick",SBAI_SkillTable, SBAI_SkillTable.Tick) 
+		
+		if IsValid(target) then 
+			target.SBAI_SkillTable = SBAI_SkillTable 
+			target.SBAI_SkillTable.Outer = target 
+			hook.Add("Tick",target.SBAI_SkillTable, target.SBAI_SkillTable.Tick) 
+		end 
+		
 		return true 
 	end 
 	return false 
@@ -2630,6 +2667,8 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			local AnimResourcePath = props.AnimResourcePath and string.GetFileFromFilename(props.AnimResourcePath) 
 			local bCheckHitLevel = props.bCheckHitLevel 
 			local CustomAnim = props.CustomAnim 
+			local MeshSlot = props.MeshSlot 
+			if isstring(MeshSlot) then continue end -- ignore anims on wings 
 			
 			local GESTURE_SLOT = GESTURE_SLOT_ATTACK_AND_RELOAD 
 			if CustomAnim and CustomAnim == "ESBCharacterCustomAnim::ESBCharacterCustomAnim_HitStandLight1Back" then 
@@ -3470,7 +3509,7 @@ StellarBlade.CompleteTableOptional = function(self,tableOptional)
         
         -- We assume the start position is the attacker's shoot position (melee logic).
         -- Fallback to ReportedPosition if attacker is invalid.
-        local startPos = (IsValid(att) and att:GetShootPos()) or dmg:GetReportedPosition()
+        local startPos = (IsValid(att) and (att.GetShootPos and att:GetShootPos() or att:WorldSpaceCenter())) or dmg:GetReportedPosition()
         
         -- Calculate Normal (Direction)
         local normal = (hitPos - startPos):GetNormalized()
@@ -3489,7 +3528,7 @@ StellarBlade.CompleteTableOptional = function(self,tableOptional)
         tr.HitNormal = -normal -- Approximation: Surface normal opposes attack direction
         tr.HitPos = hitPos
         tr.HitSky = false
-        tr.HitTexture = "** studio **" -- Assuming self is a prop/entity
+        tr.HitTexture = "**studio**" -- Assuming self is a prop/entity
         tr.HitWorld = false
         tr.MatType = MAT_FLESH -- Cannot determine exact material without actual trace
         tr.Normal = normal
@@ -4751,14 +4790,14 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
 					val = SkillResult[prefix .. "Effect"]
 				end
 				
-				if val and val ~= "" then selectedActions.Effect = val end
+				if val and val != "" then selectedActions.Effect = val end
 			end
 
 			-- 2. Resolve SHOWPATH
 			if selectedActions.ShowPath == nil then
 				-- ShowPath usually doesn't have a HitLevel prefix in the provided JSON, but we check just in case or default to standard
 				local val = SkillResult[prefix .. "ShowPath"]
-				if val and val ~= "" then selectedActions.ShowPath = val end
+				if val and val != "" then selectedActions.ShowPath = val end
 			end
 
 			-- 3. Resolve MOVESTEP (Targets only)
@@ -4773,12 +4812,12 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
 				-- "None" is treated as a valid value in JSON, but we usually want to treat it as 'not set' 
 				-- if we want to fall back. However, if "None" is an explicit instruction to Stop, 
 				-- keep it. Assuming empty string or missing key is the fallback trigger.
-				if val and val ~= "" and val ~= "None" then selectedActions.MoveStep = val end
+				if val and val != "" and val != "None" then selectedActions.MoveStep = val end
 			end
 		end
 		
 		-- Optimization: Break if all slots are filled
-		if selectedActions.Effect and selectedActions.ShowPath and (not isTarget or selectedActions.MoveStep) then
+		if selectedActions.Effect and selectedActions.ShowPath and (!isTarget or selectedActions.MoveStep) then
 			break
 		end
 	end
@@ -5329,6 +5368,8 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 	end 
 	
 	function SBAI_MoveTable:Move(ply,mv) -- player only 
+		if self.Outer != ply then return end 
+		-- print("calling self.Move",CurTime(),ply) 
 		self.movePosDelta = vector_origin 
 		self.moveAngDelta = angle_zero 
 		if #self > 0 then
@@ -5344,6 +5385,7 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 				moveStep.moveAngDelta = moveAngDelta 
 				self.movePosDelta = self.movePosDelta + movePosDelta 
 				self.moveAngDelta = self.moveAngDelta + moveAngDelta 
+				-- print("called self.Move",CurTime()) 
 				-- print("moveAngDelta",self.moveAngDelta) 
 			end 
 		end 
@@ -5351,7 +5393,8 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 	end 
 	
 	function SBAI_MoveTable:FinishMove(ply,mv) -- player only 
-		-- print(ply) 
+		if self.Outer != ply then return end 
+		-- print(ply) -- ensure whether the move is called for skill player 
 		-- if ply.GetVehicle and IsValid(ply:GetVehicle()) and ply:GetVehicle() then 
 			-- self.Outer = ply:GetVehicle() 
 			-- self:Think() 
@@ -5363,6 +5406,7 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 		-- print(ply:IsFlagSet(FL_FROZEN),self.movePosDelta) 
 		if ply:IsPlayer() and ply:IsFlagSet(FL_FROZEN) then -- Move doesn't call during ply:Freeze(true) 
 			self:Move(ply,mv) 
+			-- print("ended self.Move",CurTime()) 
 		end 
 		local finalPos, finalAng = mv:GetOrigin() + self.movePosDelta, self.moveAngDelta 
 		-- print("pre FinishMove:	",SysTime()) 
@@ -5394,6 +5438,7 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 			local moveResult = IterativeHybridMoveLimit(ply, mv:GetOrigin(), finalPos) 
 			-- print("post IterativeHybridMoveLimit:",SysTime()) 
 			-- ply:SetLocalPos(moveResult.vEndPosition) 
+			-- print("calling moveResult",CurTime()) 
 			mv:SetOrigin(moveResult.vEndPosition) 
 			-- ply:SetSaveValue("basevelocity",self.movePosDelta / (FrameTime())) 
 			-- ply:AddFlags(FL_BASEVELOCITY) 
