@@ -7,7 +7,7 @@ This also includes some basic scripts to port assets from Stellar Blade to Garry
 
 Status
 - Project: Work in progress
-- Playable: Very limited — a few skills and effects are prototyped
+- Playable: Raven can be fully replicated both as an NPC and Player 
 - Known issues: missing assets, audio fallbacks, animation/behavior differences, incomplete AI, missing / cheaply replicated effects 
 
 Requirements
