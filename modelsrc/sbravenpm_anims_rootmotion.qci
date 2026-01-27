@@ -5448,6 +5448,116 @@ $sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { //
 	origin 0 0 42 
 } 
 
+$sequence "Proto_Sword_Lightattack_01" "sbravenpm_anims\Proto_Sword_Lightattack_01.smd" { // frames 90 
+	fps 35 
+	activity ACT_MELEE_ATTACK_SWING 1 
+	addlayer inverse_proportions
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Sword_Lightattack_02" "sbravenpm_anims\Proto_Sword_Lightattack_02.smd" { // frames 93 
+	fps 35 
+	activity ACT_MELEE_ATTACK_SWING 1 
+	addlayer inverse_proportions
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Sword_Lightattack_03" "sbravenpm_anims\Proto_Sword_Lightattack_03.smd" { // frames 95 
+	fps 35 
+	activity ACT_MELEE_ATTACK_SWING 1 
+	addlayer inverse_proportions
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Sword_Lightattack_04" "sbravenpm_anims\Proto_Sword_Lightattack_04.smd" { // frames 89 
+	fps 35 
+	activity ACT_MELEE_ATTACK_SWING 1 
+	addlayer inverse_proportions
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Proto_Sword_Lightattack_05" "sbravenpm_anims\Proto_Sword_Lightattack_05.smd" { // frames 89 
+	fps 35 
+	activity ACT_MELEE_ATTACK_SWING 1 
+	addlayer inverse_proportions
+	{ event 3001 16 "35" } 
+	{ event 3 16 "35" } 
+	{event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
+	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
+	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Eve_Weapon_End_Anim" "sbravenpm_anims\Eve_Weapon_End_Anim.smd" { // frames 102 
+	fps 35 
+	activity ACT_GESTURE_DISARM 1 
+	addlayer inverse_proportions
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Eve_Weapon_End_BS" "sbravenpm_anims\Eve_Weapon_End_BS.smd" { // frames 45 
+	fps 35 
+	activity ACT_GESTURE_DISARM 1 
+	addlayer inverse_proportions
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Eve_Weapon_Start_Anim" "sbravenpm_anims\Eve_Weapon_Start_Anim.smd" { // frames 45 
+	fps 35 
+	activity ACT_GESTURE_ARM 1 
+	addlayer inverse_proportions
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Eve_Weapon_Start_Anim_Moving" "sbravenpm_anims\Eve_Weapon_Start_Anim_Moving.smd" { // frames 45 
+	fps 35 
+	activity ACT_GESTURE_ARM 1 
+	addlayer inverse_proportions
+	LX LY LM
+	origin 0 0 42 
+} 
+
+$sequence "Eve_Weapon_Stop_End" "sbravenpm_anims\Eve_Weapon_Stop_End.smd" { // frames 45 
+	fps 35 
+	activity ACT_GESTURE_DISARM 1 
+	addlayer inverse_proportions
+	LX LY LM
+	origin 0 0 42 
+} 
+
 //$animation "a_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" frames 0 0 origin 0 0 42 
 
 //$sequence "layer_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68
@@ -5487,12 +5597,28 @@ $Weightlist MeleeShove {
 $definemacro MakeSplineGestureLockFeet splinename filename pelvisweights baseweights peak tail end \\
 $sequence $splinename$_original					$filename$ hidden \\
 $animation a_$splinename$_pelvis_layer 			$filename$ subtract $splinename$_original 0 \\
-$sequence $splinename$_pelvis_layer 			a_$splinename$_pelvis_layer delta weightlist $pelvisweights$ fadeout 0.1 hidden \\
+$sequence $splinename$_pelvis_layer 			a_$splinename$_pelvis_layer delta weightlist $pelvisweights$ fadeout 0.1 hidden addlayer inverse_proportions \\
 $sequence $splinename$_base_layer 				$filename$ weightlist $baseweights$ fadeout 0.1 hidden \\
 $sequence $splinename$ "sbravenpm_anims/raven_base" noanimation blendlayer $splinename$_pelvis_layer 0 $peak$ $tail$ $end$ spline blendlayer $splinename$_base_layer 0 $peak$ $tail$ $end$ spline numframes $end$ iklock rfoot 1 0 iklock lfoot 1 0 fadeout 0.1 ikrule lhand release range 0 $peak$ $tail$ $end$ ikrule rhand release range 0 $peak$ $tail$ $end$ \\
 $continue $splinename$
 
 $MakeSplineGestureLockFeet layer_LightAttack_v1_01_05 "sbravenpm_anims\LightAttack_v1_01_05.smd" PelvisOnly MeleeShove 5 37 68 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 16 "35" } 	{ event 3 16 "35" } 
+
+$MakeSplineGestureLockFeet layer_Proto_Sword_Lightattack_01 "sbravenpm_anims\Proto_Sword_Lightattack_01.smd" PelvisOnly MeleeShove 5 37 90 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 8 "35" } 	{ event 3 8 "35" } 
+
+$MakeSplineGestureLockFeet layer_Proto_Sword_Lightattack_02 "sbravenpm_anims\Proto_Sword_Lightattack_02.smd" PelvisOnly MeleeShove 5 37 93 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 9 "35" } 	{ event 3 9 "35" } 
+
+$MakeSplineGestureLockFeet layer_Proto_Sword_Lightattack_03 "sbravenpm_anims\Proto_Sword_Lightattack_03.smd" PelvisOnly MeleeShove 5 37 95 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 9 "35" } 	{ event 3 9 "35" } 
+
+$MakeSplineGestureLockFeet layer_Proto_Sword_Lightattack_04 "sbravenpm_anims\Proto_Sword_Lightattack_04.smd" PelvisOnly MeleeShove 5 37 89 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 5 "35" } 	{ event 3 5 "35" } { event 3001 15 "35" } 	{ event 3 15 "35" } 
+
+$MakeSplineGestureLockFeet layer_Proto_Sword_Lightattack_05 "sbravenpm_anims\Proto_Sword_Lightattack_05.smd" PelvisOnly MeleeShove 5 37 89 ACT_GESTURE_MELEE_ATTACK1 1 fps 35 {event AE_SV_PLAYSOUND 	44.0	 "M_Raven_SwordSwish_S_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} { event 3001 4 "35" } 	{ event 3 4 "35" } { event 3001 15 "35" } 	{ event 3 15 "35" } 
+
+$MakeSplineGestureLockFeet layer_Eve_Weapon_End_Anim "sbravenpm_anims\Eve_Weapon_End_Anim.smd" PelvisOnly MeleeShove 7 14 102 ACT_GESTURE_DISARM 1 fps 35 
+$MakeSplineGestureLockFeet layer_Eve_Weapon_End_BS "sbravenpm_anims\Eve_Weapon_End_BS.smd" PelvisOnly MeleeShove 7 14 45 ACT_GESTURE_DISARM 1 fps 35 
+$MakeSplineGestureLockFeet layer_Eve_Weapon_Start_Anim "sbravenpm_anims\Eve_Weapon_Start_Anim.smd" PelvisOnly MeleeShove 3 4 45 ACT_GESTURE_DISARM 1 fps 35 
+$MakeSplineGestureLockFeet layer_Eve_Weapon_Start_Anim_Moving "sbravenpm_anims\Eve_Weapon_Start_Anim_Moving.smd" PelvisOnly MeleeShove 8 11 45 ACT_GESTURE_DISARM 1 fps 35 
+$MakeSplineGestureLockFeet layer_Eve_Weapon_Stop_End "sbravenpm_anims\Eve_Weapon_Stop_End.smd" PelvisOnly MeleeShove 5 9 45 ACT_GESTURE_DISARM 1 fps 35 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven.smd" { // frames 369
 	fps 60 
