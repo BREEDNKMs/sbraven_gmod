@@ -37,7 +37,7 @@ function EFFECT:NE_FlareHorizonM(data)
     self:SetAngles(ang)
 
     -- Get scale and lifetime multipliers, with default values of 1
-    self.Scale = data:GetScale() ~= 0 and data:GetScale() or 0.1
+    self.Scale = data:GetScale() != 0 and data:GetScale() or 0.1
     self.Scale = self.Scale * 0.1
 
     local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1

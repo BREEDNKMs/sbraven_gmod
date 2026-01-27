@@ -112,6 +112,7 @@ function EFFECT:Think()
 
     local currentPos = self:GetTrailPos()
     if !currentPos then return true end -- Continue trying if attachment is temporarily invalid
+	if self.Entity:IsEffectActive(EF_NODRAW) then return true end 
 
     -- To replicate 'bInterpolatedSpawning', we add a point only when it has moved.
     if !currentPos:IsEqualTol(self.LastPos, 1) then

@@ -12,19 +12,19 @@ local ROTATION_AXIS = Vector(-0.92168778, 0.36867511, -0.12070813) -- decoded no
 if ROTATION_AXIS:Length() == 0 then ROTATION_AXIS = Vector(0,0,1) end
 ROTATION_AXIS:Normalize()
 
-function EFFECT:Init(data)
-    -- set model (model already has refract material)
-    self:SetModel("models/stellarblade/SM_C_SliceSphere_03.mdl")
+function EFFECT:Init(data) 
+    -- set model (model already has refract material) 
+    self:SetModel("models/stellarblade/SM_C_SliceSphere_03.mdl") 
 
-    -- position & orientation
-    self:SetPos(data:GetOrigin())
-    self:SetAngles(data:GetAngles() or Angle(0,0,0))
+    -- position & orientation 
+    self:SetPos(data:GetOrigin()) 
+    self:SetAngles(data:GetAngles() or Angle(0,0,0)) 
 
-    -- lifetime
-    local duration = data:GetMagnitude()
-    if duration == 0 or duration == nil then duration = DEFAULT_LIFETIME end
-    self.Lifetime = duration
-    self.SpawnTime = CurTime()
+    -- lifetime 
+    local duration = data:GetMagnitude() 
+    if duration == 0 or duration == nil then duration = DEFAULT_LIFETIME end 
+    self.Lifetime = duration 
+    self.SpawnTime = CurTime() 
 
     -- target scale is directly the effect data's scale (user requested)
     local s = data:GetScale()
@@ -83,56 +83,59 @@ local function exp_smooth(current, target, dt, tau)
 end
 
 function EFFECT:Think()
-	do -- burst mesh 
-		local now = CurTime()
-		local elapsed = now - self.SpawnTime
-		local ageNorm = math.Clamp(elapsed / self.Lifetime, 0, 1)
-		if ageNorm >= 1 then
-			return false
-		end
+	local now = CurTime()
+	local elapsed = now - self.SpawnTime
+	local ageNorm = math.Clamp(elapsed / self.Lifetime, 0, 1)
+	if ageNorm >= 1 then
+		Material("sprites/ma_c_rrfecationsphere_01_1"):SetUndefined("$SilhouetteThickness",newAlpha) 
+		return false
+	end
 
-		local dt = FrameTime()
-		-- update scale using exponential smoothing (frame-rate independent)
-		if self.TargetScale and self.TargetScale > 0 then
-			self.CurrentScale = exp_smooth(self.CurrentScale, self.TargetScale, dt, self._tau)
-		else
-			self.CurrentScale = exp_smooth(self.CurrentScale, MIN_START_SCALE, dt, self._tau)
-		end
+	local dt = FrameTime()
+	-- update scale using exponential smoothing (frame-rate independent)
+	if self.TargetScale and self.TargetScale > 0 then
+		self.CurrentScale = exp_smooth(self.CurrentScale, self.TargetScale, dt, self._tau)
+	else
+		self.CurrentScale = exp_smooth(self.CurrentScale, MIN_START_SCALE, dt, self._tau)
+	end
 
-		-- apply the computed model scale
-		if self.CurrentScale <= 0 then self.CurrentScale = MIN_START_SCALE end
-		self:SetModelScale(self.CurrentScale, 0)
-		
-		local spinAngle = (self.InitialSpin + (elapsed * self.SpinRate)) % 360
-		local axisAng = self:GetLocalAngularVelocity() -- angle representing axis direction
-		local totalAng = Angle(axisAng.p, axisAng.y, axisAng.r)
-		totalAng:RotateAroundAxis(ROTATION_AXIS, spinAngle)
-		self:SetAngles(totalAng)
-		-- self:SetLocalAngularVelocity(AngleRand()) 
-		self:InvalidateBoneCache() 
-		self:SetupBones() 
+	-- apply the computed model scale
+	if self.CurrentScale <= 0 then self.CurrentScale = MIN_START_SCALE end
+	self:SetModelScale(self.CurrentScale, 0)
+	
+	local spinAngle = (self.InitialSpin + (elapsed * self.SpinRate)) % 360
+	local axisAng = self:GetLocalAngularVelocity() -- angle representing axis direction
+	local totalAng = Angle(axisAng.p, axisAng.y, axisAng.r)
+	totalAng:RotateAroundAxis(ROTATION_AXIS, spinAngle)
+	-- self:SetAngles(totalAng)
+	-- self:SetLocalAngularVelocity(AngleRand()) 
+	self:InvalidateBoneCache() 
+	self:SetupBones() 
 
-		-- alpha envelope tied to scale: alpha follows CurrentScale / TargetScale for consistent visual
-		local fadeInRatio = 0
-		if self.TargetScale > 0 then
-			fadeInRatio = math.Clamp(self.CurrentScale / self.TargetScale, 0, 1)
-		end
-		local alpha = 255 * fadeInRatio
+	-- alpha envelope tied to scale: alpha follows CurrentScale / TargetScale for consistent visual
+	local fadeInRatio = 0
+	if self.TargetScale > 0 then
+		fadeInRatio = math.Clamp(self.CurrentScale / self.TargetScale, 0, 1)
+	end
+	local alpha = 255 * fadeInRatio
 
-		-- fade-out starting at 70% normalized life
-		if ageNorm >= 0.7 then
-			local t = math.Clamp((ageNorm - 0.7) / 0.3, 0, 1)
-			alpha = alpha * (1 - t)
-		end
-		self.Color.a = math.floor(math.Clamp(alpha, 0, 255))
-		self:SetColor(self.Color) 
-		self:SetCycle(ageNorm) 
-		-- the velocity isn't here to move sphere around 
-		local tempVel = self:GetForward()-(self:GetForward()*(ageNorm*1)) 
-		tempVel = tempVel * 0.035 
-		-- print(tempVel:Length()) 
-		self:SetLocalVelocity(tempVel) -- it sets a material proxy which makes sphere age 
-		self:SetNextClientThink(CurTime()+FrameTime()) 
-	end 
+	-- fade-out starting at 70% normalized life
+	if ageNorm >= 0.7 then
+		local t = math.Clamp((ageNorm - 0.7) / 0.3, 0, 1)
+		alpha = alpha * (1 - t)
+	end
+	self.Color.a = math.floor(math.Clamp(alpha, 0, 255))
+	self:SetColor(self.Color) 
+	local newAlpha = math.Remap(self.Color.a,255,0,0,2) 
+	self:SetCycle(ageNorm) 
+	ageNorm = math.Remap(ageNorm,0,1,0,2) 
+	-- the velocity isn't here to move sphere around 
+	-- local tempVel = self:GetForward()-(self:GetForward()*(ageNorm*1)) 
+	-- tempVel = tempVel * 0.035 
+	-- print(ageNorm,self.Color) 
+	-- self:SetLocalVelocity(tempVel) -- it sets a material proxy which makes sphere age 
+	self:SetNextClientThink(CurTime()+FrameTime()) 
+	Material("sprites/ma_c_rrfecationsphere_01_1"):SetFloat("$SilhouetteThickness",newAlpha) 
+	-- Material("sprites/ma_c_rrfecationsphere_01_1"):SetUndefined("$SilhouetteColor",Vector(self.Color.r,self.Color.g,self.Color.b)) 
     return true
 end

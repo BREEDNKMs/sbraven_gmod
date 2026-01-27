@@ -229,24 +229,96 @@ local function TransformUV(u, v, centerX, centerY, scaleX, scaleY, rotateDeg, tr
     local vf = yr + centerY + transY
 
     return uf, vf
+end 
+
+NE_SpriteM.ParticleUpdate = function(particle)
+    local life = particle:GetLifeTime()
+    local die = particle:GetDieTime()
+    local nAge = life / die -- Normalized Age (0.0 to 1.0)
+
+    -- 1. REPLICATE: Drag Curve (FloatCurve)
+    -- Niagara: Drag increases over time. Sparks start fast, then hit "air wall".
+    -- We ramp air resistance from 5 to 50 based on age.
+    local currentDrag = 5 + (nAge * 45) 
+    particle:SetAirResistance(currentDrag)
+
+    -- 2. REPLICATE: Scale Color (ColorCurve)
+    -- Niagara: Starts White (Hot), fades to Orange/Red (Cool), then Dark.
+    -- White(255,255,255) -> Orange(255,100,20) -> DarkRed(50,0,0)
+    local r, g, b
+    if nAge < 0.5 then
+        -- White to Orange
+        local t = nAge * 2
+        r = 255
+        g = Lerp(t, 255, 100)
+        b = Lerp(t, 255, 20)
+    else
+        -- Orange to Dark/Black
+        local t = (nAge - 0.5) * 2
+        r = Lerp(t, 255, 50)
+        g = Lerp(t, 100, 0)
+        b = Lerp(t, 20, 0)
+    end
+    particle:SetColor(r, g, b)
+
+    -- 3. REPLICATE: Scale Alpha (FloatCurve)
+    -- Niagara: Fades in quickly, stays visible, fades out at end.
+    local alpha = 255
+    if nAge < 0.1 then
+        alpha = Lerp(nAge * 10, 0, 255) -- Fade In
+    elseif nAge > 0.8 then
+        alpha = Lerp((nAge - 0.8) * 5, 255, 0) -- Fade Out
+    end
+    particle:SetStartAlpha(alpha)
+    particle:SetEndAlpha(0)
+
+    -- 4. REPLICATE: SBCurlNoiseForce (VectorField)
+    -- Source doesn't have native vector fields. We approximate with trig functions.
+    -- Creates a swirling turbulence based on position and time.
+    local pos = particle:GetPos()
+    local timee = CurTime() * 2.0 -- Turbulence speed
+    local freq = 0.05 -- Spatial frequency
+    local amp = 200 * (1 - nAge) -- Amplitude (Stronger at start, weaker at end)
+
+    -- Pseudo-Curl logic
+    local noiseX = math.sin(pos.y * freq + timee) - math.cos(pos.z * freq + timee)
+    local noiseY = math.sin(pos.z * freq + timee) - math.cos(pos.x * freq + timee)
+    local noiseZ = math.sin(pos.x * freq + timee) - math.cos(pos.y * freq + timee)
+
+    local turbulence = Vector(noiseX, noiseY, noiseZ) * amp * FrameTime()
+    particle:SetVelocity(particle:GetVelocity() + turbulence)
+	particle:SetAngles(particle:GetVelocity():Angle()) 
+
+    -- 5. REPLICATE: Scale Factor (Vector2Curve)
+    -- Shrink slightly over time
+    local sizeCurve = Lerp(nAge, 1.0, 0.5)
+    particle:SetStartSize(particle:GetStartSize() * sizeCurve) -- Dynamic resizing visual hack
+    
+    particle:SetNextThink(CurTime()) -- Think every frame
 end
+
+NE_SpriteM.MAT_SPRITE = {"sprites/MI_A_GPUSparks_01_Tr_000","sprites/MI_A_GPUSparks_01_Tr_001","sprites/MI_A_GPUSparks_01_Tr_002","sprites/MI_A_GPUSparks_01_Tr_003"} -- Ensure this .vmt exists or use "effects/spark" as fallback
+NE_SpriteM.PARTICLE_SCALE = 1.0 -- Internal scale reference
 
 -- ------------------------------------------------------------------
 -- EFFECT
 -- ------------------------------------------------------------------
 function EFFECT:Init(data)
     -- Input convenience
-    local ent = data:GetEntity()
-    local origin = data:GetOrigin() or vector_origin
-    local ang = data:GetAngles() or Angle(0, 0, 0)
-    local life = math.max(0.01, data:GetMagnitude() or NE_RibbonM.DEFAULT_SEGMENT_LIFETIME)
-    local scale = math.max(0.01, data:GetScale() or 1.0)
+    local ent = data:GetEntity() 
+    local origin = data:GetOrigin() 
+    local ang = data:GetAngles() 
+    local life = math.max(0.01, data:GetMagnitude() or NE_RibbonM.DEFAULT_SEGMENT_LIFETIME) 
+    local scale = math.max(0.01, data:GetScale() or 1.0) 
 	self:SetPos(ent:GetPos()) 
+	self:SetParent(ent) 
 	
 	self.Entity = data:GetEntity() 
+	self.Emitter = ParticleEmitter(self:GetPos(),true) 
 	self:NE_RibbonM_Init(data) 
 	self:NE_RibbonM001_Init(data) 
 	self:NE_RibbonM003_Init(data) 
+	self:NE_SpriteM_Init(data) 
 
     -- reasonable bounds for rendering the trail
     self:SetRenderBounds(Vector(-2048, -2048, -2048), Vector(2048, 2048, 2048))
@@ -324,6 +396,12 @@ function EFFECT:NE_RibbonM003_Init(data)
     -- start with one point
     self:NE_RibbonM001_AddPoint(self.NE_RibbonM003.LastPos)
 end
+
+function EFFECT:NE_SpriteM_Init(data) 
+	self.NE_SpriteM = { Outer = self } 
+	self.NE_SpriteM.Scale = data:GetScale() * 0.01 
+	self.NE_SpriteM.LastPos = self:GetTrailPos() or self:GetPos() 
+end 
 
 function EFFECT:GetRenderEntity()
     if !IsValid(self.Entity) then return nil end
@@ -427,9 +505,68 @@ function EFFECT:Think()
 	local NE_RibbonM_Think = self:NE_RibbonM_Think() 
 	local NE_RibbonM001_Think = self:NE_RibbonM001_Think() 
 	local NE_RibbonM003_Think = self:NE_RibbonM003_Think() 
+	local NE_SpriteM_Think = self:NE_SpriteM_Think() 
 	if !NE_RibbonM_Think then return false end 
 	return true 
 end 
+
+function EFFECT:NE_SpriteM_Think() 
+    if !IsValid(self.Entity) then return false end
+
+    local currentPos = self:GetTrailPos()
+
+    -- Calculate distance and steps
+    local dist = self.NE_SpriteM.LastPos:Distance(currentPos)
+    local steps = math.floor(dist / 4)
+    steps = math.Clamp(steps, 1, 10)
+
+    -- CHANGED: Calculate velocity dynamically from frame movement
+    -- This provides accurate velocity even for parented bones or rapid animations
+    local diff = currentPos - self.NE_SpriteM.LastPos
+    local velocity = diff / math.max(FrameTime(), 0.001) 
+
+    for i = 1, steps do
+        local lerpVal = i / steps
+        local spawnPos = LerpVector(lerpVal, self.NE_SpriteM.LastPos, currentPos)
+
+        local p = self.Emitter:Add(Material(NE_SpriteM.MAT_SPRITE[math.random(1,4)]), spawnPos)
+        if p then
+            -- Initial Properties (From SpawnScript_0)
+            p:SetDieTime(math.Rand(0.6, 1.2)) -- Lifetime
+            
+            -- Velocity: Inherit + Random Spread
+            p:SetVelocity(velocity + VectorRand() * 15) 
+            
+            -- Size & Scale (Scale Factor Vector2Curve)
+            -- Note: We use Length to replicate the "Velocity Aligned" stretch effect
+            local baseSize = 4 * self.NE_SpriteM.Scale
+            p:SetStartSize(baseSize)
+            p:SetEndSize(baseSize * 0.5)
+            p:SetStartLength(baseSize * 0.5) -- Elongated sprite
+            p:SetEndLength(baseSize * 0)
+            
+            -- Enable Velocity Alignment (Stretches sprite based on speed)
+            p:SetVelocityScale(true) 
+            
+            -- Physics
+            p:SetAirResistance(5) -- Initial Drag
+            p:SetGravity(Vector(0, 0, -50)) -- Slight gravity (implied by "Mass")
+            p:SetCollide(true)
+            p:SetBounce(0.3)
+
+            -- Color/Alpha Init
+            p:SetColor(255, 255, 255)
+            p:SetStartAlpha(255)
+            
+            -- Attach the custom Update Script
+            p:SetThinkFunction(NE_SpriteM.ParticleUpdate)
+            p:SetNextThink(CurTime())
+        end
+    end
+
+    self.NE_SpriteM.LastPos = currentPos
+    return true -- Keep the effect alive
+end
 
 function EFFECT:NE_RibbonM_Think()
     -- validity checks
