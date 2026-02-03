@@ -118,6 +118,7 @@ SB_ImportJSON("data_static/SB/Content/Local/Data/SkillCommandTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/SkillActiveStepTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/SkillResultTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/EffectTable.json")
+SB_ImportJSON("data_static/SB/Content/Local/Data/EffectCombinationTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/TargetFilterTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAnimSetTable.json")
 SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterMoveTable.json")
@@ -185,11 +186,6 @@ end
 function ENT:SBAI_GetEffectTable(strEffect) 
 	local EffectTable = SB_EffectTable[1].Rows[strEffect] 
 	return EffectTable 
-end 
-
-function ENT:SBAI_GetSkillAnimData(name) 
-	local data = _G["SB_"..name] 
-	if data then return data else MsgC(Color(0,255,0),"SBAI_GetSkillAnimData: "..name.." not precached\n") end 
 end 
 
 -- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
@@ -342,11 +338,11 @@ function ENT:SBAI_EvaluateEdge(childEntry)
             local rawName = decoNode.Type or decoNode.Name
             local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
 			
-			print("Decorator is:",funcName) 
+			-- print("Decorator is:",funcName) 
             if self[funcName] then
                 -- Check condition
                 local success = self[funcName](self, decoNode.Properties, decoID) 
-				print("Decorator result is:", success) 
+				-- print("Decorator result is:", success) 
 				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
                 if !success then return false end
             end
@@ -645,9 +641,9 @@ function ENT:SBAI_SelectTask(startNodeID)
 
             -- Run Task
             if self[taskName] then 
-				print("Task is:",taskName) 
+				-- print("Task is:",taskName) 
                 local result = self[taskName](self, taskNode.Properties, taskID) 
-				print("Task result is:",result) 
+				-- print("Task result is:",result) 
                 
                 if result == nil then
                     coroutine.yield() -- Running
@@ -694,24 +690,6 @@ function ENT:NPC_GetWalkActivity( act )
 	return act 
 end 
 
-function ENT:NPC_TranslateActivity(act) 
-	if act == ACT_IDLE_ANGRY then 
-		if IsValid(self:GetActiveWeapon()) then 
-			if self:GetActiveWeapon():GetClass() == "raven_blade" 
-			or self:GetActiveWeapon():GetHoldType() == "melee" 
-			or self:GetActiveWeapon():GetHoldType() == "knife" then 
-				return ACT_HL2MP_IDLE_MELEE_ANGRY 
-			end 
-		end 
-	end 
-	if IsValid(self:GetActiveWeapon()) then 
-		if self:GetActiveWeapon():GetHoldType() == "melee" or self:GetActiveWeapon():GetHoldType() == "knife" and act == ACT_WALK then 
-			return ACT_MP_WALK_MELEE 
-		end 
-	end 
-	return scripted_ents.Get("npc_unreali_female").NPC_TranslateActivity(self,act) 
-end 
-
 function ENT:NPC_TranslateLuaSchedule(oldsched) 
 	local retVal = scripted_ents.Get("npc_unreali_female").NPC_TranslateLuaSchedule(self,oldsched) 
 	if retVal and retVal.DebugName == "LUASCHED_FLEE_FROM_BEST_SOUND" then 
@@ -748,6 +726,7 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
 	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
 	if self:NPC_HasCondition(COND.ENEMY_OCCLUDED) then return false end 
+	if self:GetEnemy().GetHullType and (self:GetEnemy():GetHullType() == HULL_SMALL_CENTERED or self:GetEnemy():GetHullType() == HULL_TINY or self:GetEnemy():GetHullType() == HULL_TINY_CENTERED) or self:GetEnemy():BoundingRadius() < 21 then return false end 
 	return true 
 end 
 
@@ -757,7 +736,7 @@ function ENT.ShotRegulator:UpdateRestTimes()
 	local Outer = self.Outer 
 	scripted_ents.Get("cycler_actor2").ShotRegulator.UpdateRestTimes(self) 
 	Outer.ShotRegulator.flMinRestInterval = 0.1 
-	Outer.ShotRegulator.flMaxRestInterval = 0.1  
+	Outer.ShotRegulator.flMaxRestInterval = 0.1 
 end 
 
 function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
@@ -773,6 +752,20 @@ function ENT:CustomRunAI()
 	local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
 	if NPC_ShouldConductBehaviorTree then 
 		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
+	end 
+	local layer = self:FindGestureLayer(ACT_GESTURE_MELEE_ATTACK1) 
+	if layer and layer >= 0 then 
+		if self:GetLayerCycle(layer) > 0.25 then 
+			if self:NPC_HasCondition(COND.CAN_MELEE_ATTACK1) then -- still able to melee attack 
+				self:RemoveLayer(layer) 
+			end 
+		end 
+	elseif self:GetCurrentSchedule() == SCHED_MELEE_ATTACK1 then 
+		if self:NPC_HasCondition(COND.CAN_MELEE_ATTACK1) and self:TaskTime() > 0.25 then 
+		self:TaskComplete()
+		print("clearing schedule") 
+			-- self.CurrentSchedule = nil 
+		end 
 	end 
 	local retVal = scripted_ents.Get("npc_unreali_female").CustomRunAI(self) 
 end 
@@ -793,6 +786,67 @@ function ENT:OnRemove(fullUpdate)
 	end 
 	scripted_ents.Get("npc_unreali_female").OnRemove(self) 
 end 
+
+function ENT:OnStateChange(oldState, newState) 
+    print("state change", oldState, newState) 
+
+    -- 1. SEARCH: Find the raven_blade anywhere in the inventory
+    local ravenBlade, otherWeapon = NULL, NULL 
+    local weapons = self:GetWeapons()
+
+	for _, wep in ipairs(weapons) do 
+		if wep:GetClass() == "raven_blade" then 
+			ravenBlade = wep 
+		else 
+			otherWeapon = wep 
+		end 
+		if IsValid(ravenBlade) and IsValid(otherWeapon) then break end 
+	end 
+
+    -- 2. LOGIC: Only proceed if we found the valid weapon entity
+    if IsValid(ravenBlade) then 
+        print("has raven blade") 
+
+        -- HOLSTER (Alert -> Idle)
+        if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() then 
+            
+            local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS")
+            if seqID != -1 then
+                local layer = self:AddGestureSequence(seqID) 
+                print("layer_Eve_Weapon_End_BS", layer) -- holster 
+            end
+
+            ravenBlade:AddEffects(EF_NODRAW) 
+			if IsValid(otherWeapon) then 
+				self:SelectWeapon(otherWeapon) 
+			else 
+				self:SetSaveValue("m_hActiveWeapon", otherWeapon) 
+			end 
+
+        -- DRAW (Idle -> Alert/Combat)
+        elseif oldState == NPC_STATE_IDLE and (newState >= NPC_STATE_ALERT and newState <= NPC_STATE_COMBAT) then -- there still may be an enemy 
+            
+            local seqID = self:LookupSequence("layer_Eve_Weapon_Start_Anim")
+            if seqID != -1 then
+                local layer = self:AddGestureSequence(seqID) 
+                print("layer_Eve_Weapon_Start_Anim", layer) -- draw 
+            end
+
+            -- FIX: Select the specific weapon entity we found earlier
+            self:SelectWeapon(ravenBlade) 
+            
+            -- FIX: Use the variable 'ravenBlade' directly so we don't crash
+            -- if the engine hasn't updated GetActiveWeapon() yet.
+            -- ravenBlade:RemoveEffects(EF_NODRAW) 
+            
+            if ravenBlade.DeploySound then
+                ravenBlade:EmitSound(ravenBlade.DeploySound) 
+            end
+
+            self:ResetIdealActivity(ACT_IDLE) 
+        end 
+    end 
+end
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
@@ -1084,7 +1138,6 @@ function ENT:SbCautionToTarget(tbl, nodeID)
     -- small helpers
     local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
     local function randFloat(a,b) return a + math.random() * (b - a) end
-    local function isValidEnt(e) return e ~= nil and e ~= NULL and IsValid(e) end
 
     -- resolve and fail if no valid target
     if not tbl.target then
@@ -1199,7 +1252,6 @@ function ENT:SbCautionToTarget(tbl, nodeID)
         local chosen = self:SBAI_GetNodeState(nodeID, "chosenMoveChoice") 
 
         local goalPos = tgtPos
-		print("chosen",chosen) 
         if chosen == "side" then
             goalPos = tgtPos + rightVec * (self:SBAI_GetNodeState(nodeID,"sideDist") * self:SBAI_GetNodeState(nodeID,"sideSign"))
         elseif chosen == "forward" then
@@ -1213,7 +1265,7 @@ function ENT:SbCautionToTarget(tbl, nodeID)
 
         -- Prefer NavSetRandomGoal for side moves to create natural paths; otherwise NavSetGoalPos.
         if chosen == "side" then
-            local minPathLen = math.Clamp(tbl.sideDist * 0.5, 100, 2000)
+            local minPathLen = math.Clamp(self:SBAI_GetNodeState(nodeID,"sideDist") * 0.5, 100, 2000)
             self:NavSetRandomGoal(minPathLen, (tgtPos - myPos):GetNormalized()) 
         else
 			self:NavSetGoalPos(goalPos) 
@@ -1263,16 +1315,16 @@ function ENT:SbCautionToTarget(tbl, nodeID)
         return nil
     end
 
-    -- Start wait phase when movement finished (or attempts exhausted)
+    -- Start wait phase when movement finished (or attempts exhausted) 
     if !self:SBAI_GetNodeState(nodeID, "waitEnd") then 
 		self:SBAI_SetNodeState(nodeID,"returnSucceeded",success) 
-		self:SBAI_SetNodeState(nodeID, "waitEnd",CurTime() + (self:SBAI_GetNodeState(nodeID, "waitEnd" or 0)))
-        -- maybe play a show/gesture with PlayShowRateWhenWait probability
-        if PlayShowRateWhenWait and PlayShowRateWhenWait > 0 and math.random() * 100 <= PlayShowRateWhenWait then
-            -- safe-call a generic "gesture" if present (you can replace with your own)
-            -- pcall(function() if self.PlayGesture then self:PlayGesture(ACT_GESTURE_TURN_RIGHT) end end)
-        end
-    end
+		self:SBAI_SetNodeState(nodeID, "waitEnd",CurTime() + (self:SBAI_GetNodeState(nodeID, "waitEnd") or 0)) 
+        -- maybe play a show/gesture with PlayShowRateWhenWait probability 
+        if PlayShowRateWhenWait and PlayShowRateWhenWait > 0 and math.random() * 100 <= PlayShowRateWhenWait then 
+            -- safe-call a generic "gesture" if present (you can replace with your own) 
+            -- pcall(function() if self.PlayGesture then self:PlayGesture(ACT_GESTURE_TURN_RIGHT) end end) 
+        end 
+    end 
 
     -- during wait: keep looking at target if requested 
     if self:SBAI_GetNodeState(nodeID, "waitEnd") and CurTime() < self:SBAI_GetNodeState(nodeID, "waitEnd") then 
@@ -1789,18 +1841,18 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
 end
 
 -- create single-task schedule to use the master task
-if SERVER then
-    LUASCHED_RAVEN_RAPIDEVADE = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE")
-    -- single master task; ensures the whole 1.4s timeline is controlled here
-    LUASCHED_RAVEN_RAPIDEVADE:AddTaskEx("TASK_BLINK", "TASK_BLINK", 0)
+if SERVER then 
+    LUASCHED_RAVEN_RAPIDEVADE = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE") 
+    -- single master task; ensures the whole 1.4s timeline is controlled here 
+    LUASCHED_RAVEN_RAPIDEVADE:AddTaskEx("TASK_BLINK", "TASK_BLINK", 0) 
 	
-	LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND")
+	LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND = ai_schedule.New("LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND") 
 	LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_STOP_MOVING",0) 
     LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_SET_FAIL_SCHEDULE",SCHED_COWER) 
     LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_STORE_BESTSOUND_REACTORIGIN_IN_SAVEPOSITION",0) 
     LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:EngTask("TASK_GET_PATH_AWAY_FROM_BEST_SOUND",3000) 
-    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:AddTaskEx("TASK_BLINK", "TASK_BLINK", 1)
-end
+    LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND:AddTaskEx("TASK_BLINK", "TASK_BLINK", 1) 
+end 
 
 local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
 

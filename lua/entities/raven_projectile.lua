@@ -103,18 +103,18 @@ NE_RibbonM001.WidthMultiplier = 1.0       -- global tuning
 NE_RibbonM001.MinStepDist = 4.0           -- when moving more than this, insert intermediate points
 NE_RibbonM001.MaxInterpolationSteps = 8   -- cap to avoid huge spikes
 
-NE_SparkM003.BASE_MATERIAL = "effects/mi_d_raven_goldparts_1" -- Path to your .vmt (no extension)
+NE_SparkM003.BASE_MATERIAL = "sprites/mi_d_raven_goldparts_1" -- Path to your .vmt (no extension)
 
 -- === Config derived from JSON / approximations ===
 NE_SparkM003.SPAWN_RATE = 30                -- particles per second (approximate)
 NE_SparkM003.SPAWN_RADIUS = 4.5             -- lathe/cylinder radius (derived)
 NE_SparkM003.SPAWN_RADIUS_JITTER = 0.35     -- percent jitter to avoid perfectly uniform ring
 NE_SparkM003.SPAWN_ANGLE_RINGS = 1         -- number of rings per spawn (1 => single ring)
-NE_SparkM003.LIFETIME_MIN, LIFETIME_MAX = 0.18, 0.45  -- seconds (short-lived sparks)
-NE_SparkM003.START_SIZE_MIN, START_SIZE_MAX = 5.5, 9.0 -- world units (start)
+NE_SparkM003.LIFETIME_MIN, NE_SparkM003.LIFETIME_MAX = 0.18, 0.45  -- seconds (short-lived sparks)
+NE_SparkM003.START_SIZE_MIN, NE_SparkM003.START_SIZE_MAX = 1.5, 4 -- world units (start)
 NE_SparkM003.END_SIZE_FACTOR = 0.12         -- end size relative to start (shrinks)
 NE_SparkM003.INHERIT_VELOCITY = 0.6         -- fraction of projectile velocity inherited
-NE_SparkM003.OUTWARD_SPEED_MIN, OUTWARD_SPEED_MAX = 80, 220 -- radial ejection speeds
+NE_SparkM003.OUTWARD_SPEED_MIN, NE_SparkM003.OUTWARD_SPEED_MAX = 80, 220 -- radial ejection speeds
 NE_SparkM003.GRAVITY = Vector(0, 0, -600)   -- NE_SparkM003.gravity applied to sparks
 NE_SparkM003.AIR_RESIST = 40                -- air resistance
 NE_SparkM003.SPAWN_MIN_STEP = 3.5           -- interpolated spawn threshold (units)
@@ -135,9 +135,9 @@ end
 
 NE_SparkM003.ScaleFactor = function(t)
     -- t in [0,1] where 0 = new, 1 = dead
-    local k = math.ease.InOutSine(clamp(t,0,1))
+    local k = math.ease.InOutSine(math.Clamp(t,0,1))
     local startS, endS = 0.85, 0.67
-    return Lerp(startS, endS, k), Lerp(startS, endS, k)
+    return Lerp(k,startS, endS), Lerp(k,startS, endS)
 end 
 
 -- Alpha pop+fade (Scale Alpha)
@@ -155,7 +155,7 @@ end
 
 NE_SparkM003.BrightnessCurve = function(t)
     -- strong early brightness, decays
-    return Lerp(1.6, 0.25, math.ease.InOutSine(math.Clamp(t,0,1)))
+    return Lerp(math.ease.InOutSine(math.Clamp(t,0,1)),1.6, 0.25)
 end
 
 -- ColorCurve (approx): gold -> orange over life (values 0..255)
@@ -163,9 +163,9 @@ NE_SparkM003.ColorCurve = function(t)
     local r1,g1,b1 = 1.00, 0.86, 0.25  -- bright gold (0..1)
     local r2,g2,b2 = 1.00, 0.55, 0.08  -- orange
     local k = math.ease.InOutSine(math.Clamp(t,0,1))
-    local r = Lerp(r1, r2, k)
-    local g = Lerp(g1, g2, k)
-    local b = Lerp(b1, b2, k)
+    local r = Lerp(k,r1, r2)
+    local g = Lerp(k,g1, g2)
+    local b = Lerp(k,b1, b2)
     return math.floor(math.Clamp(r * 255, 0, 255)),
            math.floor(math.Clamp(g * 255, 0, 255)),
            math.floor(math.Clamp(b * 255, 0, 255))
@@ -389,17 +389,17 @@ function ENT:Initialize()
 	
 
 
-        self.NE_SparkM003.Outer = self
-        self.NE_SparkM003.LastPos = self:GetPos()
+	self.NE_SparkM003.Outer = self
+	self.NE_SparkM003.LastPos = self:GetPos()
 
-    self.NE_SparkM003.Origin = origin or self.LastPos
-    self.NE_SparkM003.SpawnAccumulator = 0
-    -- self.Emitter = ParticleEmitter(self.Origin)
-    self.NE_SparkM003.DieTime = CurTime() + 5 -- safety: stop after 5s if entity disappears
-    self.NE_SparkM003.QualityScale = GetQualityScale()
+	self.NE_SparkM003.Origin = self.NE_SparkM003.LastPos
+	self.NE_SparkM003.SpawnAccumulator = 0
+	-- self.Emitter = ParticleEmitter(self.Origin)
+	self.NE_SparkM003.DieTime = CurTime() + 5 -- safety: stop after 5s if entity disappears
+	self.NE_SparkM003.QualityScale = GetQualityScale()
 
-    -- Keep a per-effect random seed for variety
-    self.NE_SparkM003.Seed = math.random() * 1000
+	-- Keep a per-effect random seed for variety
+	self.NE_SparkM003.Seed = math.random() * 1000
 
 	
 	
@@ -486,6 +486,7 @@ if CLIENT then
 		self:NE_SparkM002_1_Think() 
 		self:NE_RibbonM_Think() 
 		self:NE_RibbonM001_Think() 
+		self:NE_SparkM003_Think() 
 		
 	end 
 end 
@@ -969,4 +970,202 @@ function ENT:NE_RibbonM001_Draw(flags)
     end
 
     mesh.End()
+end 
+
+function ENT:NE_SparkM003_AddInterpolatedSpawns(fromPos, toPos, count, spawnFunc)
+    -- count = number of spawn subdivisions to perform (e.g., steps)
+    count = math.min(count, NE_SparkM003.MAX_INTERP_STEPS or 8)
+    for i = 1, count do
+        local t = i / count
+        local p = Lerp(t, fromPos.x, toPos.x)
+        local y = Lerp(t, fromPos.y, toPos.y)
+        local z = Lerp(t, fromPos.z, toPos.z)
+        spawnFunc(Vector(p,y,z))
+    end
+end
+
+function ENT:NE_SparkM003_SpawnOneAt(pos)
+    -- if !NE_SparkM003.SpriteEmitter_2d then return end
+    local qualityScale = self.NE_SparkM003.QualityScale
+
+    local emitter = self.SpriteEmitter_2d
+    -- Lathe spawn: choose random angle and radius per particle
+    local angle = math.Rand(0, math.pi * 2)
+    local radius = NE_SparkM003.LatheOffset(angle) * (1 + math.Rand(-NE_SparkM003.SPAWN_RADIUS_JITTER, NE_SparkM003.SPAWN_RADIUS_JITTER))
+
+    -- Build orientation basis: use attached entity forward/up/right if available
+	local forward = self:GetForward()
+	local up = self:GetUp()
+	local right = self:GetRight()
+
+    local localOffset = (right * math.cos(angle) + up * math.sin(angle)) * radius
+    local spawnPos = pos + localOffset
+
+    -- Create particle using the material (our VMT path)
+    local p = emitter:Add(NE_SparkM003.BASE_MATERIAL, spawnPos)
+
+    -- Lifespan
+    local life = NE_SparkM003.LIFETIME_MIN + math.Rand(0,1) * (NE_SparkM003.LIFETIME_MAX - NE_SparkM003.LIFETIME_MIN)
+    p:SetDieTime(life)
+
+    -- Sizes (scaleFactor ~0.85 -> 0.67)
+    -- Start size based on ScaleFactor(0)
+    local startScaleX, startScaleY = NE_SparkM003.ScaleFactor(0)
+    local startSize = Lerp(math.random(),NE_SparkM003.START_SIZE_MIN, NE_SparkM003.START_SIZE_MAX) * startScaleX
+    local endSize = math.max(startSize * NE_SparkM003.END_SIZE_FACTOR, 0.5)
+    p:SetStartSize(startSize * qualityScale)
+    p:SetEndSize(endSize * qualityScale)
+	-- print(startSize,endSize) 
+
+    -- Alpha: full bright at start, fade to 0 - we'll set start/end alpha now and rely on engine interpolation
+    p:SetStartAlpha(255)
+    p:SetEndAlpha(0)
+
+    -- Colors: use color curve at t=0 modulated by brightness
+    local r,g,b = NE_SparkM003.ColorCurve(0)
+    -- apply brightness curve at spawn (early bright), and add small per-particle brightness jitter
+    local brightness = NE_SparkM003.BrightnessCurve(0) * Lerp(math.random(),0.85, 1.25)
+    -- occasional twinkle (rare strong spike at spawn)
+    if math.random() < NE_SparkM003.TWINKLE_PROBABILITY then
+        brightness = brightness * NE_SparkM003.TWINKLE_BRIGHT_MULT
+    end
+    -- map brightness into 0..255 safely (scale factor tuned for VMT)
+    local colorScale = math.Clamp(brightness * 0.8, 0, 2.8)
+    p:SetColor(math.Clamp(math.floor(r * colorScale), 0, 255),
+               math.Clamp(math.floor(g * colorScale), 0, 255),
+               math.Clamp(math.floor(b * colorScale), 0, 255))
+
+    -- Velocity: inherit projectile velocity + radial outward + curl noise
+    local inheritVel = self:GetVelocity() * NE_SparkM003.INHERIT_VELOCITY
+
+    -- radial outward direction (from center out)
+    local radialDir = (spawnPos - pos)
+    if radialDir:LengthSqr() < 1e-6 then
+        radialDir = (right * math.cos(angle) + up * math.sin(angle))
+    else radialDir:Normalize() end
+
+    local ejectSpeed = math.Rand(NE_SparkM003.OUTWARD_SPEED_MIN, NE_SparkM003.OUTWARD_SPEED_MAX)
+    local vel = inheritVel + radialDir * ejectSpeed
+
+    -- small curl-noise component
+    local seed = math.random() * 100
+    vel = vel + NE_SparkM003.CurlNoiseVel(seed, spawnPos) * 0.45
+
+    p:SetVelocity(vel)
+    p:SetAirResistance(NE_SparkM003.AIR_RESIST)
+    p:SetGravity(NE_SparkM003.GRAVITY)
+
+    -- Rotation and roll
+    p:SetRoll(math.Rand(0, 360))
+    p:SetRollDelta(math.Rand(-360, 360))
+
+    -- Lighting & collision
+    p:SetCollide(false) -- sparks in this effect usually do not collide
+    p:SetBounce(0)
+    p:SetLighting(false) -- keep emissive look unaffected by world lighting
+	
+	p.__seed          = math.Rand(0, 1000)
+	p.__baseColor     = { r = r, g = g, b = b } -- r,g,b were set above
+
+	-- per-particle think: update size, color, alpha, velocity (curl noise), schedule next think
+	p:SetThinkFunction(function(selfP)
+		local life     = selfP:GetLifeTime()      -- time since spawn
+		local dieTime  = selfP:GetDieTime()       -- total lifetime
+
+		local t = math.Clamp(life / dieTime, 0, 1)     -- 0 = new, 1 = dead
+
+		-- size: compute vector2 factor but we only have scalar size so use X.
+		local sx, _ = NE_SparkM003.ScaleFactor(t)              -- returns ~0.85..0.67
+		local targetSize = Lerp(t, startSize * qualityScale, endSize * qualityScale)
+		local curSize = targetSize * sx
+		-- override both start and end so engine draws current size this frame
+		selfP:SetStartSize(curSize)
+		selfP:SetEndSize(curSize)
+
+		-- alpha: sample alpha curve (0..1) then map to 0..255
+		local alphaMul = NE_SparkM003.AlphaCurve(t)
+		local alpha = math.floor(math.Clamp(alphaMul * 255, 0, 255))
+		selfP:SetStartAlpha(alpha)
+		selfP:SetEndAlpha(0) -- keep fading to 0
+
+		-- brightness & color: compute base color and multiply by brightness curve
+		local br = NE_SparkM003.BrightnessCurve(t)
+		local rr, gg, bb = NE_SparkM003.ColorCurve(t) -- returns 0..255 ints
+		-- Mix with base color for more continuity: average them weighted by br
+		local finalR = math.Clamp(math.floor(rr * br), 0, 255)
+		local finalG = math.Clamp(math.floor(gg * br), 0, 255)
+		local finalB = math.Clamp(math.floor(bb * br), 0, 255)
+		selfP:SetColor(finalR, finalG, finalB)
+
+		-- velocity curl/noise addition (small, time-dependent)
+		local curl = NE_SparkM003.CurlNoiseVel(selfP.__seed, selfP:GetPos()) * 0.35
+		local vel = selfP:GetVelocity() + curl
+		selfP:SetVelocity(vel)
+
+		-- schedule next think shortly (use small timestep)
+		selfP:SetNextThink(CurTime() + 0.025)
+	end)
+
+	-- make sure the first think runs soon
+	p:SetNextThink(CurTime())
+
+    -- Misc: set velocity-dependent size or custom properties if needed
+    -- (We can't set per-particle custom shader params easily without custom materials)
+end
+
+function ENT:NE_SparkM003_Think()
+    -- Get source position: prefer attached entity pos
+    local src = self:GetPos() 
+    local now = CurTime()
+
+    -- If entity disappeared, keep finishing until DieTime
+    -- if not IsValid(self.AttachedEntity) and now > self.DieTime then
+        -- if self.Emitter then
+            -- self.Emitter:Finish()
+            -- self.Emitter = nil
+        -- end
+        -- return false
+    -- end
+
+    -- Update bounds so engine doesn't clip particles
+    -- self:SetRenderBoundsWS(src + Vector(-600,-600,-600), src + Vector(600,600,600))
+
+    -- Spawn logic with accumulator & interpolated spawning
+    local dt = FrameTime()
+    local spawnRateAdjusted = NE_SparkM003.SPAWN_RATE * self.NE_SparkM003.QualityScale
+    self.NE_SparkM003.SpawnAccumulator = self.NE_SparkM003.SpawnAccumulator + spawnRateAdjusted * dt
+
+    local spawnCount = math.floor(self.NE_SparkM003.SpawnAccumulator)
+    self.NE_SparkM003.SpawnAccumulator = self.NE_SparkM003.SpawnAccumulator - spawnCount
+
+    if spawnCount > 0 then
+        local fromPos = self.NE_SparkM003.LastPos 
+        local toPos = src
+        local dist = fromPos:Distance(toPos)
+
+        -- if moved a lot, subdivide and interpolate spawns along path
+        if dist > NE_SparkM003.SPAWN_MIN_STEP then
+            local steps = math.min(math.ceil(dist / NE_SparkM003.SPAWN_MIN_STEP), NE_SparkM003.MAX_INTERP_STEPS)
+            -- spawnCount distributed across steps
+            local perStep = math.max(1, math.floor(spawnCount / steps))
+            for s = 1, steps do
+                local t = s / steps
+                local interp = Lerp(t, fromPos.x, toPos.x)
+                local y = Lerp(t, fromPos.y, toPos.y)
+                local z = Lerp(t, fromPos.z, toPos.z)
+                local stepPos = Vector(interp, y, z)
+                for i = 1, perStep do
+                    self:NE_SparkM003_SpawnOneAt(stepPos)
+                end
+            end
+        else
+            -- spawn all at current position
+            for i = 1, spawnCount do
+                self:NE_SparkM003_SpawnOneAt(src)
+            end
+        end
+    end
+
+    self.NE_SparkM003.LastPos = src
+    return true
 end
