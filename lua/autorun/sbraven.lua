@@ -1,4 +1,6 @@
--- ===== Add these client receivers near the top of the file (or anywhere in shared scope) =====
+-- BUG: function type values are not saverestored 
+-- ===== Add these client receivers near the top of the file (or anywhere in shared scope) ===== 
+
 if CLIENT then
     StellarBlade = StellarBlade or {} 
 	StellarBlade.NetworkBranchBlocked = false 
@@ -57,8 +59,8 @@ hook.Add("PostPlayerDraw","sbravenpm_coreglow",function(ply)
 		local attachmentid = ply:LookupAttachment(attachmentname) 
 		if attachmentid > 0 then 
 			local Pos = ply:GetAttachment(attachmentid).Pos -- Pos will be used 
-			local Material = Material("sprites/t_a_shineflare_02") 
-			render.SetMaterial(Material) 
+			local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
+			render.SetMaterial(t_a_shineflare_02) 
 			for i = 1,math.random(1,3) do 
 				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
 			end 
@@ -1022,14 +1024,14 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 	}
 
 	-- iterate the remapping table instead of writing separate if/else checks
-	for fieldName, evaluator in pairs(conditionEvaluators) do
-		local desired = EffectTable[fieldName]
+	for Condition, evaluator in pairs(conditionEvaluators) do
+		local desired = EffectTable[Condition]
 		-- skip if not present or explicitly NONE
 		if !desired or desired == CHECK_NONE then
 			-- skip check
 		else
 			local ok, actual = pcall(evaluator)
-			if not ok then actual = false end -- defensive: evaluator failed -> treat as false
+			if !ok then actual = false end -- defensive: evaluator failed -> treat as false
 
 			if desired == CHECK_TRUE and !actual then
 				return false
@@ -1682,7 +1684,7 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 				return st:Remove(EffectTable)
 			end)
 			if !ok then
-				print("ActorState:Remove pcall failed:", res)
+				print("ActorState.Remove failed:", res,EffectTable.Name)
 			else
 				-- print("removal status:", ok, res)
 			end
@@ -1838,6 +1840,15 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 						if self.Outer:IsPlayer() then 
 							self.Outer:Freeze(false) 
 						else 
+							if self.Outer:IsNPC() then 
+								if StellarBlade.IsRaven(self.Outer) then 
+								
+								else 
+								
+								end 
+							else 
+							
+							end 
 							-- self.Outer:SetMoveType(MOVETYPE_STEP) 
 						end 
 					elseif self.Name == "ESBActorState::ActorState_BlockSprint" then 
@@ -2065,7 +2076,15 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 			if self:IsPlayer() then 
 				self:Freeze(true) 
 			else 
+				if self:IsNPC() then 
+					if StellarBlade.IsRaven(self) then -- npc_sb_raven or baseclasses 
+					
+					else 
+						self:SetSaveValue("m_flNextDecisionTime",10) 
+					end 
+				else 
 				
+				end 
 			end 
 		-- ActorState_BlockSkillUnImmune            = 21,
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockSkillUnImmune" then 
@@ -3131,7 +3150,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					end
 				end 
 				if !foundBoneID or foundBoneID <= 0 then ef:SetHitBox(0) end 
-				print("found bone ID:",foundBoneID,SocketName,EffectEntity) 
+				-- print("found bone ID:",foundBoneID,SocketName,EffectEntity) 
 					
 				if RelativeLocation then
 					-- LocalToWorld(localPos, localAng, originPos, originAng)
@@ -3399,18 +3418,18 @@ end
 
 StellarBlade.ProcessActiveSkill = function(self,tbl) 
 	if !tbl then print(self,"ProcessActiveSkill was called without tbl, skill may have removed during execution") return debug.Trace() end 
-    local Name = tbl.Name
-    if !Name then return end
+    local Name = tbl.Name 
+    if !Name then return end 
     local SkillStepTable = tbl.Data 
     if !SkillStepTable then return end 
 	local Time = tbl.Time -- start time 
 	local Duration = SkillStepTable.Duration 
 	local EndTime = Time + Duration 
 	local Type = SkillStepTable.Type -- get skill step type 
-    -- Determine the current target. Prioritize the locked target if it exists and is valid.
+    -- Determine the current target. Prioritize the locked target if it exists and is valid. 
     local currentTarget, CheckTarget, Hit, Parry, JustParry = nil 
 	currentTarget = StellarBlade.PickTarget(self) 
-    -- [NEW] Handle persistent "bLookAtTarget": Keep looking at the target during the step
+    -- [NEW] Handle persistent "bLookAtTarget": Keep looking at the target during the step 
 	local bLookAtTarget = SkillStepTable.bLookAtTarget 
 	-- override bLookAtTarget to always look at target when performing a hit 
 	-- otherwise, use bLookAtTarget value 
@@ -3448,9 +3467,9 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 			local hCheckTarget, bHit, bParry, bJustParry = tobool(v.bCheckTarget) and currentTarget or self, tobool(v.bHit), tobool(v.bParry), tobool(v.bJustParry) 
 			if hCheckTarget.SB_EffectAlias and hCheckTarget.SB_EffectAlias[v.Effect] and !table.IsEmpty(hCheckTarget.SB_EffectAlias[v.Effect]) then 
 				if v.bCheckTarget and !IsValid(hCheckTarget) then break end 
-				print("bHit, bParry, bJustParry:",bHit, bParry, bJustParry) 
+				-- print("bHit, bParry, bJustParry:",bHit, bParry, bJustParry) 
 				if bHit == Hit and bParry == Parry and bJustParry == JustParry then 
-					print("calling effect next step") 
+					-- print("calling effect next step") 
 					StellarBlade.SetSkillStep(self,v.NextStepAlias) 
 					break 
 				end 
@@ -3613,6 +3632,16 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			enemy = self:GetKnownEnemies()[1] 
 		end 
 	end 
+	
+	local function IsSimpleTarget(ent) -- those that you shouldn't apply targetresult 
+		if ent:GetCollisionGroup() < COLLISION_GROUP_PLAYER or ent:GetCollisionGroup() > COLLISION_GROUP_NPC then return true end 
+		if ent:GetSolid() == 0 then return true end 
+		if ent:IsFlagSet(FL_DONTTOUCH) then return true end 
+		if bit.band(ent:GetSolidFlags(),FSOLID_NOT_SOLID) == FSOLID_NOT_SOLID then print(ent,"not solid")  return true end 
+		if !ent:Alive() then return true end 
+		if ent:GetModel() == "models/error.mdl" then return true end 
+		return false 
+	end 
 	local tableofhittargets = { } 
 
 	-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
@@ -3760,7 +3789,6 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			if v.SetPhysicsAttacker then 
 				v:SetPhysicsAttacker(self,SkillStepTable.Duration*10) 
 			end 
-			-- v:DispatchTraceAttack(dmg,tr) 
 			
 			-- activate TargetMoveAliasArray on target 
 			
@@ -3795,25 +3823,31 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			local SkillResultAlias = SkillStepTable.SkillResultAlias 
 			local SkillResultAliasWhenParry = SkillStepTable.SkillResultAliasWhenParry 
 			local bDamageBlocked = StellarBlade.JustParryAnticipation(self,v) 
-			print("bDamageBlocked:",v,bDamageBlocked) 
+			-- print("bDamageBlocked:",v,bDamageBlocked) 
 			
 			-- prioritize SkillResultAliasWhenParry, JustParry, PerfectParry, Guard, BreakGuard, Default 
-			
-			if bDamageBlocked then 
-				bParry = true 
-				if SkillResultAliasWhenParry != "None" then 
-					StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
-					StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
-					print("target result:",v,SkillResultAliasWhenParry) 
-				end 
+			if IsSimpleTarget(v) then 
+				print(v,"simple target") 
+				v:DispatchTraceAttack(dmg,tr) 
 			else 
 			
-				if SkillResultAlias != "None" then -- applied on self and target 
-					-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
-					StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
-					StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
-					print("target result:",v,SkillResultAlias) 
+				if bDamageBlocked then 
+					bParry = true 
+					if SkillResultAliasWhenParry != "None" then 
+						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenParry,false,SkillStepTable.bCritical,tableOptional) 
+						print("target result:",v,SkillResultAliasWhenParry) 
+					end 
+				else 
+				
+					if SkillResultAlias != "None" then -- applied on self and target 
+						-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
+						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
+						print("target result:",v,SkillResultAlias) 
+					end 
 				end 
+			
 			end 
 			
 			print("NextStepAliasWhenParry:",SkillStepTable.NextStepAliasWhenParry) 
@@ -3892,6 +3926,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 end 
 
 StellarBlade.TargetFilter = function(ent, filter, Cycle) 
+	if CLIENT then return { } end 
 	local flRescale = 1 
 	local debugging = true 
     local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
@@ -4322,7 +4357,7 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 		-- Find entities within that oriented box
 		candidates = ents.FindAlongRay(start, endpos, localMins, localMaxs) 
 	else -- default action 
-        candidates = ents.FindInPVS(ent) 
+        candidates = ents.FindInPVS and ents.FindInPVS(ent) or ents.GetAll() 
     end 
 	
 	-- PrintTable(candidates) 
@@ -5024,8 +5059,10 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 			if target == self.Outer and wasDamageTaken and self:ShouldHitStop(target,dmginfo,wasDamageTaken) then 
 				-- print("bIgnoreHitStop:",self.Data.bIgnoreHitStop) 
 				self:Remove() 
-				for k,v in pairs(target.SBAI_ActiveShows) do 
-					v:Remove() 
+				if target.SBAI_ActiveShows then 
+					for k,v in pairs(target.SBAI_ActiveShows) do 
+						v:Remove() 
+					end 
 				end 
 				if target.SBAI_MoveTable then target.SBAI_MoveTable:Remove() end 
 				local tableOptional = { } 
@@ -5131,6 +5168,40 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 			end 
 		end 
 	end 
+	
+	if self:IsPlayer() then
+		local hViewModel = self:GetViewModel()
+		local hWeapon = self:GetActiveWeapon()
+		if IsValid(hViewModel) and IsValid(hWeapon) then
+			if SkillStepTable.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+				local a = 0 
+				
+				
+				local NextStepAlias = SkillStepTable.NextStepAlias 
+				NextStepAlias = SB_SkillActiveStepTable[1].Rows[NextStepAlias] 
+				if NextStepAlias then a = NextStepAlias.Duration end 
+				-- print(SkillStepTable.Duration,a) 
+		-- local NextStepAliasWhenNoTarget = SkillStepTable.NextStepAliasWhenNoTarget 
+		
+		-- local Step = NextStepAlias 
+		-- if !IsValid(currentTarget) and NextStepAliasWhenNoTarget != "None" then 
+			-- Step = NextStepAliasWhenNoTarget 
+		-- end 
+		-- if NextStepAlias and NextStepAlias != "None" then
+				
+				
+				
+				hWeapon:SendWeaponAnim(math.random() > 0.5 and ACT_VM_PRIMARYATTACK or ACT_VM_SECONDARYATTACK)
+				local vmDuration = hViewModel:SequenceDuration(hViewModel:GetSequence()) 
+				-- Calculate playback rate to match SkillStepTable.Duration
+				local PlaybackRate = vmDuration / (SkillStepTable.Duration + a) 
+				hViewModel:SetPlaybackRate(PlaybackRate) 
+				-- print(PlaybackRate,vmDuration) 
+				if hWeapon.SetIdleDelay then hWeapon:SetIdleDelay(CurTime() + SkillStepTable.Duration+a) end 
+			end 
+		end 
+	end 
+
 	StellarBlade.ProcessActiveSkill(self,self.SBAI_SkillStep) 
 	return true 
 end 
