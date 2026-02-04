@@ -1,0 +1,190 @@
+
+$definemacro HAIR_ROOT BoneName BoneLength \\
+$jigglebone $BoneName$ { \\
+    is_flexible { \\
+        length $BoneLength$ \\
+        tip_mass 2 \\
+        pitch_stiffness 400 \\
+        pitch_damping 14 \\
+        yaw_stiffness 400 \\
+        yaw_damping 14 \\
+        along_stiffness 400 \\
+        along_damping 60 \\
+        angle_constraint 10 \\
+        yaw_constraint -20 20 \\
+        pitch_constraint -8 12 \\
+    } \\
+    has_base_spring { \\
+        base_mass 5 \\
+        stiffness 900 \\
+        damping 40 \\
+        left_constraint -0.5 0.5 \\
+        up_constraint -0.5 0.5 \\
+        forward_constraint -0.5 0.5 \\
+        left_friction 20 \\
+        up_friction 20 \\
+        forward_friction 20 \\
+    } \\
+} \\
+
+$definemacro HAIR_MID BoneName BoneLength \\
+$jigglebone $BoneName$ { \\
+    is_flexible { \\
+        length $BoneLength$ \\
+        tip_mass 4 \\
+        pitch_stiffness 160 \\
+        pitch_damping 10 \\
+        yaw_stiffness 160 \\
+        yaw_damping 10 \\
+        along_stiffness 250 \\
+        along_damping 45 \\
+        angle_constraint 18 \\
+        yaw_constraint -25 25 \\
+        pitch_constraint -12 22 \\
+    } \\
+    has_base_spring { \\
+        base_mass 10 \\
+        stiffness 700 \\
+        damping 30 \\
+        left_constraint -1 1 \\
+        up_constraint -1 1 \\
+        forward_constraint -1 1 \\
+        left_friction 12 \\
+        up_friction 12 \\
+        forward_friction 12 \\
+    } \\
+} \\
+
+$definemacro HAIR_TIP BoneName BoneLength \\
+$jigglebone $BoneName$ { \\
+    is_flexible { \\
+        length $BoneLength$ \\
+        tip_mass 8 \\
+        pitch_stiffness 60 \\
+        pitch_damping 8 \\
+        yaw_stiffness 60 \\
+        yaw_damping 8 \\
+        along_stiffness 80 \\
+        along_damping 20 \\
+        angle_constraint 30 \\
+        yaw_constraint -45 45 \\
+        pitch_constraint -25 35 \\
+    } \\
+    has_base_spring { \\
+        base_mass 20 \\
+        stiffness 400 \\
+        damping 25 \\
+        left_constraint -2 2 \\
+        up_constraint -2 2 \\
+        forward_constraint -2 2 \\
+        left_friction 8 \\
+        up_friction 8 \\
+        forward_friction 8 \\
+    } \\
+} \\
+
+// left front 
+$HAIR_ROOT HBn_LF01 4.931
+$HAIR_ROOT HBn_LF02 4.478
+$HAIR_MID HBn_LF03 4.636
+$HAIR_MID HBn_LF04 5.009
+$HAIR_TIP HBn_LF05 4.781
+
+// left back 
+$HAIR_ROOT HBn_LMA01 4.501
+$HAIR_MID HBn_LMA02 6.589
+$HAIR_MID HBn_LMA03 7.491
+$HAIR_TIP HBn_LMA04 7.660
+$HAIR_TIP HBn_LMA05 7.256
+
+$HAIR_ROOT HBn_LMB01 2.698
+$HAIR_MID HBn_LMB02 8.572
+$HAIR_MID HBn_LMB03 8.117
+$HAIR_TIP HBn_LMB04 8.230
+$HAIR_TIP HBn_LMB05 7.367
+
+$HAIR_ROOT HBn_LMC01 3.235	
+$HAIR_MID HBn_LMC02 7.721
+$HAIR_MID HBn_LMC03 7.375
+$HAIR_TIP HBn_LMC04 6.848
+$HAIR_TIP HBn_LMC05 7.778
+
+$HAIR_ROOT HBn_LMD01 2.837
+$HAIR_MID HBn_LMD02 6.982
+$HAIR_MID HBn_LMD03 8.383
+$HAIR_TIP HBn_LMD04 8.698
+$HAIR_TIP HBn_LMD05 6.100
+
+$HAIR_ROOT HBn_LME01 3.921
+$HAIR_MID HBn_LME02 5.477
+$HAIR_MID HBn_LME03 6.060
+$HAIR_TIP HBn_LME04 5.994
+$HAIR_TIP HBn_LME05 6.100
+$HAIR_TIP HBn_LME06 6.917
+$HAIR_TIP HBn_LME07 6.435
+
+$HAIR_ROOT HBn_LMF01 4.188
+$HAIR_MID HBn_LMF02 6.792
+$HAIR_MID HBn_LMF03 7.745
+$HAIR_TIP HBn_LMF04 9.115
+
+// right front 
+$HAIR_ROOT HBn_RF01 4.931
+$HAIR_ROOT HBn_RF02 4.324
+$HAIR_MID HBn_RF03 4.873
+$HAIR_TIP HBn_RF04 5.057
+
+$HAIR_ROOT HBn_RFF01 5.525
+$HAIR_ROOT HBn_RFF02 4.477
+$HAIR_MID HBn_RFF03 4.514
+$HAIR_TIP HBn_RFF04 4.518
+$HAIR_TIP HBn_RFF05 3.598
+
+// right back 
+
+$HAIR_ROOT HBn_RMA01 4.646
+$HAIR_MID HBn_RMA02 6.589
+$HAIR_MID HBn_RMA03 7.491
+$HAIR_TIP HBn_RMA04 8.250
+$HAIR_TIP HBn_RMA05 8.605
+
+$HAIR_ROOT HBn_RMB01 3.138
+$HAIR_MID HBn_RMB02 7.721
+$HAIR_MID HBn_RMB03 7.375
+$HAIR_TIP HBn_RMB04 6.848
+$HAIR_TIP HBn_RMB05 7.778
+$HAIR_TIP HBn_RMB06 8.178
+
+$HAIR_ROOT HBn_RMC01 4.489
+$HAIR_MID HBn_RMC02 5.477
+$HAIR_MID HBn_RMC03 6.061
+$HAIR_TIP HBn_RMC04 5.994
+$HAIR_TIP HBn_RMC05 7.077
+$HAIR_TIP HBn_RMC06 7.090
+
+$HAIR_ROOT HBn_RMD01 3.424
+$HAIR_MID HBn_RMD02 6.687
+$HAIR_MID HBn_RMD03 7.638
+$HAIR_TIP HBn_RMD04 7.290
+$HAIR_TIP HBn_RMD05 6.530
+$HAIR_TIP HBn_RMD06 7.225
+
+$HAIR_ROOT HBn_RME01 3.744
+$HAIR_MID HBn_RME02 6.749
+$HAIR_MID HBn_RME03 8.003
+$HAIR_TIP HBn_RME04 8.581
+$HAIR_TIP HBn_RME05 8.690
+
+$HAIR_ROOT HBn_RMF01 2.612
+$HAIR_MID HBn_RMF02 6.982
+$HAIR_MID HBn_RMF03 8.383
+$HAIR_TIP HBn_RMF04 8.698
+$HAIR_TIP HBn_RMF05 8.922
+
+// center 
+
+$HAIR_ROOT HBn_CK01 3.957 
+$HAIR_MID HBn_CK02 6.792
+$HAIR_MID HBn_CK03 7.745
+$HAIR_TIP HBn_CK04 7.810 
+$HAIR_TIP HBn_CK05 7.868

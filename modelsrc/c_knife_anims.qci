@@ -1,0 +1,136 @@
+// Created by Crowbar 0.74
+
+$animation "a_proportions_corrective_animation2" "sbravenpm_anims\a_proportions_corrective_animation.smd" 
+$animation "a_inverse_proportions2" "sbravenpm_anims\a_inverse_proportions.smd" {
+	fps 30
+	// Crowbar writes this subtract option to prevent jigglebone and poseparameter problems when delta sequences are recompiled.
+	subtract "a_proportions_corrective_animation2" 0
+} 
+
+$animation "a_proportions2" "sbravenpm_anims\a_proportions.smd" { 
+	fps 30
+	// Crowbar writes this subtract option to prevent jigglebone and poseparameter problems when delta sequences are recompiled.
+	subtract "a_proportions_corrective_animation2" 0
+}
+
+$Weightlist MeleeWeapon {
+	"ValveBiped.Bip01_Pelvis" 0.0
+	"ValveBiped.Bip01_L_Thigh" 0.0
+	"ValveBiped.Bip01_R_Thigh" 0.0
+	"ValveBiped.Bip01_Spine" 0.0
+	"ValveBiped.Bip01_Spine1" 0.0
+	"ValveBiped.Bip01_Spine2" 0.0
+	"ValveBiped.Bip01_Spine4" 1.0
+	"ValveBiped.Bip01_Neck1" 1.0
+	"ValveBiped.Bip01_L_Clavicle" 1.0
+	"ValveBiped.Bip01_R_Clavicle" 1.0
+	}
+
+$sequence "inverse_proportions2" { // reverses bone manipulations added with "a_proportions" for raven animations 
+	"a_inverse_proportions2"
+	predelta
+	snap
+	weightlist MeleeWeapon
+}
+
+// $MakeSplineGesture [name of gesture] [SMD file] [weightlist] [start fade in] [end fade-in] [begin fade-out] [end fade-out]
+
+$definemacro MakeSplineGesture splinename filename weights in peak tail end \\
+$sequence $splinename$_base $filename$ weightlist $weights$ hidden addlayer inverse_proportions2\\
+$sequence $splinename$ "sbravenpm_anims\raven_base" delta noanimation numframes $end$ blendlayer $splinename$_base $in$ $peak$ $tail$ $end$ spline\\
+$continue $splinename$
+
+$definemacro makerange rangename filename startframe \\
+$animation a_$rangename$ $filename$ subtract a_$rangename$ $startframe$ weightlist NoFeet \\
+$sequence $rangename$ a_$rangename$ iklock lfoot 1 0 iklock rfoot 1 0 delta \\
+$continue $rangename$
+
+$Weightlist NoFeet "valvebiped.Bip01_Pelvis" 1.0 "ValveBiped.Bip01_L_Foot" 0.0 "ValveBiped.Bip01_R_Foot" 0.0
+
+$MakeSplineGesture layer_c_knife_t_draw "c_knife_t_anims\draw.smd" MeleeWeapon 0 45 60 60 activity ACT_VM_DRAW 1 
+$MakeSplineGesture layer_c_knife_t_idle "c_knife_t_anims\idle.smd" MeleeWeapon -1 -1 100 100 fps 1 
+$MakeSplineGesture layer_c_knife_t_idle_cycle "c_knife_t_anims\idle_cycle.smd" MeleeWeapon -1 -1 100 100 activity ACT_VM_IDLE 1 fps 55 
+$MakeSplineGesture range_knife "c_knife_t_anims\midslash1.smd" MeleeWeapon -1 6 25 44 activity ACT_HL2MP_GESTURE_RANGE_ATTACK_KNIFE 1 fps 55 
+$MakeSplineGesture range_knife_1 "c_knife_t_anims\midslash2.smd" MeleeWeapon -1 6 25 44 activity ACT_HL2MP_GESTURE_RANGE_ATTACK_KNIFE 1 fps 55 
+$MakeSplineGesture range_knife_2 "c_knife_t_anims\stab.smd" MeleeWeapon -1 6 25 46 activity ACT_HL2MP_GESTURE_RANGE_ATTACK_KNIFE 1 fps 35 
+$MakeSplineGesture range_knife_3 "c_knife_t_anims\stab_miss.smd" MeleeWeapon -1 6 25 61 activity ACT_HL2MP_GESTURE_RANGE_ATTACK_KNIFE 1 fps 40 
+
+//$MakeRange layer_c_knife_t_draw "c_knife_t_anims\draw.smd" 0 activity ACT_VM_DRAW 1 
+//$MakeRange layer_c_knife_t_idle "c_knife_t_anims\idle.smd" 0 fps 1 
+//$MakeRange layer_c_knife_t_idle_cycle "c_knife_t_anims\idle_cycle.smd" 0 activity ACT_VM_IDLE 1 fps 55 
+//$MakeRange layer_c_knife_t_midslash1 "c_knife_t_anims\midslash1.smd" 0 activity ACT_VM_PRIMARYATTACK 1 fps 55 
+//$MakeRange layer_c_knife_t_midslash2 "c_knife_t_anims\midslash2.smd" 0 activity ACT_VM_PRIMARYATTACK 1 fps 55 
+//$MakeRange layer_c_knife_t_stab "c_knife_t_anims\stab.smd" 0 activity ACT_VM_SECONDARYATTACK 1 fps 35 
+//$MakeRange layer_c_knife_t_stab_miss "c_knife_t_anims\stab_miss.smd" 0 activity ACT_VM_MISSCENTER 1 fps 40 
+
+$sequence "c_knife_t_draw" {
+	"c_knife_t_anims\draw.smd"
+	activity "ACT_VM_DRAW" 1
+	fadein 0.2
+	fadeout 0.2
+	blendlayer "c_knife_t_idle" 0 45 60 60 spline
+	fps 40
+}
+
+$sequence "c_knife_t_stab" {
+	"c_knife_t_anims\stab.smd"
+	activity "ACT_VM_SECONDARYATTACK" 1
+	fadein 0.2
+	fadeout 0.2
+	blendlayer "c_knife_t_idle" -10 -10 0 6 spline
+	blendlayer "c_knife_t_idle" 15 45 90 90 spline
+	blendlayer "c_knife_t_idle" 15 46 90 90 spline
+	fps 35
+}
+
+$sequence "c_knife_t_stab_miss" {
+	"c_knife_t_anims\stab_miss.smd"
+	activity "ACT_VM_MISSCENTER" 1
+	fadein 0.2
+	fadeout 0.2
+	blendlayer "c_knife_t_idle" -10 -10 0 6 spline
+	blendlayer "c_knife_t_idle" 15 61 90 90 spline
+	blendlayer "c_knife_t_idle" 30 61 90 90 spline
+	snap
+	fps 40
+}
+
+$sequence "c_knife_t_midslash1" {
+	"c_knife_t_anims\midslash1.smd"
+	activity "ACT_VM_PRIMARYATTACK" 1
+	fadein 0.2
+	fadeout 0.2
+	blendlayer "c_knife_t_idle" -10 -10 0 6 spline
+	blendlayer "c_knife_t_idle" 15 45 90 90 spline
+	snap
+	fps 55
+}
+
+$sequence "c_knife_t_midslash2" {
+	"c_knife_t_anims\midslash2.smd"
+	activity "ACT_VM_PRIMARYATTACK" 1
+	fadein 0.2
+	fadeout 0.2
+	blendlayer "c_knife_t_idle" -10 -10 0 6 spline
+	blendlayer "c_knife_t_idle" 15 45 90 90 spline
+	snap
+	fps 55
+}
+
+$sequence "c_knife_t_idle" {
+	"c_knife_t_anims\idle.smd"
+	fadein 0.2
+	fadeout 0.2
+	fps 30
+	loop
+}
+
+$sequence "c_knife_t_idle_cycle" {
+	"c_knife_t_anims\idle_cycle.smd"
+	activity "ACT_VM_IDLE" 1
+	fadein 0.2
+	fadeout 0.2
+	snap
+	fps 55
+	loop
+}
