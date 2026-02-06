@@ -4,7 +4,7 @@ $proceduralbones "alyx.vrd"
 $include "../../sourcesdk_content/gm_playermodel_examples/Humans/Standardhierarchy.qci"                
 $alwayscollapse "ValveBiped"                
 $alwayscollapse "XSISceneRoot"                
-$include "../../sourcesdk_content/gm_playermodel_examples/Humans/standardikchains.qci"                
+$include "standardikchains.qci"                
 //$include "../../sourcesdk_content/gm_playermodel_examples/Humans/female/commonbones.qci"      
 $include Sharedbones.qci
 
@@ -30,10 +30,6 @@ $sequence "reference" {
 	fadein 1
 	fadeout 1
 	fps 1
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 3
 }
 
 $sequence "proportions" { // fixes bone locations to better resemble a woman character without altering original mesh 
@@ -73,11 +69,12 @@ $sequence "jump_holding_land" "sbravenpm_anims\reference.smd" noanimation
 $sequence "idle_knife" "sbravenpm_anims\m_raven_battleidle01.smd" { 
 	fps 60 
 	activity ACT_HL2MP_IDLE_KNIFE 9999 
-	origin 0 0 42 
+	origin 0 0 43.6 
 	fadein 0.6
 	fadeout 0.6 
 	cmdlist lockfeet
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	fudgeloop 
 } 
@@ -102,6 +99,7 @@ $sequence "walk_knife" {
 	fadein 0.7
 	fadeout 0.7
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "walking" 
@@ -130,6 +128,7 @@ $sequence "walk_knife_1" {
 	fadein 0.7
 	fadeout 0.7
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "walking" 
@@ -158,6 +157,7 @@ $sequence "run_knife" {
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "running" 
@@ -186,6 +186,7 @@ $sequence "run_knife_1" {
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "running" 

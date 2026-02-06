@@ -2,17 +2,19 @@
 // IK Rules
 //======================================
 
-$ikchain "rhand" "ValveBiped.Bip01_R_Hand" knee 0.707 0.707 0
-$ikchain "lhand" "ValveBiped.Bip01_L_Hand" knee 0.707 0.707 0
-$ikchain "rfoot" "ValveBiped.Bip01_R_Foot" knee 0.707 -0.707 0
-$ikchain "lfoot" "ValveBiped.Bip01_L_Foot" knee 0.707 -0.707 0
+//$ikchain "rhand" "ValveBiped.Bip01_R_Hand" knee 0.707 0.707 0
+//$ikchain "lhand" "ValveBiped.Bip01_L_Hand" knee 0.707 0.707 0
+//$ikchain "rfoot" "ValveBiped.Bip01_R_Foot" knee 0.707 -0.707 0
+//$ikchain "lfoot" "ValveBiped.Bip01_L_Foot" knee 0.707 -0.707 0
 
-$ikautoplaylock "rfoot" 0.5 0.1
-$ikautoplaylock "lfoot" 0.5 0.1
+//$ikautoplaylock "rfoot" 0.5 0.1
+//$ikautoplaylock "lfoot" 0.5 0.1
 
-$cmdlist lockfeet { 
-	ikrule lfoot footstep 
-	ikrule rfoot footstep 
+//$cmdlist lockfeet { 
+//	ikrule lfoot footstep 
+//	ikrule rfoot footstep 
 //	ikrule lhand footstep 
 //	ikrule rhand footstep 
-} 
+//} 
+
+$declaresequence aimlayer_knife 

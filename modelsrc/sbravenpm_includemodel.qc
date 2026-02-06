@@ -1,6 +1,7 @@
 // Created by Crowbar 0.74
 
 $ambientboost // please always include this into your player models and arm models
+$origin 0 0 1.85 0 
 $modelname "alvaroports/SBRavenPM.mdl"
 
 $model head "head_2.smd" {
@@ -104,7 +105,7 @@ $proceduralbones "alyx.vrd"
 $include "../../sourcesdk_content/gm_playermodel_examples/Humans/Standardhierarchy.qci"                
 $alwayscollapse "ValveBiped"                
 $alwayscollapse "XSISceneRoot"                
-$include "../../sourcesdk_content/gm_playermodel_examples/Humans/standardikchains.qci"                
+$include "standardikchains.qci"                
 //$include "../../sourcesdk_content/gm_playermodel_examples/Humans/female/commonbones.qci"      
 
 $attachment "forward" "ValveBiped.Bip01_Head1" 0.0 0.0 0.0 rotate 0 -80 -90
@@ -839,10 +840,6 @@ $sequence "reference" {
 	fadein 1
 	fadeout 1
 	fps 1
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 1 1 target 3
 }
 
 //$include "sbravenpm_anims.qci" 

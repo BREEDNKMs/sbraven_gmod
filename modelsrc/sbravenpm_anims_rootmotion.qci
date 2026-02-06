@@ -3,172 +3,170 @@
 $animation "a_walking_walk_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 29 29 target 3
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 0 420 ..
+	ikrule rfoot footstep range .. 0 420 ..
 }
 
 $animation "a_walking_walk_cautious_N" "sbravenpm_anims\M_Raven_Caution_Fw.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_S" "sbravenpm_anims\M_Raven_Caution_Bw.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_E" "sbravenpm_anims\M_Raven_Caution_Lw.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_W" "sbravenpm_anims\M_Raven_Caution_Rw.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_SE" "sbravenpm_anims\Proto_Lockon_Walk_Backward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_SW" "sbravenpm_anims\Proto_Lockon_Walk_Backward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_NE" "sbravenpm_anims\Proto_Lockon_Walk_Forward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_walking_walk_cautious_NW" "sbravenpm_anims\Proto_Lockon_Walk_Forward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 11 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
 }
 
 $animation "a_M_Raven_Run_L" "sbravenpm_anims\M_Raven_Run_L.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 30 30 target 3
 	LX LY
-	origin 0 0 42 
+	ikrule lfoot footstep range .. 13 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
+	origin 0 0 43.6
 } 
 
 $animation "a_running_run_cautious_C" "sbravenpm_anims\M_Raven_Caution_Cw.smd" {
 	fps 30
 	loop
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 0 420 .. 
+	ikrule rfoot footstep range .. 0 420 ..
 }
 
 $animation "a_running_run_cautious_N" "sbravenpm_anims\Proto_Lockon_Run_Forward.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_S" "sbravenpm_anims\Proto_Lockon_Run_Backward.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_E" "sbravenpm_anims\Proto_Lockon_Run_Left.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_W" "sbravenpm_anims\Proto_Lockon_Run_Right.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_SE" "sbravenpm_anims\Proto_Lockon_Run_Backward_Left.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_SW" "sbravenpm_anims\Proto_Lockon_Run_Backward_Right.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_NE" "sbravenpm_anims\Proto_Lockon_Run_Forward_Left.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation "a_running_run_cautious_NW" "sbravenpm_anims\Proto_Lockon_Run_Forward_Right.smd" {
 	fps 30
 	loop
 	LX LY
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 }
 
 $animation a_Proto_Battle_Jump_End "sbravenpm_anims\Proto_Battle_Jump_End.smd" 
@@ -189,7 +187,7 @@ $animation a_result_hit_add_light_fw_uw_layer "sbravenpm_anims\result_hit_add_li
 $sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1.smd" { // frames 378 
 	fps 60 
 	activity ACT_MP_STUN_BEGIN 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	walkframe 6 LX LY LM
 	walkframe 12 LX LY LM
@@ -268,7 +266,7 @@ $sequence "hit_sword_normal_linkattack1" "sbravenpm_anims\Hit_Sword_Normal_LinkA
 $sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_e.smd" { // // frames 158 
 	fps 60 
 	activity ACT_MP_STUN_END 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	walkframe 3 LX LY LM
 	walkframe 6 LX LY LM
@@ -334,7 +332,7 @@ $sequence "hit_sword_normal_linkattack1_e" "sbravenpm_anims\Hit_Sword_Normal_Lin
 $sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_LinkAttack1_s.smd" { // frames 220 
 	fps 60 
 	activity ACT_MP_STUN_BEGIN 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	walkframe 4 LX LY LM
 	walkframe 8 LX LY LM
@@ -399,7 +397,7 @@ $sequence "hit_sword_normal_linkattack1_s" "sbravenpm_anims\Hit_Sword_Normal_Lin
 $sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  { // frames 288
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 5 LX LY LM
@@ -478,7 +476,7 @@ $sequence "m_raven_backjumpcombo" "sbravenpm_anims\m_raven_backjumpcombo.smd"  {
 $sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd"  { // frames 431
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 7 LX LY LM
@@ -566,7 +564,7 @@ $sequence "m_raven_betachargecombo" "sbravenpm_anims\m_raven_betachargecombo.smd
 $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd"  { // frames 101 
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -634,7 +632,7 @@ $sequence "m_raven_betacountergrab" "sbravenpm_anims\m_raven_betacountergrab.smd
 $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacountergrabsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 6 LX LY LM
@@ -708,7 +706,7 @@ $sequence "m_raven_betacountergrabsuccess" "sbravenpm_anims\m_raven_betacounterg
 $sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  { // frames 54
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -775,7 +773,7 @@ $sequence "m_raven_betaevadeleft" "sbravenpm_anims\m_raven_betaevadeleft.smd"  {
 $sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd"  { // frames 54
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -842,7 +840,7 @@ $sequence "m_raven_betaevaderight" "sbravenpm_anims\m_raven_betaevaderight.smd" 
 $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames 102
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -913,7 +911,7 @@ $sequence "m_raven_betagrab" "sbravenpm_anims\m_raven_betagrab.smd"  { // frames
 $sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  { // frames 102
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -984,7 +982,7 @@ $sequence "m_raven_betagrabchain" "sbravenpm_anims\m_raven_betagrabchain.smd"  {
 $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchainsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 6 LX LY LM
@@ -1057,7 +1055,7 @@ $sequence "m_raven_betagrabchainsuccess" "sbravenpm_anims\m_raven_betagrabchains
 $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd"  { // frames 322
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 6 LX LY LM
@@ -1129,7 +1127,7 @@ $sequence "m_raven_betagrabsuccess" "sbravenpm_anims\m_raven_betagrabsuccess.smd
 $sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd"  { // frames 451
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 8 LX LY LM
@@ -1208,7 +1206,7 @@ $sequence "m_raven_betarapidcombo" "sbravenpm_anims\m_raven_betarapidcombo.smd" 
 $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.smd"  { // frames 375
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 6 LX LY LM
@@ -1295,7 +1293,7 @@ $sequence "m_raven_betaskillcounter" "sbravenpm_anims\m_raven_betaskillcounter.s
 $sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd"  { // frames 129
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 3 LX LY LM
@@ -1348,7 +1346,7 @@ $sequence "m_raven_burstareaslash" "sbravenpm_anims\m_raven_burstareaslash.smd" 
 $sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend.smd"  { // frames 177
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 3 LX LY LM
@@ -1419,7 +1417,7 @@ $sequence "m_raven_burstareaslashend" "sbravenpm_anims\m_raven_burstareaslashend
 $sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd"  { // frames 321
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 6 LX LY LM
@@ -1502,7 +1500,7 @@ $sequence "m_raven_burstspincombo" "sbravenpm_anims\m_raven_burstspincombo.smd" 
 $sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -1549,7 +1547,7 @@ $sequence "m_raven_caution_bw" "sbravenpm_anims\m_raven_caution_bw.smd"  { // fr
 $sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { // frames 420
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 7 LX LY LM
@@ -1618,7 +1616,7 @@ $sequence "m_raven_caution_cw" "sbravenpm_anims\m_raven_caution_cw.smd"  { // fr
 $sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -1665,7 +1663,7 @@ $sequence "m_raven_caution_fw" "sbravenpm_anims\m_raven_caution_fw.smd"  { // fr
 $sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -1712,7 +1710,7 @@ $sequence "m_raven_caution_lw" "sbravenpm_anims\m_raven_caution_lw.smd"  { // fr
 $sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // frames 36
 	fps 30 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -1759,7 +1757,7 @@ $sequence "m_raven_caution_rw" "sbravenpm_anims\m_raven_caution_rw.smd"  { // fr
 $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.smd"  { // frames 237
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 4 LX LY LM
@@ -1836,7 +1834,7 @@ $sequence "m_raven_chasechargeslash" "sbravenpm_anims\m_raven_chasechargeslash.s
 $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // frames 228
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 4 LX LY LM
@@ -1907,7 +1905,7 @@ $sequence "m_raven_chasecombo" "sbravenpm_anims\m_raven_chasecombo.smd"  { // fr
 $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // frames 300
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 5 LX LY LM
@@ -1985,7 +1983,7 @@ $sequence "m_raven_chasegrab" "sbravenpm_anims\m_raven_chasegrab.smd"  { // fram
 $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.smd"  { // frames 414
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 7 LX LY LM
@@ -2062,7 +2060,7 @@ $sequence "m_raven_chasegrabsuccess" "sbravenpm_anims\m_raven_chasegrabsuccess.s
 $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsuccessend.smd"  { // frames 454
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 8 LX LY LM
@@ -2137,7 +2135,7 @@ $sequence "m_raven_chasegrabsuccessend" "sbravenpm_anims\m_raven_chasegrabsucces
 $sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { // frames 90
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -2195,7 +2193,7 @@ $sequence "m_raven_evadeback" "sbravenpm_anims\m_raven_evadeback.smd"  { // fram
 $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  { // frames 219
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 4 LX LY LM
@@ -2274,7 +2272,7 @@ $sequence "m_raven_evadebackrush" "sbravenpm_anims\m_raven_evadebackrush.smd"  {
 $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordaura.smd"  { // frames 225
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 4 LX LY LM
@@ -2349,7 +2347,7 @@ $sequence "m_raven_evadebackswordaura" "sbravenpm_anims\m_raven_evadebackswordau
 $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // frames 81
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -2404,7 +2402,7 @@ $sequence "m_raven_evadeleft" "sbravenpm_anims\m_raven_evadeleft.smd"  { // fram
 $sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { // frames 81
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -2461,7 +2459,7 @@ $sequence "m_raven_evaderight" "sbravenpm_anims\m_raven_evaderight.smd"  { // fr
 $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd"  { // frames 480
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 8 LX LY LM
@@ -2545,7 +2543,7 @@ $sequence "m_raven_movechaincombo" "sbravenpm_anims\m_raven_movechaincombo.smd" 
 $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // frames 240
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 4 LX LY LM
@@ -2621,7 +2619,7 @@ $sequence "m_raven_movecombo" "sbravenpm_anims\m_raven_movecombo.smd"  { // fram
 $sequence "m_raven_parry" "a_m_raven_parry"  { // frames 120
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -2696,7 +2694,7 @@ $sequence "m_raven_parry" "a_m_raven_parry"  { // frames 120
 $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo.smd"  { // frames 261
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 5 LX LY LM
@@ -2764,7 +2762,7 @@ $sequence "m_raven_parrycountercombo" "sbravenpm_anims\m_raven_parrycountercombo
 $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash.smd"  { // frames 297
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 5 LX LY LM
@@ -2839,7 +2837,7 @@ $sequence "m_raven_parrycounterslash" "sbravenpm_anims\m_raven_parrycounterslash
 $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycounterslashsuccess.smd"  { // frames 408
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 7 LX LY LM
@@ -2918,7 +2916,7 @@ $sequence "m_raven_parrycounterslashsuccess" "sbravenpm_anims\m_raven_parrycount
 $sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  { // frames 84
 	fps 60 
 	activity ACT_SPECIAL_ATTACK1 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 2 LX LY LM
@@ -2970,7 +2968,7 @@ $sequence "m_raven_rapidmoveback" "sbravenpm_anims\m_raven_rapidmoveback.smd"  {
 $sequence "m_raven_run_e" "sbravenpm_anims\m_raven_run_e.smd"  { // frames 30
 	fps 31 
 	activity ACT_TRANSITION 1 
-	origin 0 0 42 
+	origin 0 0 43.6
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
@@ -3030,7 +3028,7 @@ $sequence "m_raven_run_s" "sbravenpm_anims\M_Raven_Run_s.smd" { // frames 15
 	walkframe 14 LX LY LM
 	walkframe 15 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	transition "" "walking" 
 	{event 6009 	12.0	 "" }
 } 
@@ -3101,7 +3099,7 @@ $sequence "m_raven_shieldbreakercounter" "sbravenpm_anims\m_raven_shieldbreakerc
 	walkframe 354 LX LY LM
 	walkframe 360 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event 6008 	222.0	 "" }
 	{event 6009 	248.0	 "" }
 	{event 6008 	124.0	 "" }
@@ -3183,7 +3181,7 @@ $sequence "m_raven_slash" "sbravenpm_anims\m_raven_slash.smd" { // frames 180
 	walkframe 177 LX LY LM
 	walkframe 180 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event 6009 	48.0	 "" }
 	{event 6008 	50.0	 "" }
 	{event 6008 	105.0	 "" }
@@ -3250,7 +3248,7 @@ $sequence "m_raven_slashchain" "sbravenpm_anims\m_raven_slashchain.smd" { // fra
 	walkframe 196 LX LY LM
 	walkframe 198 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event 6009 	118.0	 "" }
 	{event 6008 	122.0	 "" }
 	{event 6008 	174.0	 "" }
@@ -3331,7 +3329,7 @@ $sequence "m_raven_slashchaincombo" "sbravenpm_anims\m_raven_slashchaincombo.smd
 	walkframe 531 LX LY LM
 	walkframe 540 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	343.0	 "M_Raven_SwordSwish_L_Cue" }
 	{event 6009 	449.0	 "" }
 	{event 6009 	314.0	 "" }
@@ -3435,7 +3433,7 @@ $sequence "m_raven_slashcombo" "sbravenpm_anims\m_raven_slashcombo.smd" { // fra
 	walkframe 378 LX LY LM
 	walkframe 381 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	175.0	 "M_Raven_vo_ATK_S_Cue" }
 	{event 6009 	137.0	 "" }
 	{event 6009 	210.0	 "" }
@@ -3518,7 +3516,7 @@ $sequence "m_raven_swordauracombo" "sbravenpm_anims\m_raven_swordauracombo.smd" 
 	walkframe 265 LX LY LM
 	walkframe 270 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	110.0	 "M_Raven_vo_ATK_L_Cue" }
 	{event 6009 	27.0	 "" }
 	{event 6009 	46.0	 "" }
@@ -3536,7 +3534,7 @@ $sequence "result_hit_add_light_fw_dw" "a_result_hit_add_light_fw_dw_layer" { //
 	activity ACT_FLINCH_BACK 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
 	delta 
 } 
@@ -3546,7 +3544,7 @@ $sequence "result_hit_add_light_fw_lw" "a_result_hit_add_light_fw_lw_layer" { //
 	activity ACT_FLINCH_SHOULDER_LEFT 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	delta 
 } 
@@ -3556,7 +3554,7 @@ $sequence "result_hit_add_light_fw_rw" "a_result_hit_add_light_fw_rw_layer" { //
 	activity ACT_FLINCH_SHOULDER_RIGHT 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	delta 
 } 
@@ -3566,7 +3564,7 @@ $sequence "result_hit_add_light_fw_uw" "a_result_hit_add_light_fw_uw_layer" { //
 	activity ACT_FLINCH_HEAD 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
 	delta 
 } 
@@ -3576,7 +3574,7 @@ $sequence "result_hit_add_light_fw_uw2" "a_result_hit_add_light_fw_uw_layer" { /
 	activity ACT_FLINCH 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
 	delta 
 } 
@@ -3586,7 +3584,7 @@ $sequence "result_hit_add_light_fw_uw3" "a_result_hit_add_light_fw_uw_layer" { /
 	activity ACT_FLINCH_CHEST 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
 	delta 
 } 
@@ -3596,7 +3594,7 @@ $sequence "result_hit_add_light_fw_uw4" "a_result_hit_add_light_fw_uw_layer" { /
 	activity ACT_FLINCH_LEFTLEG 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
 	delta 
 } 
@@ -3606,7 +3604,7 @@ $sequence "result_hit_add_light_fw_uw5" "a_result_hit_add_light_fw_uw_layer" { /
 	activity ACT_FLINCH_RIGHTLEG 999 
 	//addlayer inverse_proportions
 	
-	//origin 0 0 42 
+	//origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" } 
 	delta 
 } 
@@ -3662,7 +3660,7 @@ $sequence "result_hit_justparry" "sbravenpm_anims\result_hit_justparry.smd" { //
 	walkframe 44 LX LY LM
 	walkframe 45 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6009 	8.0	 "" }
 } 
@@ -3733,7 +3731,7 @@ $sequence "result_hit_stand_light_bw" "sbravenpm_anims\result_hit_stand_light_bw
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event 6009 	33.0	 "" }
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	17.0	 "" }
@@ -3800,7 +3798,7 @@ $sequence "result_hit_stand_light_fw_dw" "sbravenpm_anims\result_hit_stand_light
 	walkframe 53 LX LY LM
 	walkframe 54 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	6.0	 "" }
 	{event 6009 	13.0	 "" }
@@ -3866,7 +3864,7 @@ $sequence "result_hit_stand_light_fw_lw" "sbravenpm_anims\result_hit_stand_light
 	walkframe 53 LX LY LM
 	walkframe 54 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	12.0	 "" }
 	{event 6009 	6.0	 "" }
@@ -3932,7 +3930,7 @@ $sequence "result_hit_stand_light_fw_rw" "sbravenpm_anims\result_hit_stand_light
 	walkframe 53 LX LY LM
 	walkframe 54 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	12.0	 "" }
 	{event 6009 	6.0	 "" }
@@ -3998,7 +3996,7 @@ $sequence "result_hit_stand_light_fw_uw" "sbravenpm_anims\result_hit_stand_light
 	walkframe 53 LX LY LM
 	walkframe 54 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	6.0	 "" }
 	{event 6009 	13.0	 "" }
@@ -4070,7 +4068,7 @@ $sequence "result_hit_stand_light_lw" "sbravenpm_anims\result_hit_stand_light_lw
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	16.0	 "" }
 	{event 6009 	10.0	 "" }
@@ -4142,7 +4140,7 @@ $sequence "result_hit_stand_light_rw" "sbravenpm_anims\result_hit_stand_light_rw
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	0.0	 "M_Raven_vo_Dmg_S_Cue" }
 	{event 6008 	9.0	 "" }
 	{event 6009 	15.0	 "" }
@@ -4214,7 +4212,7 @@ $sequence "result_state_airborne_l" "sbravenpm_anims\result_state_airborne_l.smd
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	loop 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { // frames 60
@@ -4283,7 +4281,7 @@ $sequence "result_state_groggy_e" "sbravenpm_anims\result_state_groggy_e.smd" { 
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	transition "result_state_groggy_l" "" 
 	{event 6008 	45.0	 "" }
 	{event 6009 	28.0	 "" }
@@ -4342,7 +4340,7 @@ $sequence "result_state_groggy_l" "sbravenpm_anims\result_state_groggy_l.smd" { 
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	loop 
-	origin 0 0 42 
+	origin 0 0 43.6
 	node "result_state_groggy_l" 
 } 
 
@@ -4392,7 +4390,7 @@ $sequence "result_state_groggy_s" "sbravenpm_anims\result_state_groggy_s.smd" { 
 	walkframe 39 LX LY LM
 	walkframe 40 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	transition "" "result_state_groggy_l" 
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_vo_P_Cue" }
 	{event AE_SV_PLAYSOUND 	28.0	 "M_Raven_Bodyfall_S_Cue" }
@@ -4467,7 +4465,7 @@ $sequence "result_state_knockdown_e" "sbravenpm_anims\result_state_knockdown_e.s
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	transition "result_state_knockdown_l" "" 
 	{event 6008 	17.0	 "" }
 	{event 6009 	32.0	 "" }
@@ -4539,7 +4537,7 @@ $sequence "result_state_knockdown_l" "sbravenpm_anims\result_state_knockdown_l.s
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	node result_state_knockdown_l 
 } 
 
@@ -4609,7 +4607,7 @@ $sequence "result_state_knockdown_s_bw" "sbravenpm_anims\result_state_knockdown_
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	6.0	 "M_Raven_vo_Dmg_L_Cue" }
 	{event AE_SV_PLAYSOUND 	8.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_L_Cue" }
@@ -4681,7 +4679,7 @@ $sequence "result_state_knockdown_s_fw" "sbravenpm_anims\result_state_knockdown_
 	walkframe 59 LX LY LM
 	walkframe 60 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 	3.0	 "M_Raven_vo_Dmg_L_Cue" }
 	{event AE_SV_PLAYSOUND 	9.0	 "M_Raven_Bodyfall_S_Cue" }
 	{event AE_SV_PLAYSOUND 	5.0	 "M_Raven_Bodyfall_S_Cue" }
@@ -4733,7 +4731,7 @@ $sequence "result_weak_s" "sbravenpm_anims\result_weak_s.smd" { // frames 38
 	walkframe 37 LX LY LM
 	walkframe 38 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event 6009 	1.0	 "" }
 	{event AE_SV_PLAYSOUND 	2.0	 "M_Raven_vo_Dmg_L_Cue" }
 } 
@@ -4794,7 +4792,7 @@ $sequence "Hit_Raven_BetaCounterGrabE" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	walkframe 50 LX LY LM
 	walkframe 51 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGrabL.smd" { // frames 1
@@ -4804,7 +4802,7 @@ $sequence "Hit_Raven_BetaCounterGrabL" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	
 	walkframe 1 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGrabS.smd" { // frames 240
@@ -4873,7 +4871,7 @@ $sequence "Hit_Raven_BetaCounterGrabS" "sbravenpm_anims\Hit_Raven_BetaCounterGra
 	walkframe 236 LX LY LM
 	walkframe 240 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.smd" { // frames 51
@@ -4933,7 +4931,7 @@ $sequence "Hit_Raven_BetaGrabChainE" "sbravenpm_anims\Hit_Raven_BetaGrabChainE.s
 	walkframe 50 LX LY LM
 	walkframe 51 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.smd" { // frames 1
@@ -4943,7 +4941,7 @@ $sequence "Hit_Raven_BetaGrabChainL" "sbravenpm_anims\Hit_Raven_BetaGrabChainL.s
 	
 	walkframe 1 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.smd" { // frames 240
@@ -5012,7 +5010,7 @@ $sequence "Hit_Raven_BetaGrabChainS" "sbravenpm_anims\Hit_Raven_BetaGrabChainS.s
 	walkframe 236 LX LY LM
 	walkframe 240 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { // frames 51
@@ -5072,7 +5070,7 @@ $sequence "Hit_Raven_BetaGrabE" "sbravenpm_anims\Hit_Raven_BetaGrabE.smd" { // f
 	walkframe 50 LX LY LM
 	walkframe 51 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { // frames 1
@@ -5082,7 +5080,7 @@ $sequence "Hit_Raven_BetaGrabL" "sbravenpm_anims\Hit_Raven_BetaGrabL.smd" { // f
 	
 	walkframe 1 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { // frames 240
@@ -5151,7 +5149,7 @@ $sequence "Hit_Raven_BetaGrabS" "sbravenpm_anims\Hit_Raven_BetaGrabS.smd" { // f
 	walkframe 236 LX LY LM
 	walkframe 240 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCounter.smd" { // frames 360
@@ -5220,7 +5218,7 @@ $sequence "Hit_Raven_BetaSkillCounter" "sbravenpm_anims\Hit_Raven_BetaSkillCount
 	walkframe 354 LX LY LM
 	walkframe 360 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { // frames 410
@@ -5288,7 +5286,7 @@ $sequence "Hit_Raven_ChaseGrab" "sbravenpm_anims\Hit_Raven_ChaseGrab.smd" { // f
 	walkframe 406 LX LY LM
 	walkframe 410 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryCounterSlashSuccess.smd" { // frames 396
@@ -5354,7 +5352,7 @@ $sequence "Hit_Raven_ParryCounterSlashSuccess" "sbravenpm_anims\Hit_Raven_ParryC
 	walkframe 392 LX LY LM
 	walkframe 396 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBreakerCounter.smd" { // frames 348
@@ -5421,7 +5419,7 @@ $sequence "Hit_Raven_ShieldBreakerCounter" "sbravenpm_anims\Hit_Raven_ShieldBrea
 	walkframe 342 LX LY LM
 	walkframe 348 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Hit_Sawshark_GuardSuccess" "sbravenpm_anims\Hit_Sawshark_GuardSuccess.smd" { // frames 206 
@@ -5431,7 +5429,7 @@ $sequence "Hit_Sawshark_GuardSuccess" "sbravenpm_anims\Hit_Sawshark_GuardSuccess
 	
 	LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68 
@@ -5445,7 +5443,7 @@ $sequence "LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { //
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Sword_Lightattack_01" "sbravenpm_anims\Proto_Sword_Lightattack_01.smd" { // frames 90 
@@ -5459,7 +5457,7 @@ $sequence "Proto_Sword_Lightattack_01" "sbravenpm_anims\Proto_Sword_Lightattack_
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Sword_Lightattack_02" "sbravenpm_anims\Proto_Sword_Lightattack_02.smd" { // frames 93 
@@ -5473,7 +5471,7 @@ $sequence "Proto_Sword_Lightattack_02" "sbravenpm_anims\Proto_Sword_Lightattack_
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Sword_Lightattack_03" "sbravenpm_anims\Proto_Sword_Lightattack_03.smd" { // frames 95 
@@ -5487,7 +5485,7 @@ $sequence "Proto_Sword_Lightattack_03" "sbravenpm_anims\Proto_Sword_Lightattack_
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Sword_Lightattack_04" "sbravenpm_anims\Proto_Sword_Lightattack_04.smd" { // frames 89 
@@ -5501,7 +5499,7 @@ $sequence "Proto_Sword_Lightattack_04" "sbravenpm_anims\Proto_Sword_Lightattack_
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Sword_Lightattack_05" "sbravenpm_anims\Proto_Sword_Lightattack_05.smd" { // frames 89 
@@ -5515,7 +5513,7 @@ $sequence "Proto_Sword_Lightattack_05" "sbravenpm_anims\Proto_Sword_Lightattack_
 	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Eve_Weapon_End_Anim" "sbravenpm_anims\Eve_Weapon_End_Anim.smd" { // frames 102 
@@ -5523,7 +5521,7 @@ $sequence "Eve_Weapon_End_Anim" "sbravenpm_anims\Eve_Weapon_End_Anim.smd" { // f
 	activity ACT_GESTURE_DISARM 1 
 	addlayer inverse_proportions
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Eve_Weapon_End_BS" "sbravenpm_anims\Eve_Weapon_End_BS.smd" { // frames 45 
@@ -5531,7 +5529,7 @@ $sequence "Eve_Weapon_End_BS" "sbravenpm_anims\Eve_Weapon_End_BS.smd" { // frame
 	activity ACT_GESTURE_DISARM 1 
 	addlayer inverse_proportions
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Eve_Weapon_Start_Anim" "sbravenpm_anims\Eve_Weapon_Start_Anim.smd" { // frames 45 
@@ -5539,7 +5537,7 @@ $sequence "Eve_Weapon_Start_Anim" "sbravenpm_anims\Eve_Weapon_Start_Anim.smd" { 
 	activity ACT_GESTURE_ARM 1 
 	addlayer inverse_proportions
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Eve_Weapon_Start_Anim_Moving" "sbravenpm_anims\Eve_Weapon_Start_Anim_Moving.smd" { // frames 45 
@@ -5547,7 +5545,7 @@ $sequence "Eve_Weapon_Start_Anim_Moving" "sbravenpm_anims\Eve_Weapon_Start_Anim_
 	activity ACT_GESTURE_ARM 1 
 	addlayer inverse_proportions
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Eve_Weapon_Stop_End" "sbravenpm_anims\Eve_Weapon_Stop_End.smd" { // frames 45 
@@ -5555,10 +5553,10 @@ $sequence "Eve_Weapon_Stop_End" "sbravenpm_anims\Eve_Weapon_Stop_End.smd" { // f
 	activity ACT_GESTURE_DISARM 1 
 	addlayer inverse_proportions
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
-//$animation "a_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" frames 0 0 origin 0 0 42 
+//$animation "a_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" frames 0 0 origin 0 0 43.6
 
 //$sequence "layer_LightAttack_v1_01_05" "sbravenpm_anims\LightAttack_v1_01_05.smd" { // frames 68
 //	fps 35 
@@ -5572,7 +5570,7 @@ $sequence "Eve_Weapon_Stop_End" "sbravenpm_anims\Eve_Weapon_Stop_End.smd" { // f
 //	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_vo_ATK_L_Cue" }
 //	{event AE_SV_PLAYSOUND 	1.0	 "M_Raven_Cloth_XL_Cue" }
 //	{event AE_SV_PLAYSOUND 	10.0	 "M_Raven_SwordSwish_XL_Cue"} 
-//	origin 0 0 42 
+//	origin 0 0 43.6
 //} 
 
 $Weightlist PelvisOnly { "ValveBiped.Bip01_Pelvis" 1.0
@@ -5691,7 +5689,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven" "sbravenpm_anims\P_Eve_Sword_No
 	walkframe 366 LX LY LM
 	walkframe 369 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_E.smd" { // frames 161
@@ -5754,7 +5752,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_E" "sbravenpm_anims\P_Eve_Sword_
 	walkframe 159 LX LY LM
 	walkframe 161 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_Raven_S.smd" { // frames 120
@@ -5823,7 +5821,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_Raven_S" "sbravenpm_anims\P_Eve_Sword_
 	walkframe 118 LX LY LM
 	walkframe 120 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast.smd" { // frames 282
@@ -5889,7 +5887,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast" "sbravenpm_anims\P_Eve_Swo
 	walkframe 280 LX LY LM
 	walkframe 282 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E.smd" { // frames 147
@@ -5947,7 +5945,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_E" "sbravenpm_anims\P_Eve_S
 	walkframe 144 LX LY LM
 	walkframe 147 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S.smd" { // frames 220
@@ -6011,7 +6009,7 @@ $sequence "P_Eve_Sword_Normal_LinkAttack1_RavenBeast_S" "sbravenpm_anims\P_Eve_S
 	walkframe 216 LX LY LM
 	walkframe 220 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 90
@@ -6066,7 +6064,7 @@ $sequence "Proto_Battle_End" "sbravenpm_anims\Proto_Battle_End.smd" { // frames 
 	walkframe 88 LX LY LM
 	walkframe 90 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frames 210
@@ -6128,7 +6126,8 @@ $sequence "Proto_Battle_Idle" "sbravenpm_anims\Proto_Battle_Idle.smd" { // frame
 	walkframe 208 LX LY LM
 	walkframe 210 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { // frames 100
@@ -6187,7 +6186,8 @@ $sequence "Proto_Battle_IdleR" "sbravenpm_anims\Proto_Battle_IdleR.smd" { // fra
 	walkframe 98 LX LY LM
 	walkframe 100 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Battle_Jog" "sbravenpm_anims\Proto_Battle_Jog.smd" { // frames 24
@@ -6198,8 +6198,11 @@ $sequence "Proto_Battle_Jog" "sbravenpm_anims\Proto_Battle_Jog.smd" { // frames 
     {event 6008 9 "" }
     {event 6008 10 "" }
     {event 6009 21 "" }
+	ikrule lfoot footstep range .. 21 4 ..
+	ikrule rfoot footstep range .. 9 16 ..
 	LX LY fudgeloop 
-	origin 0 0 42 
+	origin 0 0 43.6
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Battle_Jump_End" "a_Proto_Battle_Jump_End" { // frames 78
@@ -6212,7 +6215,7 @@ $sequence "Proto_Battle_Jump_End" "a_Proto_Battle_Jump_End" { // frames 78
     {event AE_SV_PLAYSOUND 0 "EVE_SE_ClothShort" }
     {event 6008 2 "" }
     {event AE_SV_PLAYSOUND 1 "eve_vo_social_Motion_Strong_Cue" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_Jump_Start" "sbravenpm_anims\Proto_Battle_Jump_Start.smd" { // frames 30
@@ -6222,7 +6225,7 @@ $sequence "Proto_Battle_Jump_Start" "sbravenpm_anims\Proto_Battle_Jump_Start.smd
 	{event 6009 2 "" }
     {event 6008 1 "" }
     {event 6008 1 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_Jump_Start2" "sbravenpm_anims\Proto_Battle_Jump_Start2.smd" { // frames 30
@@ -6232,7 +6235,7 @@ $sequence "Proto_Battle_Jump_Start2" "sbravenpm_anims\Proto_Battle_Jump_Start2.s
 	{event 6009 2 "" }
     {event 6008 1 "" }
     {event 6008 1 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_Jump_Start3" "sbravenpm_anims\Proto_Battle_Jump_Start3.smd" { // frames 30
@@ -6242,7 +6245,7 @@ $sequence "Proto_Battle_Jump_Start3" "sbravenpm_anims\Proto_Battle_Jump_Start3.s
 	{event 6009 2 "" }
     {event 6008 1 "" }
     {event 6008 1 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_JumpHigh_End" "sbravenpm_anims\Proto_Battle_JumpHigh_End.smd" { // frames 90
@@ -6255,7 +6258,7 @@ $sequence "Proto_Battle_JumpHigh_End" "sbravenpm_anims\Proto_Battle_JumpHigh_End
     {event 6009 72 "" }
     {event 6008 1 "" }
     {event 6008 66 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_JumpHigh_Run" "sbravenpm_anims\Proto_Battle_JumpHigh_Run.smd" { // frames 90
@@ -6267,7 +6270,7 @@ $sequence "Proto_Battle_JumpHigh_Run" "sbravenpm_anims\Proto_Battle_JumpHigh_Run
     {event 6009 14 "" }
     {event 6008 1 "" }
     {event 6009 0 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_JumpHigh_Walk" "sbravenpm_anims\Proto_Battle_JumpHigh_Walk.smd" { // frames 51
@@ -6280,7 +6283,7 @@ $sequence "Proto_Battle_JumpHigh_Walk" "sbravenpm_anims\Proto_Battle_JumpHigh_Wa
     {event AE_SV_PLAYSOUND 1 "EVE_SE_ClothMid" }
     {event 6008 28 "" }
     {event 6009 17 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Battle_Run" "sbravenpm_anims\Proto_Battle_Run.smd" { // frames 20 
@@ -6289,9 +6292,12 @@ $sequence "Proto_Battle_Run" "sbravenpm_anims\Proto_Battle_Run.smd" { // frames 
 	addlayer inverse_proportions
 	{event 6009 18 "" }
     {event 6008 7 "" }
+	ikrule lfoot footstep range .. 8 13 ..
+	ikrule rfoot footstep range .. 18 4 ..
 	fudgeloop 
 	LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Battle_Sprint" "sbravenpm_anims\Proto_Battle_Sprint.smd" { // frames 20 
@@ -6302,7 +6308,10 @@ $sequence "Proto_Battle_Sprint" "sbravenpm_anims\Proto_Battle_Sprint.smd" { // f
     {event 6008 6 "" }
 	fudgeloop 
 	LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 6 12 ..
+	ikrule rfoot footstep range .. 15 3 ..
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Battle_Walk" "sbravenpm_anims\Proto_Battle_Walk.smd" { // frames 20 
@@ -6313,7 +6322,10 @@ $sequence "Proto_Battle_Walk" "sbravenpm_anims\Proto_Battle_Walk.smd" { // frame
     {event 6009 28 "" }
 	fudgeloop 
 	LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 13 29 ..
+	ikrule rfoot footstep range .. 31 12 ..
+	addlayer aimlayer_knife 
 } 
 
 $sequence "Proto_Fall" "sbravenpm_anims\Proto_Fall.smd" { // frames 120
@@ -6322,7 +6334,7 @@ $sequence "Proto_Fall" "sbravenpm_anims\Proto_Fall.smd" { // frames 120
 	addlayer inverse_proportions
 	
 	fudgeloop 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { // frames 1
@@ -6332,7 +6344,7 @@ $sequence "Proto_Glide" "sbravenpm_anims\Proto_Glide.smd" { // frames 1
 	
 	walkframe 1 LX LY LM
 	fudgeloop 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { // frames 1
@@ -6342,7 +6354,7 @@ $sequence "Proto_Glide_1" "sbravenpm_anims\Proto_Glide_1.smd" { // frames 1
 	
 	walkframe 1 LX LY LM
 	fudgeloop 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frames 30
@@ -6382,7 +6394,7 @@ $sequence "Proto_Glide_Start" "sbravenpm_anims\Proto_Glide_Start.smd" { // frame
 	walkframe 29 LX LY LM
 	walkframe 30 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Guard_idle" "sbravenpm_anims\Proto_Guard_idle.smd" { // frames 129
@@ -6403,7 +6415,7 @@ $sequence "Proto_Guard_idle" "sbravenpm_anims\Proto_Guard_idle.smd" { // frames 
 	walkframe 110 LX LY LM
 	walkframe 120 LX LY LM
 	LX LY LM 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
@@ -6476,8 +6488,7 @@ $sequence "Proto_Idle" "sbravenpm_anims\Proto_Idle.smd" { // frames 128
 	walkframe 126 LX LY LM
 	walkframe 128 LX LY LM
 	fudgeloop 
-	origin 0 0 42 
-	fudgeloop 
+	origin 0 0 43.5 
 } 
 
 $sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
@@ -6550,7 +6561,7 @@ $sequence "Proto_Idle_Add" "sbravenpm_anims\Proto_Idle_Add.smd" { // frames 128
 	walkframe 126 LX LY LM
 	walkframe 128 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
@@ -6559,7 +6570,7 @@ $sequence "Proto_Idle_Add2" "sbravenpm_anims\Proto_Idle_Add2.smd" { // frames 1
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
@@ -6568,7 +6579,7 @@ $sequence "Proto_Idle_Add3" "sbravenpm_anims\Proto_Idle_Add3.smd" { // frames 1
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
@@ -6577,7 +6588,7 @@ $sequence "Proto_Idle_Ref" "sbravenpm_anims\Proto_Idle_Ref.smd" { // frames 1
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frames 800 
@@ -6647,7 +6658,7 @@ $sequence "Proto_Idle_Social" "sbravenpm_anims\Proto_Idle_Social.smd" { // frame
 	walkframe 780 LX LY LM
 	walkframe 793 LX LY LM
 	walkframe 800 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 	{event AE_SV_PLAYSOUND 186 "EVE_SE_ClothMid" }
     {event 6009 33 "" }
     {event 6009 453 "" }
@@ -6723,7 +6734,7 @@ $sequence "Proto_Jump_Double" "sbravenpm_anims\Proto_Jump_Double.smd" { // frame
 	walkframe 60 LX LY LM
 	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
     {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // frames 60
@@ -6793,7 +6804,7 @@ $sequence "Proto_Jump_Double2" "sbravenpm_anims\Proto_Jump_Double2.smd" { // fra
 	walkframe 60 LX LY LM
 	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
     {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // frames 60
@@ -6863,7 +6874,7 @@ $sequence "Proto_Jump_Double3" "sbravenpm_anims\Proto_Jump_Double3.smd" { // fra
 	walkframe 60 LX LY LM
 	{event AE_SV_PLAYSOUND 1 "Move_Evade_Whoosh_01_Cue" }
     {event AE_SV_PLAYSOUND 3 "PC_Evade_M_Cue" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
@@ -6921,7 +6932,7 @@ $sequence "Proto_Jump_End" "sbravenpm_anims\Proto_Jump_End.smd" { // frames 90
     {event 6009 1 "" }
     {event 6008 2 "" }
 	{event AE_SV_PLAYSOUND 1 "eve_vo_breath_s_Cue" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
@@ -6960,7 +6971,7 @@ $sequence "Proto_Jump_Run" "sbravenpm_anims\Proto_Jump_Run.smd" { // frames 27
     {event AE_SV_PLAYSOUND 0 "EVE_SE_ClothShort" }
     {event 6009 19 "" }
     {event 6008 10 "" }
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { // frames 30
@@ -7003,7 +7014,7 @@ $sequence "Proto_Jump_Run_Short" "sbravenpm_anims\Proto_Jump_Run_Short.smd" { //
     {event 6009 21 "" }
     {event 6008 12 "" }
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "Proto_Jump_Start" "sbravenpm_anims\Proto_Jump_Start.smd" { // frames 30
@@ -7178,95 +7189,79 @@ $sequence "Proto_Jump_Walk" "sbravenpm_anims\Proto_Jump_Walk.smd" { // frames 36
     {event 6009 1 "" }
     {event 6008 4 "" }
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $animation "a_eve_RunS" "sbravenpm_anims\Proto_Run_Backward.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunSE" "sbravenpm_anims\Proto_Run_Backward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunE" "sbravenpm_anims\Proto_Run_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunNE" "sbravenpm_anims\Proto_Run_Forward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunN" "sbravenpm_anims\Proto_Run.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunNW" "sbravenpm_anims\Proto_Run_Forward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunW" "sbravenpm_anims\Proto_Run_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $animation "a_eve_RunSW" "sbravenpm_anims\Proto_Run_Backward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 3
+	ikrule lfoot footstep range .. 10 20 ..
+	ikrule rfoot footstep range .. 20 6 ..
 	walkframe 20 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "Proto_Run" { // frames 20 
@@ -7286,6 +7281,7 @@ $sequence "Proto_Run" { // frames 20
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "running" 
@@ -7301,105 +7297,90 @@ $sequence "Proto_Sprint" "sbravenpm_anims\Proto_Sprint.smd" { // frames 20
 	{ event 6009 7 "" }
 	{ event 6008 14 "" }
 	fudgeloop LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 6 11 ..
+	ikrule rfoot footstep range .. 14 3 ..
+	addlayer aimlayer_knife 
 } 
 
 $animation "a_eve_WalkC" "sbravenpm_anims\Proto_Idle.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 0 129 ..
+	ikrule rfoot footstep range .. 0 129 ..
 }
 
 $animation "a_eve_WalkS" "sbravenpm_anims\Chat_Lockon_Walk_Backward.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkSE" "sbravenpm_anims\Chat_Lockon_Walk_Backward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkE" "sbravenpm_anims\Chat_Lockon_Walk_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkNE" "sbravenpm_anims\Chat_Lockon_Walk_Forward_Left.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkN" "sbravenpm_anims\Chat_Lockon_Walk_Forward.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkNW" "sbravenpm_anims\Chat_Lockon_Walk_Forward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkW" "sbravenpm_anims\Chat_Lockon_Walk_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 18 18 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $animation "a_eve_WalkSW" "sbravenpm_anims\Chat_Lockon_Walk_Backward_Right.smd" {
 	fps 30
 	loop
-	ikrule "rhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 0
-	ikrule "lhand" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 1
-	ikrule "rfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 2
-	ikrule "lfoot" release contact 0 fakeorigin 0 0 0 fakerotate 0 0 0 floor 0 height 0 radius 0 range 0 0 17 17 target 3
 	walkframe 37 LX LY 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep range .. 12 28 ..
+	ikrule rfoot footstep range .. 28 12 ..
 }
 
 $sequence "Proto_Walk" { // frames 37 
@@ -7456,7 +7437,7 @@ $sequence "mann_down_idle" "sbravenpm_anims\mann_down_idle.smd" { // frames 1
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -7466,7 +7447,7 @@ $sequence "mann_fix_down_idle" "sbravenpm_anims\mann_fix_down_idle.smd" { // fra
 	addlayer inverse_proportions
 	
 	walkframe 1 LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8030,7 +8011,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01" "sbravenpm_anims\Xion01_Legacy2_Hol
 	walkframe 3534 LX LY LM
 	walkframe 3590 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8099,7 +8080,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01_1" "sbravenpm_anims\Xion01_Legacy2_H
 	walkframe 232 LX LY LM
 	walkframe 235 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8173,7 +8154,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_01_2" "sbravenpm_anims\Xion01_Legacy2_H
 	walkframe 2709 LX LY LM
 	walkframe 2720 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8246,7 +8227,7 @@ $sequence "Xion01_Legacy2_Hologram_Raven_02" "sbravenpm_anims\Xion01_Legacy2_Hol
 	walkframe 186 LX LY LM
 	walkframe 189 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8320,7 +8301,7 @@ $sequence "MV_WLA10_Legacy4_Hologram_Raven_01" "sbravenpm_anims\MV_WLA10_Legacy4
 	walkframe 3087 LX LY LM
 	walkframe 3097 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8466,7 +8447,7 @@ $sequence "MV_Nest_Intro_eve_B" "sbravenpm_anims\MV_Nest_Intro_eve_B.smd" { // f
 	walkframe 1302 LX LY LM
 	walkframe 1317 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8611,7 +8592,7 @@ $sequence "MV_Nest_Intro_eve_E" "sbravenpm_anims\MV_Nest_Intro_eve_E.smd" { // f
 	walkframe 360 LX LY LM
 	walkframe 364 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8682,7 +8663,7 @@ $sequence "MV_Nest_Intro_eve_G" "sbravenpm_anims\MV_Nest_Intro_eve_G.smd" { // f
 	walkframe 854 LX LY LM
 	walkframe 859 LX LY LM
 	LX LY LM 
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -8966,7 +8947,7 @@ $sequence "MV_Nest_Intro_raven_C" "sbravenpm_anims\MV_Nest_Intro_raven_C.smd" { 
 	walkframe 1159 LX LY LM
 	walkframe 1164 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9039,7 +9020,7 @@ $sequence "MV_Nest_Intro_raven_D" "sbravenpm_anims\MV_Nest_Intro_raven_D.smd" { 
 	walkframe 945 LX LY LM
 	walkframe 948 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9180,7 +9161,7 @@ $sequence "MV_Nest_Intro_raven_F" "sbravenpm_anims\MV_Nest_Intro_raven_F.smd" { 
 	walkframe 413 LX LY LM
 	walkframe 420 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9251,7 +9232,7 @@ $sequence "MV_Nest_Intro_raven_G" "sbravenpm_anims\MV_Nest_Intro_raven_G.smd" { 
 	walkframe 1037 LX LY LM
 	walkframe 1052 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9747,7 +9728,7 @@ $sequence "MV_Nest_RavenBattle_eve_E" "sbravenpm_anims\MV_Nest_RavenBattle_eve_E
 	walkframe 720 LX LY LM
 	walkframe 732 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9821,7 +9802,7 @@ $sequence "MV_Nest_RavenBattle_eve_F" "sbravenpm_anims\MV_Nest_RavenBattle_eve_F
 	walkframe 756 LX LY LM
 	walkframe 768 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -9949,7 +9930,7 @@ $sequence "MV_Nest_RavenBattle_raven_B" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	walkframe 638 LX LY LM
 	walkframe 644 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -10022,7 +10003,7 @@ $sequence "MV_Nest_RavenBattle_raven_C" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	walkframe 1364 LX LY LM
 	walkframe 1386 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -10095,7 +10076,7 @@ $sequence "MV_Nest_RavenBattle_raven_D" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	walkframe 1860 LX LY LM
 	walkframe 1880 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -10163,7 +10144,7 @@ $sequence "MV_Nest_RavenBattle_raven_E" "sbravenpm_anims\MV_Nest_RavenBattle_rav
 	walkframe 456 LX LY LM
 	walkframe 460 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -10754,7 +10735,7 @@ $sequence "MV_Nest_RavenBattle_After_eve_d_a" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 290 LX LY LM
 	walkframe 295 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -12096,7 +12077,7 @@ $sequence "MV_Nest_RavenBattle_After_raven_Z" "sbravenpm_anims\MV_Nest_RavenBatt
 	walkframe 385 LX LY LM
 	walkframe 392 LX LY LM
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -12105,7 +12086,7 @@ $sequence "Sword_Down_Attack" "sbravenpm_anims\Sword_Down_Attack.smd" { // frame
 	activity ACT_SPECIAL_ATTACK1 1 
 	addlayer inverse_proportions
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	//alignto "raven_base" 
 } 
 
@@ -12114,7 +12095,7 @@ $sequence "P_Eve_UIStudio_Body_End" "sbravenpm_anims\P_Eve_UIStudio_Body_End.smd
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
 	
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Default_Loop" 32 33 47 47 xfade 
 } 
 
@@ -12124,14 +12105,14 @@ $sequence "P_Eve_UIStudio_Body_Loop" "sbravenpm_anims\P_Eve_UIStudio_Body_Loop.s
 	addlayer inverse_proportions
 	loop 
 	realtime 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_UIStudio_Body_Start" "sbravenpm_anims\P_Eve_UIStudio_Body_Start.smd" { // frames 45
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Body_Loop" 32 33 47 47 xfade 
 } 
 
@@ -12139,7 +12120,7 @@ $sequence "P_Eve_UIStudio_Body_ToLook" "sbravenpm_anims\P_Eve_UIStudio_Body_ToLo
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Look_Loop" 29 30 47 47 xfade 
 } 
 
@@ -12147,7 +12128,7 @@ $sequence "P_Eve_UIStudio_Default_Start" "sbravenpm_anims\P_Eve_UIStudio_Default
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Default_Loop" 43 45 47 47 xfade 
 } 
 
@@ -12157,14 +12138,14 @@ $sequence "P_Eve_UIStudio_Default_Loop" "sbravenpm_anims\P_Eve_UIStudio_Default_
 	addlayer inverse_proportions
 	loop 
 	realtime 
-	origin 0 0 42 
+	origin 0 0 43.6
 } 
 
 $sequence "P_Eve_UIStudio_Hair_Loop" "sbravenpm_anims\P_Eve_UIStudio_Hair_Loop.smd" { // frames 45
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	loop 
 	realtime 
 } 
@@ -12173,7 +12154,7 @@ $sequence "P_Eve_UIStudio_Look_End" "sbravenpm_anims\P_Eve_UIStudio_Look_End.smd
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Default_Loop" 35 36 47 47 xfade 
 } 
 
@@ -12181,7 +12162,7 @@ $sequence "P_Eve_UIStudio_Look_Loop" "sbravenpm_anims\P_Eve_UIStudio_Look_Loop.s
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	loop 
 	realtime 
 } 
@@ -12190,7 +12171,7 @@ $sequence "P_Eve_UIStudio_Look_Start" "sbravenpm_anims\P_Eve_UIStudio_Look_Start
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Look_Loop" 35 36 47 47 xfade 
 } 
 
@@ -12198,7 +12179,7 @@ $sequence "P_Eve_UIStudio_Look_ToBody" "sbravenpm_anims\P_Eve_UIStudio_Look_ToBo
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Body_Loop" 29 30 47 47 xfade 
 } 
 
@@ -12206,7 +12187,7 @@ $sequence "P_Eve_UIStudio_Weapon_End" "sbravenpm_anims\P_Eve_UIStudio_Weapon_End
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Default_Loop" 55 60 100 100 xfade 
 } 
 
@@ -12214,7 +12195,7 @@ $sequence "P_Eve_UIStudio_Weapon_Loop" "sbravenpm_anims\P_Eve_UIStudio_Weapon_Lo
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	loop 
 	realtime 
 } 
@@ -12223,7 +12204,7 @@ $sequence "P_Eve_UIStudio_Weapon_Start" "sbravenpm_anims\P_Eve_UIStudio_Weapon_S
 	fps 30 
 	activity ACT_IDLE_PREVIEW 1 
 	addlayer inverse_proportions
-	origin 0 0 42 
+	origin 0 0 43.6
 	blendlayer "P_Eve_UIStudio_Weapon_Loop" 42 43 100 100 xfade 
 } 
 
@@ -12289,7 +12270,7 @@ $sequence "45A01" "sbravenpm_anims\45A01.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A02" "sbravenpm_anims\45A02.smd" { // frames 170
@@ -12354,7 +12335,7 @@ $sequence "45A02" "sbravenpm_anims\45A02.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A03" "sbravenpm_anims\45A03.smd" { // frames 170
@@ -12419,7 +12400,7 @@ $sequence "45A03" "sbravenpm_anims\45A03.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A04" "sbravenpm_anims\45A04.smd" { // frames 170
@@ -12484,7 +12465,7 @@ $sequence "45A04" "sbravenpm_anims\45A04.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A05" "sbravenpm_anims\45A05.smd" { // frames 170
@@ -12549,7 +12530,7 @@ $sequence "45A05" "sbravenpm_anims\45A05.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A06" "sbravenpm_anims\45A06.smd" { // frames 170
@@ -12614,7 +12595,7 @@ $sequence "45A06" "sbravenpm_anims\45A06.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A07" "sbravenpm_anims\45A07.smd" { // frames 170
@@ -12679,7 +12660,7 @@ $sequence "45A07" "sbravenpm_anims\45A07.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45A08" "sbravenpm_anims\45A08.smd" { // frames 170
@@ -12744,7 +12725,7 @@ $sequence "45A08" "sbravenpm_anims\45A08.smd" { // frames 170
 	walkframe 168 LX LY LM
 	walkframe 170 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B01" "sbravenpm_anims\45B01.smd" { // frames 160
@@ -12806,7 +12787,7 @@ $sequence "45B01" "sbravenpm_anims\45B01.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B02" "sbravenpm_anims\45B02.smd" { // frames 160
@@ -12868,7 +12849,7 @@ $sequence "45B02" "sbravenpm_anims\45B02.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B03" "sbravenpm_anims\45B03.smd" { // frames 160
@@ -12930,7 +12911,7 @@ $sequence "45B03" "sbravenpm_anims\45B03.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B04" "sbravenpm_anims\45B04.smd" { // frames 160
@@ -12992,7 +12973,7 @@ $sequence "45B04" "sbravenpm_anims\45B04.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B05" "sbravenpm_anims\45B05.smd" { // frames 160
@@ -13054,7 +13035,7 @@ $sequence "45B05" "sbravenpm_anims\45B05.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B06" "sbravenpm_anims\45B06.smd" { // frames 160
@@ -13116,7 +13097,7 @@ $sequence "45B06" "sbravenpm_anims\45B06.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B07" "sbravenpm_anims\45B07.smd" { // frames 160
@@ -13178,7 +13159,7 @@ $sequence "45B07" "sbravenpm_anims\45B07.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "45B08" "sbravenpm_anims\45B08.smd" { // frames 160
@@ -13240,7 +13221,7 @@ $sequence "45B08" "sbravenpm_anims\45B08.smd" { // frames 160
 	walkframe 159 LX LY LM
 	walkframe 160 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A01" "sbravenpm_anims\90A01.smd" { // frames 150
@@ -13298,7 +13279,7 @@ $sequence "90A01" "sbravenpm_anims\90A01.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A02" "sbravenpm_anims\90A02.smd" { // frames 150
@@ -13356,7 +13337,7 @@ $sequence "90A02" "sbravenpm_anims\90A02.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A03" "sbravenpm_anims\90A03.smd" { // frames 150
@@ -13414,7 +13395,7 @@ $sequence "90A03" "sbravenpm_anims\90A03.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A04" "sbravenpm_anims\90A04.smd" { // frames 150
@@ -13472,7 +13453,7 @@ $sequence "90A04" "sbravenpm_anims\90A04.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A05" "sbravenpm_anims\90A05.smd" { // frames 150
@@ -13530,7 +13511,7 @@ $sequence "90A05" "sbravenpm_anims\90A05.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A06" "sbravenpm_anims\90A06.smd" { // frames 150
@@ -13588,7 +13569,7 @@ $sequence "90A06" "sbravenpm_anims\90A06.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A07" "sbravenpm_anims\90A07.smd" { // frames 150
@@ -13646,7 +13627,7 @@ $sequence "90A07" "sbravenpm_anims\90A07.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90A08" "sbravenpm_anims\90A08.smd" { // frames 150
@@ -13704,7 +13685,7 @@ $sequence "90A08" "sbravenpm_anims\90A08.smd" { // frames 150
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B01" "sbravenpm_anims\90B01.smd" { // frames 140
@@ -13759,7 +13740,7 @@ $sequence "90B01" "sbravenpm_anims\90B01.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B02" "sbravenpm_anims\90B02.smd" { // frames 140
@@ -13814,7 +13795,7 @@ $sequence "90B02" "sbravenpm_anims\90B02.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B03" "sbravenpm_anims\90B03.smd" { // frames 140
@@ -13869,7 +13850,7 @@ $sequence "90B03" "sbravenpm_anims\90B03.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B04" "sbravenpm_anims\90B04.smd" { // frames 140
@@ -13924,7 +13905,7 @@ $sequence "90B04" "sbravenpm_anims\90B04.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B05" "sbravenpm_anims\90B05.smd" { // frames 140
@@ -13979,7 +13960,7 @@ $sequence "90B05" "sbravenpm_anims\90B05.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B06" "sbravenpm_anims\90B06.smd" { // frames 140
@@ -14034,7 +14015,7 @@ $sequence "90B06" "sbravenpm_anims\90B06.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B07" "sbravenpm_anims\90B07.smd" { // frames 140
@@ -14089,7 +14070,7 @@ $sequence "90B07" "sbravenpm_anims\90B07.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "90B08" "sbravenpm_anims\90B08.smd" { // frames 140
@@ -14144,7 +14125,7 @@ $sequence "90B08" "sbravenpm_anims\90B08.smd" { // frames 140
 	walkframe 138 LX LY LM
 	walkframe 140 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "A01" "sbravenpm_anims\A01.smd" { // frames 360
@@ -14212,7 +14193,7 @@ $sequence "A01" "sbravenpm_anims\A01.smd" { // frames 360
 	walkframe 354 LX LY LM
 	walkframe 360 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "B01" "sbravenpm_anims\B01.smd" { // frames 339
@@ -14277,7 +14258,7 @@ $sequence "B01" "sbravenpm_anims\B01.smd" { // frames 339
 	walkframe 336 LX LY LM
 	walkframe 339 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-Idle" "sbravenpm_anims\BND-Idle.smd" { // frames 75
@@ -14323,7 +14304,7 @@ $sequence "BND-Idle" "sbravenpm_anims\BND-Idle.smd" { // frames 75
 	walkframe 74 LX LY LM
 	walkframe 75 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-A-RZ" "sbravenpm_anims\BND-No-Run01-A-RZ.smd" { // frames 150
@@ -14381,7 +14362,7 @@ $sequence "BND-No-Run01-A-RZ" "sbravenpm_anims\BND-No-Run01-A-RZ.smd" { // frame
 	walkframe 147 LX LY LM
 	walkframe 150 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-A" "sbravenpm_anims\BND-No-Run01-A.smd" { // frames 300
@@ -14449,7 +14430,7 @@ $sequence "BND-No-Run01-A" "sbravenpm_anims\BND-No-Run01-A.smd" { // frames 300
 	walkframe 295 LX LY LM
 	walkframe 300 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-B-RZ" "sbravenpm_anims\BND-No-Run01-B-RZ.smd" { // frames 135
@@ -14502,7 +14483,7 @@ $sequence "BND-No-Run01-B-RZ" "sbravenpm_anims\BND-No-Run01-B-RZ.smd" { // frame
 	walkframe 132 LX LY LM
 	walkframe 135 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-B" "sbravenpm_anims\BND-No-Run01-B.smd" { // frames 270
@@ -14564,7 +14545,7 @@ $sequence "BND-No-Run01-B" "sbravenpm_anims\BND-No-Run01-B.smd" { // frames 270
 	walkframe 265 LX LY LM
 	walkframe 270 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-C-RZ" "sbravenpm_anims\BND-No-Run01-C-RZ.smd" { // frames 145
@@ -14621,7 +14602,7 @@ $sequence "BND-No-Run01-C-RZ" "sbravenpm_anims\BND-No-Run01-C-RZ.smd" { // frame
 	walkframe 144 LX LY LM
 	walkframe 145 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run01-C" "sbravenpm_anims\BND-No-Run01-C.smd" { // frames 290
@@ -14687,7 +14668,7 @@ $sequence "BND-No-Run01-C" "sbravenpm_anims\BND-No-Run01-C.smd" { // frames 290
 	walkframe 285 LX LY LM
 	walkframe 290 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-A-RZ" "sbravenpm_anims\BND-No-Run02-A-RZ.smd" { // frames 145
@@ -14744,7 +14725,7 @@ $sequence "BND-No-Run02-A-RZ" "sbravenpm_anims\BND-No-Run02-A-RZ.smd" { // frame
 	walkframe 144 LX LY LM
 	walkframe 145 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-A" "sbravenpm_anims\BND-No-Run02-A.smd" { // frames 290
@@ -14810,7 +14791,7 @@ $sequence "BND-No-Run02-A" "sbravenpm_anims\BND-No-Run02-A.smd" { // frames 290
 	walkframe 285 LX LY LM
 	walkframe 290 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-B-RZ" "sbravenpm_anims\BND-No-Run02-B-RZ.smd" { // frames 190
@@ -14880,7 +14861,7 @@ $sequence "BND-No-Run02-B-RZ" "sbravenpm_anims\BND-No-Run02-B-RZ.smd" { // frame
 	walkframe 189 LX LY LM
 	walkframe 190 LX LY LM
 	LX LY LM 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-B" "sbravenpm_anims\BND-No-Run02-B.smd" { // frames 380
@@ -14950,7 +14931,7 @@ $sequence "BND-No-Run02-B" "sbravenpm_anims\BND-No-Run02-B.smd" { // frames 380
 	walkframe 372 LX LY LM
 	walkframe 378 LX LY LM
 	LX LY LM 
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-C-RZ" "sbravenpm_anims\BND-No-Run02-C-RZ.smd" { // frames 210
@@ -15009,7 +14990,7 @@ $sequence "BND-No-Run02-C-RZ" "sbravenpm_anims\BND-No-Run02-C-RZ.smd" { // frame
 	walkframe 200 LX LY LM
 	walkframe 208 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-No-Run02-C" "sbravenpm_anims\BND-No-Run02-C.smd" { // frames 420
@@ -15075,7 +15056,7 @@ $sequence "BND-No-Run02-C" "sbravenpm_anims\BND-No-Run02-C.smd" { // frames 420
 	walkframe 406 LX LY LM
 	walkframe 413 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-Run" "sbravenpm_anims\BND-Run.smd" { // frames 72
@@ -15118,7 +15099,7 @@ $sequence "BND-Run" "sbravenpm_anims\BND-Run.smd" { // frames 72
 	walkframe 68 LX LY LM
 	walkframe 70 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run01-A" "sbravenpm_anims\BND-WP-Run01-A.smd" { // frames 300
@@ -15185,7 +15166,7 @@ $sequence "BND-WP-Run01-A" "sbravenpm_anims\BND-WP-Run01-A.smd" { // frames 300
 	walkframe 290 LX LY LM
 	walkframe 295 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run01-B" "sbravenpm_anims\BND-WP-Run01-B.smd" { // frames 270
@@ -15246,7 +15227,7 @@ $sequence "BND-WP-Run01-B" "sbravenpm_anims\BND-WP-Run01-B.smd" { // frames 270
 	walkframe 260 LX LY LM
 	walkframe 265 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run01-C" "sbravenpm_anims\BND-WP-Run01-C.smd" { // frames 270
@@ -15307,7 +15288,7 @@ $sequence "BND-WP-Run01-C" "sbravenpm_anims\BND-WP-Run01-C.smd" { // frames 270
 	walkframe 260 LX LY LM
 	walkframe 265 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run02-A" "sbravenpm_anims\BND-WP-Run02-A.smd" { // frames 300
@@ -15374,7 +15355,7 @@ $sequence "BND-WP-Run02-A" "sbravenpm_anims\BND-WP-Run02-A.smd" { // frames 300
 	walkframe 290 LX LY LM
 	walkframe 295 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run02-B" "sbravenpm_anims\BND-WP-Run02-B.smd" { // frames 390
@@ -15438,7 +15419,7 @@ $sequence "BND-WP-Run02-B" "sbravenpm_anims\BND-WP-Run02-B.smd" { // frames 390
 	walkframe 385 LX LY LM
 	walkframe 390 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "BND-WP-Run02-C" "sbravenpm_anims\BND-WP-Run02-C.smd" { // frames 450
@@ -15503,7 +15484,7 @@ $sequence "BND-WP-Run02-C" "sbravenpm_anims\BND-WP-Run02-C.smd" { // frames 450
 	walkframe 448 LX LY LM
 	walkframe 450 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "Circle_Left" "sbravenpm_anims\Circle_Left.smd" { // frames 1135
@@ -15573,7 +15554,7 @@ $sequence "Circle_Left" "sbravenpm_anims\Circle_Left.smd" { // frames 1135
 	walkframe 1116 LX LY LM
 	walkframe 1134 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "Circle_Right" "sbravenpm_anims\Circle_Right.smd" { // frames 1143
@@ -15644,7 +15625,7 @@ $sequence "Circle_Right" "sbravenpm_anims\Circle_Right.smd" { // frames 1143
 	walkframe 1116 LX LY LM
 	walkframe 1134 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "MT_Idle_Turns" "sbravenpm_anims\MT_Idle_Turns.smd" { // frames 810
@@ -15714,7 +15695,7 @@ $sequence "MT_Idle_Turns" "sbravenpm_anims\MT_Idle_Turns.smd" { // frames 810
 	walkframe 793 LX LY LM
 	walkframe 806 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "MT_Round_3ndL_T" "sbravenpm_anims\MT_Round_3ndL_T.smd" { // frames 200
@@ -15771,7 +15752,7 @@ $sequence "MT_Round_3ndL_T" "sbravenpm_anims\MT_Round_3ndL_T.smd" { // frames 20
 	walkframe 192 LX LY LM
 	walkframe 196 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "MT_Round_3ndR_T" "sbravenpm_anims\MT_Round_3ndR_T.smd" { // frames 200
@@ -15828,7 +15809,7 @@ $sequence "MT_Round_3ndR_T" "sbravenpm_anims\MT_Round_3ndR_T.smd" { // frames 20
 	walkframe 192 LX LY LM
 	walkframe 196 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "MT_RUN_TURNS2" "sbravenpm_anims\MT_RUN_TURNS2.smd" { // frames 655
@@ -15895,7 +15876,7 @@ $sequence "MT_RUN_TURNS2" "sbravenpm_anims\MT_RUN_TURNS2.smd" { // frames 655
 	walkframe 638 LX LY LM
 	walkframe 649 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "TurnBack_Front_back" "sbravenpm_anims\TurnBack_Front_back.smd" { // frames 478
@@ -15962,7 +15943,7 @@ $sequence "TurnBack_Front_back" "sbravenpm_anims\TurnBack_Front_back.smd" { // f
 	walkframe 464 LX LY LM
 	walkframe 472 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 $sequence "TurnBack_Left_Right" "sbravenpm_anims\TurnBack_Left_Right.smd" { // frames 478
@@ -16029,7 +16010,7 @@ $sequence "TurnBack_Left_Right" "sbravenpm_anims\TurnBack_Left_Right.smd" { // f
 	walkframe 464 LX LY LM
 	walkframe 472 LX LY LM
 	LX LY LM
-	origin 0 0 42 
+	origin 0 0 43.6
 }
 
 
@@ -16037,17 +16018,20 @@ $sequence "raven_base" "sbravenpm_anims\raven_base.smd" { // frames 20
 	fps 1  
 	addlayer inverse_proportions
 	snap 
-	origin 0 0 42 
+	origin 0 0 43.6
+	ikrule lfoot footstep height 20 floor 0
+	ikrule rfoot footstep height 20 floor 0
 } 
 
 $sequence "m_raven_battleidle01" "sbravenpm_anims\m_raven_battleidle01.smd" { 
 	fps 60 
 	activity ACT_HL2MP_IDLE_MELEE_ANGRY 9999 
-	origin 0 0 42 
+	origin 0 0 43.6
 	fadein 0.6
 	fadeout 0.6 
 	cmdlist lockfeet
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	fudgeloop 
 } 
@@ -16055,11 +16039,12 @@ $sequence "m_raven_battleidle01" "sbravenpm_anims\m_raven_battleidle01.smd" {
 $sequence "m_raven_battleidle01_tf2" "sbravenpm_anims\m_raven_battleidle01.smd" { 
 	fps 60 
 	activity ACT_MP_STAND_MELEE 9999 
-	origin 0 0 42 
+	origin 0 0 43.6
 	fadein 0.6
 	fadeout 0.6 
 	cmdlist lockfeet
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	fudgeloop 
 } 
@@ -16084,6 +16069,7 @@ $sequence "walk_cautious" {
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "walking" 
@@ -16112,6 +16098,7 @@ $sequence "run_cautious" {
 	fadein 0.3
 	fadeout 0.3
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	LX LY 
 	node "walking" 
@@ -16138,6 +16125,7 @@ $sequence "m_raven_run_l" {
 	fps 30 
 	activity ACT_WALK_STIMULATED 9999 
 	addlayer inverse_proportions
+	addlayer aimlayer_knife 
 	
 	node "walking" 
 	fudgeloop 
