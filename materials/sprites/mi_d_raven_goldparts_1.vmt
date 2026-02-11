@@ -1,0 +1,120 @@
+"VertexLitGeneric"
+{
+    // --- Base textures (main mask / color and normal map) ---
+    // Replace with your actual VTF base texture (alpha channel used for mask)
+    // Original UE texture: T_D_CrystalParts_01
+    "$basetexture" "sprites/t_d_crystalparts_01"
+
+    // Normal map (UE: T_D_CrystalParts_01_N)
+    "$bumpmap" "sprites/t_d_crystalparts_01_n"
+
+    // Environment cubemap - used to fake reflections/specular highlights.
+    // You can replace "env_cubemap" with a custom cubemap texture path if desired.
+    "$envmap" "env_cubemap"
+
+    // --- Masking / two-sided behavior (maps to UE masked + TwoSided) ---
+    // Masked blend equivalent: enable alpha-test and set reference to the UE OpacityMaskClipValue (0.3333).
+    "$alphatest" 1
+    "$alphatestreference" 0.3333
+	"$additive" "1"
+
+    // TwoSided in UE -> disable backface culling in Source
+    "$nocull" 0
+
+    // --- Emissive blend (advanced self-illumination) ---
+    // Use $emissiveblend to simulate UE emissive / HDR look and twinkle
+    "$emissiveblendenabled" 1
+    // Dummy texture required when not scrolling (white used); you can place a 1x1 white vtf or use vgui/white.
+    "$emissiveblendtexture" "vgui/white"
+    // This is the mask for where the glow appears. If you create a dedicated glow mask VTF, put it here.
+    // For now use the same base texture; if you create a separate glow VTF, point it here instead.
+    "$emissiveblendbasetexture" "sprites/t_d_crystalparts_01"
+
+    // We don't intend to use a flowmap; use white or a dummy texture.
+    "$emissiveblendflowtexture" "vgui/white"
+
+    // Tint the emissive output by the UE HDR Color (R,G,B)
+    // UE Color: (0.881874, 1.333679, 1.5)
+    // VMT allows values >1, but engine may clamp; you can scale these later if needed.
+    "$emissiveblendtint" "[ 0.881874 1.333679 1.5 ]"
+
+    // Full strength for visible glow (1.0). Tune down if too bright.
+    "$emissiveblendstrength" 1
+
+    // Keep static (no scrolling); set to 0 0
+    "$emissiveblendscrollvector" "[ 0 0 ]"
+
+    // --- Phong / specular approximations (simulate Reflection / Roughness / Metallic) ---
+    // Enable Phong highlight to create sharp specular as UE Reflection is large.
+    "$phong" 1
+
+    // UE 'Reflection' was very large (15.0). We map that to phongboost & exponent.
+    // Larger phongexponent -> smaller/ sharper highlight. Tuned to approximate the sharp gold glints.
+    "$phongexponent" 60
+    // Slightly boost the phong intensity
+    "$phongboost" 1.5
+
+    // Tint the phong highlight by the material color - map from UE Color
+    "$phongtint" "[ 0.88 1.33 1.5 ]"
+
+    // Use bump alpha as envmap/phong mask (this helps create masked highlights consistent with normal)
+    // This replicates behavior where normals / masks control reflective highlight areas.
+    "$normalmapalphaenvmapmask" 1
+
+    // Phong fresnel ranges: controls fresnel masking of the highlight (adjust to taste)
+    "$phongfresnelranges" "[ 0 0.6 1 ]"
+
+    // --- Environment map tint: tint reflection with main color (approx) ---
+    "$envmaptint" "[ 0.88 1.33 1.5 ]"   // approximate UE HDR color used as envmap tint
+
+    // --- Basic lighting & spec settings ---
+    // Provide a tiny amount of selfillum to allow the particle to glow in dark scenes. Combined with emissiveblend.
+    "$selfillum" 1
+
+    // --- Misc: tweak phong/lighting behavior to match UE roughness -->
+    // We cannot directly set Roughness in VMT; tune phongexponent/phongboost & envmap contrast to mimic it.
+    // optional: slightly increase contrast of envmap sampling (engine-specific, may be unsupported)
+    // "$envmapcontrast" 0.8   // sometimes available, commented out because not universal
+
+    // --- Additional masks / flags ---
+    // Make sure the alpha channel is used for Phong mask (aligns with using $bumpmap alpha as mask)
+    "$basemapalphaphongmask" "1"
+
+    // --- Texture settings (optional) ---
+    // If you want the texture to clamp (useful for lightwarp/cubemap maps), you can enable clamp:
+    // $texturetransform 1    // not used here; set in VTF flags if needed
+
+    // --- Comments / notes mapping to UE parameters -------------
+    // UE -> VMT mapping notes:
+    // Metallic (UE=1.0) -> modeled by low roughness via Phong & envmap tint/boost
+    // Roughness UE=0.4 -> approximated by Phong exponent (60) + boost
+    // Reflection UE=15.0 -> approximated by $phongboost + $emissiveblendstrength + envmap tint
+    // Specular UE=1.0 -> handled by phong + envmap sampling
+    // Twinkle_* controls (brightness/power/speed) are not directly mappable in VMT;
+    //    implement twinkle in particle code (modulate rendercolor/selfillum or animated emissiveblendstrength)
+    //
+    // Opacity mask clip value from UE => $alphatestreference set above to 0.3333
+    // TwoSided => $nocull 1
+    // ------------------------------------------------------------
+
+	"Proxies"
+	{
+		"AnimatedTexture"
+		{
+			"animatedTextureVar" "$basetexture"
+			"animatedTextureFrameNumVar" "$frame"
+			"animatedTextureFrameRate" "30"
+		}
+		"AnimatedTexture"
+		{
+			"animatedTextureVar" "$bumpmap"
+			"animatedTextureFrameNumVar" "$bumpframe"
+			"animatedTextureFrameRate" "30"
+		}
+		"Copy"
+		{ 
+			"srcVar1"	"$color2" 
+			"resultVar"	"$emissiveblendtint" 
+		} 
+	}
+}

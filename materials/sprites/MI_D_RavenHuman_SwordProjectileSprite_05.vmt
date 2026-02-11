@@ -1,0 +1,105 @@
+"VertexLitGeneric"
+{
+    // --- 1. Base Settings & Mask (From JSON: MaskTex_1) ---
+    // The vertical gradient acts as the main shape/opacity mask.
+    "$basetexture"          "sprites/T_A_Gradient_Vertical_05"
+    "$translucent"          "1"
+	"$additive" 			"1" 
+    "$nocull"               "1" // Matches UE4 "TwoSided": true
+    
+    // Tint the base shape to the UE4 "EdgeColor" (Hex: 083B59)
+    //"$color2"               "[8 59 89]" 
+    "$color2"               "[0.031372549019608 0.23137254901961 0.34901960784314]" 
+	//"$color2"               "[0.002628 0.043946 0.1]" 
+
+    // --- 2. Emissive Blend (Replicates RampTex + UVNoise) ---
+    // This handles the glowing, flowing energy core.
+    "$emissiveblendenabled"      "1"
+    "$emissiveblendstrength"     "1" // Matches UE4 RampHardness/Intensity logic
+    
+    // The Texture that scrolls (UE4: RampTex / T_A_RampNoise_02)
+    "$emissiveblendtexture"      "sprites/T_A_RampNoise_02"
+    
+    // The Mask for the glow (Reuse the Base Gradient so glow fades at edges)
+    // NOTE: Ensure this VTF is compiled in i8 format as per documentation!
+    "$emissiveblendbasetexture"  "sprites/T_A_Gradient_Vertical_05"
+    
+    // The Distortion/Flow Map (UE4: UvNoiseTex01 / T_A_NoiseRGB_03)
+    "$emissiveblendflowtexture"  "sprites/T_A_NoiseRGB_03"
+    
+    // Color of the Glow (UE4: HighlightColor - Pure White)
+    //"$emissiveblendtint"         "[8 59 89]"
+    "$emissiveblendtint"         "[0.031372549019608 0.23137254901961 0.34901960784314]"
+    //"$emissiveblendtint"         "[0.002628 0.043946 0.1]" 
+    
+    // Scrolling Speed (UE4: Ramp_PannY = -2.5)
+    // Source Y is positive-up. To scroll down like UE4, we use negative.
+    "$emissiveblendscrollvector" "[ 0 -2.5 ]"
+
+
+    // --- 3. Detail Layer (Replicates AdditionalTex) --- 
+    // Adds the secondary noise layer (UE4: AdditionalTex / T_C_NoiseTile_01) 
+    "$detail"           "sprites/T_C_NoiseTile_01" 
+    "$detailscale"      "[2 0.5]"  // Matches UE4 Additional_TileX: 2.0, TileY: 0.5 
+    "$detailblendmode"  "5"        // Mode 5: Unlit Additive (Glows in dark) 
+    "$detailblendfactor" "0.5"     // High visibility 
+	"$detailtint" "[0.031372549019608 0.23137254901961 0.34901960784314]" 
+	
+// --- INTERNAL VARIABLES FOR PROXIES ---
+    // These act as variables to store our math.
+    // We define a base speed, and placeholders for the random calculations.
+    "$base_detail_speed"    "1.5"   // The default speed
+    "$random_variance"      "0.0"   // Will hold the EntityRandom value
+    "$final_detail_speed"   "0.0"   // Will hold Base + Random
+    "$random_time_offset"   "0.0"   // Will hold a larger random value for time offset
+
+    "Proxies"
+    {
+        // 1. GENERATE RANDOM SEED
+        // Get a random number (0.0 to 1.0) specific to this projectile entity.
+        // We set scale to 0.5, so the speed varies by up to +0.5.
+        "EntityRandom"
+        {
+            "scale"     "0.5"
+            "resultVar" "$random_variance"
+        }
+
+        // 2. RANDOMIZE SCROLL SPEED (Mimics UVNoise Offset)
+        // Add the random variance to the base speed.
+        // Result: Some projectiles flow at 1.5, others at 2.0.
+        "Add"
+        {
+            "srcVar1"   "$base_detail_speed"
+            "srcVar2"   "$random_variance"
+            "resultVar" "$final_detail_speed"
+        }
+
+        // Apply the calculated random speed to the texture scroll
+        "TextureScroll"
+        {
+            "texturescrollvar"      "$detailtexturetransform"
+            "texturescrollrate"     "$final_detail_speed"
+            "texturescrollangle"    "-86"
+        }
+
+        // 3. DESYNC GLOW PULSE (Mimics Emissive Offset)
+        // We need a larger number for Time Offset to be noticeable (0 to 10).
+        // We reuse EntityRandom but output to a different variable with higher scale.
+        "EntityRandom"
+        {
+            "scale"     "10.0"
+            "resultVar" "$random_time_offset"
+        }
+
+        // Sine Wave for pulsing the Emissive Strength
+        // Uses $random_time_offset so every projectile pulses at a different time.
+        "Sine"
+        {
+            "sineperiod" "0.5"             // Fast flicker speed
+            "sinemin"    "0.8"             // Minimum brightness
+            "sinemax"    "1.5"             // Maximum brightness (Overbright)
+            "timeoffset" "$random_time_offset" // The Staggering effect!
+            "resultVar"  "$emissiveblendstrength"
+        }
+    }
+}

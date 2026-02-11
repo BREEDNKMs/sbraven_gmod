@@ -1,0 +1,111 @@
+"VertexLitGeneric"
+{
+    // --- 1. Base Settings (The Mask) ---
+    // MaskTex_1: Vertical Gradient shape
+    "$basetexture"          "sprites/T_A_Gradient_Vertical_05"
+    
+    // ADDITIVE BLEND MODE:
+    // Adds light to the scene. Even though it's the "darker" energy layer, 
+    // it functions by adding colored light, not absorbing it.
+    "$additive"             "1"
+    "$nocull"               "1"
+    
+    // EDGE COLOR TINT:
+    // UE4 EdgeColor: Hex 264E59 -> RGB [38 78 89]
+    // Tints the base gradient to a medium Cyan/Teal.
+    "$color2"               "[0.14 0.30 0.34]" 
+
+    // --- 2. Emissive Blend (The Caustic Core) ---
+    // Replicates: RampTex (Caustics) + UvNoiseTex01 (RGB Noise)
+    "$emissiveblendenabled"      "1"
+    "$emissiveblendstrength"     "1"
+    
+    // RampTex: Caustic Pattern (T_A_Caustic_01)
+    "$emissiveblendtexture"      "sprites/T_A_Caustic_01"
+    
+    // Reuse MaskTex_1 to confine the glow
+    "$emissiveblendbasetexture"  "sprites/T_A_Gradient_Vertical_05"
+    
+    // UvNoiseTex01: RGB Noise (T_A_NoiseRGB_01) for distortion
+    "$emissiveblendflowtexture"  "sprites/T_A_NoiseRGB_01"
+    
+    // HighlightColor: Pure White
+    "$emissiveblendtint"         "[0.14 0.30 0.34]"
+    
+    // SCROLL SPEED (The Downward Flow):
+    // UE4 Ramp_PannY: -1.0 (Scrolls Down Fast)
+    // Source Emissive Scroll: [0 -1.0]
+    "$emissiveblendscrollvector" "[ 0 -1.0 ]"
+
+
+    // --- 3. Detail Layer (The Streaks) ---
+    // Replicates: AdditionalTex (T_A_MirNoise_01)
+    "$detail"           "sprites/T_A_MirNoise_01"
+    
+    // SCALE:
+    // UE4 Additional_Tile: X:5.0, Y:0.5 
+    // Stretched heavily on X to create fine lines/streaks.
+    "$detailscale"      "[5 0.5]"
+    
+    // MODE 5: Unlit Additive
+    "$detailblendmode"  "5"
+    
+    // INTENSITY:
+    // UE4 Intensity is 1.0. 
+    "$detailblendfactor" "1.0"
+	"$detailtint" "[0.14 0.30 0.34]" 
+
+
+    // --- 4. Proxies (Animation & Randomness) ---
+    // Internal Variables for math
+    "$base_detail_speed"    "0.25"  // UE4 PannY = -0.25 (Slow downward scroll)
+    "$random_val"           "0.0"   
+    "$final_detail_speed"   "0.0"
+    "$random_time_offset"   "0.0"
+
+    "Proxies"
+    {
+        // 1. GENERATE RANDOM SEED
+        "EntityRandom"
+        {
+            "scale"     "0.2" // Smaller variance than the highlight layer
+            "resultVar" "$random_val"
+        }
+
+        // 2. RANDOMIZE DETAIL SPEED
+        "Add"
+        {
+            "srcVar1"   "$base_detail_speed"
+            "srcVar2"   "$random_val"
+            "resultVar" "$final_detail_speed"
+        }
+
+        // Scroll the Detail Texture DOWNWARDS (-90 degrees)
+        // Matches the Ramp direction but moves much slower (0.25 vs 1.0)
+        // creating a parallax effect.
+        "TextureScroll"
+        {
+            "texturescrollvar"      "$detailtexturetransform"
+            "texturescrollrate"     "$final_detail_speed"
+            "texturescrollangle"    "-90"
+        }
+
+        // 3. DESYNC GLOW PULSE
+        "EntityRandom"
+        {
+            "scale"     "10.0"
+            "resultVar" "$random_time_offset"
+        }
+
+        // 4. SHIMMER EFFECT
+        // Slower pulse than the highlight to simulate "volume" breathing
+        "Sine"
+        {
+            "sineperiod" "0.5"              
+            "sinemin"    "0.8"
+            "sinemax"    "1.2"              
+            "timeoffset" "$random_time_offset"
+            "resultVar"  "$emissiveblendstrength"
+        }
+    }
+}

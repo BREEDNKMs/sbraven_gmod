@@ -6,16 +6,11 @@
     "$vertexcolor"       "1"                                 // allow per-particle tinting via color modulation
     "$vertexalpha"       "0"
     "$nocull"            "1"
-    "$selfillum"         "1"                                 // emulate MSM_UnlitReactive
-    "$selfillumtint"     "[5.0 2.5 0.5]"                     // VectorParameterValues → ColorTest
+    //"$selfillum"         "1"                                 // emulate MSM_UnlitReactive
+    //"$selfillumtint"     "[5.0 2.5 0.5]"                     // VectorParameterValues → ColorTest
 	"$color" "[5.0 2.5 0.5]"
     "$selfillumstrength" "1.0"
 
-    // ============================================
-    // 🔶 Optional refraction / depth bias stub
-    // Unreal had RefractionDepthBias=0.0
-    // ============================================
-    "$refractamount"     "0.0"
 
     // ============================================
     // 🔶 Edge fade / saturation control (MF_EdgeSaturationControl)

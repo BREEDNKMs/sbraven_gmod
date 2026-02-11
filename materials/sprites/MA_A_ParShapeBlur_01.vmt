@@ -1,11 +1,11 @@
-"Aftershock"
+"Refract"
 {
-    "$normalmap" "sprites/T_A_WaterFlowNoise_03_N"
-    "$refractamount" "0.05"
-    "$scrollrate" "0.1"
-    "$scrollangle" "90"
-    "$additive" "1"
-    "$translucent" "1"
-    "$selfillumtint" "[1 1 1]"
-    "$color" "[1 1 1]"
+	//"$normalmap" "sprites/T_A_WaterFlowNoise_03_N"
+	"$normalmap" "sprites/T_E_Circle_001_N4"
+
+	"$normalmap2"	"" 
+	"$dudvmap" "" 
+	"$refractamount" "0.1" 
+	"$nowritez" "1" 
+	"$refracttint" "[1.2 1.2 1.2]"
 }

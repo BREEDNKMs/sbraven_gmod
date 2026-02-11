@@ -24,11 +24,29 @@
     "$emissiveblendtint" "[1.47 4.04 5.0]"
 
     // Scroll vector: leave at zero, flowmap drives motion
-    "$emissiveblendscrollvector" "[0 0]"
+    "$emissiveblendscrollvector" "[1 1]"
 	"$emissiveblendstrength" "1" 
 
     // Optional detail overlay (to mimic NoiseDust/NoiseRGB)
     "$detail" "sprites/t_a_noisedust_01"
     "$detailscale" 1
     "$detailblendmode" 0   // mod2x or additive could be tested
+	"$refvalue" "5" 
+	"Proxies" 
+	{ 
+		"Alpha" 
+		{
+		} 
+		"Divide"
+		{
+		"srcVar1" "$alpha" 
+		"srcVar2" "$refvalue" 
+		"resultVar" "$emissiveblendstrength" 
+		}
+		"Equals"
+		{ 
+		"srcVar1" "$alpha" 
+		"resultVar" "$emissiveblendstrength" 
+		} 
+	} 
 }

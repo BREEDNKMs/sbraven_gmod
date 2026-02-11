@@ -1,0 +1,109 @@
+"VertexLitGeneric"
+{
+    // -------------------------
+    // Base / general settings
+    // -------------------------
+    // Main ribbon texture (RibbonTex)
+    "$basetexture" "sprites/T_B_StreakNoise_02"
+
+    // Optional normal (cached normal from JSON). Not strictly necessary for an unlit look,
+    // but retained to give subtle surface variation if lighting is present.
+    "$bumpmap" "sprites/T_A_SwirlNoise_03_N"
+
+    // Detail (UvNoiseTex) used as an overlay / flow contribution
+    "$detail" "sprites/T_A_NoiseTurbulence_02"
+    // UvNoise_TileX / UvNoise_TileY -> detailscale [U V]
+    "$detailscale" "[1.0 0.7]"
+    // UvNoiseIntensity -> emulate via detail blend factor (small)
+    "$detailblendfactor" "0.08"
+    // detail blend mode: 1 = additive (works nicely for noise overlay)
+    "$detailblendmode" "1"
+
+    // Use vertex color/alpha so the ribbon's per-vertex color from Niagara is respected
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+
+    // Two-sided / no culling (TwoSided = true)
+    "$nocull" "1"
+
+    // Additive blending like the UE additive material
+    "$additive" "1"
+
+    // Ensure translucency works (we are additive, but this helps on some engines)
+    "$translucent" "1"
+
+    // -------------------------
+    // Mask / taper (MaskTex)
+    // -------------------------
+    // Use the vertical gradient mask as a secondary base texture. This will be used
+    // as the 'mask' for where the emissive blend is allowed to show.
+    "$basetexture2" "sprites/T_A_Gradient_Vertical_02"
+    // If your engine supports using basetexture2 for alpha modulation, it will
+    // help reproduce the UE mask behavior. If not, bake the mask into the base texture's alpha.
+
+    // -------------------------
+    // EmissiveBlend (required parameters)
+    // -------------------------
+    // Enable advanced emissive flow blending
+    "$emissiveblendenabled" "1"
+
+    // The moving glow texture (the 'glow itself', not mapped to model UVs).
+    // Map: $emissiveblendtexture -> RibbonTex (T_B_StreakNoise_02)
+    "$emissiveblendtexture" "sprites/T_B_StreakNoise_02"
+
+    // Base mask for where the emissive can appear (mapped to model UVs, does NOT scroll).
+    // Map: $emissiveblendbasetexture -> MaskTex (T_A_Gradient_Vertical_02)
+    "$emissiveblendbasetexture" "sprites/T_A_Gradient_Vertical_02"
+
+    // Flowmap that controls how $emissiveblendtexture moves. Map to UvNoiseTex (T_A_NoiseTurbulence_02).
+    // If this is a flat color (white), the effect reduces to simple scroll by $emissiveblendscrollvector.
+    "$emissiveblendflowtexture" "sprites/T_A_NoiseTurbulence_02"
+
+    // Color tint applied to the glow texture (HighlightColor ~ [1 1 1]).
+    // Can be >1 to boost color; keep [1 1 1] to preserve source texture colors.
+    "$emissiveblendtint" "[1 1 1]"
+
+    // Scroll vector controls the base scrolling speed/direction for the emissive texture.
+    // Ribbon_PannX = 0.3 -> scroll horizontally at 0.3 units/sec
+    // Keep Y = 0 since original panning was only X.
+    "$emissiveblendscrollvector" "[0.3 0]"
+
+    "$emissiveblendstrength" "1" 
+
+    // -------------------------
+    // Other useful keys (tweaks / compatibility)
+    // -------------------------
+    "$ignorealpha" "0"        // respect alpha where available
+    "$alphatest" "0"
+    "$noclamp" "1"
+    "$halflambert" "0"
+    "$ignorez" "0"
+
+    // Small optimization: don't force separate skinning; use existing engine defaults
+    "$ambientboost" "0"       // don't artificially boost ambient lighting; emissive handles brightness
+
+    // Developer hints:
+    // - Ribbon_TileX/Y (0.6 / 1.0) is approximated by scaling the base texture at export or by baking UV scale into the VTF.
+    //   If your Source build supports "$basetexturescale" you may try:
+    //   "$basetexturescale" "[0.6 1.0]"
+    //
+    // - If the detail panning / flow behavior doesn't match expectations, animate the scroll vector
+    //   per-frame from Lua (modify $emissiveblendscrollvector per-frame or rebuild mesh UVs).
+	"Proxies"
+	{ 
+		"Equals" 
+		{
+			"srcVar1" "$color" 
+			"resultVar" "$emissiveblendtint" 
+		} 
+		"Alpha" 
+		{ 
+			
+		} 
+		"Equals" 
+		{
+			"srcVar1" "$alpha" 
+			"resultVar" "$emissiveblendstrength" 
+		} 
+	} 
+}

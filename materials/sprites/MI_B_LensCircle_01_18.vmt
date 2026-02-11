@@ -1,0 +1,32 @@
+"UnlitGeneric"
+{
+	// Primary (colour / chroma) ring
+	"$basetexture" "sprites/T_A_ChormaRing_04"
+
+	// Secondary ring / mask texture (used as a detail / overlay)
+	"$detail" "sprites/T_A_FlareRing_02"
+	"$color2" "[5 5 5]" 
+
+	// Blend detail texture additively on top of the base (1 = additive style)
+	"$detailblendmode" "1"
+	"$detailblendfactor" "1.0"
+	"$detailscale" "1.0"
+
+	// Render / blending
+	"$additive"        "1"     // EBlendMode::BLEND_Additive
+	"$translucent"     "1"
+	"$alphatest"       "1"     // enable alpha clip
+	"$alphatestreference" "0.3333" // matches OpacityMaskClipValue ~ 0.3333
+
+	// Make it unlit / fullbright / tintable
+	"$vertexcolor"     "1"     // allows tint via entity color
+	"$vertexalpha"     "1"
+
+	// Misc useful flags for sprites
+	"$nocull"          "1"
+	"$nofog"           "1"
+
+	// If you want the flare to always render on top of world geometry (common for lens flares),
+	// set "$ignorez" "1" in a copy of this VMT. Default below keeps normal depth testing.
+	"$ignorez"         "0"
+}

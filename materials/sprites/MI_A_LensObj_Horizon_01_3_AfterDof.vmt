@@ -3,7 +3,7 @@
     "$basetexture"    "sprites/T_A_HorizonFlare_02"
     "$additive"       "1"
     "$translucent"    "1"
-//    "$ignorez"        "1"
+	"$nowritez"        "1"
     "$vertexalpha"    "1"
     "$vertexcolor"    "1"
     

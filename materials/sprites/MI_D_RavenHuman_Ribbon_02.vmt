@@ -1,0 +1,65 @@
+"UnlitGeneric"
+{
+	// Base texture (main streak shape & alpha)
+	"$basetexture" "sprites/T_A_StreakSwirl_02"	
+	"$bumpmap" "sprites/T_A_BaseNoise_01_N"	
+
+	// Use additive blending (ribbon brightens what's behind it)
+	"$additive" "1"
+	"$vertexcolor" "1"         // allow per-vertex tint from Lua or particle verts
+	"$vertexalpha" "1"         // allow per-vertex alpha
+
+	// Two-sided
+	"$nocull" "1"
+
+	// Use emissiveblend to create emissive flowing glow/scroll effect
+	// NOTE: EmissiveBlend is additive and can use a flowmap or be static.
+	"$emissiveblendenabled" "1"
+
+	// This is the scrolling/flow texture (what actually scrolls)
+	"$emissiveblendtexture" "sprites/T_A_StreakSwirl_02"        
+
+	// This is treated as the mask/base for the glow - best as VTF i8 if using flow features
+	// Map to MaskTex (T_A_Gradient_Vertical_08) or a special alpha-only mask VTF.
+	"$emissiveblendbasetexture" "sprites/T_A_Gradient_Vertical_08"
+
+	// Flow map for the emissiveblend (maps to UvNoiseTex). If you don't want flow,
+	// point to a white dev texture (vgui/white) and use scroll vector [0 0].
+	"$emissiveblendflowtexture" "sprites/t_a_gradient_vertical_03"
+
+	// Tint + strength
+	"$emissiveblendtint" "[ 1 1 1 ]"            // RGB tint (can be >1 for stronger color)
+	"$emissiveblendstrength" "1"                // Master intensity (0..1)
+
+	// Scroll vector: X (U) and Y (V). Positive X behavior note: Source X+ moves left depending on flowmap convention.
+	// Default set to the UE Ribbon_Pann (0.2) on U: change from Lua if needed.
+	"$emissiveblendscrollvector" "[ 0.2 0 ]"
+
+	// Make sure we don't use environment map etc for performance - ribbon is unlit additive
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[ 0 0 0 ]"
+
+	// Base texture transform: controls tiling & scale (maps Ribbon_TileX -> scale.x)
+	// Format: [ center <cx> <cy> scale <sx> <sy> rotate <deg> translate <tx> <ty> ]
+	// We'll map TileX to scale.x and keep scale.y = 1. You can change these from Lua by overwriting this token.
+	"$basetexturetransform" "center .5 .5 scale 0.5 1 rotate 0 translate 0 0"
+
+	// Optional detail layer (not required) - use if you need fine detail on up close
+	// "$detail" "detail/detailtexture"
+	// "$detailscale" "4"
+	// "$detailblendfactor" "0.5"
+
+	// Ensure alpha channel is used correctly (texture's alpha is the ribbon mask)
+	"$alphatest" "0"         // not masked; additive with alpha
+	"$noclamp" "0"
+
+	// Misc performance
+	"$maxpixelwidth" "0"
+
+	// Proxies are optional — we prefer Lua control for dynamic params.
+	// Example: you could add a "TextureTransform" proxy here to animate scrolling automatically,
+	// but we'll manipulate $emissiveblendscrollvector and $emissiveblendstrength from Lua.
+
+	// *** Keywords for engine to bind lookups ***
+	// NOTE: set $allowalphatocoverage to 0 if needed for multisample issues.
+}

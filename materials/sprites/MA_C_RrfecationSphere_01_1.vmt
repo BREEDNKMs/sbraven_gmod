@@ -1,87 +1,31 @@
-"Aftershock"
+"Refract"
 {
-    // Base texture / mask for the band (uses your gradient)
-    "$basetexture"             ""
-	"$model" "1" 
-
-    // Normal / bump driving the refraction (DX9-style bumpmap)
-    "$normalmap"               "sprites/T_A_Gradient_Vertical_03"
-    "$bumpframe"               "0"
-
-    // Transform applied to the bumpmap (UV transform placeholder)
-    // Format/interpretation of this string can vary between engines; adjust to your build.
-    "$bumptransform"           "center 0.5 0.5 scale 1 1 rotate 0 translate 0 0"
-
-    // Refraction strength: multiplies normal intensity
-    "$refractamount"           "0.035"
-
-    // Color tint applied to the refracted image
-    "$colortint"               "[1.0 1.3 1.6]"
-
-    // Blur level: 0, 1 or 2 (some builds accept other values; 2 = strongest)
-    "$BlurAmount"              "0.1"
-
-    // Ground fade interval (per-vertex fade depending on distance to ground)
-    "$GroundMin"               "0"
-    "$GroundMax"               "0"
-
-    // Silhouette fade: color and thickness (edge fade)
-    "$SilhouetteColor"         "[0.30 0.30 0.50]"
-    "$SilhouetteThickness"     "0.20"
-
-    // Allow particle / vertex modulation (useful for Niagara/particles or model vertex colors)
-    "$vertexcolor"             "1"
-    "$vertexalpha"             "1"
-
-    // Two-sided, additive, alpha-test mapping to Unreal's settings
-    "$nocull"                  "1"
-    "$additive"                "1"
-    "$alphatest"               "1"
-    "$alphatestreference"      "0.3333"
-	"$alpha" "10"
-	    // helper constants
-    "$one"           "1"
-    "$baseRefract"   "0.035"
-    "$baseBlur"      "0.035"
-    "$groundScale"   "10"
-	"$_normSpeed" "1" 
-	"$EntitySpeed" "1" 
-
-    "Proxies" // proxies are listed inside this block
+ 	"Refract_DX60"
 	{
-		"EntitySpeed" 
-		{
-			"resultVar"	"$refractamount" 
-		}
-		"EntitySpeed" 
-		{
-			"resultVar"	"$BlurAmount" 
-		}
-		"EntitySpeed"
-        {
-            "resultVar" "$EntitySpeed"
-        }
-		"Divide"
-        {
-            "srcVar1" "$refractamount"    // same value EntitySpeed writes to
-            "srcVar2" "$baseRefract"             // normalize to 0..1
-            "resultVar" "$_normSpeed"
-        }
-		"Multiply"
-        {
-            "srcVar1" "$_normSpeed"
-            "srcVar2" "$groundScale"                // scale up to 0..10
-            "resultVar" "$GroundMax"
-        }
-		"Subtract"
-        {
-            "srcVar1" "$groundScale"
-            "srcVar2" "$GroundMax"                // scale up to 0..10
-            "resultVar" "$GroundMax"
-        }
-		"Alpha"
-        {
-            "$alpha" "$alpha" 
-        }
+		"$fallbackmaterial" "models/props_combine/stasisshield_sheet_dx7"
 	}
+
+	"$model" 1
+    "$nocull" "1"
+
+	"$nowritez" 1
+	"$bluramount" 1
+ 	"$refractamount" ".02"
+ 	//"$dudvmap" "models/shadertest/shader3_dudv"
+	//"$normalmap" "models/shadertest/shader3_normal"
+	"$normalmap" "sprites/T_A_Gradient_Vertical_03"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[1 1 1]"
+//	"$refracttinttexture" "models/props_combine/stasisshield_tint"
+//	"$refracttint" "{255 20 50}"
+
+//	"Proxies"
+//	{
+//		"TextureScroll"
+//		{
+//			"texturescrollvar" "$bumptransform"
+//			"texturescrollrate" .08
+//			"texturescrollangle" 90
+//		}
+//	}
 }

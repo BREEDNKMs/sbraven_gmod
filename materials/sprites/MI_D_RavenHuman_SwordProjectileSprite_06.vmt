@@ -1,0 +1,122 @@
+"VertexLitGeneric"
+{
+    // --- 1. Base Settings (The Mask) ---
+    // MaskTex_1: Vertical Gradient shape
+    "$basetexture"          "sprites/T_A_Gradient_Vertical_05"
+    
+    // ADDITIVE BLEND MODE:
+    // Essential for the "Highlight" layer. It adds brightness to the scene 
+    // rather than blending translucently.
+    "$additive"             "1"
+    "$nocull"               "1"
+    
+    // EDGE COLOR TINT:
+    // UE4 EdgeColor: Hex 004659 -> RGB [0 70 89]
+    // Tints the base gradient to a deep Cyan/Teal.
+    "$color2"               "[0 0.27 0.34]" 
+
+    // --- 2. Emissive Blend (The Streak) ---
+    // Replicates: RampTex + UvNoiseTex01
+    "$emissiveblendenabled"      "1"
+    "$emissiveblendstrength"     "1"
+    
+    // RampTex: Smooth Gradient (T_A_RampGradient_02)
+    "$emissiveblendtexture"      "sprites/T_A_RampGradient_02"
+    
+    // Reuse MaskTex_1 to confine the glow
+    "$emissiveblendbasetexture"  "sprites/T_A_Gradient_Vertical_05"
+    
+    // UvNoiseTex01: Water Flow Normal (T_A_WaterFlowNoise_02_N)
+    "$emissiveblendflowtexture"  "sprites/T_A_WaterFlowNoise_02_N"
+    
+    // HighlightColor: Pure White
+    "$emissiveblendtint"         "[ 0 0.27 0.34 ]"
+    
+    // SCROLL SPEED:
+    // UE4 Ramp_PannY: -0.5 (Scrolls Down)
+    // Source Emissive Scroll: [0 -0.5]
+    "$emissiveblendscrollvector" "[ 0 -0.5 ]"
+
+
+    // --- 3. Detail Layer (The Bloom/Glow) ---
+    // Replicates: AdditionalTex (T_A_NoiseTurbulence_02)
+    "$detail"           "sprites/T_A_NoiseTurbulence_02"
+    
+    // SCALE:
+    // UE4 Additional_Tile: X:2.0, Y:0.2 (Stretched Horizontally)
+    "$detailscale"      "[2 0.2]"
+    
+    // MODE 5: Unlit Additive
+    // Note: Works in VertexLitGeneric as long as we don't use $bumpmap for lighting.
+    "$detailblendmode"  "5"
+    
+    // INTENSITY:
+    // UE4 Intensity is 5.0. Source caps at 1.0.
+    // However, combined with $additive base, this will still appear very bright.
+    "$detailblendfactor" "1.0"
+	"$detailtint" "[0 0.27 0.34]" 
+
+
+    // --- 4. Proxies (Animation & Randomness) ---
+    // Internal Variables for math
+    "$base_detail_speed"    "1.0"   // UE4 PannY = -1.0 (Positive here, direction handled by angle)
+    "$random_val"           "0.0"   
+    "$final_detail_speed"   "0.0"
+    "$random_time_offset"   "0.0"
+
+    "Proxies"
+    {
+        // 1. GENERATE RANDOM SEED
+        // Gives this specific highlight layer a unique identity
+        "EntityRandom"
+        {
+            "scale"     "0.5"
+            "resultVar" "$random_val"
+        }
+
+        // 2. RANDOMIZE DETAIL SPEED
+        // Adds variation to the turbulence scroll speed
+        "Add"
+        {
+            "srcVar1"   "$base_detail_speed"
+            "srcVar2"   "$random_val"
+            "resultVar" "$final_detail_speed"
+        }
+
+        // Scroll the Detail Texture DOWNWARDS (-90 degrees)
+        "TextureScroll"
+        {
+            "texturescrollvar"      "$detailtexturetransform"
+            "texturescrollrate"     "$final_detail_speed"
+            "texturescrollangle"    "-90"
+        }
+
+        // 3. DESYNC GLOW PULSE
+        // Generates a large offset (0-10) for the Sine wave
+        "EntityRandom"
+        {
+            "scale"     "10.0"
+            "resultVar" "$random_time_offset"
+        }
+
+        // 4. SHIMMER EFFECT
+        // Pulses the ramp strength slightly to simulate energy fluctuation
+        "Sine"
+        {
+            "sineperiod" "0.25"             // Very fast shimmer
+            "sinemin"    "0.8"
+            "sinemax"    "1.5"              // Overbright pulse
+            "timeoffset" "$random_time_offset"
+            "resultVar"  "$emissiveblendstrength"
+        }
+        "Alpha"
+        {
+
+        } 
+		"Copy" 
+		{ 
+			"srcVar1" "$alpha" 
+			"resultVar" "$emissiveblendstrength" 
+		} 
+    }
+}

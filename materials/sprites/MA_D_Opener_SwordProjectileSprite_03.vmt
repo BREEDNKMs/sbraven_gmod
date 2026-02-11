@@ -1,0 +1,117 @@
+"VertexLitGeneric"
+{
+    // --- 1. Base Settings (The Mask) ---
+    // MaskTex_1: Vertical Gradient shape
+    "$basetexture"          "sprites/T_A_Gradient_Vertical_05"
+	"$selfillum" "1" 
+    
+    // ADDITIVE BLEND MODE:
+    // Essential for the "Core" energy look.
+    "$additive"             "1"
+    "$nocull"               "1"
+    
+    // EDGE COLOR TINT:
+    // UE4 EdgeColor: Hex 000059 -> RGB [0 0 89]
+    // Tints the base gradient to Deep Indigo.
+    "$color2"               "[0 0 0.71]" 
+
+    // --- 2. Emissive Blend (The Stable Core) ---
+    // Replicates: RampTex (Gradient) + UvNoiseTex01 (Water Flow)
+    // This creates the solid, glowing "beam" center.
+    "$emissiveblendenabled"      "1"
+    
+    // RampTex: Smooth Gradient (T_A_RampGradient_02)
+    "$emissiveblendtexture"      "sprites/T_A_RampGradient_02"
+    
+    // Reuse MaskTex_1 to confine the glow
+    "$emissiveblendbasetexture"  "sprites/T_A_Gradient_Vertical_05"
+    
+    // UvNoiseTex01: Water Flow Normal (T_A_WaterFlowNoise_02_N)
+    "$emissiveblendflowtexture"  "sprites/T_A_WaterFlowNoise_02_N"
+    
+    // HighlightColor: Pure White
+    "$EmissiveBlendTint"            "[ 0 5 5 ]"
+    
+    // INTENSITY:
+    // UE4 RampIntensity: 2.11
+    "$emissiveblendstrength"     "1"
+    
+    // SCROLL SPEED:
+    // UE4 Ramp_PannY: -0.5 (Moderate Downward flow)
+    "$emissiveblendscrollvector" "[ 5 -0.5 ]"
+
+
+    // --- 3. Detail Layer (The Chaos Streaks) ---
+    // Replicates: AdditionalTex (T_A_MirNoise_02)
+    // This creates the crackling lightning/streaks on top.
+    "$detail"           "sprites/T_A_MirNoise_02"
+	"$detailtint"            "[ 0 0 0.71 ]"
+    
+    // SCALE:
+    // UE4 Additional_Tile: X:2.5, Y:0.2 
+    // Stretched horizontally (2.5x) to look like long energy arcs.
+    "$detailscale"      "[2.5 0.2]"
+    
+    // MODE 5: Unlit Additive
+    "$detailblendmode"  "5"
+    
+    // INTENSITY:
+    // UE4 Intensity is 5.0 (Very Bright). 
+    // We max this out at 1.0 for Source, relying on the Additive blend to stack brightness.
+    "$detailblendfactor" "1.0"
+
+
+    // --- 4. Proxies (Animation & Randomness) ---
+    // Internal Variables
+    "$base_detail_speed"    "1.0"   // UE4 PannY = -1.0 (Fast Downward)
+    "$random_val"           "0.0"   
+    "$final_detail_speed"   "0.0"
+    "$random_time_offset"   "0.0"
+
+    "Proxies"
+    {
+        // 1. GENERATE RANDOM SEED
+        "EntityRandom"
+        {
+            "scale"     "0.5" 
+            "resultVar" "$random_val"
+        }
+
+        // 2. RANDOMIZE STREAK SPEED
+        // The streaks flow faster than the core (-1.0 vs -0.5).
+        // Adding random variance ensures they don't look looped.
+        "Add"
+        {
+            "srcVar1"   "$base_detail_speed"
+            "srcVar2"   "$random_val"
+            "resultVar" "$final_detail_speed"
+        }
+
+        // Scroll the Detail Texture DOWNWARDS (-90 degrees)
+        "TextureScroll"
+        {
+            "texturescrollvar"      "$detailtexturetransform"
+            "texturescrollrate"     "$final_detail_speed"
+            "texturescrollangle"    "-90"
+        }
+
+        // 3. DESYNC GLOW PULSE
+        // UE4 has "Use_ParticleRandom_EmissiveOffset" = True
+        "EntityRandom"
+        {
+            "scale"     "10.0"
+            "resultVar" "$random_time_offset"
+        }
+
+        // 4. ENERGY PULSE
+        // Modulates the Core strength slightly.
+        "Sine"
+        {
+            "sineperiod" "0.3"              // Fast pulsing
+            "sinemin"    "1.5"              // Minimum brightness (Still bright)
+            "sinemax"    "2.5"              // Peak brightness
+            "timeoffset" "$random_time_offset"
+            "resultVar"  "$emissiveblendstrength"
+        }
+    }
+}

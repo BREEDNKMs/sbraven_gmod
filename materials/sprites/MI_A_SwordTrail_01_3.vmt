@@ -1,0 +1,43 @@
+"VertexLitGeneric"
+{
+    // Base trail texture (UE: TrailTex / refractionTex -> CenterTrail_01)
+    "$basetexture"        "sprites/CenterTrail_01"
+
+    // Additive blending (UE: BlendMode = BLEND_Additive)
+    "$additive"           "1"
+
+    // Two-sided (UE: TwoSided = true)
+    "$nocull"             "1"
+
+    // Allow vertex tinting and alpha from entity (Niagara wrote Color/Alpha)
+    "$vertexcolor"        "0"
+    "$vertexalpha"        "0"
+
+    // UnlitGeneric is fullbright by default; keep fog off if you want crisp trails
+    "$nofog"              "1"
+
+    // Detail/noise: use UE's T_A_NoiseRGB_01 to add high-frequency variation
+    "$detail"             "sprites/T_A_NoiseRGB_01"
+    "$detailscale"        "1"
+    // Use an unlit additive detail blend so it appears like noise/glow
+    "$detailblendmode"    "10"
+    "$detailblendfactor"  "0.25"    // subtle; tuned from UE 'EdgeSaturationIntensity' and Blur being low
+
+    // Opacity clipping threshold in UE (OpacityMaskClipValue = 0.3333)
+    // For an additive/unlit trail we typically don't alpha-test, but leave this here in case you want hard masks:
+    //"$alphatest"         "1"
+    //"$alphatestthreshold" "0.3333"
+
+    // Misc: keep the material simple and sprite-like
+    "$translucent"        "1"
+	"$selfillum" 1 
+	"Proxies"
+	{ 
+	
+		"Alpha" 
+		{ 
+		} 
+		
+	
+	} 
+}

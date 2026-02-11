@@ -1,0 +1,67 @@
+"VertexLitGeneric"
+{
+    // Base visuals (primary animated trail)
+    "$basetexture"                "sprites/T_A_AnimTrail_03"
+    "$surfaceprop"                "sprite"
+
+    // Two-sided / sprite-friendly
+    "$nocull"						"1"        // TwoSided = true
+    "$vertexcolor"					"1"        // allow vertexcolor tinting from particles
+    "$vertexalpha"					"1"        // allow particle alpha to control opacity
+    "$translucent"					"0"        // BLEND_Translucent equivalent
+    "$additive"						"1"        // BLEND_Translucent equivalent
+    "$alphatest"					"0"
+
+    // Make the material self-illuminated (material is Unlit in UE4)
+    "$selfillum"                  "0"
+
+    // Emissive/flowing glow overlay (maps to UE4 emissiveblend system)
+    "$emissiveblendenabled"       "1"
+    // The scrolling/glow texture (this is the moving overlay)
+    "$emissiveblendtexture"       "sprites/T_A_AnimTrail_02"
+    // The mask that limits where the glow contributes (stays in UV space)
+    "$emissiveblendbasetexture"   "sprites/T_Gradient_Horizon_01"
+    // Flowmap controlling motion of the emissiveblend texture
+    "$emissiveblendflowtexture"   "sprites/T_A_NoiseRGB_01"
+
+    // Tint / strength / scroll settings — tuned from scalar hints in the JSON
+    "$emissiveblendtint"          "[ 1 1 1 ]"
+    "$emissiveblendstrength"      "0.7"      // JSON had a 0.7 scalar -> used for strength
+    "$emissiveblendscrollvector"  "[ 1 0.07 ]" // X scroll (tile/sec), small Y per JSON's 0.07
+
+    // Detail (small-scale noise overlay to emulate the UE4 noise / detail usage)
+    "$detail"                     "sprites/T_A_NoiseRGB_01"
+    "$detailscale"                "4"
+    "$detailblendmode"            "5"        // Unlit Additive — detail appears to glow
+    "$detailblendfactor"         "0.03"      // subtle; based on JSON small value (0.03)
+
+    // Useful for particle sprites (no fog, keeps color crisp) — optional
+    // Remove or set to 0 if you want the material to be affected by world fog.
+    "$nofog"                      "1"
+	
+	"$emissiveblendstrengthdefault"      "0.7"
+	"$entityspeed"      "0"
+	
+	"Proxies"
+	{ 
+		"Equals" 
+		{
+			"srcVar1" "$color" 
+			"resultVar" "$emissiveblendtint" 
+		} 
+		"Alpha" 
+		{ 
+			"resultVar" "$alpha" 
+		} 
+		"EntitySpeed"
+		{ 
+			"resultVar"	"$entityspeed" 
+		} 
+		"Multiply" 
+		{ 
+			"srcVar1"	"$entityspeed" 
+			"srcVar2"	"$emissiveblendstrengthdefault" 
+			"resultVar"	"$emissiveblendstrength" 
+		} 
+	} 
+}
