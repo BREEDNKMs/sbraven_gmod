@@ -1,7 +1,7 @@
--- vort_displ_e.lua
--- Garry's Mod clientside EFFECT translating HL2 VortDispel (approximation)
--- Projects two textures onto the hit surface using ProjectedTexture,
--- animates their size and brightness over their lifetimes, and adds a dlight + particles.
+-- NS_D_RavenHuman_BackJumpCombo_Shock_01.lua 
+-- Garry's Mod clientside EFFECT replicating NS_D_RavenHuman_BackJumpCombo_Shock_01 (approximation)
+-- Projects several textures onto the hit surface using ProjectedTexture,
+-- animates their size and brightness over their lifetimes, and adds particles.
 EFFECT.NextAuroraTime = CurTime() 
 
 -- Configuration approximating the original FX_AddQuad calls
@@ -15,10 +15,10 @@ local QUADS = {
         -- lifeTime = 0.75
     -- },
     {
-        texture = "effects/rollerglow", -- second inner glow
+        texture = "sprites/rollerglow_gray", -- second inner glow
         startSize = 16,
-        endSize   = 300*15,
-        startAlpha = 30000.0,
+        endSize   = 300*10,
+        startAlpha = 10000.0,
         endAlpha   = 0.0,
         lifeTime = 1.25, 
 		Color = color_white 
@@ -26,13 +26,22 @@ local QUADS = {
 	{
         texture = "sprites/ar2_muzzle1", 
         startSize = 16,
-        endSize   = 300*15,
-        startAlpha = 30000.0,
+        endSize   = 300*10,
+        startAlpha = 10000.0,
         endAlpha   = 0.0,
         lifeTime = 1.25,
 		Color = Color(50,255,255) 
     },
-	-- {
+	{
+        texture = "sprites/T_A_FlareRing_02", 
+        startSize = 16,
+        endSize   = 300*10,
+        startAlpha = 3000.0,
+        endAlpha   = 0.0,
+        lifeTime = 1.25,
+		Color = Color(255,255,255) 
+    },
+	-- { -- refract test
         -- texture = "effects/hunterphysblast", 
         -- startSize = 16,
         -- endSize   = 300*15,
@@ -184,7 +193,7 @@ end
 function EFFECT:SpawnSmallFallback()
     -- fallback particle effect when no surface found
     local emitter = ParticleEmitter(self.Origin,true)
-        local p = emitter:Add("effects/rollerglow", self.Origin + VectorRand()*4)
+        local p = emitter:Add("sprites/rollerglow_gray", self.Origin + VectorRand()*4)
         if p then
             -- p:SetVelocity(VectorRand()*40)
 			p:SetAngles(Angle(-90,0,0))
@@ -238,8 +247,8 @@ function EFFECT:Think()
             ptex:SetTexture(info.texture)
 			ptex:SetColor(info.Color) 
 			ptex:SetFarZ(size)
-			-- ptex:SetLinearAttenuation(size*0.008) 
-			-- ptex:SetConstantAttenuation(size*0.008) 
+			ptex:SetLinearAttenuation(size*0.008) 
+			ptex:SetConstantAttenuation(size*0.008) 
 			ptex:SetQuadraticAttenuation(size*0.008) 
 			-- print(size) 
             ptex:Update()
@@ -255,7 +264,7 @@ function EFFECT:Think()
 	
 	local Cycle = (CurTime() - self.CreationTime) / (self.DieTime - self.CreationTime)
 	-- print(Cycle) 
-	local Rand = Vector(math.Rand(-1,1),math.Rand(-1,1),0)*(Cycle*800) 
+	local Rand = Vector(math.Rand(-1,1),math.Rand(-1,1),0)*(Cycle*2000) 
 	print(Rand,Cycle) 
 	if self.NextAuroraTime <= CurTime() then 
 		-- local p = self.Emitter_3d:Add("effects/energysplash", self:GetPos() + Rand) 
@@ -291,7 +300,7 @@ function EFFECT:Think()
 			end) -- billboard always rotating towards player 
 			
 		end 
-		self.NextAuroraTime = CurTime() + 0.0 
+		self.NextAuroraTime = CurTime() + 0.01 
 	end 
 
     -- Effect lives until DieTime, then we cleanup

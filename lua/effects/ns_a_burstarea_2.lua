@@ -68,6 +68,8 @@ function EFFECT:Init(data)
 	self.Angles = data:GetAngles() or Angle(0,0,0)
 	self.Scale = math.max(1, (data:GetScale() or 1))  -- user-supplied scale, default 1
 	self.Duration = (data:GetMagnitude() ~= 0) and data:GetMagnitude() or 2.65 -- emitter total duration fallback
+	if !enabled then return true end 
+	print("ns_a_burstarea_2 appeared at:",CurTime()) 
 
 	-- Beam lifetime (per beam). We pick a conservative short lifetime so beams scale and vanish.
 	self.BeamLife = math.min(1.25, self.Duration * 0.7)
@@ -108,6 +110,7 @@ end
 
 -- Think: spawn beams sequentially, cull old beams, return false when done
 function EFFECT:Think()
+	if !enabled then return false end 
 	local cur = CurTime()
 
 	-- spawn sweep: spawn one beam per interval, using LATHE_LUT radial multiplier
@@ -168,6 +171,7 @@ end
 
 -- Render: draws all active beams using the animated material
 function EFFECT:Render()
+	if !enabled then return true end 
 	if not self.Material then return end
 	render.SetMaterial(self.Material)
 

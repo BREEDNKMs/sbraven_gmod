@@ -293,9 +293,6 @@ function EFFECT:Render()
             local uB, vB = 1, uCoord
             local tuA, tvA = TransformUV(uA, vA, 0.5, 0.5, 1, 1, -90, 0, 0)
             local tuB, tvB = TransformUV(uB, vB, 0.5, 0.5, 1, 1, -90, 0, 0)
-			-- self.Mat:SetVector("$color2",Vector(rcol/255,gcol/255,bcol/255)) 
-			-- self.Mat:SetVector("$emissiveblendtint",Vector(rcol/255,gcol/255,bcol/255)) 
-			-- self.Mat:SetInt("$emissiveblendstrength",acol) 
 
             table.insert(segInfos, {
                 left = { pos = p1 - off, u = tuA, v = tvA },
@@ -332,8 +329,4 @@ function EFFECT:Render()
     meshObj:BuildFromTriangles(tris) 
     meshObj:Draw() 
     meshObj:Destroy() 
-	-- self.Mat:SetUndefined("$color") 
-	-- self.Mat:SetUndefined("$color2") 
-	-- self.Mat:SetUndefined("$emissiveblendtint") 
-	-- self.Mat:SetUndefined("$emissiveblendstrength") 
 end

@@ -19,7 +19,7 @@ function EFFECT:Init(data)
 
     -- print("raven trail created", self, self.Entity)
 	self:SetPos(self.Entity:GetPos()) 
-    self:SetParent(self.Entity)
+    self:SetParent(self.Entity) 
     -- self:SetModel(self.Entity:GetModel()) -- to enable rendering. don't touch 
 	-- PrintTable(self:GetTable()) 
 
@@ -254,18 +254,15 @@ function EFFECT:Render()
         -- Add the first vertex (Grip Side)
         mesh.Position(pos1)
         mesh.TexCoord(0, 0, vCoord)
-        -- CORRECTED: Unpack the Color object into R, G, B, A
         mesh.Color(trailColor.r, trailColor.g, trailColor.b, trailColor.a)
         mesh.AdvanceVertex()
 
         -- Add the second vertex (Tip Side)
         mesh.Position(pos2)
         mesh.TexCoord(0, 1, vCoord)
-        -- CORRECTED: Unpack the Color object into R, G, B, A
         mesh.Color(trailColor.r, trailColor.g, trailColor.b, trailColor.a)
         mesh.AdvanceVertex()
     end
 
     mesh.End()
-    -- mesh.Draw()
 end

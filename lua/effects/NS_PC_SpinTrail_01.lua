@@ -95,15 +95,15 @@ function EFFECT:Init(data)
 	self:SetPos(data:GetOrigin()) 
 	self:SetAngles(data:GetAngles()) 
 	self.Scale = data:GetScale() * 1 
-	print("scale is",self.Scale) 
+	-- print("scale is",self.Scale) 
 	self.LifeTime = data:GetMagnitude() * 1 
-	print("LifeTime is",self.LifeTime) 
-    self.SpawnTime = CurTime()
+	-- print("LifeTime is",self.LifeTime) 
+    self.CreationTime = CurTime() 
     self.BaseRotationSpeed = (2 * math.pi) / 0.8 * CONFIG.RotateRateSpeedMult
     self.Emitter = ParticleEmitter(self.Origin, false)
 	self.Emitter:SetNoDraw(true) 
 
-    self.Particles = {} -- entries: { particle = p, spawnTime = now, life = life, history = { {pos, t} ... }, lastSample = now }
+    self.Particles = {} -- entries: { particle = p, CreationTime = now, life = life, history = { {pos, t} ... }, lastSample = now }
 
     local now = CurTime()
     for i = 1, CONFIG.RootCount do
@@ -143,7 +143,7 @@ function EFFECT:Init(data)
 
             table.insert(self.Particles, {
                 particle = p,
-                spawnTime = now,
+                CreationTime = now,
                 life = life,
                 history = { { pos = p:GetPos(), t = now } }, -- start history with spawn pos
                 lastSample = now
@@ -174,7 +174,7 @@ function EFFECT:Think()
         -- end
 
         -- age check
-        local age = now - entry.spawnTime
+        local age = now - entry.CreationTime
         if age >= entry.life then
             -- let engine remove the CLuaParticle naturally; drop our ref
             table.remove(self.Particles, i)
@@ -277,7 +277,7 @@ function EFFECT:Render()
             if !pos then goto continue_sample end
 
             -- sample-based life fraction (older samples -> smaller)
-            local sampleAgeFrac = math.Clamp((h.t - entry.spawnTime) / entry.life, 0, 1)
+            local sampleAgeFrac = math.Clamp((h.t - entry.CreationTime) / entry.life, 0, 1)
             local invSampleLife = 1 - sampleAgeFrac
 
             local alphaMul = math.ease.OutCubic(invSampleLife) * CONFIG.AlphaMult
@@ -308,7 +308,7 @@ function EFFECT:Render()
             right:Normalize()
 
             -- small per-sample twist
-            local twistAngle = math.sin((h.t - entry.spawnTime) * 10 + (entry.spawnTime % 3)) * 0.35
+            local twistAngle = math.sin((h.t - entry.CreationTime) * 10 + (entry.CreationTime % 3)) * 0.35
             if math.abs(twistAngle) > 1e-6 then
                 right = RotateVectorAroundAxis(right, tangent, twistAngle)
                 right:Normalize()
