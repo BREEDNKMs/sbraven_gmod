@@ -100,7 +100,6 @@ function EFFECT:Think()
 
     -- Get positions for interpolation 
 	local BoundingRadius = IsValid(self:GetOwner()) and self:GetOwner():BoundingRadius() or 16 
-	print(BoundingRadius) 
     local CurrentPos = IsValid(self:GetOwner()) and self:GetOwner():WorldSpaceCenter() or self:GetPos()
     local StartPos = self.LastPos
 
@@ -117,7 +116,7 @@ function EFFECT:Think()
         if math.random() > 0.8 then
             local UniqueDieTime = math.Rand(0.50, 2.00)
             -- Use InterpPos instead of self:GetPos()
-            local Sprite = Emitter:Add("sprites/blueflare1_noz_gmod", InterpPos + VectorRand(BoundingRadius, BoundingRadius)) 
+            local Sprite = Emitter:Add("sprites/blueflare1_noz_gmod", InterpPos + VectorRand(-BoundingRadius, BoundingRadius)) 
             
             Sprite:SetStartSize(0)
             Sprite:SetEndSize(0)
@@ -141,7 +140,7 @@ function EFFECT:Think()
         else
             local UniqueDieTime = math.Rand(0.50, 2.00)
             -- Use InterpPos instead of self:GetPos()
-            local Sprite = Emitter:Add("sprites/MI_B_LensCircle_01_15_AfterDof", InterpPos + VectorRand(BoundingRadius, BoundingRadius)) 
+            local Sprite = Emitter:Add("sprites/MI_B_LensCircle_01_15_AfterDof", InterpPos + VectorRand(-BoundingRadius, BoundingRadius)) 
             
             Sprite:SetStartSize(0)
             Sprite:SetEndSize(0)
