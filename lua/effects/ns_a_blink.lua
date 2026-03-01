@@ -33,10 +33,10 @@ function EFFECT:Init(data)
         Sprite:SetRoll(45)
         Sprite:SetThinkFunction(function(Sprite)
             local Cycle = (Sprite:GetLifeTime()) / UniqueDieTime
-            local ParticleScale = 30 * Cycle * 2
+            local ParticleScale = 60 * Cycle * 1/0.5 
             if Cycle > 0.5 then
                 Cycle = 1 - Cycle
-                ParticleScale = 30 * Cycle * 2
+                ParticleScale = 60 * Cycle * 1/0.5 
             end
             Sprite:SetStartSize(ParticleScale)
             Sprite:SetEndSize(ParticleScale)
@@ -57,7 +57,7 @@ function EFFECT:Init(data)
         end
     end
     
-    local UniqueDieTime = math.Rand(0.10, 0.30)
+    local UniqueDieTime = math.Rand(0.25, 0.30) 
     local Sprite = Emitter:Add("sprites/MI_A_ParNoiseBlur_01_1", Pos)
     Sprite:SetStartSize(60)
     Sprite:SetEndSize(0)

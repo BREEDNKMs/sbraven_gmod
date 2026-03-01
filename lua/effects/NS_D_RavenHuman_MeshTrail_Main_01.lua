@@ -1,13 +1,22 @@
 EFFECT.ModelName = "models/stellarblade/Sword_Line_02_A.mdl"
 EFFECT.Duration = 2
-EFFECT.StartAngle = 0 
+local refractamount = 0.15 
+
+-- NEW SETTINGS --
+EFFECT.StartAngle = -75   -- The angle where the culling slice begins
+EFFECT.EndAngle = 145   -- The angle where the culling slice finishes
+EFFECT.CCW = false      -- Counter-Clockwise rotation toggle
+EFFECT.CullNormal = Vector(0, 0, 1) -- The axis to spin around (Default: Up/Yaw axis)
+
 EFFECT.CullDuration = 0.2 
 EFFECT.Material = "sprites/mi_a_swordtrail_01_2_tex" 
+EFFECT.RefractMaterial = Material("sprites/mi_a_swordtrail_01_2") 
 EFFECT.DieTime = 0.4 -- the time in which the effect will be removed entirely 
+EFFECT.ColorScaler = Vector(1,2,3) 
+EFFECT.ReplaceColors = true 
 
 -- LUT Vector sampler with piecewise easing (no table parser; control points embedded)
 -- Returns Vector(r,g,b). HDR values allowed (>1). t in [0,1].
-
 local CP = {
     -- sampled control points (t, r,g,b) chosen from the provided LUT
     {t = 0.000000, v = Vector(50.000000, 17.000000, 12.500000)},
@@ -67,62 +76,296 @@ local function GetLUTVector(t)
     return LerpVector(ue,a.v, b.v)
 end
 
--- Example usage:
--- local v = GetLUTVector(0.5) -- Vector(25.100002, 8.5, 6.25)
--- print(v) -- uses Vector tostring in your environment
-
-function EFFECT:Init( data )
-    self.CreationTime = CurTime()
-    self:SetModel( self.ModelName )
-    -- self:SetPos( data:GetOrigin() )
-    self:SetAngles( data:GetAngles() )
-	self:SetModelScale(data:GetScale()*0.20) 
-	self:SetMaterial("sprites/mi_a_swordtrail_01_2") -- this does not work, self:GetMaterial() returns "" 
+function EFFECT:Init( data ) 
+    self.CreationTime = CurTime() 
+	self.LocalPos = data:GetStart() 
+	self.LocalAng = data:GetAngles() 
+	-- self.LocalAng.x = self.LocalAng.x 
+    self:SetModel( self.ModelName ) 
+    self:SetModelScale(data:GetScale()*0.20) 
+    self:SetMaterial("sprites/mi_a_swordtrail_01_2") 
     self.Meshes = {} 
-	self:SetOwner(data:GetEntity()) 
-	self:SetParent(data:GetEntity()) 
+	self:SetAngles(self:GetAngles()) 
+	if IsValid(data:GetEntity()) then 
+		self.OwnerAng = data:GetEntity():GetAngles() 
+		self.OwnerAng.x = 0 
+		-- print("ent is:",data:GetEntity()) 
+		self:SetOwner(data:GetEntity()) 
+		local Owner = data:GetEntity() 
+		local RootSocket = Owner:LookupAttachment("RootSocket") 
+		if RootSocket > 0 then 
+			local att = Owner:GetAttachment(RootSocket)
+			if att then
+				-- Convert the cached LocalPos and LocalAng to World coordinates relative to the attachment
+				local wPos, wAng = LocalToWorld(self.LocalPos, self.LocalAng, att.Pos, att.Ang)
+				self:SetPos(wPos) 
+				self:SetAngles(wAng) 
+				
+				-- Ensure Sword_Line_02_B also mimics this exact position
+				if IsValid(self.Sword_Line_02_B) then
+					self.Sword_Line_02_B:SetPos(wPos)
+					self.Sword_Line_02_B:SetAngles(wAng)
+				end
+			end
+		else 
+			self:SetParent(self:GetOwner()) 
+			self:SetLocalPos(self.LocalPos) 
+			self:SetAngles(self.LocalAng) 
+		end 
+	end 
+	-- self:SetLocalPos(self.LocalPos) 
+	self.Emitter = ParticleEmitter(self:GetPos()) 
+	-- self.MeshTrail_Light = self.Emitter:Add("sprites/bluelight1",self:GetPos()) 
+	self.MeshTrail_Light = self.Emitter:Add("sprites/light_glow02_add",self:GetPos()) 
+	self.MeshTrail_Light:SetStartSize(160) 
+	self.MeshTrail_Light:SetDieTime(0.5) 
+	self:SetRenderMode(1) 
+	
+	self.Sword_Line_02_B = ClientsideModel("models/stellarblade/Sword_Line_02_B.mdl",RENDERGROUP_BOTH) 
+	local Sword_Line_02_B = self.Sword_Line_02_B 
+	Sword_Line_02_B.StartAngle = self.StartAngle   -- The angle where the culling slice begins
+	Sword_Line_02_B.EndAngle = self.EndAngle   -- The angle where the culling slice finishes
+	Sword_Line_02_B.CCW = self.CCW      -- Counter-Clockwise rotation toggle
+	Sword_Line_02_B.CullNormal = self.CullNormal -- The axis to spin around (Default: Up/Yaw axis)
+
+	Sword_Line_02_B.CullDuration = self.CullDuration 
+	-- Sword_Line_02_B.Material = "sprites/mi_a_swordtrail_01_2_tex" -- comment material to use model's own material 
+	Sword_Line_02_B.RefractMaterial = nil 
+	Sword_Line_02_B.DieTime = self.DieTime -- the time in which the effect will be removed entirely 
+	Sword_Line_02_B.ColorScaler = Vector(0.1,0.1,0.1) 
+	Sword_Line_02_B.ReplaceColors = true 
+	Sword_Line_02_B.CreationTime = CurTime() 
+	if IsValid(data:GetEntity()) then 
+		Sword_Line_02_B:SetOwner(data:GetEntity()) 
+		Sword_Line_02_B:SetParent(self:GetParent()) 
+	end 
+	Sword_Line_02_B:SetRenderMode(1) 
+	-- Sword_Line_02_B:SetLocalPos(self.LocalPos) 
+	Sword_Line_02_B:SetAngles(self:GetAngles()) 
+	Sword_Line_02_B:SetModelScale(self:GetModelScale()) 
+	Sword_Line_02_B.RenderOverride = self.Render 
     
+	-- Initialize meshes for Sword_Line_02_B
+	Sword_Line_02_B.Meshes = {}
+	local visualMeshesB = util.GetModelMeshes( "models/stellarblade/Sword_Line_02_B.mdl" )
+	if visualMeshesB then
+		for _, meshData in ipairs( visualMeshesB ) do
+			table.insert( Sword_Line_02_B.Meshes, {
+				Mesh = nil, 
+				Material = Sword_Line_02_B.Material and Material(Sword_Line_02_B.Material) or Material( meshData.material ),
+				triangles = meshData.triangles,
+				HasData = false
+			})
+		end
+	end
+	
     local visualMeshes = util.GetModelMeshes( self:GetModel() )
     
     for _, meshData in ipairs( visualMeshes ) do
         table.insert( self.Meshes, {
             Mesh = nil, -- Do NOT initialize the mesh object here yet
             Material = self.Material and Material(self.Material) or Material( meshData.material ),
-            OriginalTriangles = meshData.triangles,
+            triangles = meshData.triangles,
             HasData = false
         })
     end
 end
 
 function EFFECT:Think() 
-	self:SetNextClientThink(CurTime()+FrameTime()) 
+    self:SetNextClientThink(CurTime()+FrameTime()) 
+	local Owner = self:GetOwner() 
+	if IsValid(Owner) then 
+		local RootSocket = Owner:LookupAttachment("RootSocket") 
+		if RootSocket > 0 then 
+			local att = Owner:GetAttachment(RootSocket)
+			if att then
+				-- Convert the cached LocalPos and LocalAng to World coordinates relative to the attachment
+				local wPos, wAng = LocalToWorld(self.LocalPos, self.LocalAng, att.Pos, att.Ang)
+				self:SetPos(wPos) 
+				-- self:SetAngles(wAng) 
+				
+				-- Ensure Sword_Line_02_B also mimics this exact position
+				if IsValid(self.Sword_Line_02_B) then
+					self.Sword_Line_02_B:SetPos(wPos)
+					-- self.Sword_Line_02_B:SetAngles(wAng)
+				end
+			end
+		end 
+	end 
+	debugoverlay.Cross(self:GetPos(),15,FrameTime()*2) 
     local cullfraction = math.min(( CurTime() - self.CreationTime ) / self.CullDuration,1)
     local die = ( CurTime() - self.CreationTime ) / self.DieTime
     
-    -- Cleanup and terminate after 2 seconds
+    -- Cleanup and terminate
     if die >= 1 then
         if self.Meshes then
             for _, meshData in ipairs( self.Meshes ) do
-                if meshData.Mesh then
+                if meshData.Mesh and meshData.Mesh:IsValid() then
                     meshData.Mesh:Destroy() -- Crucial: Prevent memory leaks!
                 end
             end
+			self.Meshes = nil 
         end
+		if IsValid(self.Emitter) then self.Emitter:Finish() end 
+		if IsValid(self.Sword_Line_02_B) then 
+			-- Destroy the B meshes before removing the entity
+			if self.Sword_Line_02_B.Meshes then
+				for _, meshData in ipairs( self.Sword_Line_02_B.Meshes ) do
+					if meshData.Mesh and meshData.Mesh:IsValid() then meshData.Mesh:Destroy() end
+				end
+				self.Sword_Line_02_B.Meshes = nil 
+			end
+			self.Sword_Line_02_B.RenderOverride = function() end 
+			SafeRemoveEntity(self.Sword_Line_02_B) 
+		end 
         return false
     end
     
     -- Update the mesh culling dynamically
     self:UpdateMeshes( cullfraction )
+	
+	-- Run the exact same culling math but trick it into using Sword_Line_02_B as "self"
+	if IsValid(self.Sword_Line_02_B) then
+		self.UpdateMeshes( self.Sword_Line_02_B, cullfraction )
+	end
     
     return true
 end
 
 function EFFECT:UpdateMeshes( fraction )
-    local currentAngle = fraction * 360
+    -- Calculate the vectors to build a 2D plane on our custom culling normal
+	local normal = (self.CullNormal or Vector(0, 0, 1)):GetNormalized()
+    local cullAng = normal:Angle()
+    local planeX = cullAng:Right()
+    local planeY = cullAng:Up()
+    
+    -- Calculate the total size of the arc we want to sweep
+    local totalSweep = (self.EndAngle - self.StartAngle) % 360
+    if self.CCW then
+        totalSweep = (self.StartAngle - self.EndAngle) % 360
+    end
+    -- If it's mathematically 0, we assume it means a full 360 degree sweep
+    if totalSweep == 0 then totalSweep = 360 end
+    
+    local currentSweep = totalSweep * fraction
+    
+    -- Calculate the current sweeping angle
+    local currentAngleDeg
+    if self.CCW then
+        currentAngleDeg = self.StartAngle - currentSweep
+    else
+        currentAngleDeg = self.StartAngle + currentSweep
+    end
+    
+    -- Convert the 2D angle back into a 3D local direction vector using our custom plane
+    local rad = math.rad( currentAngleDeg )
+    local sweepDirLocal = planeX * math.cos( rad ) + planeY * math.sin( rad )
+    
+    -- Transform the local direction to world space so debug lines render correctly if the entity is rotated
+    local sweepDirWorld = Vector( sweepDirLocal.x, sweepDirLocal.y, sweepDirLocal.z )
+    sweepDirWorld:Rotate( self:GetAngles() )
+    
+	local spriteDistance = self:BoundingRadius()*0.75 
+	local intensityInterval = 0.87 
+	if self.MeshTrail_Light then 
+		local currentIntensity = 0
+		self.MeshTrail_Light:SetPos(self:GetPos()+sweepDirWorld*spriteDistance) 
+		if fraction < intensityInterval then -- increase trail light up to 128 until 0.7 
+			currentIntensity = fraction / intensityInterval 
+			local size = currentIntensity * 128
+			self.MeshTrail_Light:SetStartSize(size) 
+			self.MeshTrail_Light:SetEndSize(size) 
+		else -- fade from 128 to 0 
+			local fadeFraction = (fraction - intensityInterval) / (1-intensityInterval) 
+			currentIntensity = 1 - fadeFraction
+			local size = 128 * (1 - fadeFraction)
+			self.MeshTrail_Light:SetStartSize(size) 
+			self.MeshTrail_Light:SetEndSize(size) 
+		end 
+		if IsValid(self.Emitter) then 
+			local spawnCount = math.ceil(1 + (10 * currentIntensity))
+			for i = 1, spawnCount do -- increase total sprite amount as we are closer to highest interval 
+				local p = self.Emitter:Add("sprites/mi_a_gpusparks_01_tr",self.MeshTrail_Light:GetPos()) 
+				if p then
+					p:SetStartSize(3.2 + math.random(0, 6.4 * currentIntensity)) -- random max increasing as the interval is closer to highest intensity 
+					p:SetEndSize(0) 
+					p:SetStartAlpha(255) 
+					p:SetEndAlpha(255) 
+					p:SetColor(200,200,255) 
+					p:SetDieTime(math.Rand(0.2,0.4)) 
+					p:SetVelocity(VectorRand() * (40 + (150 * currentIntensity))) -- random velocity increasing as the interval is closer to highest intensity 
+					p:SetVelocityScale(true) 
+					-- print(p:GetVelocity()) 
+					p:SetStartLength(0.1 * currentIntensity) 
+					p:SetEndLength(0) 
+				end
+			end 
+			
+			-- Get the normal axis in world space so the particles know what to orbit around
+			local worldNormal = Vector(normal.x, normal.y, normal.z)
+			worldNormal:Rotate(self:GetAngles())
+			
+			local currLightPos = self.MeshTrail_Light:GetPos()
+			self.LastParticlePos = self.LastParticlePos or currLightPos
+			self.LastParticleTime = self.LastParticleTime or SysTime()
+			
+			local elapsed = SysTime() - self.LastParticleTime
+			local interval = Lerp(currentIntensity, 0.0035, 0.0015) -- Scale interval dynamically from low (0.0035) to max (0.0015) intensity
+			local spawnCount = math.floor(elapsed / interval)
+			
+			if spawnCount > 0 then
+				for i = 1, spawnCount do 
+					-- Interpolate the position so particles spawn smoothly across the gap between frames
+					local lerpFraction = i / spawnCount
+					local spawnPos = LerpVector(lerpFraction, self.LastParticlePos, currLightPos)
+					
+					local p = self.Emitter:Add("sprites/light_glow02_add", spawnPos + VectorRand(-10,10)) 
+					if p then 
+						p.Origin = self:GetPos() 
+						p.Axis = worldNormal -- Cache the rotational axis on the particle
+						p:SetStartSize(6*(math.random()*currentIntensity)) 
+						p:SetEndSize(0) 
+						p:SetStartAlpha(255) 
+						p:SetEndAlpha(0) 
+						p:SetColor(0,255,255) 
+						p:SetDieTime(2) 
+						p:SetCollide(true) 
+						-- Initialize starting velocity to move along the CW tangent
+						local initialDir = (spawnPos - p.Origin):GetNormalized()
+						p:SetVelocity(initialDir:Cross(p.Axis):GetNormalized() * math.random(80,120)) 
+						local randforvelocity = math.random()
+						
+						-- Continuously update velocity to maintain circular CW orbit
+						p:SetThinkFunction(function(pa)
+							local Interval = math.Clamp(pa:GetLifeTime()/pa:GetDieTime(),0,1) 
+							local diff = pa:GetPos() - pa.Origin
+							-- Fallback to prevent divide-by-zero if particle hits exact center
+							if diff:LengthSqr() < 0.001 then diff = VectorRand() end 
+							local dir = diff:GetNormalized()
+							
+							-- Cross product: dir x axis = clockwise tangent vector
+							local tangent = dir:Cross(pa.Axis):GetNormalized()
+							pa:SetVelocity(tangent * 100*(randforvelocity*currentIntensity))
+							-- also set color from p.Color from Color(255,255,255) to Color(0,255,255) as interval proceeds 
+							p:SetColor((1-Interval) * 255,255,255) 
+							pa:SetNextThink(CurTime())
+						end)
+						p:SetNextThink(CurTime())
+					end
+				end 
+				
+				-- Save time and position trackers for the next frame
+				self.LastParticleTime = self.LastParticleTime + (spawnCount * interval)
+				self.LastParticlePos = currLightPos
+			end 
+		end 
+	end 
+	-- debugoverlay.Line(self:GetPos(),self:GetPos()+self:GetForward()*spriteDistance,FrameTime()*2, Color(255, 255, 255)) -- the forward dir in white color 
+	-- debugoverlay.Line(self:GetPos(),self:GetPos()+sweepDirWorld*spriteDistance,FrameTime()*2,Color(255,0,0)) -- the rotating culling line in red color 
     
     for _, meshData in ipairs( self.Meshes ) do
         local newTriangles = {}
-        local origTriangles = meshData.OriginalTriangles
+        local origTriangles = meshData.triangles
         
         for i = 1, #origTriangles, 3 do
             local v1 = origTriangles[i]
@@ -131,20 +374,29 @@ function EFFECT:UpdateMeshes( fraction )
             
             if not v1 or not v2 or not v3 then break end
             
-            local cx = ( v1.pos.x + v2.pos.x + v3.pos.x ) / 3
-            local cy = ( v1.pos.y + v2.pos.y + v3.pos.y ) / 3
+            -- Get 3D Centroid
+            local cx3 = ( v1.pos.x + v2.pos.x + v3.pos.x ) / 3
+            local cy3 = ( v1.pos.y + v2.pos.y + v3.pos.y ) / 3
+            local cz3 = ( v1.pos.z + v2.pos.z + v3.pos.z ) / 3
+            local centroid = Vector(cx3, cy3, cz3)
             
-            -- Get the raw angle from the center (-180 to 180)
-            local ptAngle = math.deg( math.atan2( -cy, cx ) )
+            -- Project the 3D centroid onto our custom 2D culling plane using Dot Products
+            local cx = centroid:Dot(planeX)
+            local cy = centroid:Dot(planeY)
             
-            -- SHIFT THE ANGLE: Subtract our desired starting angle
-            ptAngle = ptAngle - self.StartAngle
+            -- Get the raw angle from the center on this new custom plane
+            local ptAngle = math.deg( math.atan2( cy, cx ) )
             
-            -- NORMALIZE: Lua's modulo perfectly wraps negative angles back to the 0-359 range
-            ptAngle = ptAngle % 360
+            -- Calculate the rotational distance from our StartAngle depending on CCW / CW
+            local dist
+            if self.CCW then
+                dist = (self.StartAngle - ptAngle) % 360
+            else
+                dist = (ptAngle - self.StartAngle) % 360
+            end
             
-            -- Now, whatever StartAngle you chose acts as the true '0' for the sweep
-            if ptAngle <= currentAngle then
+            -- If the rotational distance is within our sweep range, it is rendered
+            if dist <= currentSweep then
                 table.insert( newTriangles, v1 )
                 table.insert( newTriangles, v2 )
                 table.insert( newTriangles, v3 )
@@ -167,9 +419,10 @@ function EFFECT:UpdateMeshes( fraction )
 end
 
 function EFFECT:Render()
-    if !self.Meshes then return end
-	local fraction = ( CurTime() - self.CreationTime ) / self.DieTime
-	local cullfraction = math.min(( CurTime() - self.CreationTime ) / self.CullDuration,1)
+    if not self.Meshes then return end
+    local fraction = ( CurTime() - self.CreationTime ) / self.DieTime
+	-- print("fraction is:",fraction) 
+    local cullfraction = math.min(( CurTime() - self.CreationTime ) / self.CullDuration,1)
     
     -- Set up a matrix to handle the Entity's Position, Angles, and Scale
     local mat = Matrix()
@@ -182,40 +435,42 @@ function EFFECT:Render()
     
     -- Apply the matrix transformation
     cam.PushModelMatrix( mat )
-	-- print("fraction:",fraction,"cullfraction:",cullfraction) 
     
-	for _, meshData in ipairs( self.Meshes ) do
-		-- Only render if the mesh actually contains triangles
-		if meshData.HasData and meshData.Mesh then
-			local material = meshData.Material 
-			-- local brightness = 40.0-fraction
-			local brightness = 1
-			local material = Material("sprites/mi_a_swordtrail_01_2" ) -- refract texture 
-			render.SetMaterial( Material("sprites/mi_a_swordtrail_01_2" )) 
-			-- print("material is:",material) 
-			-- print(GetLUTVector(fraction)) 
-			-- material:SetVector("$color2", Vector(50,50,50)) -- brightness 
-			material:SetFloat("$refractamount",(1-fraction)*(0.15)) 
-			meshData.Mesh:Draw()
-			material:SetUndefined("$refractamount") 
-			
-			local material = meshData.Material -- albedo texture 
-			render.SetMaterial( material ) 
-			-- print("material is:",material) 
-			-- print(GetLUTVector(fraction)) 
-			local color = GetLUTVector(fraction) 
-			color = Vector(color.z,color.y,color.x) 
-			color = color * Vector(1,2,3) 
-			material:SetVector("$color2", color) -- brightness 
-			material:SetVector("$refracttint", color) -- brightness 
-			-- material:SetVector("$color2", Vector(50,50,50)) -- brightness 
-			meshData.Mesh:Draw()
-			material:SetUndefined("$color2") 
-			material:SetUndefined("$refracttint",Vector(1,1,1)) 
-			
-		end
-	end
+    for _, meshData in ipairs( self.Meshes ) do
+        -- Only render if the mesh actually contains triangles
+        if meshData.HasData and meshData.Mesh then
+            local material = meshData.Material 
+            
+			if self.RefractMaterial then 
+				-- Refract pass
+				local brightness = 1
+				local refractMat = self.RefractMaterial 
+				render.SetMaterial( refractMat ) 
+				refractMat:SetFloat("$refractamount",(1-fraction)*(refractamount)) 
+				meshData.Mesh:Draw()
+				refractMat:SetUndefined("$refractamount") 
+				-- print("(1-fraction)*(refractamount):",(1-fraction)*(refractamount))
+			end 
+            
+            -- Albedo pass
+            local albedoMat = meshData.Material 
+            render.SetMaterial( albedoMat ) 
+            
+            local color = GetLUTVector(fraction) 
+			if self.ReplaceColors then 
+				color = Vector(color.z,color.y,color.x) 
+			end 
+            color = color * self.ColorScaler 
+            albedoMat:SetVector("$color2", color) -- brightness 
+            albedoMat:SetVector("$refracttint", color) -- tint 
+            albedoMat:SetVector("$detailtint", color) -- tint 
+            meshData.Mesh:Draw()
+            
+            albedoMat:SetUndefined("$color2") 
+            albedoMat:SetUndefined("$refracttint") 
+            albedoMat:SetUndefined("$detailtint") 
+        end
+    end
         
     cam.PopModelMatrix()
-	debugoverlay.Line(self:GetPos(),self:GetPos()+self:GetForward()*500,FrameTime()*2) 
 end

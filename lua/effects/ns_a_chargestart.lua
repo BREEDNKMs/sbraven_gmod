@@ -132,12 +132,98 @@ local function RibbonAddPoint(self, ribbon, pos)
     ribbon.LastPos = pos
 end
 
+function EFFECT:GetRenderPos()
+    local ent = self:GetParent()
+    if not IsValid(ent) then
+        return self:GetPos()
+    end
+
+    local function try_viewmodel_pos()
+        if not IsValid(LocalPlayer()) then return nil end
+        if not ent:IsWeapon() then return nil end
+        -- Use viewmodel only when the weapon is carried by the local player and we are in first-person view
+        if ent:GetOwner() ~= LocalPlayer() or LocalPlayer():ShouldDrawLocalPlayer() then return nil end
+
+        local vm = LocalPlayer():GetViewModel()
+        if !IsValid(vm) then return nil end
+
+        local boneID = vm:LookupBone("ValveBiped.Bip01_R_Hand")
+        if boneID then
+            -- GetBonePosition returns pos, ang for viewmodels/clients
+            local pos = vm:GetBonePosition(boneID)
+            if pos and pos != vector_origin then
+                return pos
+            end
+        end
+
+        -- Fallback: try viewmodel attachments
+        local att = vm:GetAttachment(1)
+        if att and att.Pos then return att.Pos end
+        return nil
+    end
+
+    local function try_owner_bone_pos()
+        local owner = ent:GetOwner()
+        if not IsValid(owner) then return nil end
+
+        local boneID = owner:LookupBone("ValveBiped.Bip01_R_Hand")
+        if boneID then
+            local mat = owner:GetBoneMatrix(boneID)
+            if mat then
+                return mat:GetTranslation()
+            end
+            -- fallback to GetBonePosition (works for players)
+            local pos, ang = owner:GetBonePosition(boneID)
+            if pos then return pos end
+        end
+        return nil
+    end
+
+    local function try_entity_bone_pos()
+        local boneID = ent:LookupBone("ValveBiped.Bip01_R_Hand")
+        if boneID then
+            local mat = ent:GetBoneMatrix(boneID)
+            if mat then return mat:GetTranslation() end
+            local pos, ang = ent:GetBonePosition(boneID)
+            if pos then return pos end
+        end
+        return nil
+    end
+
+    local function try_attachment()
+        -- weapon world attachment fallback
+        local att = ent:GetAttachment(1)
+        if att and att.Pos then return att.Pos end
+        return nil
+    end
+
+    -- 1) viewmodel (local first person)
+    local pos = try_viewmodel_pos()
+    if pos then return pos end
+
+    -- 2) owner bone (third person player)
+    pos = try_owner_bone_pos()
+    if pos then return pos end
+
+    -- 3) entity/weapon bone (world model)
+    pos = try_entity_bone_pos()
+    if pos then return pos end
+
+    -- 4) attachment fallback
+    pos = try_attachment()
+    if pos then return pos end
+
+    -- final fallback
+    return self:GetPos()
+end
 
 function EFFECT:Init(data) 
-    self.Origin = data:GetOrigin() or vector_origin 
+    self.Origin = self:GetPos() 
 	self.LocalPos = data:GetStart() 
-	self.Entity = data:GetEntity() 
-	self:SetOwner(self.Entity) 
+	if IsValid(data:GetEntity()) then 
+		self:SetOwner(data:GetEntity()) 
+		self:FollowBone(data:GetEntity(),data:GetEntity():LookupBone("ValveBiped.Bip01_R_Hand")) 
+	end 
 	-- self:SetPos(data:GetOrigin()) 
 	self:SetAngles(data:GetAngles()) 
 	self.Scale = data:GetScale() * 1 
@@ -146,21 +232,21 @@ function EFFECT:Init(data)
 	-- print("LifeTime is",self.LifeTime) 
     self.CreationTime = CurTime() 
     self.Emitter = ParticleEmitter(self.Origin, false) 
-	self:AddEffects(EF_FOLLOWBONE) 
-	local handBone = self.Entity:LookupBone("ValveBiped.Bip01_R_Hand") 
-	print("handBone is:",handBone) 
+	self:AddEffects(EF_PARENT_ANIMATES) 
+	-- local handBone = self.Entity:LookupBone("ValveBiped.Bip01_R_Hand") 
+	-- print("handBone is:",handBone) 
 	-- local parentPos = self.Entity:GetBoneMatrix(handBone) 
-	self:SetParent(self.Entity,handBone) 
+	-- self:SetParent(self.Entity,handBone) 
 	self:SetLocalPos(vector_origin) 
 	
 	self:NE_SpriteM_Init(data) 
 	
 	-- We'll spawn 4 ribbons
     self.Ribbons = {}
-    for i = 1, 10 do
-        self.Ribbons[i] = CreateRibbon(self.Origin, self.LifeTime)
-        self.Ribbons[i].TotalLength = 0
-    end
+    for i = 1, 10 do 
+        self.Ribbons[i] = CreateRibbon(self:GetRenderPos(), self.LifeTime) 
+        self.Ribbons[i].TotalLength = 0 
+    end 
 
     -- render bounds based on possible spawn offsets
     self:SetRenderBoundsWS(self.Origin + Vector(-600, -600, -600), self.Origin + Vector(600, 600, 600))
@@ -178,7 +264,7 @@ local function QuadraticBezier(a, b, c, t)
 end
 
 function EFFECT:NE_SpriteM_Init(data) 
-	local origin = self:GetPos() 
+	local origin = self:GetRenderPos() 
 	
 	local SpawnParticleCumuls = function(pos) 
 		
@@ -279,13 +365,13 @@ function EFFECT:NE_SpriteM_Init(data)
 	end 
 	
 	for i = 1, 4 do 
-		SpawnParticleCumuls(self:GetPos() + VectorRand(-100,100)) 
+		SpawnParticleCumuls(self:GetRenderPos() + VectorRand(-100,100)) 
 	end 
-	local dlight = DynamicLight(self.Entity:EntIndex()) 
+	local dlight = DynamicLight(self:GetOwner():EntIndex()) 
 	dlight.brightness = 10 
 	dlight.decay = 1000 
 	dlight.dietime = CurTime() + FrameTime() 
-	dlight.pos = self:GetPos() 
+	dlight.pos = self:GetRenderPos() 
 	dlight.size = 20 
 	dlight.r = 0 
 	dlight.g = 255 
@@ -339,7 +425,7 @@ function EFFECT:Think()
         if ok and type(res) == "number" then te = res else te = math.Clamp(tRaw, 0, 1) end
 
         -- local newPos = QuadraticBezier(r.SpawnPos, r.BendPoint, r.EndPos, te)
-        local newPos = QuadraticBezier(r.SpawnPos, r.BendPoint, self:GetPos(), te) -- endpos should be dynamic, as it is attached to weapon's hand bone merge point 
+        local newPos = QuadraticBezier(r.SpawnPos, r.BendPoint, self:GetRenderPos(), te) -- endpos should be dynamic, as it is attached to weapon's hand bone merge point 
 
         -- Spawn a new point if moved sufficiently since last appended point
         if not r.LastAppendPos or r.LastAppendPos:Distance(newPos) > 2 then
@@ -358,7 +444,7 @@ function EFFECT:Think()
 	if CurTime() > self.CreationTime + self.LifeTime then 
 		if IsValid(self.Emitter) then self.Emitter:Finish() end 
 		-- disable dlight if it hadn't removed itself 
-		local dlight = DynamicLight(self.Entity:EntIndex()) 
+		local dlight = DynamicLight(self:GetOwner():EntIndex()) 
 		dlight.dietime = CurTime() 
 		dlight.brightness = 0 
 		dlight.size = 9999 
@@ -366,7 +452,7 @@ function EFFECT:Think()
 		dlight.g = 0 
 		dlight.b = 0 
 		dlight.nomodel = true 
-		dlight.pos = self:GetPos() 
+		dlight.pos = self:GetRenderPos() 
 		dlight.dir = -self:GetOwner():GetOwner():GetUp() 
 		if allDone then 
 			return false 
@@ -375,12 +461,12 @@ function EFFECT:Think()
 	local dlight_scale = 1200 
 	local Cycle = math.Clamp((CurTime() - self.CreationTime) / self.LifeTime, 0, 1) 
 	-- print("ns_a_chargestart cycle:",Cycle) 
-	local dlight = DynamicLight(self.Entity:EntIndex()) 
+	local dlight = DynamicLight(self:GetOwner():EntIndex()) 
 	dlight.brightness = 1 * (1-Cycle) 
 	-- print("brightness is:",1 * (1-Cycle)) 
 	dlight.decay = 1000 
 	dlight.dietime = CurTime() + FrameTime() 
-	dlight.pos = self:GetPos() 
+	dlight.pos = self:GetRenderPos() 
 	dlight.size = dlight_scale * Cycle 
 	dlight.r = 0 * (1-Cycle) 
 	dlight.g = 255 * (1-Cycle) 
@@ -398,7 +484,7 @@ function EFFECT:Render()
 	local mat = NE_FlareM.Material 
 	render.SetMaterial(mat) 
 	local scale = math.sin(CurTime()*1/engine.AbsoluteFrameTime()) * 32 
-	render.DrawSprite(self:GetPos(),128+scale,128+scale) 
+	render.DrawSprite(self:GetRenderPos(),128+scale,128+scale) 
 	
 	local now = CurTime()
     local mat = self.Ribbon_Mat
@@ -521,6 +607,5 @@ function EFFECT:Render()
             meshObj:Draw()
             meshObj:Destroy()
         end
-    end
-	
+    end 
 end 

@@ -15,27 +15,30 @@ local QUADS = {
         -- lifeTime = 0.75
     -- },
     {
-        texture = "sprites/rollerglow_gray", -- second inner glow
+        -- texture = "sprites/rollerglow_gray", -- second inner glow
+        texture = "sprites/t_a_shockaura_01", -- second inner glow
         startSize = 16,
         endSize   = 300*10,
-        startAlpha = 10000.0,
+        startAlpha = 4000.0,
         endAlpha   = 0.0,
         lifeTime = 1.25, 
+		dynamicFarSize = true, 
 		Color = color_white 
     },
 	{
         texture = "sprites/ar2_muzzle1", 
         startSize = 16,
         endSize   = 300*10,
-        startAlpha = 10000.0,
+        startAlpha = 2000.0,
         endAlpha   = 0.0,
         lifeTime = 1.25,
+		dynamicFarSize = true, 
 		Color = Color(50,255,255) 
     },
 	{
         texture = "sprites/T_A_FlareRing_02", 
         startSize = 16,
-        endSize   = 300*10,
+        endSize   = 300*12,
         startAlpha = 3000.0,
         endAlpha   = 0.0,
         lifeTime = 1.25,
@@ -65,8 +68,9 @@ end
 function EFFECT:Init(data)
     self.Origin = data:GetOrigin() or Vector(0,0,0) 
 	self.Emitter = ParticleEmitter(data:GetOrigin()) 
-	self.CreationTime = CurTime() 
 	self.Emitter_3d = ParticleEmitter(data:GetOrigin(),true) 
+	self.CreationTime = CurTime() 
+	self.LifeTime = data:GetMagnitude() 
 
     -- Trace down from Origin+16Z to Origin-64Z like the HL2 code
     local startPos = self.Origin + Vector(0,0,16)
@@ -138,6 +142,7 @@ function EFFECT:Init(data)
             pos = hitPos + hitNormal * 8,
             normal = hitNormal,
             texture = q.texture, 
+			dynamicFarSize = q.dynamicFarSize, 
 			Color = q.Color 
         })
     end
@@ -242,14 +247,22 @@ function EFFECT:Think()
             -- local ang = AngleForNormal(info.normal)
             -- ptex:SetAngles(ang)
             -- Use orthographic bounds to roughly match a square of 'size' units
-            ptex:SetOrthographic(true, -size, -size, size, size)
+			-- print(info.dynamicFarSize) 
+			if info.dynamicFarSize then 
+				ptex:SetOrthographic(true, -info.endSize, -info.endSize, info.endSize, info.endSize) 
+				ptex:SetFarZ(size)
+			else 
+				ptex:SetOrthographic(true, -size, -size, size, size) 
+				ptex:SetFarZ(info.endSize)
+			end 
             ptex:SetBrightness(brightness)
             ptex:SetTexture(info.texture)
 			ptex:SetColor(info.Color) 
-			ptex:SetFarZ(size)
-			ptex:SetLinearAttenuation(size*0.008) 
-			ptex:SetConstantAttenuation(size*0.008) 
-			ptex:SetQuadraticAttenuation(size*0.008) 
+			-- ptex:SetFarZ(size)
+			-- ptex:SetFarZ(info.endSize)
+			-- ptex:SetLinearAttenuation(size*1) 
+			ptex:SetConstantAttenuation(size*100) 
+			-- ptex:SetQuadraticAttenuation(size*0.008) 
 			-- print(size) 
             ptex:Update()
 			-- debugoverlay.Sphere(info.pos,size*0.42,FrameTime()*2) 
@@ -265,7 +278,7 @@ function EFFECT:Think()
 	local Cycle = (CurTime() - self.CreationTime) / (self.DieTime - self.CreationTime)
 	-- print(Cycle) 
 	local Rand = Vector(math.Rand(-1,1),math.Rand(-1,1),0)*(Cycle*2000) 
-	print(Rand,Cycle) 
+	-- print(Rand,Cycle) 
 	if self.NextAuroraTime <= CurTime() then 
 		-- local p = self.Emitter_3d:Add("effects/energysplash", self:GetPos() + Rand) 
 		local p = self.Emitter:Add("effects/energysplash", self:GetPos() + Rand + Vector(0,0,650)) 

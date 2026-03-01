@@ -1,5 +1,5 @@
 -- call with ent = your ClientsideModel or entity
-local function PrintModelSizes(ent, appliedScaleVec)
+local function PrintModelSizes(ent, appliedScaleVec) 
     if not IsValid(ent) then return end
 	print("Assessing ent matrix scale:",ent," at time:",CurTime()) 
     local mins, maxs = ent:OBBMins(), ent:OBBMaxs() -- bounding box in model space
@@ -63,10 +63,6 @@ local function BuildColorLUTFromShaderLUT(shaderLUT)
     return lut
 end
 
-local function Lerp(a,b,t)
-    return a + (b - a) * t
-end
-
 local function SampleColorLUT(lut, t) -- t in [0,1]
     if not lut or #lut == 0 then return 255,255,255,255 end
     t = math.Clamp(t, 0, 1)
@@ -81,10 +77,10 @@ local function SampleColorLUT(lut, t) -- t in [0,1]
 		local s = lut[n]; return s.r, s.g, s.b, s.a
     end
     local s0 = lut[i]; local s1 = lut[i + 1]
-    local r = Lerp(s0.r, s1.r, frac)
-    local g = Lerp(s0.g, s1.g, frac)
-    local b = Lerp(s0.b, s1.b, frac)
-    local a = Lerp(s0.a, s1.a, frac)
+    local r = Lerp(frac, s0.r, s1.r)
+    local g = Lerp(frac, s0.g, s1.g)
+    local b = Lerp(frac, s0.b, s1.b)
+    local a = Lerp(frac, s0.a, s1.a)
     return math.floor(r+0.5), math.floor(g+0.5), math.floor(b+0.5), math.floor(a+0.5)
 end
 
@@ -950,20 +946,20 @@ local function AttachColorCurveThink(p, birthTime, dieTime, colorLUT, isnormaliz
     -- dieTime = absolute die time (CurTime() + lifetime) OR pass lifetime and compute inside
     local lifetime = math.max(0.0001, dieTime - birthTime)
 
-    -- schedule first think immediately
-    if p.SetNextThink then p:SetNextThink(CurTime()) end
+    -- schedule first think immediately 
+    p:SetNextThink(CurTime()) 
 
-    -- attach the per-particle think function
-    p:SetThinkFunction(function(part, dt)
-		local now = CurTime()
-		local age = now - birthTime
-		if age >= lifetime then
-		    -- particle should be dead; no more updates
-		    return
-		end
+    -- attach the per-particle think function 
+    p:SetThinkFunction(function(part, dt) 
+		local now = CurTime() 
+		local age = now - birthTime 
+		if age >= lifetime then 
+		    -- particle should be dead; no more updates 
+		    return 
+		end 
 
-		local normalizedAge = age / lifetime -- 0..1
-		local r,g,b,a = SampleColorLUT(colorLUT, normalizedAge)
+		local normalizedAge = age / lifetime -- 0..1 
+		local r,g,b,a = SampleColorLUT(colorLUT, normalizedAge) 
 		if isnormalized then 
 			r = r 
 			g = g 
@@ -976,28 +972,26 @@ local function AttachColorCurveThink(p, birthTime, dieTime, colorLUT, isnormaliz
 			a = 255 -- somehow always 0 
 		end 
 
-		-- apply color and alpha each frame
-		-- SetColor usually takes 3 args (r,g,b)
-		if part.SetColor then part:SetColor(r, g, b) end
+		-- apply color and alpha each frame 
+		-- SetColor usually takes 3 args (r,g,b) 
+		part:SetColor(r, g, b) 
 
 		-- Alpha: try SetStartAlpha()/SetEndAlpha() if runtime alpha update is not supported.
 		-- Many particles respect SetStartAlpha/SetEndAlpha only at spawn; some Lua builds allow updating alpha directly.
-		if part.SetAlpha then
-		    -- if engine exposes SetAlpha: use it
-		    -- part:SetAlpha(a)
-		else
-		    -- fall back: try updating start/end alpha (works on many GMod builds)
-		    -- if part.SetStartAlpha then part:SetStartAlpha(a) end
-		    -- if part.SetEndAlpha then part:SetEndAlpha(a) end
-		end
+		if part.SetAlpha then 
+		    -- if engine exposes SetAlpha: use it 
+		    -- part:SetAlpha(a) 
+		else 
+		    -- fall back: try updating start/end alpha (works on many GMod builds) 
+		    -- if part.SetStartAlpha then part:SetStartAlpha(a) end 
+		    -- if part.SetEndAlpha then part:SetEndAlpha(a) end 
+		end 
 
-		-- schedule next think (try to run every frame)
-		if part.SetNextThink then
-		    part:SetNextThink(CurTime() + FrameTime())
-		end
+		-- schedule next think (try to run every frame) 
+		part:SetNextThink(CurTime() + FrameTime()) 
 		-- print(r,g,b,a) 
-    end)
-end
+    end) 
+end 
 
 -- Usage after you spawn a particle 'p' (example):
 -- local birth = CurTime()
@@ -1005,118 +999,101 @@ end
 -- p:SetDieTime(lifetimeSeconds)
 -- AttachColorCurveThink(p, birth, birth + lifetimeSeconds, colorLUT)
 
-function EFFECT:Init(data)
-    -- Get position and angles from the effect data
+function EFFECT:Init(data) 
+    -- Get position and angles from the effect data 
     local pos = data:GetOrigin() 
     local ang = data:GetAngles() 
 	local localOffset = data:GetStart() 
 	local ent = data:GetEntity() 
 	local boneID = data:GetHitBox() 
 	print("pos",pos,"ang:",ang,"localOffset:",localOffset,"ent:",ent,"boneID:",boneID) 
-    self:SetPos(pos)
+	print("diff:",pos - data:GetEntity():GetPos()) 
+    -- self:SetPos(pos) 
 	-- data:SetAngles(Angle(data:GetAngles().y,data:GetAngles().p,data:GetAngles().z)) 
-    self:SetAngles(ang)
+    -- self:SetAngles(ang) 
 
-    -- Get scale and lifetime multipliers, with default values of 1
-    self.Scale = data:GetScale() ~= 0 and data:GetScale() or 1
-	self.Scale = self.Scale * 0.1 
+    -- Get scale and lifetime multipliers, with default values of 1 
+    self.Scale = data:GetScale() != 0 and data:GetScale() or 1 
+	self.Scale = self.Scale * 0.75 
 	
-    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1
+    local lifetimeMultiplier = data:GetMagnitude() != 0 and data:GetMagnitude() or 1 
 
-    -- Set the model for the shockwave
-    self:SetModel("models/stellarblade/SM_A_shockWv_01.mdl")
+    -- Set the model for the shockwave 
+    self:SetModel("models/stellarblade/SM_A_shockWv_01.mdl") 
+	self:SetAngles(Angle(-90,data:GetEntity():GetForward():Angle().y,0)) 
 
-    -- Set render properties for a bright, additive effect
-    self:SetRenderMode(1)
-	if IsValid(ent) then
-        if boneID and boneID > 0 then
-            -- 1. Parent to the specific Bone/Attachment ID as requested
-			print("boneid is:",boneID) 
-            self:SetParent(ent, boneID)
-            
-            -- 2. Apply Local Positioning
-            -- Since we are now parented to the bone, '0,0,0' is the center of that bone.
-            -- We use localOffset (RelativeLocation) to maintain the offset defined in JSON.
-            if localOffset and localOffset ~= Vector(0,0,0) then
-                self:SetLocalPos(localOffset)
-            else
-                self:SetLocalPos(Vector(0,0,0))
-            end
-            
-            -- 3. Align Rotation
-            -- SetLocalAngles(Angle(0,0,0)) aligns the effect exactly with the bone's rotation.
-            -- If you passed RelativeRotation, you would apply it here.
-            self:SetLocalAngles(Angle(0,0,0))
-            
-        else
-            -- Fallback: Parent to entity root if no specific bone was found
-            self:SetParent(ent)
-            self:SetPos(pos)
-            self:SetAngles(ang)
-        end
-    else
-        -- No entity to parent to? Just spawn at the calculated world position.
-        self:SetPos(pos)
-        self:SetAngles(ang)
-    end
+    -- Set render properties for a bright, additive effect 
+    self:SetRenderMode(1) 
+	local pos2, ang2 = data:GetEntity():LocalToWorld(localOffset) 
+	self:SetPos(pos2) 
+	-- print("pos2 is:",pos2) 
+	-- self:SetParent(data:GetEntity()) 
+	-- self:SetLocalPos(localOffset) 
 
-    -- Initialize timing
-    self.StartTime = CurTime()
-    -- The original effect has a randomized lifetime between 0.25 and 0.5 seconds
-    local randomLife = math.Rand(0.25, 0.5)
-    self.LifeTime = randomLife * lifetimeMultiplier
-    self.EndTime = self.StartTime + self.LifeTime
+    -- Initialize timing 
+    self.CreationTime = CurTime() 
+    -- The original effect has a randomized lifetime between 0.25 and 0.5 seconds 
+    local randomLife = math.Rand(0.25, 0.5) 
+    self.LifeTime = randomLife * lifetimeMultiplier 
+    self.EndTime = self.CreationTime + self.LifeTime 
 
-    -- The particle is invisible at spawn (Alpha = 0)
-    self:SetColor(Color(255, 255, 255, 0))
+    -- The particle is invisible at spawn (Alpha = 0) 
+    self:SetColor(Color(255, 255, 255, 1)) 
 
-    -- Initialize the scale matrix to prevent the model from appearing at full size for a frame
-    local mat = Matrix()
-    mat:Scale(Vector(0, 0, 0)) -- Start with zero scale
-    self:EnableMatrix("RenderMultiply", mat)
+    -- Initialize the scale matrix to prevent the model from appearing at full size for a frame 
+    local mat = Matrix() 
+    mat:Scale(Vector(0, 0, 0)) -- Start with zero scale 
+    self:EnableMatrix("RenderMultiply", mat) 
 	self.Hemisphere = self:InitHemisphere(data) 
+	self.Emitter = ParticleEmitter(self:GetPos()) 
 	self:InitNE_SpriteM003_1(data) 
 	self:InitNE_SpriteM004_3(data) 
 end 
 
 function EFFECT:InitHemisphere(data) 
-	local pos = data:GetOrigin()
-    local ang = data:GetAngles()
+	local pos = self:GetPos() 
+    local ang = data:GetAngles() 
     local localOffset = data:GetStart() 
 	local ent = data:GetEntity() 
 	local boneID = data:GetHitBox() 
-    local count = math.random(1, 2) -- spawn 1-2 hemispheres (tweak to 1-3)
-    local baseScale = (data:GetScale() ~= 0) and data:GetScale() or 1
+    -- local count = math.random(1, 1) -- spawn 1 hemisphere (tweak to 1-3)
+    local baseScale = (data:GetScale() != 0) and data:GetScale() or 1
 	baseScale = baseScale * 0.1 
-    local baseLife  = (data:GetMagnitude() ~= 0) and data:GetMagnitude() or 0.5
+    local baseLife  = self.LifeTime 
 
-    self.Hemisphere = {}
-    for i = 1, count do
-		local hem = ClientsideModel("models/stellarblade/SM_B_HemiSphere_02.mdl", RENDERGROUP_BOTH)
-		hem:SetPos(pos)
-		hem:SetParent(ent,boneID) 
-		hem:SetLocalPos(localOffset) 
-		hem:SetAngles(ang + Angle(0, math.Rand(-15,15), 0)) -- small yaw variation
-		hem.Scale = baseScale * Lerp(i/count, 0.9, 1.1)
-		hem.LifeTime = baseLife * Lerp(i/count, 0.95, 1.05)
-		hem.DieTime = CurTime() + hem.LifeTime
-		hem.CurrentScale = 0.01
+    self.Hemisphere = {} 
+    for i = 1, 1 do 
+		local hem = ClientsideModel("models/stellarblade/SM_B_HemiSphere_02.mdl", RENDERGROUP_BOTH) 
+		-- print(hem) 
+		hem:SetRenderMode(RENDERMODE_TRANSCOLOR) 
+		hem:SetPos(self:GetPos()) 
+		-- hem:SetParent(self) 
+		-- hem:SetAngles(ang + Angle(0, math.Rand(-15,15), 0)) -- small yaw variation 
+		hem:SetAngles(Angle(90,data:GetEntity():GetForward():Angle().y,data:GetEntity():GetForward():Angle().z)) 
+		hem.Scale = baseScale 
+		hem.LifeTime = baseLife 
+		hem.DieTime = CurTime() + baseLife 
+		hem.CurrentScale = 0.01 
+		hem:SetRenderBoundsWS(Vector(-16384,-16384,-16384),Vector(16384,16384,16384)) 
+		-- hook.Add("Think",hem,function() 
+		-- print("Hemisphere is thinking",hem,hem:GetPos(),1 - ((hem.DieTime - CurTime()) / hem.LifeTime) ) 
+		-- end) 
 
-		-- cache a matrix to reduce allocations
-		hem._scaleMat = Matrix()
-		hem._scaleVec = Vector(0.01, 0.01, 0.01)
+		-- cache a matrix to reduce allocations 
+		hem._scaleMat = Matrix() 
+		hem._scaleVec = Vector(0.01, 0.01, 0.01) 
 
-		-- optional: assign dynamic material instance (engine dependent)
-		-- local mat = hem:GetMaterial(0) -- might be nil; requires engine API
-		-- if mat then hem:SetMaterial(CreateDynamicMaterial(mat)) end
+		-- optional: assign dynamic material instance (engine dependent) 
+		-- local mat = hem:GetMaterial(0) -- might be nil; requires engine API 
+		-- if mat then hem:SetMaterial(CreateDynamicMaterial(mat)) end 
 
-		hem.RenderOverride = function(selfModel, flags)
+		hem.RenderOverride = function(selfModel, flags) 
 			-- Choose preset: "faithful" (punchy) or "subtle" (gentle)
 			local PRESET = "faithful" -- "subtle"
 
 			-- lifetime calculation already in your code: lifeFrac = 1 - ((DieTime - CurTime()) / LifeTime)
-			local lifeFrac = 1 - ((selfModel.DieTime - CurTime()) / selfModel.LifeTime)
-			if lifeFrac >= 1 then SafeRemoveEntity(selfModel) return end
+			local lifeFrac = 1 - ((selfModel.DieTime - CurTime()) / selfModel.LifeTime) 
+			if lifeFrac >= 1 then SafeRemoveEntity(selfModel) return end 
 			lifeFrac = math.Clamp(lifeFrac, 0, 1)
 
 			-- Preset tuning
@@ -1138,18 +1115,18 @@ function EFFECT:InitHemisphere(data)
 			local scaleXY
 			if lifeFrac < 0.08 then
 				local t = lifeFrac / 0.08
-				scaleXY = Lerp(0, startSnap * baseScale, math.ease.OutQuad(t))
+				scaleXY = Lerp(math.ease.OutQuad(t), 0, startSnap * baseScale)
 			elseif lifeFrac < 0.30 then
 				local t = (lifeFrac - 0.08) / (0.30 - 0.08)
-				scaleXY = Lerp(startSnap * baseScale, peak, math.ease.OutQuad(t))
+				scaleXY = Lerp(math.ease.OutQuad(t), startSnap * baseScale, peak)
 			elseif lifeFrac < 0.55 then
 				local t = (lifeFrac - 0.30) / (0.55 - 0.30)
 				-- ease to settle
-				scaleXY = Lerp(peak, peak * settleMul, math.ease.OutQuad(t))
+				scaleXY = Lerp(math.ease.OutQuad(t), peak, peak * settleMul)
 			else
 				local t = (lifeFrac - 0.55) / (1.0 - 0.55)
 				-- optional slight final expansion or hold
-				scaleXY = Lerp(peak * settleMul, peak * (1.0 + 0.05 * (PRESET=="faithful" and 1 or 0)), t)
+				scaleXY = Lerp(t, peak * settleMul, peak * (1.0 + 0.05 * (PRESET=="faithful" and 1 or 0)))
 			end
 
 			-- Apply scale matrix (X,Y uniform; Z flattened)
@@ -1160,39 +1137,40 @@ function EFFECT:InitHemisphere(data)
 			-- ALPHA
 			local alphaByte
 			if lifeFrac < 0.04 then
-				alphaByte = math.floor(255 * Lerp(0, 1, lifeFrac / 0.04))
+				alphaByte = math.floor(255 * Lerp(lifeFrac / 0.04, 0, 1))
 			elseif lifeFrac < 0.30 then
 				alphaByte = 255
 			elseif lifeFrac < 0.60 then
-				alphaByte = math.floor(255 * Lerp(1, 0.3, (lifeFrac - 0.30) / 0.30))
+				alphaByte = math.floor(255 * Lerp((lifeFrac - 0.30) / 0.30, 1, 0.3))
 			else
-				alphaByte = math.floor(255 * Lerp(0.3, 0, (lifeFrac - 0.60) / 0.40))
+				alphaByte = math.floor(255 * Lerp((lifeFrac - 0.60) / 0.40, 0.3, 0))
 			end
-			alphaByte = math.Clamp(alphaByte, 0, 255)
+			alphaByte = math.Clamp(alphaByte, 1, 255)
 
 			-- COLOR & BRIGHTNESS
 			local baseR, baseG, baseB = 255, 255, 255 -- JSON initial color = white
 			-- slight tint toward pale blue as it fades
-			local tintR = Lerp(baseR, 160, lifeFrac) -- 255 -> 160 across life
-			local tintG = Lerp(baseG, 180, lifeFrac)
-			local tintB = Lerp(baseB, 220, lifeFrac)
+			local tintR = Lerp(lifeFrac, baseR, 160) -- 255 -> 160 across life
+			local tintG = Lerp(lifeFrac, baseG, 180)
+			local tintB = Lerp(lifeFrac, baseB, 220)
 
 			-- brightness multiplier (emissive) approximation
 			local brightness
 			if lifeFrac < 0.30 then
 				brightness = Lerp(3.0, 1.0, lifeFrac / 0.30) -- early bright -> normal
 			elseif lifeFrac < 0.60 then
-				brightness = Lerp(1.0, 0.4, (lifeFrac - 0.30) / 0.30)
+				brightness = Lerp((lifeFrac - 0.30) / 0.30, 1.0, 0.4)
 			else
-				brightness = Lerp(0.4, 0.08, (lifeFrac - 0.60) / 0.40)
+				brightness = Lerp((lifeFrac - 0.60) / 0.40, 0.4, 0.08)
 			end
 
 			-- If you cannot set a material float parameter, approximate brightness by multiplying color:
-			local rOut = math.floor(math.Clamp(tintR * brightness, 0, 255))
-			local gOut = math.floor(math.Clamp(tintG * brightness, 0, 255))
-			local bOut = math.floor(math.Clamp(tintB * brightness, 0, 255))
+			local rOut = math.floor(math.Clamp(tintR * brightness, 0, 255)) 
+			local gOut = math.floor(math.Clamp(tintG * brightness, 0, 255)) 
+			local bOut = math.floor(math.Clamp(tintB * brightness, 0, 255)) 
 
-			selfModel:SetColor(Color(rOut, gOut, bOut, alphaByte))
+			selfModel:SetColor(Color(rOut, gOut, bOut, alphaByte)) 
+			-- print("alpha is:",selfModel:GetColor()) 
 
 			-- Optionally drive material param (if you have a dynamic material instance)
 			-- Example pseudo: if you created dynMat earlier and it supports SetFloatParameter:
@@ -1201,34 +1179,36 @@ function EFFECT:InitHemisphere(data)
 			-- end
 
 			-- Draw model
-			selfModel:DrawModel(flags)
-		end
-		table.insert(self.Hemisphere, hem)
-    end
+			selfModel:DrawModel(flags) 
+		end 
+		table.insert(self.Hemisphere, hem) 
+    end 
 end 
 
-function EFFECT:Think()
-    -- If the effect's lifetime has expired, remove it
-    if CurTime() > self.EndTime then
-		if IsValid(self.Hemisphere) then SafeRemoveEntity(self.Hemisphere) end 
-		return false
-    end
+function EFFECT:Think() 
+    -- If the effect's lifetime has expired, remove it 
+	debugoverlay.Cross(self:GetPos(),10,FrameTime()*2,nil,true) 
+    if CurTime() > self.EndTime then 
+		-- if IsValid(self.Hemisphere) then SafeRemoveEntity(self.Hemisphere) end 
+		if IsValid(self.Emitter) then self.Emitter:Finish() end 
+		return false 
+    end 
 
-    -- Calculate the normalized age of the particle (0.0 to 1.0)
-    local lifeFrac = (CurTime() - self.StartTime) / self.LifeTime
+    -- Calculate the normalized age of the particle (0.0 to 1.0) 
+    local lifeFrac = (CurTime() - self.CreationTime) / self.LifeTime 
     lifeFrac = math.Clamp(lifeFrac, 0, 1) 
 	
-	local alphaByte
+	local alphaByte 
 	if lifeFrac < 0.05 then
-		alphaByte = math.floor(255 * Lerp(0, 1, lifeFrac / 0.05))               -- 0→1 in 5%
+		alphaByte = math.floor(255 * Lerp(lifeFrac / 0.05, 0, 1))               -- 0→1 in 5%
 	elseif lifeFrac < 0.25 then
 		alphaByte = 255                                                   -- hold full brightness
 	elseif lifeFrac < 0.50 then
 		local localT = (lifeFrac - 0.25) / (0.25)                                -- 0..1 across 0.25..0.50
-		alphaByte = math.floor(255 * Lerp(1, 0.3, localT))                -- fade 1.0 → 0.3
+		alphaByte = math.floor(255 * Lerp(localT, 1, 0.3))                -- fade 1.0 → 0.3
 	else
 		local localT = (lifeFrac - 0.5) / 0.5
-		alphaByte = math.floor(255 * Lerp(0.3, 0, localT))                -- fade remaining to 0
+		alphaByte = math.floor(255 * Lerp(localT, 0.3, 0))                -- fade remaining to 0
 	end
 
     self:SetColor(Color(255, 255, 255, alphaByte)) 
@@ -1245,35 +1225,82 @@ function EFFECT:Think()
 	if lifeFrac < 0.06 then
 		-- I0: initial pop to ~40% of peak
 		local localT = lifeFrac / 0.06
-		scaleXY = Lerp(baseline, peak * 0.4, math.ease.OutQuad(localT))
+		scaleXY = Lerp(math.ease.OutQuad(localT), baseline, peak * 0.4)
 	elseif lifeFrac < 0.25 then
 		-- I1: explosive growth to peak
 		local localT = (lifeFrac - 0.06) / (0.25 - 0.06)
-		scaleXY = Lerp(peak * 0.4, peak, math.ease.OutQuad(localT))
+		scaleXY = Lerp(math.ease.OutQuad(localT), peak * 0.4, peak)
 	elseif lifeFrac < 0.50 then
 		-- I2: quick settle / shrink a bit from peak to settle value
 		local localT = (lifeFrac - 0.25) / (0.50 - 0.25)
-		scaleXY = Lerp(peak, peak * 0.85, 1 - localT) -- linear/soft settle (you can ease)
+		scaleXY = Lerp(1 - localT, peak, peak * 0.85) -- linear/soft settle (you can ease)
 	else
 		-- I3: gentle relax or tiny growth and then vanish with alpha
 		local localT = (lifeFrac - 0.5) / 0.5
-		scaleXY = Lerp(peak * 0.85, peak * 1.05, localT * 0.2) -- small final variation
+		scaleXY = Lerp(localT * 0.2, peak * 0.85, peak * 1.05) -- small final variation
 	end
 	
     -- local currentScale = Vector(scaleXY, scaleXY, 0.02 * self.Scale) * self.Scale
 
     -- Create a transformation matrix for scaling and apply it to the entity
-    local mat = Matrix()
-    mat:Scale(Vector(scaleXY, scaleXY, 0.02 * self.Scale))
-	self:EnableMatrix("RenderMultiply", mat)
+    local mat = Matrix() 
+    mat:Scale(Vector(scaleXY, scaleXY, 1 * self.Scale)) 
+	self:EnableMatrix("RenderMultiply", mat) 
+	-- enable clip plane
+	self:SetRenderClipPlaneEnabled(true)
+
+	-- plane normal (direction the plane faces). Normalized to keep position units consistent.
+	local planeNormal = self:GetUp() 
+
+	-- world-space center of the model
+	local center = self:LocalToWorld(self:OBBCenter())
+	local centerDot = planeNormal:Dot(center)
+
+	-- compute world-space OBB corners and their projections onto the normal to get model extents
+	local mins, maxs = self:OBBMins(), self:OBBMaxs()
+	local minDot, maxDot = math.huge, -math.huge
+	for _, sx in ipairs({mins.x, maxs.x}) do
+		for _, sy in ipairs({mins.y, maxs.y}) do
+			for _, sz in ipairs({mins.z, maxs.z}) do
+				local localCorner = Vector(sx, sy, sz)
+				local worldCorner = self:LocalToWorld(localCorner)
+				local d = planeNormal:Dot(worldCorner)
+				if d < minDot then minDot = d end
+				if d > maxDot then maxDot = d end
+			end
+		end
+	end
+
+	-- padding so the sweep begins fully behind and ends fully past the front
+	local pad = math.max((maxDot - minDot) * 0.1, 2)
+
+	local startPos = minDot - pad         -- fully behind (no clipping at start)
+	local centerPos = centerDot           -- plane passing through model center
+	local endPos = maxDot + pad           -- fully past front (object gone)
+
+	-- custom timing: quickly reach center early, then slowly sweep to the front
+	local reachCenterFrac = 0.1 -- fraction of lifetime when plane reaches center (tweak to taste)
+
+	local planePosition
+	if lifeFrac <= reachCenterFrac then
+		local t = lifeFrac / reachCenterFrac
+		planePosition = Lerp(t, startPos, centerPos)
+	else
+		local t = (lifeFrac - reachCenterFrac) / (1 - reachCenterFrac)
+		planePosition = Lerp(t, centerPos, endPos)
+	end
+
+	-- apply the clip plane (planeNormal, d)
+	self:SetRenderClipPlane(planeNormal, planePosition)
+
 	-- print("scaleValue for ",self,":",currentScale,",Length():",currentScale:Length(),"lifeFrac:",lifeFrac,",at CurTime()",CurTime()) 
 	-- PrintModelSizes(self,Vector(scaleValue, scaleValue, scaleValue)) 
     -- Keep the effect alive
-    return true
-end
+    return true 
+end 
 
 function EFFECT:InitNE_SpriteM003_1(data) 
-	print("InitNE_SpriteM003_1") 
+	-- print("InitNE_SpriteM003_1") 
 	local MaterialFrames = {
     "sprites/MI_A_GPUSparks_01_Tr_000",
     "sprites/MI_A_GPUSparks_01_Tr_001",
@@ -1281,15 +1308,15 @@ function EFFECT:InitNE_SpriteM003_1(data)
     "sprites/MI_A_GPUSparks_01_Tr_003"
 	} 
 	
-	local pos = data:GetOrigin()
+	local pos = self:GetPos()
     local ang = data:GetAngles()
     local ent = data:GetEntity()
     -- self:SetPos(pos)
     -- self:SetAngles(ang)
 
     -- Scale and lifetime multipliers from effect data
-    local Scale = data:GetScale() ~= 0 and data:GetScale() or 1
-    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1 
+    local Scale = data:GetScale() != 0 and data:GetScale() or 1
+    local lifetimeMultiplier = data:GetMagnitude() != 0 and data:GetMagnitude() or 1 
 	
 	Scale = Scale * 0.42 
 
@@ -1298,16 +1325,13 @@ function EFFECT:InitNE_SpriteM003_1(data)
     local baseLifetime = 1.5				   -- chosen from literal constants (1.5, 0.75, 0.35...). 1.5s gives visible fade and scale curves.
     local initialSpeed = 60				    -- literal 60.0 present in the table; used as base velocity magnitude.
     local coneAngle = 60				       -- degrees - spread of initial velocity (makes a burst).
-    local startSize = 6 * Scale		   -- approximate start size (px units, adjust for your textures)
-    local endSize = 2 * Scale		     -- approximate end size (shrinks toward death)
+    local startSize = 0.5 * Scale		   -- approximate start size (px units, adjust for your textures)
+    local endSize = 0.1 * Scale		     -- approximate end size (shrinks toward death)
     local startAlpha = 255
     local endAlpha = 0
     local gravity = Vector(0, 0, -200)		 -- weak downward pull; adjust to taste
     local airResistance = 5				    -- slows particles over time
 
-    -- Use ParticleEmitter to create particles and maintain them for lifetime
-    local emitter = ParticleEmitter(pos)
-    if not emitter then return end
 
     -- If the Niagara emitter was intended to be velocity aligned and use initial velocity
     -- we will sample directions within a cone aligned to the passed-in angles.
@@ -1322,14 +1346,13 @@ function EFFECT:InitNE_SpriteM003_1(data)
     for i = 1, spawnCount do
 		local matFrame = MaterialFrames[math.random(1, #MaterialFrames)]
 
-		local p = emitter:Add(matFrame, pos)
-		if not p then continue end
+		local p = self.Emitter:Add(matFrame, pos)
 
 		-- Randomized direction within cone:
 		-- pick a random unit vector within coneAngle degrees of forward
 		local angleDeg = math.Rand(-coneAngle/2, coneAngle/2)
 		local yaw = math.Rand(0, 360)
-		local dir = (Angle(angleDeg, yaw, 0):Forward()):GetNormal()
+		local dir = (Angle(angleDeg, yaw, 0):Forward()):GetNormal() 
 
 		-- Mix with forward so it's roughly outward from the impact point
 		dir = (forward + dir * 0.5):GetNormalized()
@@ -1345,9 +1368,9 @@ function EFFECT:InitNE_SpriteM003_1(data)
 
 		-- Size over life: startSize → endSize (we approximate the float curves from the literal table)
 		-- We'll also randomize using the MaterialRandomBinding concept
-		local randScale = math.Rand(0.85, 1.15)
-		p:SetStartSize(startSize * randScale)
-		p:SetEndSize(endSize * randScale)
+		local randScale = math.Rand(0.85, 1.15) 
+		p:SetStartSize(startSize * randScale) 
+		p:SetEndSize(endSize * randScale) 
 
 		-- Rotation jitter; Niagara used a SpriteRotationBinding
 		p:SetRoll(math.Rand(0, 360))
@@ -1365,7 +1388,10 @@ function EFFECT:InitNE_SpriteM003_1(data)
 		p:SetGravity(gravity)
 
 		-- Use collision and bounce lightly if you want sparks to hit world (optional)
-		p:SetCollide(false) -- set to true if you want collision interactions
+		p:SetCollide(true) -- set to true if you want collision interactions
+		-- p:SetVelocityScale(true) 
+		-- p:SetStartLength(-1)
+		-- p:SetEndLength(0)
 		AttachColorCurveThink(p,CurTime(), CurTime() + p:GetDieTime(), colorLUT, false) 
 		-- p:SetBounce(0.3)
 
@@ -1374,13 +1400,11 @@ function EFFECT:InitNE_SpriteM003_1(data)
 
 		-- For GPU-like 'MaterialRandom' behaviour, set a user-defined parameter via velocity or roll if needed.
 		-- (GMod particles don't have arbitrary user params; we emulate with roll/rolldelta or color variance.)
-    end
-
-    emitter:Finish()
+    end 
 end 
 
 function EFFECT:InitNE_SpriteM004_3(data) 
-	print("InitNE_SpriteM004_3") 
+	-- print("InitNE_SpriteM004_3") 
 	local MaterialFrames = {
     "sprites/MI_A_GPUSparks_01_Tr_000",
     "sprites/MI_A_GPUSparks_01_Tr_001",
@@ -1388,15 +1412,15 @@ function EFFECT:InitNE_SpriteM004_3(data)
     "sprites/MI_A_GPUSparks_01_Tr_003"
 	} 
 	
-	local pos = data:GetOrigin()
+	local pos = self:GetPos()
     local ang = data:GetAngles()
     local ent = data:GetEntity()
     -- self:SetPos(pos)
     -- self:SetAngles(ang)
 
     -- Scale and lifetime multipliers from effect data
-    local Scale = data:GetScale() ~= 0 and data:GetScale() or 1
-    local lifetimeMultiplier = data:GetMagnitude() ~= 0 and data:GetMagnitude() or 1 
+    local Scale = data:GetScale() != 0 and data:GetScale() or 1
+    local lifetimeMultiplier = data:GetMagnitude() != 0 and data:GetMagnitude() or 1 
 	
 	Scale = Scale * 0.42 
 	
@@ -1427,7 +1451,6 @@ function EFFECT:InitNE_SpriteM004_3(data)
 	-- If we have an entity and it has velocity, pull that in as base (Niagara often uses emitter/owner velocity)
     local ownerVel = IsValid(ent) and ent:GetVelocity() or Vector(0,0,0)
 
-	local emitter = ParticleEmitter(pos)
 	for i=1, spawnCount do
 		-- random offset on a circle (cylinder spawn)
 		local angle = math.rad((math.random()-0.5) * L.spreadAngleH) + (2*math.pi)*(math.random())
@@ -1440,8 +1463,8 @@ function EFFECT:InitNE_SpriteM004_3(data)
 
 		local matFrame = MaterialFrames[math.random(1, #MaterialFrames)]
 
-		local p = emitter:Add(matFrame, pos)
-		if (not p) then break end
+		local p = self.Emitter:Add(matFrame, pos) 
+		-- print("added:",p,pos) 
 
 		-- velocity: bias downward using velMidZ (scaled)
 		local baseDown = Vector(0,0, L.velMidZ * VEL_SCALE)
@@ -1471,20 +1494,18 @@ function EFFECT:InitNE_SpriteM004_3(data)
 		p:SetEndAlpha(0)                 -- alpha fades out over lifetime (Niagara had an alpha fade)
 		-- approximate Niagara scale/size curve by startSize -> endSize multiplier
 		local endSize = startSize * (L.scaleB or 0.75) * 0.5  -- use scaleB as an end multiplier
-		p:SetStartSize(startSize * 32)   -- sprite size: multiply to make pixels — tune as needed
-		p:SetEndSize(endSize * 32)
+		p:SetStartSize(startSize * 10.2)   -- sprite size: multiply to make pixels — tune as needed
+		p:SetEndSize(endSize * 10.2)
 		p:SetRoll(math.Rand(0, L.rotationRange))
 		p:SetRollDelta(math.Rand(-L.rollSpeedHint, L.rollSpeedHint))
 		p:SetAirResistance(5)
 		p:SetGravity(Vector(0,0, -50))   -- small gravity; Niagara had negative Z bias
 		p:SetColor(startR,startG,startB)
+		p:SetCollide(true) 
 
 		-- optional: add a ThinkFunction to simulate the Niagara color/time curve if you want per-frame color changes
 		-- but GMod particles do not normally expose per-particle Think in high performance usage.
 		
 		AttachColorCurveThink(p,CurTime(), CurTime() + p:GetDieTime(), NiagaraDataInterfaceColorCurve_0, true) 
-	end
-
-	emitter:Finish()
-
+	end 
 end 
