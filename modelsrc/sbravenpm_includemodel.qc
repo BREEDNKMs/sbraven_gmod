@@ -101,12 +101,18 @@ $cdmaterials "models\alvaroports\SBRaven\"
 $cdmaterials "models\alvaroports\shared\" 
 $cdmaterials "models\alyx\" 
 
-$proceduralbones "alyx.vrd"
+$proceduralbones "ValveBiped.vrd"
+$proceduralbones "female.vrd"
 $include "../../sourcesdk_content/gm_playermodel_examples/Humans/Standardhierarchy.qci"                
 $alwayscollapse "ValveBiped"                
 $alwayscollapse "XSISceneRoot"                
 $include "standardikchains.qci"                
-//$include "../../sourcesdk_content/gm_playermodel_examples/Humans/female/commonbones.qci"      
+//$include "../../sourcesdk_content/gm_playermodel_examples/Humans/female/commonbones.qci"   
+$bonemerge "Front Cloth" 
+$bonemerge "Front Cloth.001" 
+$bonemerge "Front Cloth.002" 
+$bonemerge "Front Cloth.003" 
+$bonemerge "Front Cloth.004"    
 
 $attachment "forward" "ValveBiped.Bip01_Head1" 0.0 0.0 0.0 rotate 0 -80 -90
 //$attachment "anim_attachment_RH" "ValveBiped.Anim_Attachment_RH" 0 0 0 rotate -90 -90 0
@@ -131,8 +137,10 @@ $attachment "Emp_Holster" "ValveBiped.Bip01_Pelvis" 0 0 0 rotate -90 0 -90
 $attachment	"R_shoulderBladeAim" "ValveBiped.Bip01_Spine"	2.621	-2.0003	-3.2233	rotate	0.0000	0.0000	0.0000
 $attachment	"L_shoulderBladeAim" "ValveBiped.Bip01_Spine"	2.621	-2.0003	3.1509	rotate	0.0000	0.0000	0.0000
 
-$attachment "Root" "ValveBiped.Bip01_Pelvis" -0.00 -41.99 -0.44 rotate 180.00 0.00 90.00
-$attachment "Bip001" "ValveBiped.Bip01_Pelvis" -0.00 -0.00 0.00 rotate 0 0 0
+// absolute makes attachment origin from root 
+// but pos and rot are calculated relative to attachment 
+$attachment "Root" "ValveBiped.Bip01_Pelvis" -0.00 0 -0.44 rotate 180.00 0.00 90.00 absolute 
+$attachment "Bip001" "ValveBiped.Bip01_Pelvis" -0.00 -0.73 43.03 rotate 0 0 0 absolute 
 $attachment "ValveBiped.Bip01_Pelvis" "ValveBiped.Bip01_Pelvis" -0.00 -0.00 0.00 rotate 0 0 0
 $attachment "ValveBiped.Bip01_Spine" "ValveBiped.Bip01_Spine" -0.00 -0.00 0.00 rotate 0 0 0
 $attachment "ValveBiped.Bip01_Spine1" "ValveBiped.Bip01_Spine1" -0.00 -0.00 0.00 rotate 0 0 0
@@ -481,7 +489,8 @@ $attachment "Sc_ComboParry_LinkAttack2-2" "ValveBiped.Bip01_Pelvis" -0.00 -41.99
 $attachment "Sc_Air_DropAttack" "ValveBiped.Bip01_Pelvis" -0.00 -41.99 -0.44 rotate -90.00 -90.00 0.00
 $attachment "Sc_AreaCheck" "ValveBiped.Bip01_Pelvis" -0.00 -41.99 251.56 rotate 180.00 -90.00 0.00
 $attachment "SC_CommandDisplay" "ValveBiped.Bip01_Pelvis" 0.00 85.20 28.45 rotate 180.00 0.00 90.00
-$attachment "RootSocket" "ValveBiped.Bip01_Pelvis" -0.00 -41.99 -0.44 rotate -90.00 -90.00 0.00
+//$attachment "RootSocket" "ValveBiped.Bip01_Pelvis" -0.00 -0.73 43.03 rotate -90.00 -90.00 0.00 absolute // RootSocket must be at Root, not Pelvis 
+$attachment "RootSocket" "ValveBiped.Bip01_Pelvis" -0 0 -0 rotate -90.00 -90.00 0.00 absolute rigid  
 $attachment "BodyLookAt" "ValveBiped.Bip01_Pelvis" 0.00 8.41 -0.44 rotate 180.00 0.00 90.00
 $attachment "Sc_BackJumpCombo_1" "ValveBiped.Bip01_Pelvis" -4.20 42.01 62.56 rotate -135.00 -90.00 0.00
 $attachment "Sc_BackJumpCombo_2" "ValveBiped.Bip01_Pelvis" 4.20 54.61 58.36 rotate -135.00 -90.00 0.00
@@ -839,7 +848,8 @@ $sequence "reference" {
 	"a_reference"
 	fadein 1
 	fadeout 1
-	fps 1
+	fps 1 
+	snap 
 }
 
 //$include "sbravenpm_anims.qci" 

@@ -1,0 +1,349 @@
+StudioMDL.exe (Feb 16 2026) - Garry's Mod Edition (64-bit)
+Adding mount.cfg path: 'E:\Program Files\Steam\steamapps\common\Team Fortress 2\tf'
+Adding mount.cfg path: 'E:\Program Files\Steam\steamapps\common\Half-Life 2\episodic'
+Adding mount.cfg path: 'E:\Program Files\Steam\steamapps\common\Half-Life 2\ep2'
+Adding mount.cfg path: 'E:\Program Files\Steam\steamapps\common\Half-Life 2\hl1'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\breed'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\combine_apc'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\crabsynth'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\ministrider_ep1'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\mortarsynthv2'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\mylittlepony'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\obs'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\sbraven'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\scavengercannon-master'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\u4et'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\unreali'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\unreali_alienclan'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\unreal_tournament_99_airvehicles'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\unreal_tournament_bonus_sweps'
+Adding filesystem addon 'e:\program files\steam\steamapps\common\garrysmod\garrysmod\addons\ut_invasion'
+qdir:    "c:\users\mainpc\mdl compile temp\other_decompiled\sbraven\"
+gamedir: "E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\"
+g_path:  "c:\users\mainpc\mdl compile temp\other_decompiled\sbraven\sbravenpm_includemodel.qc"
+Building binary model files...
+Working on "sbravenpm_includemodel.qc"
+SMD MODEL head_2.smd
+VTA MODEL head.vta
+SMD MODEL Body.smd
+SMD MODEL hair.smd
+SMD MODEL hair_2.smd
+SMD MODEL hair_3.smd
+SMD MODEL Heels.smd
+SMD MODEL Neck_Guard.smd
+SMD MODEL Forearm_Guards.smd
+SMD MODEL Armor.smd
+SMD MODEL Armor2.smd
+SMD MODEL RavensuitVinyl_Blur.smd
+SMD MODEL Suit.smd
+Marking bone lPectoral as a jiggle bone
+Marking bone rPectoral as a jiggle bone
+Marking bone HBn_LF01 as a jiggle bone
+Marking bone HBn_LF02 as a jiggle bone
+Marking bone HBn_LF03 as a jiggle bone
+Marking bone HBn_LF04 as a jiggle bone
+Marking bone HBn_LF05 as a jiggle bone
+Marking bone HBn_LMA01 as a jiggle bone
+Marking bone HBn_LMA02 as a jiggle bone
+Marking bone HBn_LMA03 as a jiggle bone
+Marking bone HBn_LMA04 as a jiggle bone
+Marking bone HBn_LMA05 as a jiggle bone
+Marking bone HBn_LMB01 as a jiggle bone
+Marking bone HBn_LMB02 as a jiggle bone
+Marking bone HBn_LMB03 as a jiggle bone
+Marking bone HBn_LMB04 as a jiggle bone
+Marking bone HBn_LMB05 as a jiggle bone
+Marking bone HBn_LMC01 as a jiggle bone
+Marking bone HBn_LMC02 as a jiggle bone
+Marking bone HBn_LMC03 as a jiggle bone
+Marking bone HBn_LMC04 as a jiggle bone
+Marking bone HBn_LMC05 as a jiggle bone
+Marking bone HBn_LMD01 as a jiggle bone
+Marking bone HBn_LMD02 as a jiggle bone
+Marking bone HBn_LMD03 as a jiggle bone
+Marking bone HBn_LMD04 as a jiggle bone
+Marking bone HBn_LMD05 as a jiggle bone
+Marking bone HBn_LME01 as a jiggle bone
+Marking bone HBn_LME02 as a jiggle bone
+Marking bone HBn_LME03 as a jiggle bone
+Marking bone HBn_LME04 as a jiggle bone
+Marking bone HBn_LME05 as a jiggle bone
+Marking bone HBn_LME06 as a jiggle bone
+Marking bone HBn_LME07 as a jiggle bone
+Marking bone HBn_LMF01 as a jiggle bone
+Marking bone HBn_LMF02 as a jiggle bone
+Marking bone HBn_LMF03 as a jiggle bone
+Marking bone HBn_LMF04 as a jiggle bone
+Marking bone HBn_RF01 as a jiggle bone
+Marking bone HBn_RF02 as a jiggle bone
+Marking bone HBn_RF03 as a jiggle bone
+Marking bone HBn_RF04 as a jiggle bone
+Marking bone HBn_RFF01 as a jiggle bone
+Marking bone HBn_RFF02 as a jiggle bone
+Marking bone HBn_RFF03 as a jiggle bone
+Marking bone HBn_RFF04 as a jiggle bone
+Marking bone HBn_RFF05 as a jiggle bone
+Marking bone HBn_RMA01 as a jiggle bone
+Marking bone HBn_RMA02 as a jiggle bone
+Marking bone HBn_RMA03 as a jiggle bone
+Marking bone HBn_RMA04 as a jiggle bone
+Marking bone HBn_RMA05 as a jiggle bone
+Marking bone HBn_RMB01 as a jiggle bone
+Marking bone HBn_RMB02 as a jiggle bone
+Marking bone HBn_RMB03 as a jiggle bone
+Marking bone HBn_RMB04 as a jiggle bone
+Marking bone HBn_RMB05 as a jiggle bone
+Marking bone HBn_RMB06 as a jiggle bone
+Marking bone HBn_RMC01 as a jiggle bone
+Marking bone HBn_RMC02 as a jiggle bone
+Marking bone HBn_RMC03 as a jiggle bone
+Marking bone HBn_RMC04 as a jiggle bone
+Marking bone HBn_RMC05 as a jiggle bone
+Marking bone HBn_RMC06 as a jiggle bone
+Marking bone HBn_RMD01 as a jiggle bone
+Marking bone HBn_RMD02 as a jiggle bone
+Marking bone HBn_RMD03 as a jiggle bone
+Marking bone HBn_RMD04 as a jiggle bone
+Marking bone HBn_RMD05 as a jiggle bone
+Marking bone HBn_RMD06 as a jiggle bone
+Marking bone HBn_RME01 as a jiggle bone
+Marking bone HBn_RME02 as a jiggle bone
+Marking bone HBn_RME03 as a jiggle bone
+Marking bone HBn_RME04 as a jiggle bone
+Marking bone HBn_RME05 as a jiggle bone
+Marking bone HBn_RMF01 as a jiggle bone
+Marking bone HBn_RMF02 as a jiggle bone
+Marking bone HBn_RMF03 as a jiggle bone
+Marking bone HBn_RMF04 as a jiggle bone
+Marking bone HBn_RMF05 as a jiggle bone
+Marking bone HBn_CK01 as a jiggle bone
+Marking bone HBn_CK02 as a jiggle bone
+Marking bone HBn_CK03 as a jiggle bone
+Marking bone HBn_CK04 as a jiggle bone
+Marking bone HBn_CK05 as a jiggle bone
+Marking bone Front Cloth as a jiggle bone
+Marking bone Front Cloth.001 as a jiggle bone
+Marking bone Front Cloth.002 as a jiggle bone
+Marking bone Front Cloth.003 as a jiggle bone
+Marking bone Front Cloth.004 as a jiggle bone
+SMD MODEL sbravenpm_anims\reference.smd
+SMD MODEL sbravenpm_anims\a_proportions_corrective_animation.smd
+SMD MODEL sbravenpm_anims\a_inverse_proportions.smd
+SMD MODEL sbravenpm_anims\a_proportions.smd
+SMD MODEL c_knife_t_anims\draw.smd
+SMD MODEL sbravenpm_anims\raven_base.smd
+SMD MODEL c_knife_t_anims\idle.smd
+SMD MODEL c_knife_t_anims\idle_cycle.smd
+SMD MODEL c_knife_t_anims\midslash1.smd
+SMD MODEL c_knife_t_anims\midslash2.smd
+SMD MODEL c_knife_t_anims\stab.smd
+SMD MODEL c_knife_t_anims\stab_miss.smd
+SMD MODEL sbravenpm_physics.smd
+Collapsed 1 bones
+quatinterpbone "Bip01_R_Elbow" unused
+quatinterpbone "Bip01_R_Ankle" unused
+quatinterpbone "Bip01_R_Shin" unused
+quatinterpbone "Bip01_R_Knee" unused
+quatinterpbone "Bip01_R_Quadricep" unused
+quatinterpbone "Bip01_R_Hip" unused
+quatinterpbone "Bip01_L_Ankle" unused
+quatinterpbone "Bip01_L_Shin" unused
+quatinterpbone "Bip01_L_Knee" unused
+quatinterpbone "Bip01_L_Quadricep" unused
+quatinterpbone "Bip01_L_Hip" unused
+quatinterpbone "Bip01_R_Wrist" unused
+quatinterpbone "Bip01_R_Ulna" unused
+quatinterpbone "Bip01_L_Elbow" unused
+quatinterpbone "Bip01_L_Wrist" unused
+quatinterpbone "Bip01_L_Ulna" unused
+quatinterpbone "Bip01_R_Shoulder" unused
+quatinterpbone "Bip01_R_Bicep" unused
+quatinterpbone "Bip01_L_Shoulder" unused
+quatinterpbone "Bip01_L_Bicep" unused
+quatinterpbone "Bip01_R_PectoralX" unused
+quatinterpbone "Bip01_L_PectoralX" unused
+quatinterpbone "Bip01_R_Sartorius" unused
+quatinterpbone "Bip01_L_Sartorius" unused
+quatinterpbone "Bip01_R_Hip" unused
+quatinterpbone "Bip01_R_Pectoral" unused
+quatinterpbone "Bip01_R_Shoulder" unused
+quatinterpbone "Bip01_L_Trapezius" unused
+quatinterpbone "Bip01_R_Ulna" unused
+quatinterpbone "Bip01_R_Quadricep" unused
+quatinterpbone "Bip01_L_Quadricep" unused
+quatinterpbone "Bip01_L_Ulna" unused
+quatinterpbone "Bip01_R_Shin" unused
+quatinterpbone "Bip01_R_Wrist" unused
+quatinterpbone "Bip01_R_Ankle" unused
+quatinterpbone "Bip01_L_Sartorius" unused
+quatinterpbone "Bip01_L_Knee" unused
+quatinterpbone "Bip01_R_Sartorius" unused
+quatinterpbone "Bip01_L_Elbow" unused
+quatinterpbone "Bip01_R_Trapezius" unused
+quatinterpbone "Bip01_L_Latt" unused
+quatinterpbone "Bip01_L_Bicep" unused
+quatinterpbone "Bip01_L_Pectoral" unused
+quatinterpbone "Bip01_L_Wrist" unused
+quatinterpbone "Bip01_R_Bicep" unused
+quatinterpbone "Bip01_L_Shin" unused
+quatinterpbone "Bip01_R_Elbow" unused
+quatinterpbone "Bip01_L_Ankle" unused
+quatinterpbone "Bip01_R_Latt" unused
+quatinterpbone "Bip01_L_Shoulder" unused
+quatinterpbone "Bip01_R_Knee" unused
+quatinterpbone "Bip01_L_Hip" unused
+quatinterpbone "Front" unused
+Processing LOD for material: Torso-3
+Processing LOD for material: Face-2
+Processing LOD for material: Lips-2
+Processing LOD for material: EyeSocket-2
+Processing LOD for material: Eyelashes-1
+Processing LOD for material: MI_CH_M_NA_53_Eyebrow
+Processing LOD for material: Eye_r
+Processing LOD for material: Eye_L
+Processing LOD for material: fmouth
+Processing LOD for material: Torso-3
+Processing LOD for material: MI_CH_M_NA_53_Hair01
+Processing LOD for material: MI_CH_M_NA_53_Hair01
+Processing LOD for material: MI_CH_M_NA_53_Hair01
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit02-2
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit01
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit01
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit02-3
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit01
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit02
+Processing LOD for material: MI_RavensuitVinyl
+Processing LOD for material: MI_RavensuitVinyl_Aftershock
+Processing LOD for material: MI_CH_NPC_Raven_01_Suit01-1
+Max flex verts 4466
+Processing jointed collision model
+ValveBiped.Bip01_Pelvis  ( 30 verts, 1 convex elements) volume: 810.08
+ValveBiped.Bip01_L_Thigh ( 28 verts, 1 convex elements) volume: 376.72
+ValveBiped.Bip01_L_Calf  ( 28 verts, 1 convex elements) volume: 283.14
+ValveBiped.Bip01_L_Foot  ( 12 verts, 1 convex elements) volume: 46.22
+ValveBiped.Bip01_R_Thigh ( 28 verts, 1 convex elements) volume: 376.71
+ValveBiped.Bip01_R_Calf  ( 28 verts, 1 convex elements) volume: 283.14
+ValveBiped.Bip01_R_Foot  ( 12 verts, 1 convex elements) volume: 46.19
+ValveBiped.Bip01_Spine2  ( 39 verts, 1 convex elements) volume: 1244.76
+ValveBiped.Bip01_L_UpperArm ( 28 verts, 1 convex elements) volume: 115.45
+ValveBiped.Bip01_L_Forearm ( 30 verts, 1 convex elements) volume: 132.48
+ValveBiped.Bip01_L_Hand  ( 14 verts, 1 convex elements) volume: 43.78
+ValveBiped.Bip01_R_UpperArm ( 28 verts, 1 convex elements) volume: 116.03
+ValveBiped.Bip01_R_Forearm ( 30 verts, 1 convex elements) volume: 132.48
+ValveBiped.Bip01_R_Hand  ( 14 verts, 1 convex elements) volume: 43.78
+ValveBiped.Bip01_Head1   ( 98 verts, 1 convex elements) volume: 206.20
+Collision model completed.
+---------------------
+writing E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\models/alvaroports/SBRavenPM.mdl:
+Loading preexisting model: E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\models/alvaroports/SBRavenPM.mdl
+WARNING: LoadPreexistingSequenceOrder: Zero-size file or no sequences.
+bones        87464 bytes (142)
+animations  121956 bytes (25 anims) (1356 frames) [2:16]
+sequences     7484 bytes (24 seq) 
+ik/pose      16560 bytes
+eyeballs       344 bytes (2 eyeballs)
+flexes      541040 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+eyeballs         0 bytes (0 eyeballs)
+flexes           0 bytes (54 flexes)
+textures      1136 bytes
+keyvalues        0 bytes
+bone transforms    19376 bytes
+bone flex driver       0 bytes
+Collision model volume 4257.16 in^3
+collision        0 bytes
+total       807800
+---------------------
+writing E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\models/alvaroports/SBRavenPM.vvd:
+vertices    274896 bytes (5727 vertices)
+vertices     22128 bytes (461 vertices)
+vertices    863136 bytes (17982 vertices)
+vertices    961920 bytes (20040 vertices)
+vertices    250560 bytes (5220 vertices)
+vertices     54144 bytes (1128 vertices)
+vertices     73632 bytes (1534 vertices)
+vertices     39168 bytes (816 vertices)
+vertices    656688 bytes (13681 vertices)
+vertices    637296 bytes (13277 vertices)
+vertices     63360 bytes (1320 vertices)
+vertices    667536 bytes (13907 vertices)
+tangents     91632 bytes (5727 vertices)
+tangents      7376 bytes (461 vertices)
+tangents    287712 bytes (17982 vertices)
+tangents    320640 bytes (20040 vertices)
+tangents     83520 bytes (5220 vertices)
+tangents     18048 bytes (1128 vertices)
+tangents     24544 bytes (1534 vertices)
+tangents     13056 bytes (816 vertices)
+tangents    218896 bytes (13681 vertices)
+tangents    212432 bytes (13277 vertices)
+tangents     21120 bytes (1320 vertices)
+tangents    222512 bytes (13907 vertices)
+total      6086016 bytes
+---------------------
+Generating optimized mesh "E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\models/alvaroports/SBRavenPM.dx80.vtx":
+body parts:        96 bytes
+models:           460 bytes
+model LODs:       276 bytes
+meshes:           198 bytes
+strip groups:     625 bytes
+strips:          1026 bytes
+verts:         867258 bytes
+indices:       711678 bytes
+bone changes:    2480 bytes
+everything:   1583857 bytes
+---------------------
+Generating optimized mesh "E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\models/alvaroports/SBRavenPM.dx90.vtx":
+body parts:        96 bytes
+models:           460 bytes
+model LODs:       276 bytes
+meshes:           198 bytes
+strip groups:     600 bytes
+strips:           675 bytes
+verts:         856719 bytes
+indices:       711678 bytes
+bone changes:    2184 bytes
+everything:   1572646 bytes
+
+Completed "sbravenpm_includemodel.qc"

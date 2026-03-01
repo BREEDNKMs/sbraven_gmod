@@ -1,6 +1,7 @@
 
 $modelname stellarblade/raven_animations.mdl
-$proceduralbones "alyx.vrd"
+$proceduralbones "ValveBiped.vrd"
+$proceduralbones "female.vrd"
 $include "../../sourcesdk_content/gm_playermodel_examples/Humans/Standardhierarchy.qci"                
 $alwayscollapse "ValveBiped"                
 $alwayscollapse "XSISceneRoot"                
@@ -9,6 +10,11 @@ $include "standardikchains.qci"
 $include Sharedbones.qci
 
 $animblocksize 128
+$bonemerge "Front Cloth" 
+$bonemerge "Front Cloth.001" 
+$bonemerge "Front Cloth.002" 
+$bonemerge "Front Cloth.003" 
+$bonemerge "Front Cloth.004" 
 
 $animation "a_proportions_corrective_animation" "sbravenpm_anims\a_proportions_corrective_animation.smd" 
 $animation "a_reference" "sbravenpm_anims\reference.smd" 
