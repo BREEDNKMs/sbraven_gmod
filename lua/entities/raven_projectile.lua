@@ -742,7 +742,7 @@ function ENT:NE_RibbonM_Draw(flags)
 	-- if true then return end 
 	-- print("drawing:",CurTime(),self.NE_RibbonM.TrailPoints) 
     local pts = self.NE_RibbonM.TrailPoints
-    if !pts or #pts < 1 then return end
+    if !pts or #pts < 2 then return end -- Changed from < 1 to < 2
 
     local mat = self.NE_RibbonM.Mat
     render.SetMaterial(mat)
@@ -755,7 +755,9 @@ function ENT:NE_RibbonM_Draw(flags)
     -- Use triangle strip; build from oldest to newest so winding is consistent
 	local oldr,oldg,oldb = render.GetColorModulation() 
 	local vertexCount = #pts * 2
-	local triCount = vertexCount - 2
+	local triCount = math.max(vertexCount - 2, 0) -- Safely clamp to 0 minimum
+    if triCount <= 0 then return end -- Bail out before drawing if we have no triangles
+    
     mesh.Begin(MATERIAL_TRIANGLE_STRIP, triCount)
 
     local eyePos = EyePos()
