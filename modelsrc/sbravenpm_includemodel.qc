@@ -857,6 +857,7 @@ $sequence "reference" {
 //$include "sbravenpm_testposes.qci" 
 
 $includemodel "stellarblade/raven_animations.mdl"
+//$includemodel "stellarblade/eve_animations.mdl"
 $include "c_knife_anims.qci" 
 $includemodel "f_anm.mdl"
 $includemodel "alyx_animat_ep2.mdl"
