@@ -15,6 +15,7 @@ Requirements
 - Access to Stellar Blade game files (you must own the game)
 - FModel (or a similar Unreal asset extractor) to export JSON asset properties from Stellar Blade
 - Basic familiarity with installing GMod addons (copying files into the garrysmod/addons/ folder)
+- "Unreal Gold" addon and Unreal Tournament 99 SWEPs addon from Garry's Mod Workshop, in which the Raven NPC uses npc_unreali_female as npc base, and the sword uses the UT99 Weapon Base 
 
 Installation (for testers)
 1. Download this repository (zip or clone):
