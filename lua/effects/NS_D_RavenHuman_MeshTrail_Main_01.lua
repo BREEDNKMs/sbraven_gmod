@@ -192,7 +192,7 @@ function EFFECT:Think()
 			end
 		end 
 	end 
-	debugoverlay.Cross(self:GetPos(),15,FrameTime()*2) 
+	-- debugoverlay.Cross(self:GetPos(),15,FrameTime()*2) 
     local cullfraction = math.min(( CurTime() - self.CreationTime ) / self.CullDuration,1)
     local die = ( CurTime() - self.CreationTime ) / self.DieTime
     

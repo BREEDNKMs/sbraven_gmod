@@ -788,7 +788,7 @@ function ENT:OnRemove(fullUpdate)
 end 
 
 function ENT:OnStateChange(oldState, newState) 
-    print("state change", oldState, newState) 
+    -- print("state change", oldState, newState) 
 
     -- 1. SEARCH: Find the raven_blade anywhere in the inventory
     local ravenBlade, otherWeapon = NULL, NULL 
@@ -808,12 +808,13 @@ function ENT:OnStateChange(oldState, newState)
         print("has raven blade") 
 
         -- HOLSTER (Alert -> Idle)
-        if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() then 
+        if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() and self:GetKnownEnemyCount() < 1 then 
             
             local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS")
             if seqID != -1 then
                 local layer = self:AddGestureSequence(seqID) 
-                print("layer_Eve_Weapon_End_BS", layer) -- holster 
+				self:SetLayerPlaybackRate(layer,0.5) 
+                -- print("layer_Eve_Weapon_End_BS", layer) -- holster 
             end
 
             ravenBlade:AddEffects(EF_NODRAW) 
@@ -829,7 +830,8 @@ function ENT:OnStateChange(oldState, newState)
             local seqID = self:LookupSequence("layer_Eve_Weapon_Start_Anim")
             if seqID != -1 then
                 local layer = self:AddGestureSequence(seqID) 
-                print("layer_Eve_Weapon_Start_Anim", layer) -- draw 
+				self:SetLayerPlaybackRate(layer,0.5) 
+                -- print("layer_Eve_Weapon_Start_Anim", layer) -- draw 
             end
 
             -- FIX: Select the specific weapon entity we found earlier
@@ -846,7 +848,7 @@ function ENT:OnStateChange(oldState, newState)
             self:ResetIdealActivity(ACT_IDLE) 
         end 
     end 
-end
+end 
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
@@ -1362,12 +1364,12 @@ function ENT:SbCautionToTarget(tbl, nodeID)
         self:ClearGoal() 
         if bLockOn then self:SetMoveYawLocked(false) end
 
-        if self:SBAI_GetNodeState(nodeID, "returnSucceeded") then
-            return true
-        else
-            return false
-        end
-    end
+        if self:SBAI_GetNodeState(nodeID, "returnSucceeded") then 
+            return true 
+        else 
+            return false 
+        end 
+    end 
 
     -- default: still running
     return nil

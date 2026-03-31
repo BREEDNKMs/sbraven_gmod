@@ -1,0 +1,52 @@
+-- Draw a sprite with custom UVs from a sprite sheet
+-- pos: Vector, w/h: numbers, col: Color, u0,v0,u1,v1: numbers (0-1)
+function DrawSpriteUV(pos, w, h, col, u0, v0, u1, v1)
+    -- Ensure material is already set with render.SetMaterial()
+
+    local up = EyeAngles():Up()      -- camera up vector
+    local right = EyeAngles():Right() -- camera right vector
+
+    local halfW = w * 0.5
+    local halfH = h * 0.5
+
+    mesh.Begin(MATERIAL_QUADS, 1)
+
+        mesh.Position(pos + (right * -halfW) + (up * -halfH))
+        mesh.Color(col.r, col.g, col.b, col.a)
+        mesh.TexCoord(0, u0, v1) -- bottom-left
+        mesh.AdvanceVertex()
+
+        mesh.Position(pos + (right * -halfW) + (up *  halfH))
+        mesh.Color(col.r, col.g, col.b, col.a)
+        mesh.TexCoord(0, u0, v0) -- top-left
+        mesh.AdvanceVertex()
+
+        mesh.Position(pos + (right *  halfW) + (up *  halfH))
+        mesh.Color(col.r, col.g, col.b, col.a)
+        mesh.TexCoord(0, u1, v0) -- top-right
+        mesh.AdvanceVertex()
+
+        mesh.Position(pos + (right *  halfW) + (up * -halfH))
+        mesh.Color(col.r, col.g, col.b, col.a)
+        mesh.TexCoord(0, u1, v1) -- bottom-right
+        mesh.AdvanceVertex()
+
+    mesh.End()
+end
+
+local mat = Material("sprites/T_B_SwirlSmoke_01")
+
+hook.Add("PostDrawOpaqueRenderables", "TestSpriteUV", function()
+    render.SetMaterial(mat)
+
+    -- Suppose 4x4 sheet, pick frame (row=1,col=2)
+    local rows, cols = 4, 4
+    local frameX, frameY = 1, 2
+
+    local u0 = (frameX-1) / cols
+    local v0 = (frameY-1) / rows
+    local u1 = frameX / cols
+    local v1 = frameY / rows
+
+    DrawSpriteUV(Vector(0,0,50), 64, 64, Color(255,255,255,255), u0, v0, u1, v1)
+end

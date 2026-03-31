@@ -758,7 +758,7 @@ function ENT:NE_RibbonM_Draw(flags)
 	local triCount = math.max(vertexCount - 2, 0) -- Safely clamp to 0 minimum
     if triCount <= 0 then return end -- Bail out before drawing if we have no triangles
     
-    mesh.Begin(MATERIAL_TRIANGLE_STRIP, triCount)
+    mesh.Begin(MATERIAL_TRIANGLE_STRIP, triCount) 
 
     local eyePos = EyePos()
     -- iterate oldest -> newest (so i = # to 1 yields newest -> oldest; we want oldest first)

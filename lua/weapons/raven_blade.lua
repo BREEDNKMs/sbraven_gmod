@@ -78,11 +78,11 @@ SWEP.Base = "weapon_ut99_base"
 SWEP.Category = "Other" 
 SWEP.PrintName = "Raven Blade" 
 SWEP.Author = "DevilHawk" 
-SWEP.Purpose = "Samurai sword that teleports holder with right click." 
+SWEP.Purpose = "Primary or Secondary: Normal Swing. ALT + Primary or Secondary: Select skill. Reload: Cast selected skill. " 
 SWEP.Spawnable = true 
 
-SWEP.Slot = 1 
-SWEP.SlotPos = 2 
+SWEP.Slot = 0 
+-- SWEP.SlotPos = 2 
 SWEP.RenderGroup = RENDERGROUP_BOTH 
 SWEP.DeploySound = "unreali/blade1s.wav" 
 
@@ -110,14 +110,23 @@ SWEP.Secondary.Playback_Rate 	= 1 -- determine anim play speed
 SWEP.Secondary.Sound			= Sound("M_Raven_SwordSwish_L_Cue") 
 SWEP.Melee_HitSound	=	Sound("M_Raven_Skill_Stab_Cue") 
 
-function SWEP:SpecialDT()
-    self:NetworkVar("Int", 0, "SelectedSkillIndex")
+function SWEP:SpecialDT() 
+    self:NetworkVar("Int", 0, "SelectedSkillIndex") 
     -- self:NetworkVar("Bool", 0, "InSkillMode") -- SetAttack will be used instead 
-end
+end 
 
 function SWEP:CanPrimaryAttack() return self:GetHolsterDelay() == 0 and self:GetActivity() != ACT_VM_HOLSTER end 
 function SWEP:CanBePickedUpByNPCs() return false end 
-function SWEP:Deploy() return weapons.Get("weapon_ugold_automag").Deploy(self) end 
+function SWEP:Deploy() 
+	local owner = self:GetOwner() 
+	if IsValid(owner) then 
+		if owner:IsPlayer() then 
+			owner:AddVCDSequenceToGestureSlot(0,owner:LookupSequence("layer_Eve_Weapon_Start_Anim"),0,true) 
+			BroadcastLua("if IsValid(Entity("..owner:EntIndex()..")) then Entity("..owner:EntIndex().."):AddVCDSequenceToGestureSlot(0,Entity("..owner:EntIndex().."):LookupSequence('layer_Eve_Weapon_Start_Anim'),0,true) end ") 
+		end 
+	end 
+	return weapons.Get("weapon_ugold_automag").Deploy(self) 
+end 
 function SWEP:ShouldDropOnDie() return true end 
 function SWEP:SpecialThink() 
 	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
@@ -132,7 +141,7 @@ function SWEP:SpecialThink()
 	end 
 	
 	if owner:KeyDown(IN_WALK) then
-        self:SetAttack(true)
+        -- self:SetAttack(true)
         
         -- Allow scrolling through skills
         if owner:KeyPressed(IN_ATTACK) then
@@ -148,9 +157,8 @@ function SWEP:SpecialThink()
         end
         
     else
-        self:SetAttack(false)
-    end
-	
+        -- self:SetAttack(false)
+    end 
 	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
 end 
 
@@ -187,6 +195,7 @@ function SWEP:SpecialInit()
 	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
 	util.Effect("mi_a_gpusparks_01",ef) 
 	util.Effect("MI_A_Flares_01_23",ef) 
+	ef:SetAttachment(2) 
 	util.Effect("ne_ribbonm",ef) 
 	self.CachedSkillList = {} 
 	self:BuildSkillList() 
@@ -207,30 +216,9 @@ end
 
 function SWEP:PrimaryAttack() 
 	-- determine next attack time, relative with anim play rate 
-	if !self:CanPrimaryAttack() then return false end
-    local owner = self:GetOwner()
-	if owner:KeyDown(IN_WALK) then return end
-    
-    -- 1. If holding RELOAD, standard M1 just cycles (handled in Think), or does nothing to prevent accidental fires.
-    -- if owner:KeyDown(IN_WALK) then return end
-
-    -- -- 2. Check if we have a skill Queued
-    -- if self.StellarBlade_SelectedSkill then
-        -- if !owner.SBAI_SkillTable then
-            -- local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill)
-            
-            -- -- If skill executed successfully, we might want to clear the selection 
-            -- -- OR keep it to allow spamming the same skill. Let's keep it.
-            -- if success then 
-                -- return 
-            -- end
-        -- end
-    -- end
-
-    -- 3. Standard Attack Fallback (If no skill selected or skill failed/cooldown)
-    if IsValid(owner) then
-        if owner.SBAI_ActiveSkill then return end
-    end
+	if !self:CanPrimaryAttack() then return false end 
+    local owner = self:GetOwner() 
+	if owner:KeyDown(IN_WALK) then return end 
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Primary.Animation ) 
 	local Delay = vm:SequenceDuration(seq) 
@@ -251,11 +239,11 @@ function SWEP:PrimaryAttack()
 end 
 
 function SWEP:SecondaryAttack() 
-	-- if not self:CanSecondaryAttack() then return end
+	-- if not self:CanSecondaryAttack() then return end 
 	-- determine next attack time, relative with anim play rate 
 	if !self:CanPrimaryAttack() then return false end 
-	local owner = self:GetOwner()
-	if owner:KeyDown(IN_WALK) then return end
+	local owner = self:GetOwner() 
+	if owner:KeyDown(IN_WALK) then return end 
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Secondary.Animation ) -- play ACT_VM_MISSCENTER if secondary attack missed 
 	local Delay = vm:SequenceDuration(seq) 
@@ -271,34 +259,71 @@ function SWEP:SecondaryAttack()
 	-- self:TakeAmmo() 
 	self:SetIdleDelay(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
 	self:EmitSound(self.Secondary.Sound, 100, 100) 
-	local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,240) 
+	local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,150) 
+end 
+
+function SWEP:NPCShoot_Primary(shootPos, shootDir) 
+	
+end 
+
+function SWEP:NPCShoot_Secondary(shootPos, shootDir) 
+	
 end 
 
 function SWEP:Reload() 
-	if !self:CanPrimaryAttack() then return false end
-    local owner = self:GetOwner()
+	if !self:CanPrimaryAttack() then return false end 
+    local owner = self:GetOwner() 
     
-    -- 1. If holding RELOAD, standard M1 just cycles (handled in Think), or does nothing to prevent accidental fires.
-    if owner:KeyDown(IN_WALK) then return end
+    -- 1. If holding RELOAD, standard M1 just cycles (handled in Think), or does nothing to prevent accidental fires. 
+    if owner:KeyDown(IN_WALK) then return end 
 
     -- 2. Check if we have a skill Queued
-    if self.StellarBlade_SelectedSkill then
-        if !owner.SBAI_SkillTable then
-            local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill)
-            
-            -- If skill executed successfully, we might want to clear the selection 
-            -- OR keep it to allow spamming the same skill. Let's keep it.
-            if success then 
-                return 
-            end
-        end
-    end
+    if self.StellarBlade_SelectedSkill then 
+		if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !owner.SBAI_SkillStep:IsActive() then 
+				-- if strSkill then 
+					-- if strSkill == "M_Raven_ShieldBreakerCounter_Cast1" then strSkill = "P_Eve_ShieldBreakerCounterRaven1_Cast1" end 
+					-- if strSkill == "M_Raven_BetaSkillCounter_Cast1" then strSkill = "P_Eve_BetaCounterRaven1_Cast1" end 
+				-- end 
+			-- if self.StellarBlade_SelectedSkill == "M_Raven_BetaSkillCounter" then 
+				-- local target = owner:GetEyeTrace().Entity 
+				-- local _PickTarget = StellarBlade.PickTarget 
+				-- StellarBlade.PickTarget = function() return owner end 
+				-- local success = StellarBlade.SetSkillStep(target,"P_Eve_BetaCounterRaven1_Cast1") 
+				-- StellarBlade.PickTarget = _PickTarget 
+				-- -- StellarBlade.AddEffect(owner,"Test_BlockActionEnemy_Effect",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, StartDelayTime,0, LifeTime,7) 
+				-- -- StellarBlade.AddEffect(owner,"BlockSkill",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, StartDelayTime,0, LifeTime,7) 
+				-- StellarBlade.AddEffect(owner,"BlockAction",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
+				-- return success 
+			-- end 
+			
+			-- if self.StellarBlade_SelectedSkill == "M_Raven_ShieldBreakerCounter" then 
+				-- local target = owner:GetEyeTrace().Entity 
+				-- local _PickTarget = StellarBlade.PickTarget 
+				-- StellarBlade.PickTarget = function() return owner end 
+				-- local success = StellarBlade.SetSkillStep(target,"P_Eve_ShieldBreakerCounterRaven1_Cast1") 
+				-- StellarBlade.PickTarget = _PickTarget 
+				-- return success 
+			-- end 
+            local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill) 
+            if success then return end 
+        end 
+    end 
 end 
 
 function SWEP:Holster(Other) 
 	-- local retVal = weapons.Get("weapon_ut99_base").Holster(self,Other) 
 	return true 
 end 
+
+function SWEP:GetCapabilities() return CAP_WEAPON_MELEE_ATTACK1 + CAP_WEAPON_MELEE_ATTACK2 end 
+
+function SWEP:OnRestore() 
+	if IsValid(self:GetOwner()) then 
+		self:GetOwner().SBAI_SkillTimers = nil 
+	end 
+end 
+
+function SWEP:GetNPCBurstSettings() return 1, 1, 1 end 
 
 function SWEP:DrawHUD()
     weapons.Get("weapon_ut99_base").DrawHUD(self)
@@ -310,7 +335,7 @@ function SWEP:DrawHUD()
     
     local idx = self:GetSelectedSkillIndex()
     local skillName = self.CachedSkillList[idx] or "None"
-    local inMode = self:GetAttack()
+    local inMode = self:GetOwner():KeyDown(IN_WALK)
     
     -- Configuration
     local x, y = ScrW() * 0.85, ScrH() * 0.85
@@ -324,15 +349,15 @@ function SWEP:DrawHUD()
     draw.SimpleText("ACTIVE SKILL [Hold ALT + Mouse Buttons]", "DermaDefault", x, y, Color(200,200,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
     
     -- Clean up the name (Remove M_Raven_ prefix for cleaner UI)
-    local cleanName = string.Replace(skillName, "M_Raven_", "")
-    cleanName = string.Replace(cleanName, "_", " ")
+    local cleanName = string.Replace(skillName, "M_Raven_", "") 
+    cleanName = string.Replace(cleanName, "_", " ") 
+	cleanName = string.NiceName(cleanName) 
     
     -- Draw Skill Name
     surface.SetFont("DermaLarge")
     local tw, th = surface.GetTextSize(cleanName)
     draw.SimpleText(cleanName, "DermaLarge", x, y + 5, colText, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     draw.SimpleText("Press RELOAD to activate", "DermaDefault", x, y + 40, Color(200,200,200), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-    
 end
 
 -- ============================================================

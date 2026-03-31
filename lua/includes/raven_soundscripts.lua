@@ -1,9 +1,9 @@
 sound.Add( 
 { 
     name = "NPC_Raven.PainSound", -- Light Damage 
-    channel = CHAN_AUTO, 
+    channel = CHAN_VOICE, 
     volume = 1, 
-    soundlevel = 100, 
+    soundlevel = 75, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s4_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s5_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s6_VO.wav",}
 }) 
 
@@ -90,7 +90,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_P_Cue", 
-    channel = CHAN_AUTO, 
+    channel = CHAN_VOICE, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
@@ -162,7 +162,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Dmg_S_Cue", 
-    channel = CHAN_AUTO, 
+    channel = CHAN_VOICE, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_s1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s4_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_s5_VO.wav"}
@@ -186,7 +186,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_Dmg_L_Cue", 
-    channel = CHAN_AUTO, 
+    channel = CHAN_VOICE, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_dmg_l1_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l2_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l3_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_dmg_l4_VO.wav"}
@@ -195,7 +195,7 @@ sound.Add(
 sound.Add( 
 { 
     name = "M_Raven_vo_SkillLaugh_Cue", 
-    channel = CHAN_AUTO, 
+    channel = CHAN_VOICE, 
     volume = 1, 
     soundlevel = 100, 
     sound = {"Dialogue/ActionVoice/Raven/vo_Raven_laugh_01_VO.wav","Dialogue/ActionVoice/Raven/vo_Raven_laugh_02_VO.wav"}

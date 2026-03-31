@@ -1,0 +1,174 @@
+Yes, rewrite my SBAI_SelectTask into a stateful version that uses _running/_result flags inside the cloned tree (so I can drop it in and test). 
+
+function ENT:SBAI_SelectTask(taskTable, currentIndex) 
+    print("***in selecttask", taskTable, currentIndex)
+    currentIndex = currentIndex or 1
+
+    if self.ActiveComposite then
+		print("checking self.ActiveComposite")
+		local active = self.ActiveComposite
+		-- don't nil it yet (capture first so we can decide). We'll nil before returning to avoid loops.
+		print("Resuming from active composite:", active.type, "at child index", active.child, "compositeIndex", active.compositeIndex)
+
+		-- Defensive sanity:
+		local parentList = active.parent
+		local startChild  = active.child or 1
+		local startIndex  = active.compositeIndex or 1
+		-- if parentList is a single node (not a list), wrap it
+		if type(parentList) ~= "table" or #parentList == 0 then
+			-- fallback: treat parent as single node
+			parentList = { active.parent }
+			startChild = active.child or 1
+		end
+
+		-- Set CurrentBranch so FlowAbort checks have the right index
+		self.CurrentBranch = startChild
+
+		-- Clear ActiveComposite now to avoid accidental loops inside SelectTask
+		self.ActiveComposite = nil
+
+		-- Re-enter starting at saved child index and pass compositeIndex as currentIndex
+		return self:SBAI_SelectTask(parentList, startChild, startIndex)
+    end
+    
+    -- This function now processes a single composite node at a time.
+    -- local subTaskTable = taskTable[1] -- We pass tables like {node}
+    -- if !subTaskTable then return false end -- Safety check
+    -- currentIndex helps track priority order in Selector (left to right)
+    for subTaskNum, subTaskTable in ipairs(taskTable) do
+        -- detect composite type from the key
+        local objectName = subTaskTable.ObjectName  -- first key string
+        local isSelector = objectName and objectName:find("BTComposite_Selector")
+        local isSequence = objectName and objectName:find("BTComposite_Sequence")
+        print("objectName:", objectName) 
+		if objectName == "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_0" then 
+			Entity(1):ChatPrint(objectName) 
+		end 
+		if objectName == "BTComposite_Selector'M_Raven_AI:BTComposite_Selector_35" then 
+			Entity(1):ChatPrint(objectName) 
+		end 
+        local allowEntry = true
+        local flowAbortMode = nil
+
+        -- Evaluate conditions (decorators)
+        if subTaskTable.Condition then
+            for subConditionName, subConditionValues in pairs(subTaskTable.Condition) do
+                local flowMode = subConditionValues.FlowAbortMode
+                if flowMode then flowAbortMode = flowMode end
+
+                print("subConditionName", subConditionName) 
+                subConditionName = subConditionName:gsub("^SBBTDecorator_", "") 
+                subConditionName = subConditionName:gsub("_%d+$", "")
+                local conditionPassed = self[subConditionName](self, subConditionValues) 
+                print("Decorator", subConditionName, "returned", conditionPassed) 
+                if not conditionPassed then
+                    allowEntry = false
+                    break
+                end
+            end
+        end
+        print("allowEntry", allowEntry,flowAbortMode) 
+
+        -- handle FlowAbortMode before executing
+        if flowAbortMode then
+            if flowAbortMode == "Self" then
+                if not allowEntry and self.CurrentBranch == subTaskNum then
+                    self.CurrentBranch = nil
+                    self.CurrentSBTask = nil 
+                    print("abort self branch") 
+                    return nil
+                end
+            elseif flowAbortMode == "LowerPriority" then
+                if allowEntry and currentIndex and subTaskNum < currentIndex then
+                    self.CurrentBranch = subTaskNum
+                    self.CurrentSBTask = objectName 
+					print("FlowAbortMode is in LowerPriority") 
+                    return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
+                end
+            elseif flowAbortMode == "Both" then
+                if not allowEntry and self.CurrentBranch == subTaskNum then
+                    self.CurrentBranch = nil
+                    self.CurrentSBTask = nil 
+                    print("aborting entire flow") 
+                    return nil
+                elseif allowEntry and currentIndex and subTaskNum < currentIndex then
+                    self.CurrentBranch = subTaskNum 
+                    self.CurrentSBTask = objectName 
+                    return self:SBAI_SelectTask({subTaskTable}, subTaskNum)
+                end
+            end
+        end
+
+        -- if entry allowed, execute task or dive deeper
+        if allowEntry then
+			if not self.CurrentBranch then self.CurrentBranch = subTaskNum end
+            if subTaskTable.StartTask then
+                print("**in start task")
+                for taskKey, taskData in pairs(subTaskTable.StartTask) do
+                    local cleanTaskKey = taskKey:gsub("^SBBTTask_", ""):gsub("_%d+$", "")
+                    local result = self[cleanTaskKey](self, taskData)
+                    print(objectName, "returned", result)
+
+                    if result == nil then
+                        -- This task is running. Save state and exit.
+                        print("Leaf Saving State: Parent:", taskTable, "Child Index:", subTaskNum, "compositeIndex:", currentIndex)
+						self.ActiveComposite = {
+							parent = taskTable,                 -- list of siblings
+							type = "Leaf",
+							child = subTaskNum,                 -- FIX: use subTaskNum
+							compositeIndex = currentIndex or 1, -- preserve the composite's index context
+						}
+                        return nil
+                    end
+
+                    if result == true then
+                        if isSelector then return true end -- Selector succeeds immediately.
+                        break -- Sequence succeeds, let main loop continue to next task.
+                    end
+                    
+                    if result == false then
+                        if isSequence then return false end -- Sequence fails immediately.
+                        break -- Selector fails, let main loop continue to next sibling.
+                    end
+                end
+				-- if we reach here, either a StartTask was a check (true without NextTask) and we continue,
+                -- or it failed and selector should try next child - so loop continues.
+            elseif subTaskTable.NextTask then
+                local result = self:SBAI_SelectTask(subTaskTable.NextTask, 1) -- Recurse into children, always starting them from 1
+
+                if result == nil then
+                    -- A child branch is running, so we are also running. Save our state and exit.
+                    print("Composite Saving State: Parent:", taskTable, "Child Index:", i)
+                    self.ActiveComposite = {
+					parent = taskTable,                        -- the siblings list
+					type   = isSequence and "Sequence" or "Selector",
+					child  = subTaskNum,                       -- FIX: use subTaskNum
+					compositeIndex = currentIndex or 1,        -- preserve where the composite was called from
+					}
+                    return nil
+                end
+
+                   -- Handle return values depending on composite type
+				if isSelector then
+					if result == true then
+						-- Selector succeeds immediately if any child succeeds
+						return true
+					else
+						-- Child failed → continue loop to try next sibling
+					end
+				elseif isSequence then
+					if result == false then
+						-- Sequence fails immediately if any child fails
+						return false
+					else
+						-- Child succeeded → continue loop to next sibling
+					end
+				end
+            end 
+        end
+    end
+
+    -- If no child returned success/running, return false
+	print("If no child returned success/running, return false") 
+    return false
+end

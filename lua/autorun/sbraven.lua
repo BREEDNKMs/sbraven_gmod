@@ -203,7 +203,7 @@ local function FInViewCone(ent, vecSpot)
 	los.z = 0
 	los = los:GetNormalized() -- returns a normalized vector
 
-	local facingDir = ent.GetEyeAngles and ent:GetEyeAngles():Forward() or ent:GetForward()
+	local facingDir = ent.EyeAngles and ent:EyeAngles():Forward() or ent:GetForward()
 	if !facingDir then return false end
 	facingDir.z = 0
 	facingDir = facingDir:GetNormalized()
@@ -279,7 +279,7 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
 	
 			if inViewCone then 
 				dmginfo:ScaleDamage(0) 
-				print("SkillResultAlias:", SkillResultAlias,attacker) 
+				-- print("SkillResultAlias:", SkillResultAlias,attacker) 
 				if SkillResultAlias != "None" then 
 					-- StellarBlade.StartSkillResult(target,dmginfo:GetAttacker(),SkillResultAlias) 
 					StellarBlade.StartSkillSelfResult(target,SkillResultAlias,SkillStepTable.bCritical,false) 
@@ -2573,6 +2573,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 			StellarBlade.PickTarget = _PickTarget 
 			StellarBlade.AddEffect(self,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
 		else 
+			self.SB_PickTargetTime = 0 
 			local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
 			if !bSkillStep then 
 				Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) 
@@ -2582,7 +2583,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 				if !IsFirstTimePredicted() then -- in SINGLEPLAYER, doesn't call for CLIENT. 
 				BroadcastLua("if IsValid(Entity("..self:EntIndex()..")) then StellarBlade.SetSkillStep(Entity("..self:EntIndex().."),'"..FirstSkillActiveAlias.."') end") 
 				end 
-				Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())..Realm) 
+				-- Entity(1):ChatPrint("starting "..SkillName.." at CurTime:"..tostring(CurTime())..Realm) 
 			end 
 		end 
 		if !self.SBAI_SkillTimers then self.SBAI_SkillTimers = { } end 
@@ -6825,7 +6826,7 @@ StellarBlade.ESBCompare = function(val1,val2,operator)
 	return result 
 end 
 
-StellarBlade.PickTarget = function(self) 
+function StellarBlade:PickTarget() 
 	local Time = CurTime() 
 	local GetEnemy = self.GetEnemy and self:GetEnemy() or nil 
 	if GetEnemy then 
@@ -6894,7 +6895,7 @@ end
 hook.Add("Restored","SB_SaveRestore",function() 
 	for _,ent in pairs(ents.GetAll()) do 
 		ent.SB_PickTarget = nil 
-		ent.SB_PickTargetTime = nil 
+		ent.SB_PickTargetTime = 0 
 		ent.SBAI_SkillTimers = nil 
 		for k,v in pairs(ent:GetTable()) do 
 			-- restore SBAI_ActiveShow 

@@ -1,0 +1,60 @@
+CHECKING EFFECT Item_Resurrection_Ground (x2)
+SbCautionToTarget: finishing 39273.2158056
+
+when Item_Resurrection_Ground is true: 
+retrieving from SBBlackBoard: SwordBuffFX 1 Equal
+retrieving from SBBlackBoard: BB1 1 Equal
+retrieving from SBBlackBoard: FirstShot 1 Equal
+CHECKING EFFECT P_Eve_Beta_SwordAura
+CHECKING EFFECT P_Eve_Beta_SwordAura2 (x2)
+CHECKING EFFECT M_Raven_RushWaitTime
+retrieving from SBBlackBoard: FirstTime 1 GreaterOrEqual
+CHECKING EFFECT M_Raven_NoGuardCheck
+CHECKING EFFECT M_Raven_NoGuardCheck2
+CHECKING EFFECT M_Raven_NoGuardShortCheck
+CHECKING EFFECT M_Raven_EvadeParryCheck
+CHECKING EFFECT M_Raven_ParryChain
+CHECKING EFFECT M_Raven_GrabChain
+
+
+when Item_Resurrection_Ground is false: 
+CHECKING EFFECT Item_Resurrection_Ground (x2)
+CHECKING EFFECT Getup
+CHECKING EFFECT FastGetup
+CHECKING EFFECT KnockDownForward
+CHECKING EFFECT KnockDownBackward
+CHECKING EFFECT Down
+CHECKING EFFECT DownFaceUp
+CHECKING EFFECT DownFaceUp_E
+CHECKING EFFECT DownFaceDown
+CHECKING EFFECT DownFaceDown_E
+CHECKING EFFECT KnockDownBackward_Eve
+CHECKING EFFECT KnockDownForward_Eve
+CHECKING EFFECT KnockDownBackwardTumbling_Eve
+CHECKING EFFECT KnockDownForwardTumbling_Eve
+CHECKING EFFECT LV_FinishQTE_FailDown
+CHECKING EFFECT M_Raven_BetaGrab_HitL
+CHECKING EFFECT M_Raven_BetaGrab_HitE
+CHECKING EFFECT M_Raven_BetaGrabChain_HitL
+CHECKING EFFECT M_Raven_BetaGrabChain_HitE
+CHECKING EFFECT M_Raven_BetaCounterGrab_HitL
+CHECKING EFFECT M_Raven_BetaCounterGrab_HitE
+retrieving from SBBlackBoard: SwordBuffFX 1 Equal
+retrieving from SBBlackBoard: BB1 1 Equal
+retrieving from SBBlackBoard: FirstShot 1 Equal
+CHECKING EFFECT M_Common_HitProjectileResult
+CHECKING EFFECT P_Eve_Beta_SwordAura
+CHECKING EFFECT P_Eve_Beta_SwordAura2 (x2)
+CHECKING EFFECT M_Raven_RushWaitTime
+retrieving from SBBlackBoard: FirstTime 1 GreaterOrEqual
+CHECKING EFFECT M_Raven_NoGuardCheck
+CHECKING EFFECT M_Raven_NoGuardCheck2
+CHECKING EFFECT M_Raven_NoGuardShortCheck
+CHECKING EFFECT M_Raven_EvadeParryCheck
+CHECKING EFFECT M_Raven_ParryChain
+CHECKING EFFECT M_Raven_GrabChain
+starting skill
+
+Check_* effects = condition-only flags, invisible, no gameplay actions.
+
+Gameplay effects like Item_Resurrection_Ground = actually change states, stats, or visuals.
