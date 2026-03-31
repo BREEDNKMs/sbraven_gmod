@@ -315,6 +315,149 @@ function EFFECT:Think()
 		end 
 		self.NextAuroraTime = CurTime() + 0.01 
 	end 
+	
+	for i = 1, 50 do 
+		local Rand = Vector(math.Rand(-1, 1), math.Rand(-1, 1), 0) * (Cycle * 2000) 
+		if math.random() >= 0.7 then 
+			local p = self.Emitter:Add("sprites/mi_e_lensflare_03", self:GetPos() + Rand) 
+			if p then
+				local initialSpeed = 100
+				local initialDir = Vector(0, 0, 1)
+
+				p:SetVelocity(initialDir * initialSpeed) 
+				p:SetDieTime(5) 
+				p:SetStartAlpha(255)
+				p:SetEndAlpha(0)
+				p:SetStartSize(math.random()*10)
+				p:SetEndSize(0)
+				p:SetColor(255, 255, 255)
+				p:SetGravity(initialDir) 
+				-- p:SetStartLength(0.1) 
+				-- p:SetEndLength(0) 
+				-- p:SetVelocityScale(true) 
+				
+				-- Initialize custom variables for the Think function
+				p.CreationTime = CurTime() 
+				p.NextTurnTime = CurTime() -- Force the first turn calculation immediately
+				p.Speed = initialSpeed
+				p.TargetDir = initialDir
+				p.SizeIncrementType = -1 
+
+				p:SetThinkFunction(function(prt) 
+					local ct = CurTime()
+					local ft = FrameTime()
+
+					-- 1. Choose a new direction every 0.15 seconds
+					if ct >= prt.NextTurnTime then
+						local dir = prt:GetVelocity():GetNormalized()
+
+						-- Apply random rotation logic based on your example.
+						-- Note: math.random() without args cleanly returns a float between 0 and 1.
+						dir.x = dir.x + 0.7 * (0.5 - math.random()) 
+						dir.y = dir.y + 0.7 * (0.5 - math.random()) 
+						dir.z = dir.z + 0.7 * (0.5 - math.random()) 
+
+						prt.TargetDir = dir:GetNormalized()
+						prt.NextTurnTime = ct + 0.15
+					end
+
+					-- 2. Smoothly apply rotation and velocity every frame
+					local currentDir = prt:GetVelocity():GetNormalized()
+					
+					-- LerpVector provides the smooth transition. The '10' is the turn speed.
+					local newDir = LerpVector(ft * 10, currentDir, prt.TargetDir):GetNormalized()
+					prt:SetVelocity(newDir * prt.Speed)
+					if prt:GetStartSize() >= 10 then 
+						prt.SizeIncrementType = -1 
+					elseif prt:GetStartSize() <= 0 then 
+						prt.SizeIncrementType = 1 
+					end 
+					prt:SetStartSize(prt:GetStartSize()+prt.SizeIncrementType) 
+					prt:SetEndSize(prt:GetEndSize()+prt.SizeIncrementType) 
+
+					-- 3. Set particle angles and roll according to motion dir
+					-- local motionAng = newDir:Angle()
+					
+					-- Applies 3D orientation (Useful if the material supports 3D rendering)
+					-- prt:SetAngles(motionAng)
+					
+					-- Applies 2D Sprite Roll. SetRoll expects radians, so we convert the Angle's yaw/roll.
+					-- prt:SetRoll(motionAng.y * (math.pi / 180))
+					-- prt:SetColor(255*(1-Cycle),255,255) -- fade to cyan 
+
+					prt:SetNextThink(CurTime()) 
+				end) 
+
+				p:SetNextThink(CurTime()) 
+			end
+		else 
+			local p = self.Emitter:Add("effects/spark", self:GetPos() + Rand) 
+
+			if p then
+				local initialSpeed = 300
+				local initialDir = Vector(0, 0, 1)
+
+				p:SetVelocity(initialDir * initialSpeed) 
+				p:SetDieTime(5) 
+				p:SetStartAlpha(255)
+				p:SetEndAlpha(0)
+				p:SetStartSize(20)
+				p:SetEndSize(0)
+				p:SetColor(255, 255, 255)
+				p:SetGravity(initialDir) 
+				p:SetStartLength(0.1) 
+				p:SetEndLength(0) 
+				p:SetVelocityScale(true) 
+				
+				-- Initialize custom variables for the Think function
+				p.CreationTime = CurTime() 
+				p.NextTurnTime = CurTime() -- Force the first turn calculation immediately
+				p.Speed = initialSpeed
+				p.TargetDir = initialDir
+
+				p:SetThinkFunction(function(prt) 
+					local ct = CurTime()
+					local ft = FrameTime()
+
+					-- 1. Choose a new direction every 0.15 seconds
+					if ct >= prt.NextTurnTime then
+						local dir = prt:GetVelocity():GetNormalized()
+
+						-- Apply random rotation logic based on your example.
+						-- Note: math.random() without args cleanly returns a float between 0 and 1.
+						dir.x = dir.x + 0.7 * (0.5 - math.random()) 
+						dir.y = dir.y + 0.7 * (0.5 - math.random()) 
+						dir.z = dir.z + 0.7 * (0.5 - math.random()) 
+
+						prt.TargetDir = dir:GetNormalized()
+						prt.NextTurnTime = ct + 0.15
+					end
+
+					-- 2. Smoothly apply rotation and velocity every frame
+					local currentDir = prt:GetVelocity():GetNormalized()
+					
+					-- LerpVector provides the smooth transition. The '10' is the turn speed.
+					local newDir = LerpVector(ft * 10, currentDir, prt.TargetDir):GetNormalized()
+					prt:SetVelocity(newDir * prt.Speed)
+
+					-- 3. Set particle angles and roll according to motion dir
+					local motionAng = newDir:Angle()
+					
+					-- Applies 3D orientation (Useful if the material supports 3D rendering)
+					prt:SetAngles(motionAng)
+					
+					-- Applies 2D Sprite Roll. SetRoll expects radians, so we convert the Angle's yaw/roll.
+					prt:SetRoll(motionAng.y * (math.pi / 180))
+					local interval = prt:GetLifeTime()/prt:GetDieTime() 
+					prt:SetColor(255*(1-interval),255,255) -- fade to cyan 
+
+					prt:SetNextThink(CurTime()) 
+				end) 
+
+				p:SetNextThink(CurTime()) 
+			end
+		end 
+	end
 
     -- Effect lives until DieTime, then we cleanup
     if ct >= (self.DieTime) then
