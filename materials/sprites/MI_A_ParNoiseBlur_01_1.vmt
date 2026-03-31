@@ -1,12 +1,18 @@
 "Refract"
 {
     // Base Texture (used as distortion/noise)
-    "$normalmap" "sprites/T_A_NoiseRGB_01"
+    "$normalmap" "sprites/T_Flare_Circle_02_color_N"
+    //"$normalmap2" "sprites/t_a_noisergb_01"
 	"$vertexcolor" "1" 
 	"$vertexalpha" "1" 
+	
+	//detail commands are nonfunctional in Refract 
+	"$detail" "sprites/t_a_noisergb_01" 
+	"$detailblendmode"	"8"	
+	"$detailblendfactor"	"10"
 
     // Blur / Distortion Strength (BaseNoiseStrength ≈ 0.05)
-    "$refractamount" "0.05"
+    "$refractamount" "1"
 
     // Noise tiling and movement
     "$scrollrate" "0.07"          // (Length = 0.1, NoiseTile = 0.7, PannY = 0.0)

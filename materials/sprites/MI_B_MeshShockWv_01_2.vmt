@@ -27,33 +27,26 @@
     // Tint from UE4 HighlightColor (white)
     "$emissiveblendtint" "[4.0 5.0 20.0]"
 	"$emissiveblendstrength" "1"
-
-    // Scroll vector: UE4 instance sets Ramp_PannY = 0.0 and no Ramp_PannX override.
-    // To match the instance, keep flow controlled by the flowmap only (no global scroll).
-    "$emissiveblendscrollvector" "[0 0]"
+    "$emissiveblendscrollvector" "[0 1]"
 
     // Optional: sprite-like soft edges and sorting hints (can be removed if undesired)
     "$alphatest" "0"
     "$nodecal" "1"
 	"$vertexcolor" "1" 
 	"$vertexalpha" "1" 
-	"$dummy" "1"
-	
-	"$dummy0" "4" 
-	"$dummy1" "5" 
-	"$dummy2" "20" 
+	"$dummy" "1" 
 	"Proxies" 
 	{ 
-		"Alpha" // a proxy which produces values of a sine wave
+		"Alpha" 
 		{
-			"resultVar"	"$alpha"// where the oscillating output value is written to
+			"resultVar"	"$alpha"	
 		}
 		
 		"Multiply" 
 		{ 
-			"srcVar1"	"$alpha"      // the sine cycle length in seconds
-			"srcVar2"	"$dummy"      // min output value
-			"resultVar"	"$emissiveblendstrength"// where the oscillating output value is written to
+			"srcVar1"	"$alpha"      
+			"srcVar2"	"$dummy"      
+			"resultVar"	"$emissiveblendstrength" 
 		} 
 	} 
 }

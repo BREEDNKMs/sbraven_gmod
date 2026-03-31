@@ -1,0 +1,64 @@
+"UnlitGeneric"
+{
+    // Base color + alpha (primary trail texture)
+    "$basetexture"              "sprites/T_A_AnimTrail_03"
+	"$basetexturetransform"		"center 0.5 0.5 scale 1 1 rotate 0 translate 0.6 0"
+
+    // Bump / DUDV used to fake small surface perturbation & spec variation
+    "$bumpmap"                  "sprites/T_A_AnimTrail_02"
+	"$bumpmaptransform"		"center 0.5 0.5 scale 1 1 rotate 0 translate 0.6 0"
+
+    // Secondary detail/noise texture (modulates alpha/color/roughness)
+    "$detail"                   "sprites/T_A_NoiseRGB_01"
+    "$detailblendfactor"        "1.0"             // how strongly detail affects final color
+    "$detailblendmode"          "0"               // 0 = modulate (engine-dependent), tweak if needed
+    "$detailscale"              "1.0"             // tiling of detail texture (multiply into transform if necessary)
+
+    // Optional cubemap to emulate environment reflection / sheen
+    //"$envmap"                   "env_cubemap"
+    //"$envmaptint"               "[1 1 1]"
+    //"$envmapcontrast"           "1"
+    //"$envmapsaturation"         "1.0"
+
+    // Use vertex alpha / vertex color so entity can fade or tint if desired
+    "$vertexalpha"              "0"
+    "$vertexcolor"              "0"
+
+    // Two-sided: ensures trail visible from both sides (UE4 TwoSided = true)
+    "$nocull"                   "1"
+
+    // Emulate OpacityMaskClipValue = 0.3333 with alpha test if you want hard edges
+    // If you prefer soft translucent edges, remove the two lines below.
+    "$alphatest"                "1"
+    "$alphatestreference"       "0.3333"
+	"$additive"	"1"
+
+    // Ensure we are unlit and not affected by world lighting (UnlitGeneric is already unlit).
+    "$ignorez"                  "0"   // keep depth writes by default; set "1" if this must render on top
+
+    // If you need the material to be applied to a model that also uses other materials,
+    // you may need this pair (see earlier note). Remove if not required.
+    "$model"                    "1"
+    "$nowritez"                 "1"
+
+    // -----------------------
+    // Proxies: drive UV flow (scrolling) for basetexture & bumpmap
+    // Keep scrollspeed X non-zero to push texture along U (tangent direction).
+	"Proxies"
+    {
+        // TextureScroll is commonly supported; it writes a matrix to $basetexturetransform.
+        // Many Source builds accept "resultVar" and "scrollspeed".
+        //"TextureScroll"
+        //{
+		//	"textureScrollVar"      "$basetexturetransform"
+		//	"textureScrollRate"    "0.0"
+		//	"textureScrollAngle"    "0"
+		//	"textureScale"    "1"
+        //}
+
+        // Optional: you can chain other proxies (e.g. a periodic speed multiplier) here.
+    }
+
+    // Optional: tweak blending to emulate an emissive/unlit trail look
+    "$halflambert" "1" // not supported in all engines; leave commented if unknown
+}

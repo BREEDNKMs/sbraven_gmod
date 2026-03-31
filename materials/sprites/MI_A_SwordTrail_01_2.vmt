@@ -1,0 +1,86 @@
+"Refract"
+{
+    // Primary texture (trail color / alpha)
+    //"$basetexture"               "sprites/T_A_AnimTrail_03"
+
+    // DUDV / normal map used for refraction distortion (primary refraction source)
+    "$normalmap"                 "sprites/T_A_AnimTrail_02"
+
+    // Optional second normal / noise map blended in
+    "$normalmap2"                "sprites/T_A_NoiseRGB_01"
+
+    // Per-texel tint for the refracted image (gradient along strip)
+    //"$refracttinttexture"        "sprites/T_Gradient_Horizon_01"
+
+    // Global tint color for refracted image (white = neutral)
+    "$refracttint"               "[1 1 1]"
+
+    // Strength of the refraction (mapped from JSON refraction=0.15)
+    "$refractamount"             "0.15"
+
+    // Blur level for the refracted image. Valid values: 0,1,2 (choose 1 for subtle blur)
+    "$bluramount"                "1"
+
+    // Fade refraction near silhouette/edges (helps prevent hard borders)
+    "$fadeoutonsilhouette"       "1"
+
+    // Allow vertex color to modulate refraction (alpha can drive refract amount)
+    "$vertexcolormodulate"       "0"
+
+    // Make the material two-sided (no backface culling)
+    "$nocull"                    "1"
+
+    // If you are applying this to a model together with other materials,
+    // you may need these flags (see VMT tip in your prompt). Remove if not needed.
+    "$model"                     "1"
+    "$nowritez"                  "1"
+
+    // Approximate an alpha-cutoff behaviour to replicate OpacityMaskClipValue = 0.3333
+    // This will enable hard clipping at ~0.3333; remove if you prefer fully smooth translucency.
+    // Note: some engines use "$alphatest" vs "$alpha_test"; "$alphatest" is widely supported.
+    "$alphatest"                 "1"
+    "$alphatestreference"        "0.3333"
+
+    // Optional cubemap reflection on top of the refracted image
+    "$envmap"                    "env_cubemap"
+    "$envmaptint"                "[1 1 1]"
+    "$envmapcontrast"            "1"
+    "$envmapsaturation"          "1 1 1"
+	"$envmapmask" "sprites/T_A_AnimTrail_03"
+
+    // If you want to push subtle color-saturation towards edges like EdgeSaturationIntensity
+    // you can tweak this white->slightly boosted color. Keep it neutral by default.
+    // (EdgeSaturationIntensity = 1.0 in JSON, so we leave default 1.0 tint)
+
+    // A few helpful render flags:
+    // - Refract is inherently unlit; no separate lighting controls required here.
+    // - Two-sided rendering is achieved by $nocull "1".
+    // - If you want to force the material to write alpha for chained compositing, consider $forcealphawrite.
+    //" $forcealphawrite"         "1"
+
+    // -------------------------
+    // Mat proxy to drive UV flow:
+    // This proxy slowly scrolls the base texture U coordinate to animate the trail.
+    // Tune "scrollspeed" to control flow. (U V)
+    "Proxies"
+    {
+        // TextureScroll is commonly supported; it writes a matrix to $basetexturetransform.
+        // Many Source builds accept "resultVar" and "scrollspeed".
+        "TextureScroll"
+        {
+			"textureScrollVar"      "$basetexturetransform"
+			"textureScrollRate"    "0.8"
+			"textureScrollAngle"    "90"
+			"textureScale"    "1"
+        }
+        "TextureScroll"
+        {
+            "textureScrollVar"      "$bumptransform"
+            "textureScrollRate"    "0.8"
+            "textureScrollAngle"    "0"
+            "textureScale"    "1"
+        }
+
+        // Optional: you can chain other proxies (e.g. a periodic speed multiplier) here.
+    }
+}

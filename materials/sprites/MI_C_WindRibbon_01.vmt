@@ -1,0 +1,37 @@
+"VertexLitGeneric"
+{
+    // 1. Base Setup (Trick VLG into being a blank, additive canvas)
+    "$basetexture"              "vgui/black"
+    "$additive"                 "1"
+    "$nocull"                   "1"
+
+    // 2. The Wind Ribbon Effect via EmissiveBlend
+    "$emissiveblendenabled"     "1"
+    "$emissiveblendstrength"    "1"
+    "$emissiveblendtint"        "[5 5 5]"
+
+    // 3. Texture Mapping
+    // This is the panning streak pattern (UE4: T_B_StreakNoise_01)
+    "$emissiveblendtexture"     "sprites/T_B_StreakNoise_01" 
+    
+    // This is the gradient mask limiting the glow (UE4: T_A_Gradient_Vertical_02)
+    // IMPORTANT: Must be exported as VTF format i8 (Grayscale), not DXT!
+    "$emissiveblendbasetexture" "sprites/T_A_Gradient_Vertical_02" 
+    
+    // This distorts the streak pattern (UE4: T_A_BaseNoise_01_N)
+    "$emissiveblendflowtexture" "sprites/T_A_BaseNoise_01" 
+
+    // 4. Animation (Matches UE4 Ribbon_PannX: -0.1)
+    "$emissiveblendscrollvector" "[-0 1]"
+    
+    // 5. Proxy setup for Garry's Mod Lua integration (Crucial for VLG)
+    "Proxies"
+    {
+        // VLG ignores $vertexcolor/$vertexalpha. To fade the ribbon in Lua, 
+        // we must route the entity's color/alpha into the emissive tint.
+        "EntityColor"
+        {
+            "resultVar" "$emissiveblendtint"
+        }
+    }
+}

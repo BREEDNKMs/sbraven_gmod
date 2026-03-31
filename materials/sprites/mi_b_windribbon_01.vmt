@@ -1,14 +1,15 @@
-"VertexLitGeneric"
+"UnlitGeneric"
 {
-    // -------------------------
-    // Base / general settings
-    // -------------------------
-    // Main ribbon texture (RibbonTex)
+	// -----------------------------------------------------------
+    // 1. BASE LIGHTING (KILL IT)
+    // Since the UE4 material is "Unlit", we make the base mesh 
+    // pitch black. Only the additive emissive blend will show.
+    // -----------------------------------------------------------
+    //"$basetexture" "vgui/black"
     "$basetexture" "sprites/T_B_StreakNoise_02"
-
-    // Optional normal (cached normal from JSON). Not strictly necessary for an unlit look,
-    // but retained to give subtle surface variation if lighting is present.
-    "$bumpmap" "sprites/T_A_SwirlNoise_03_N"
+	"$additive"	"1" 
+	"$bumpmap" "sprites/T_A_SwirlNoise_03_N"
+	"$color"	"[5 5 5]" 
 
     // Detail (UvNoiseTex) used as an overlay / flow contribution
     "$detail" "sprites/T_A_NoiseTurbulence_02"
@@ -23,72 +24,38 @@
     "$vertexcolor" "1"
     "$vertexalpha" "1"
 
-    // Two-sided / no culling (TwoSided = true)
-    "$nocull" "1"
+    // -----------------------------------------------------------
+    // 2. EMISSIVE BLEND (THE MAGIC LAYER)
+    // -----------------------------------------------------------
+    "$emissiveblendenabled"      "1"
+    
+    // Overall Opacity/Intensity (UE4: RibbonIntensity = 0.5)
+    "$emissiveblendstrength"     "1" 
+    
+    // Color Tint (UE4: HighlightColor = 1,1,1)
+    // We will hook into this with Lua later if we want it dynamic.
+    "$emissiveblendtint"         "[5 5 5]"
 
-    // Additive blending like the UE additive material
-    "$additive" "1"
+    // -----------------------------------------------------------
+    // 3. TEXTURE MAPPING
+    // -----------------------------------------------------------
+    // Main Ribbon Streak (UE4: RibbonTex -> T_B_StreakNoise_02)
+    "$emissiveblendtexture"      "sprites/T_B_StreakNoise_02"
 
-    // Ensure translucency works (we are additive, but this helps on some engines)
-    "$translucent" "1"
+    // Mask / Fade (UE4: MaskTex -> T_A_Gradient_Vertical_02)
+    // CRITICAL: Must be saved as DXT1 or i8 format (NO Alpha Channel!)
+    "$emissiveblendbasetexture"  "sprites/T_A_Gradient_Vertical_02"
 
-    // -------------------------
-    // Mask / taper (MaskTex)
-    // -------------------------
-    // Use the vertical gradient mask as a secondary base texture. This will be used
-    // as the 'mask' for where the emissive blend is allowed to show.
-    "$basetexture2" "sprites/T_A_Gradient_Vertical_02"
-    // If your engine supports using basetexture2 for alpha modulation, it will
-    // help reproduce the UE mask behavior. If not, bake the mask into the base texture's alpha.
+    // UV Distortion (UE4: UvNoiseTex -> T_A_NoiseTurbulence_02)
+    // CRITICAL: Must be converted from grayscale noise into a Red/Green Flowmap.
+    "$emissiveblendflowtexture"  "sprites/T_A_NoiseTurbulence_02"
 
-    // -------------------------
-    // EmissiveBlend (required parameters)
-    // -------------------------
-    // Enable advanced emissive flow blending
-    "$emissiveblendenabled" "1"
+    // -----------------------------------------------------------
+    // 4. ANIMATION / PANNING
+    // -----------------------------------------------------------
+    // Scrolls the streak texture across the flowmap (UE4: Ribbon_PannX = 0.3)
+    "$emissiveblendscrollvector" "[3 0.0]"
 
-    // The moving glow texture (the 'glow itself', not mapped to model UVs).
-    // Map: $emissiveblendtexture -> RibbonTex (T_B_StreakNoise_02)
-    "$emissiveblendtexture" "sprites/T_B_StreakNoise_02"
-
-    // Base mask for where the emissive can appear (mapped to model UVs, does NOT scroll).
-    // Map: $emissiveblendbasetexture -> MaskTex (T_A_Gradient_Vertical_02)
-    "$emissiveblendbasetexture" "sprites/T_A_Gradient_Vertical_02"
-
-    // Flowmap that controls how $emissiveblendtexture moves. Map to UvNoiseTex (T_A_NoiseTurbulence_02).
-    // If this is a flat color (white), the effect reduces to simple scroll by $emissiveblendscrollvector.
-    "$emissiveblendflowtexture" "sprites/T_A_NoiseTurbulence_02"
-
-    // Color tint applied to the glow texture (HighlightColor ~ [1 1 1]).
-    // Can be >1 to boost color; keep [1 1 1] to preserve source texture colors.
-    "$emissiveblendtint" "[1 1 1]"
-
-    // Scroll vector controls the base scrolling speed/direction for the emissive texture.
-    // Ribbon_PannX = 0.3 -> scroll horizontally at 0.3 units/sec
-    // Keep Y = 0 since original panning was only X.
-    "$emissiveblendscrollvector" "[0.3 0]"
-
-    "$emissiveblendstrength" "1" 
-
-    // -------------------------
-    // Other useful keys (tweaks / compatibility)
-    // -------------------------
-    "$ignorealpha" "0"        // respect alpha where available
-    "$alphatest" "0"
-    "$noclamp" "1"
-    "$halflambert" "0"
-    "$ignorez" "0"
-
-    // Small optimization: don't force separate skinning; use existing engine defaults
-    "$ambientboost" "0"       // don't artificially boost ambient lighting; emissive handles brightness
-
-    // Developer hints:
-    // - Ribbon_TileX/Y (0.6 / 1.0) is approximated by scaling the base texture at export or by baking UV scale into the VTF.
-    //   If your Source build supports "$basetexturescale" you may try:
-    //   "$basetexturescale" "[0.6 1.0]"
-    //
-    // - If the detail panning / flow behavior doesn't match expectations, animate the scroll vector
-    //   per-frame from Lua (modify $emissiveblendscrollvector per-frame or rebuild mesh UVs).
 	"Proxies"
 	{ 
 		"Equals" 
@@ -105,5 +72,12 @@
 			"srcVar1" "$alpha" 
 			"resultVar" "$emissiveblendstrength" 
 		} 
+		"TextureScroll"
+        {
+            "texturescrollvar"   "$basetexturetransform" // Workaround to scroll the mask/flow
+            //"texturescrollrate"  "0.15"
+            "texturescrollrate"  "1.5"
+            "texturescrollangle" "0.0"
+        }
 	} 
 }

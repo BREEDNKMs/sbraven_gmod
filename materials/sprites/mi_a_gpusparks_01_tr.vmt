@@ -1,0 +1,29 @@
+"UnlitGeneric"
+{
+    "$basetexture" "sprites/t_a_amberparticle_01_a"
+    
+    // Use AlphaTest to replicate BLEND_Masked
+    "$alphatest" "1"
+    "$alphatestreference" "0.33"
+	"$additive" "1" // Sparks usually look better additive in Source
+    
+    // HDR Color Injection (Multiplying by 5 and 2.5)
+    "$color" "[5 2.5 0.5]" 
+	"$detail"             "sprites/T_A_SparkParticle_01"
+    "$detailscale"        "1"
+    // Use an unlit additive detail blend so it appears like noise/glow
+    "$detailblendmode"    "8"
+    "$detailblendfactor"  "1"    	
+    
+    "$vertexcolor" "1"
+    "$vertexalpha" "1"
+	"Proxies"
+	{
+		"AnimatedTexture"
+		{
+			"animatedTextureVar" "$basetexture"
+			"animatedTextureFrameNumVar" "$frame"
+			"animatedTextureFrameRate" "30"
+		}
+	}
+}

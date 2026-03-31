@@ -1,0 +1,66 @@
+"UnlitGeneric"
+{
+    // Base texture (kept for compatibility; not required for emissiveblend)
+    "$basetexture" "sprites/T_A_ShineFlare_02"
+	//"$bumpmap"	"sprites/T_A_BaseNoise_04
+	"$bumpmap"	"sprites/T_A_BaseNoise_04"
+
+    // Unlit, emissive look and additive blending
+    "$selfillum" "1"
+    "$additive" "1"
+	"$color"	"[10 10 10]"
+
+    // Opacity mask threshold approximates OpacityMaskClipValue from the JSON
+    "$alphatest" "1"
+    "$alphatestreference" "0.3333"
+
+    // -------------------------
+    // EmissiveBlend (flowing)
+    // -------------------------
+    "$emissiveblendenabled" 0
+    // The scrolling glow texture (the "color" glow that moves)
+    "$emissiveblendtexture" "sprites/T_A_ShineFlare_02"
+    //"$emissiveblendtexture" "sprites/T_A_ShockAura_01"
+    // The mask that contains where the glow is allowed (prefer VTF i8 or uncompressed)
+    "$emissiveblendbasetexture" "sprites/T_A_ShockAura_01"
+    // Flowmap that drives motion of the emissiveblendtexture (user requested)
+    "$emissiveblendflowtexture" "sprites/T_A_BaseNoise_04"
+    // Tint multiplier for the emissiveblend texture
+    "$emissiveblendtint" "[ 10 10 10 ]"
+    // Overall opacity/strength of the emissiveblend (0..1)
+    "$emissiveblendstrength" 1
+    // Scroll vector controls base scrolling speed/direction (X horizontal, Y vertical)
+    // Values are in tiles per second: e.g. [0.2 0.1] = slow left/up movement (see summary note on axes)
+    "$emissiveblendscrollvector" "[ 0 2 ]"
+
+    // -------------------------
+    // Detail / noise breakup
+    // -------------------------
+    "$detail" "sprites/T_A_ShockAura_01"
+    "$detailscale" "1"
+    "$detailblendmode" "1"
+    "$detailblendfactor" "1"
+	//"$envmap" "env_cubemap"
+    //"$envmapmask" "sprites/T_A_BaseNoise_04"
+    //"$envmapmaskscale" 1
+
+    // Approximate FadeDistance using soft edges
+    "$softedges" 1
+    "$softedgescale" 15.0
+
+    // Misc
+    "$nocull" "1"
+    "$vertexalpha" "1"
+    "$vertexcolor" "1"
+	"$bumptransform"	"center 0.5 0.5 scale 1 1 rotate 0 translate 0 0" 
+	"Proxies" 
+	{ 
+        "TextureScroll" 
+        { 
+            "textureScrollVar"      "$bumptransform" 
+            "textureScrollRate"    "0.8" 
+            "textureScrollAngle"    "90" 
+            "textureScale"    "1" 
+        } 
+    } 
+}
