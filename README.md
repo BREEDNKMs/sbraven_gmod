@@ -12,8 +12,6 @@ Status
 
 Requirements
 - Garry's Mod installed
-- Access to Stellar Blade game files (you must own the game)
-- FModel (or a similar Unreal asset extractor) to export JSON asset properties from Stellar Blade
 - Basic familiarity with installing GMod addons (copying files into the garrysmod/addons/ folder)
 - "Unreal Gold" addon and Unreal Tournament 99 SWEPs addon from Garry's Mod Workshop, in which the Raven NPC uses npc_unreali_female as npc base, and the sword uses the UT99 Weapon Base 
 
@@ -38,17 +36,9 @@ Minimal example directory layout after installation:
       - data_static/           <-- required: user-extracted JSON assets go here
       - README.md
       - ...other addon files...
-
-Extracting JSON properties from Stellar Blade (using FModel)
-- Launch FModel and point it at your local Stellar Blade installation.
-- Locate the asset(s) you need (animations, sound cues, metadata).
-- Use FModel's export functionality to export asset properties as JSON. Preserve folder structure when exporting so the addon can find files using the same relative paths the game uses.
-
-Important example
-- After extracting, put the exported JSON files into this folder inside the addon (maintain the game's subfolders):
-  E:\Program Files\Steam\steamapps\common\GarrysMod\garrysmod\addons\sbraven\data_static\SB\Content\Sound\Voice\Monster\Raven\M_Raven_vo_SkillLaugh_Cue.json
-
-- The addon scans data_static for skill metadata and audio cues. If JSON files are missing or not placed with the expected paths, many features will not function.
+3. Extract contents of "data_static.7z" to same folder. e.g. "garrysmod/addons/sbraven/data_static/SB/Content/Art/" 
+4. Download addon "Unreal Gold SNPCs + SWEPs" "https://steamcommunity.com/sharedfiles/filedetails/?id=2823942655"
+5. Download addon "Unreal Tournament SWEPs" "https://steamcommunity.com/workshop/filedetails/?id=189453748"
 
 Model availability
 - The original Stellar Blade model referenced by this project was removed from the Steam Workshop. For testing:
