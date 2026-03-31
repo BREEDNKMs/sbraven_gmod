@@ -1,0 +1,32 @@
+"UnlitGeneric"
+{
+	// Base crystal texture
+	"$basetexture" "sprites/t_b_glow_01"
+
+	// --- Blending / transparency ---
+	// Additive produces glowing overlays; black pixels stay transparent.
+	"$additive" "1"
+
+	// Let the engine set per-particle tint & alpha.
+	"$vertexcolor" "1"
+	"$vertexalpha" "1"
+
+	// Two-sided so particle quads are visible from both sides.
+	"$nocull" "1"
+
+	// Keep maximum quality for particles (no LOD baked in).
+	"$nolod" "1"
+
+	// Keep depth testing on by default (change to 1 to force ignore Z if you want sprites to always draw)
+	"$ignorez" "0"
+
+	// Small, safe default color (white). Niagara's per-particle vertex color will multiply this.
+	"$color" "[5 5.0 5.0]"   // multiply the sampled color by these values
+
+	// Alpha fallback (1.0). Particle alpha normally comes from vertex alpha / material.
+	"$alpha" "1"
+
+	// If you want to alpha test to mask opaque bits, enable and tweak the reference.
+	"$alphatest" "0"
+	"$alphatestreference" "0.33"
+}
