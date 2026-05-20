@@ -2540,9 +2540,13 @@ StellarBlade.CanStartSkill = function(self,SkillName)
 	end 
 	
 	if self["ESBActorState::ActorState_BlockSkill"] then return false end 
-	if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then 
-		return true 
-	end 
+	if !CheckCooldown or CheckCooldown and CurTime() >= CheckCooldown then
+		return true
+	elseif CheckCooldown and CheckCooldown > CurTime() + SkillTable.CoolTime then
+		-- Timer is set further ahead than a fresh cooldown from right now would be,
+		-- meaning it's stale/invalid. Ignore it and allow the skill. (saverestore) 
+		return true
+	end
 	
 	return false 
 end 
