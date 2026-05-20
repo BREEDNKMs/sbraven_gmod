@@ -131,6 +131,7 @@ function SWEP:ShouldDropOnDie() return true end
 function SWEP:SpecialThink() 
 	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
 	local owner = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
+	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	if SERVER then 
 		local StellarBlade_SelectedSkill = self.StellarBlade_SelectedSkill  
 		local CheckCooldown = owner.SBAI_SkillTimers and owner.SBAI_SkillTimers[StellarBlade_SelectedSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
@@ -159,6 +160,11 @@ function SWEP:SpecialThink()
     else
         -- self:SetAttack(false)
     end 
+	if IsValid(vm) then 
+		if vm:GetCycle() > 0.15 and vm:GetCycle() < 0.35 and self:GetActivity() == ACT_VM_SECONDARYATTACK then 
+			local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,5) 
+		end 
+	end 
 	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
 end 
 
@@ -245,12 +251,15 @@ function SWEP:SecondaryAttack()
 	local owner = self:GetOwner() 
 	if owner:KeyDown(IN_WALK) then return end 
 	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
-	local seq = vm:SelectWeightedSequence( self.Secondary.Animation ) -- play ACT_VM_MISSCENTER if secondary attack missed 
+	-- PrintTable(scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,120)) 
+	local Animation = table.IsEmpty(scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,120)) and ACT_VM_MISSCENTER or self.Secondary.Animation
+	local seq = vm:SelectWeightedSequence( Animation ) 
+	-- local seq = vm:SelectWeightedSequence( self.Secondary.Animation ) -- play ACT_VM_MISSCENTER if secondary attack missed 
 	local Delay = vm:SequenceDuration(seq) 
 	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
 	self:SetNextSecondaryFire(math.max(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)),self:GetNextSecondaryFire()) 
 	-- do the attack 
-	if self:GetActivity() != self.Secondary.Animation then self:SendWeaponAnim(self.Secondary.Animation) end 
+	self:SendWeaponAnim(Animation) 
 	vm:SetPlaybackRate(self.Secondary.Playback_Rate) 
 	self:UTRecoil() 
 	self:UDSound() 
@@ -259,7 +268,7 @@ function SWEP:SecondaryAttack()
 	-- self:TakeAmmo() 
 	self:SetIdleDelay(CurTime() + self.Secondary.Delay + (Delay / self.Secondary.Playback_Rate)) 
 	self:EmitSound(self.Secondary.Sound, 100, 100) 
-	local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,150) 
+	-- local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,150) 
 end 
 
 function SWEP:NPCShoot_Primary(shootPos, shootDir) 
@@ -312,7 +321,17 @@ end
 
 function SWEP:Holster(Other) 
 	-- local retVal = weapons.Get("weapon_ut99_base").Holster(self,Other) 
-	return true 
+	if IsValid(self.GlowProjectedTexture) then
+        self.GlowProjectedTexture:Remove()
+    end
+    return true
+end 
+
+function SWEP:OnRemove() 
+	scripted_ents.Get("weapon_ut99_base").OnRemove(self) 
+	if IsValid(self.GlowProjectedTexture) then
+        self.GlowProjectedTexture:Remove()
+    end
 end 
 
 function SWEP:GetCapabilities() return CAP_WEAPON_MELEE_ATTACK1 + CAP_WEAPON_MELEE_ATTACK2 end 
@@ -321,6 +340,9 @@ function SWEP:OnRestore()
 	if IsValid(self:GetOwner()) then 
 		self:GetOwner().SBAI_SkillTimers = nil 
 	end 
+	if IsValid(self.GlowProjectedTexture) then
+        self.GlowProjectedTexture:Remove()
+    end
 end 
 
 function SWEP:GetNPCBurstSettings() return 1, 1, 1 end 
@@ -456,6 +478,30 @@ function SWEP:Raven_Blade_Flare(mins,maxs,bonename)
     local maxRange = 4096
     local fade = math.Clamp(dist / maxRange, 0, 1)
     local intensity = Lerp(1 - math.sqrt(fade), 1.0, 2.5)
+
+    -- ============================================================
+    -- === Projected Texture Glow ===
+    -- ============================================================
+	-- Initialize the texture if it doesn't exist
+	if !IsValid(self.GlowProjectedTexture) then
+		self.GlowProjectedTexture = ProjectedTexture() 
+		self.GlowProjectedTexture:SetAngles(Angle(90, 0, 0)) -- Point straight down
+		self.GlowProjectedTexture:SetColor(Color(140, 255, 255)) -- Cyan to match flares
+		self.GlowProjectedTexture:SetFarZ(256) -- Vertical depth limit
+		self.GlowProjectedTexture:SetFOV(180)
+		-- Use orthographic bounds to enforce the 128 radius
+		self.GlowProjectedTexture:SetOrthographic(true, -128, -128, 128, 128) 
+		self.GlowProjectedTexture:SetTexture("sprites/t_b_glow_01") 
+	end
+
+	-- Update position and dynamically adjust brightness to match the flare intensity
+	if IsValid(self.GlowProjectedTexture) then
+		self.GlowProjectedTexture:SetPos(pos)
+		-- Add a subtle flicker multiplier to blend with the Niagara effects
+		local ptexFlicker = 1 + (math.sin(CurTime() * 15) * 0.05)
+		self.GlowProjectedTexture:SetBrightness(0.5 * ptexFlicker * intensity)
+		self.GlowProjectedTexture:Update()
+	end
 
     -- ============================================================
     -- === Flares ===
