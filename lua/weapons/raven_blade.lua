@@ -328,7 +328,7 @@ function SWEP:Holster(Other)
 end 
 
 function SWEP:OnRemove() 
-	scripted_ents.Get("weapon_ut99_base").OnRemove(self) 
+	weapons.Get("weapon_ut99_base").OnRemove(self) 
 	if IsValid(self.GlowProjectedTexture) then
         self.GlowProjectedTexture:Remove()
     end
