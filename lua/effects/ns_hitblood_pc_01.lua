@@ -13,15 +13,19 @@ local FX_BLOODSPRAY_CLOUD = 4
 local FX_BLOODSPRAY_ALL   = 255
 
 function EFFECT:Init( data )
+	local ent = data:GetEntity()
+	if !IsValid(ent) then return end
+	local bloodColor = ent.GetBloodColor and ent:GetBloodColor() or BLOOD_COLOR_RED
+	if bloodColor == -1 then return end 	-- DONT_BLEED (-1) check 
+	local scale = data:GetScale()
+	if scale <= 0 then scale = 1.0 end
+	scale = scale * 0.4 
 	if math.random() > 0.5 then 
 		local origin   = data:GetOrigin()
 		local normal   = VectorRand()
-		local scale    = data:GetScale() or 1
-		scale = scale * 0.4 
 		local ent      = data:GetEntity()
 		local angles   = data:GetAngles()
 		local relPos   = data:GetStart()
-		local bloodCol = ent and ent.GetBloodColor and ent:GetBloodColor() or BLOOD_COLOR_RED
 
 		-- Mist spray (fast dissipating cloud)
 		for i=1,self.MistCount do
@@ -30,7 +34,7 @@ function EFFECT:Init( data )
 			ed:SetNormal(normal)
 			ed:SetScale(scale * 0.6) -- smaller, faster
 			ed:SetFlags(FX_BLOODSPRAY_CLOUD)
-			ed:SetColor(bloodCol)
+			ed:SetColor(bloodColor)
 			util.Effect("bloodspray", ed, true, true)
 		end
 
@@ -41,7 +45,7 @@ function EFFECT:Init( data )
 			ed:SetNormal(normal)
 			ed:SetScale(scale * 1.2) -- larger blobs
 			ed:SetFlags(FX_BLOODSPRAY_DROPS)
-			ed:SetColor(bloodCol)
+			ed:SetColor(bloodColor)
 			util.Effect("bloodspray", ed, true, true)
 		end
 
@@ -51,26 +55,16 @@ function EFFECT:Init( data )
 			ed:SetOrigin(origin)
 			ed:SetNormal(normal)
 			ed:SetScale(scale)
-			ed:SetColor(bloodCol)
+			ed:SetColor(bloodColor)
 			util.Effect("bloodimpact", ed, true, true)
 		end
 	else 
 		-- 1. Fetch base effect data
-		local ent = data:GetEntity()
-		if not IsValid(ent) then return end
-
-		local scale = data:GetScale()
-		if scale <= 0 then scale = 1.0 end
-		scale = scale * 0.4 
 
 		-- Niagara Properties provided via EffectData
 		local localPos = data:GetStart()    -- Expected to be Vector(0, 0, 10)
 		local localAng = data:GetAngles()   -- Expected to be Angle(0, -90, 90) (Pitch, Yaw, Roll)
 		local boneID = data:GetHitBox()     -- Expected to be the Bone ID for "FX_CenterofMass"
-		
-		local bloodColor = ent:GetBloodColor()
-		-- DONT_BLEED (-1) check
-		if bloodColor == -1 then return end
 
 		-- 2. Calculate actual World Position and Angles from the Bone
 		local bonePos, boneAng
