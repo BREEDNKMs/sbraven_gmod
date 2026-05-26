@@ -218,126 +218,163 @@ local function FInViewCone(ent, vecSpot)
 end
 
 hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo) 
-	local attacker = dmginfo:GetAttacker() 
-	local inflictor = dmginfo:GetInflictor() 
-	
-	if target.SBAI_SkillStep and target.SBAI_SkillStep.Name then 
-		local SkillStepTable = target.SBAI_SkillStep.Data 
-		local Type = SkillStepTable.Type 
-		local Time = target.SBAI_SkillStep.Time -- start time 
-		local Duration = SkillStepTable.Duration 
-		local EndTime = Time + Duration 
-		local SkillResultAlias = SkillStepTable.SkillResultAlias 
-		if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then 
-		
-			-- local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
-			-- if !TargetFilterAlias or TargetFilterAlias == "None" then 
-				-- if target.SBAI_SkillTable then TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
-			-- end 
-			if !target.SBAI_SkillTable then return print(target,"there is a skill step but no skilltable") end 
-			local TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias 
+    local attacker = dmginfo:GetAttacker() 
+	if attacker.SBAI_SkillStep and attacker.SBAI_SkillStep.IsActive and attacker.SBAI_SkillStep:IsActive() then return end -- handled in JustParryAnticipation 
+    local inflictor = dmginfo:GetInflictor() 
+    
+    if target.SBAI_SkillStep and target.SBAI_SkillStep.Name then 
+        local SkillStepTable = target.SBAI_SkillStep.Data 
+        local Type = SkillStepTable.Type 
+        local Time = target.SBAI_SkillStep.Time -- start time 
+        local Duration = SkillStepTable.Duration 
+        local EndTime = Time + Duration 
+        local SkillResultAlias = SkillStepTable.SkillResultAlias 
+        if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then 
+        
+            if !target.SBAI_SkillTable then return print(target,"there is a skill step but no skilltable") end 
+            local TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias 
+            
 			-- normally collision to AttackedCollisionGroupArray is considered 
-			-- but most entities do not provide a consistent collision trace 
-			-- it is either bbox or some other vector away from bbox 
-			-- sometimes the hit direction isn't even constructed 
-			-- so we will just use target filter 
-			
-			-- SkillHitDetectionType_None               = 0,
-			-- SkillHitDetectionType_TargetFilter       = 1,
-			-- SkillHitDetectionType_ActiveCollision    = 2,
-			-- SkillHitDetectionType_TargetFilter_ActiveCollision = 3,
-			-- SkillHitDetectionType_MAX                = 4,
-			
-			local HitDetectionType = SkillStepTable.HitDetectionType 
-			-- if string.find(HitDetectionType,"TargetFilter") then 
-			local tableofhittargets = StellarBlade.TargetFilter(target,TargetFilterAlias) 
-			-- end 
-			-- print("TargetFilterAlias:",TargetFilterAlias) 
-			if !table.HasValue(tableofhittargets,attacker) then return end 
-			local tableofhitvectors = { } 
-			table.insert(tableofhitvectors, attacker.GetShootPos and attacker:GetShootPos() or attacker:EyePos()) 
-			table.insert(tableofhitvectors, dmginfo:GetReportedPosition()) 
-			if IsValid(inflictor) then 
-				table.insert(tableofhitvectors, inflictor:EyePos()) 
-			end 
-			if IsValid(attacker) then 
-				table.insert(tableofhitvectors, attacker:EyePos()) 
-			end 
-			table.insert(tableofhitvectors, dmginfo:GetReportedPosition()) 
-			local inViewCone = false 
-			local FinalDamagePosition = target:GetPos() 
-			for _,DamagePosition in ipairs(tableofhitvectors) do 
-				if !DamagePosition:IsZero() and DamagePosition != target:GetPos() then 
-					if target:IsNPC() then 
-						inViewCone = target:IsInViewCone(DamagePosition) 
-					else 
-						inViewCone = FInViewCone(target,DamagePosition) 
-					end 
-					if inViewCone then FinalDamagePosition = DamagePosition break end 
-				end 
-			end 
-	
-			if inViewCone then 
-				dmginfo:ScaleDamage(0) 
-				-- print("SkillResultAlias:", SkillResultAlias,attacker) 
-				if SkillResultAlias != "None" then 
-					-- StellarBlade.StartSkillResult(target,dmginfo:GetAttacker(),SkillResultAlias) 
-					StellarBlade.StartSkillSelfResult(target,SkillResultAlias,SkillStepTable.bCritical,false) 
-					if IsValid(attacker) then 
-						StellarBlade.StartSkillTargetResult(attacker,SkillResultAlias,SkillStepTable.bCritical,false) 
-					end 
-				end 
-				
-				if IsValid(attacker) then 
-					if target.SBAI_SkillTable then 
-						if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities then 
-							target.SBAI_SkillTable.OnTakeDamage_ParriedEntities = { } 
-						end 
-						
-						if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] then 
-							target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] = 
-							{	["Time"] = CurTime(), 
-								["Capabilities"] = attacker.CapabilitiesGet and attacker:CapabilitiesGet() or nil 
-							} 
-						end 
-					end 
-					sound.EmitHint(SOUND_DANGER+SOUND_COMBAT+SOUND_MOVE_AWAY+SOUND_CONTEXT_REACT_TO_SOURCE,FinalDamagePosition,target:BoundingRadius()*4,Duration,target) 
-					
-					if attacker.SetCondition then 
-						attacker:SetCondition(COND.HEAR_DANGER) 
-					end 
-					if attacker.SBAI_SkillStep and attacker.SBAI_SkillStep.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
-						-- force NextStepAliasWhenJustParry 
-					
-					-- custom parry result data 
-					-- for Stellar Blade Actor --> HL2 NPC Interaction 
-					elseif attacker:GetClass() == "npc_antlion" then 
-						attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
-					elseif attacker:GetClass() == "npc_antlionguard" then 
-						attacker:SetSaveValue("m_nFlinchActivity",util.GetActivityIDByName("ACT_ANTLIONGUARD_CHARGE_CRASH")) 
-						attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLIONGUARD_PHYSICS_DAMAGE_HEAVY")) 
-					elseif attacker:GetClass() == "npc_hunter" then 
-						attacker:SetCondition(attacker:ConditionID("COND_HUNTER_STAGGERED")) 
-					elseif isbool(attacker:GetInternalVariable("m_fIsTorso")) then -- is based on npc_basezombie 
-						attacker:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
-						-- at that point, remove attacker's range and melee capabilities for "Duration" seconds 
-						-- or until the SBAI_SkillTable is done 
-					elseif attacker.SetSchedule and (attacker:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or attacker:SelectWeightedSequence(ACT_BIG_FLINCH) > 1) then 
-						attacker:SetSchedule(SCHED_BIG_FLINCH) 
-					elseif attacker.TaskFail then 
-						attacker:TaskFail(tostring(target).. " parried attack") 
-						local thinkDelayed = attacker:SetSaveValue("m_flNextDecisionTime",Duration) 
-					else 
-						local thinkDelayed = attacker:SetSaveValue("m_flNextAttack",Duration) 
-						-- local thinkDelayed = attacker:SetSaveValue("m_flNextDecisionTime","Duration") 
-						-- if player, apply some viewpunch and drop player's active weapon 
-						-- most players will go regrab their dropped weapon 
-					end 
-				end 
-			end 
-		end 
-	end 
-end) 
+
+            -- but most entities do not provide a consistent collision trace 
+
+            -- it is either bbox or some other vector away from bbox 
+
+            -- sometimes the hit direction isn't even constructed 
+
+            -- so we will just use target filter 
+
+            
+
+            -- SkillHitDetectionType_None               = 0,
+
+            -- SkillHitDetectionType_TargetFilter       = 1,
+
+            -- SkillHitDetectionType_ActiveCollision    = 2,
+
+            -- SkillHitDetectionType_TargetFilter_ActiveCollision = 3,
+
+            -- SkillHitDetectionType_MAX                = 4,
+
+            
+
+            local HitDetectionType = SkillStepTable.HitDetectionType 
+
+            -- if string.find(HitDetectionType,"TargetFilter") then
+            local HitDetectionType = SkillStepTable.HitDetectionType 
+            local tableofhittargets = StellarBlade.TargetFilter(target,TargetFilterAlias) 
+            
+            -- New configuration variable for long distance parrying
+            local bLongDistanceParry = true 
+
+            -- Determine if this matches a standard, close-range parry target
+            local isNormalParryTarget = IsValid(attacker) and table.HasValue(tableofhittargets, attacker)
+
+            -- If it's not a normal target and long distance parry is disabled, ignore the parry
+            if !isNormalParryTarget and !bLongDistanceParry then return end 
+            
+            -- Safely construct hit vectors even if attacker is NULL
+            local tableofhitvectors = { } 
+            if IsValid(attacker) then
+                table.insert(tableofhitvectors, attacker.GetShootPos and attacker:GetShootPos() or attacker:EyePos()) 
+            end
+            table.insert(tableofhitvectors, dmginfo:GetReportedPosition()) 
+            if IsValid(inflictor) then 
+                table.insert(tableofhitvectors, inflictor:EyePos()) 
+            end 
+            if IsValid(attacker) then 
+                table.insert(tableofhitvectors, attacker:EyePos()) 
+            end 
+
+            local inViewCone = false 
+            local FinalDamagePosition = target:GetPos() 
+            for _,DamagePosition in ipairs(tableofhitvectors) do 
+                if !DamagePosition:IsZero() and DamagePosition != target:GetPos() then 
+                    if target:IsNPC() then 
+                        inViewCone = target:IsInViewCone(DamagePosition) 
+                    else 
+                        inViewCone = FInViewCone(target,DamagePosition) 
+                    end 
+                    if inViewCone then FinalDamagePosition = DamagePosition break end 
+                end 
+            end 
+    
+            if inViewCone then 
+                dmginfo:ScaleDamage(0) 
+                if SkillResultAlias != "None" then 
+                    StellarBlade.StartSkillSelfResult(target,SkillResultAlias,SkillStepTable.bCritical,false) 
+                    
+                    -- Only apply target results if it is a normal, valid close-range target
+                    if isNormalParryTarget and IsValid(attacker) then 
+                        StellarBlade.StartSkillTargetResult(attacker,SkillResultAlias,SkillStepTable.bCritical,false) 
+                    end 
+                end 
+                
+                -- Only apply attacker disruptions and side-effects if it is a normal close-range target
+                if isNormalParryTarget and IsValid(attacker) then 
+                    if target.SBAI_SkillTable then 
+                        if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities then 
+                            target.SBAI_SkillTable.OnTakeDamage_ParriedEntities = { } 
+                        end 
+                        
+                        if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] then 
+                            target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] = 
+                            {   ["Time"] = CurTime(), 
+                                ["Capabilities"] = attacker.CapabilitiesGet and attacker:CapabilitiesGet() or nil 
+                            } 
+                        end 
+                    end 
+                    sound.EmitHint(SOUND_DANGER+SOUND_COMBAT+SOUND_MOVE_AWAY+SOUND_CONTEXT_REACT_TO_SOURCE,FinalDamagePosition,target:BoundingRadius()*4,Duration,target) 
+                    
+                    if attacker.SetCondition then 
+                        attacker:SetCondition(COND.HEAR_DANGER) 
+                    end 
+                    local wep = attacker:GetActiveWeapon() 
+                    
+                    if IsValid(wep) and attacker:IsNPC() then wep:SetClip1(0) end 
+                    
+                    if attacker.SBAI_SkillStep and attacker.SBAI_SkillStep.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+                        -- force NextStepAliasWhenJustParry 
+                    
+                    -- custom parry result data 
+                    -- for Stellar Blade Actor --> HL2 NPC Interaction 
+                    elseif attacker:GetClass() == "npc_antlion" then 
+                        attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
+                    elseif attacker:GetClass() == "npc_antlionguard" then 
+                        attacker:SetSaveValue("m_nFlinchActivity",util.GetActivityIDByName("ACT_ANTLIONGUARD_CHARGE_CRASH")) 
+                        attacker:SetSchedule(ai.GetScheduleID("SCHED_ANTLIONGUARD_PHYSICS_DAMAGE_HEAVY")) 
+                    elseif attacker:GetClass() == "npc_hunter" then 
+                        attacker:SetCondition(attacker:ConditionID("COND_HUNTER_STAGGERED")) 
+                    elseif isbool(attacker:GetInternalVariable("m_fIsTorso")) then -- is based on npc_basezombie 
+                        attacker:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
+                        -- at that point, remove attacker's range and melee capabilities for "Duration" seconds 
+                        -- or until the SBAI_SkillTable is done 
+                    elseif attacker.SetSchedule and (attacker:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or attacker:SelectWeightedSequence(ACT_BIG_FLINCH) > 1) then 
+                        attacker:SetSchedule(SCHED_BIG_FLINCH) 
+                    elseif attacker.TaskFail then 
+                        attacker:TaskFail(tostring(target).. " parried attack") 
+                        local thinkDelayed = attacker:SetSaveValue("m_flNextDecisionTime",Duration) 
+                    else 
+                        -- print("is player") 
+                        local thinkDelayed = attacker:SetSaveValue("m_flNextAttack",Duration) 
+                        if IsValid(wep) then 
+                            attacker:SetActiveWeapon(NULL) 
+                            timer.Simple(FrameTime(),function() -- force player to re-deploy weapon 
+                                if IsValid(attacker) and IsValid(wep) then 
+                                    attacker:SelectWeapon(wep) 
+                                    if IsValid(attacker:GetViewModel()) then
+                                        local vm_Duration = attacker:GetViewModel():SequenceDuration()
+                                        attacker:GetViewModel():SetPlaybackRate(vm_Duration / Duration)
+                                    end
+                                end 
+                            end) 
+                        end 
+                    end 
+                end 
+            end 
+        end 
+    end 
+end)
 
 game.AddParticles( "particles/raven.pcf" ) 
 PrecacheParticleSystem("ravencoreglow_2") 
@@ -1341,6 +1378,7 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 		local Pos = self:GetPos() -- Cache the location the player had died last time 
 		self:Spawn() 
 		self:SetPos(Pos) -- Teleport to cached pos 
+		timer.Simple(FrameTime(),function() if IsValid(self) then self:SetPos(Pos) end end) 
 	elseif Action == "ESBEffectAction::EffectAction_TransformCharacter" then -- unused 
 	elseif Action == "ESBEffectAction::EffectAction_Possess" then -- unused 
 	elseif Action == "ESBEffectAction::EffectAction_ChangeTribe" then 
@@ -2502,6 +2540,8 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 	else 
 		-- state exists - add EffectTable to Users if provided
         if EffectTable then
+			local s = self[ActorState] 
+			if !istable(s) then self[ActorState] = {["Time"] = CurTime(), ["Outer"] = self, ["IsMarkedForDeletion"] = false} end -- corrupt EffectTable data after s/r 
             local s = self[ActorState]
             if not s.Users then s.Users = {} end
 
@@ -2544,7 +2584,7 @@ StellarBlade.CanStartSkill = function(self,SkillName)
 		return true
 	elseif CheckCooldown and CheckCooldown > CurTime() + SkillTable.CoolTime then
 		-- Timer is set further ahead than a fresh cooldown from right now would be,
-		-- meaning it's stale/invalid. Ignore it and allow the skill. (saverestore) 
+		-- meaning it's stale/invalid. Ignore it and allow the skill.
 		return true
 	end
 	
@@ -3403,7 +3443,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				ef:SetScale(ParticleScale) -- scale 
 				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
 				util.Effect(AssetName,ef) 
-				Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " "..SBAI_ActiveShow.Elapsed.." "..tostring(CurTime()).. " "..tostring(relAng)) 
+				-- Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " "..SBAI_ActiveShow.Elapsed.." "..tostring(CurTime()).. " "..tostring(relAng).." "..tostring(ef:GetMagnitude())) 
 				-- debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
@@ -3685,7 +3725,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 		end 
     end 
 	if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then -- parries incoming attack, used by eve, raven and some other npcs 
-	-- to be filled 
+	-- handled in JustParryAnticipation 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
 		local bEveryFrameHitCheck = SkillStepTable.bEveryFrameHitCheck 
 		CheckTarget, Hit, Parry, JustParry = StellarBlade.CheckSkillHit(self,SkillStepTable,bEveryFrameHitCheck) 
@@ -3693,7 +3733,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_SuperParry" then -- unused 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Item" then -- eve only: use item 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Guard" then -- eve only: put sword / wings in front to parry 
-	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then -- default action 
+	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then -- phasing between skill steps or ending 
 	
 	end 
 	if Parry then Hit = false end -- quick fix, fix inside function to either Hit or Parry. Hit should be set only if something takes damage 
@@ -3867,6 +3907,9 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	options = options * SkillStepTable.SkillAttackDamageRate 
 	local bParry = false 
 	local enemy = StellarBlade.PickTarget(self) 
+	local GetAimVector = self:GetAimVector() 
+	self.NearestPoint2 = self.NearestPoint2 or scripted_ents.Get("cycler_actor2").NearestPoint2 
+	local NearestPoint2 = self.NearestPoint2 
 	local AvailableParry, AvailableSuperParry, AvailableGuard, AvailableJustParry, AvailableJustAction, AvailableJustGuard = SkillStepTable.AvailableParry, SkillStepTable.AvailableSuperParry, SkillStepTable.AvailableGuard, SkillStepTable.AvailableJustParry, SkillStepTable.AvailableJustAction, SkillStepTable.AvailableJustGuard 
 	-- print(enemy) 
 	if self.GetEnemy and !IsValid(self:GetEnemy()) then -- pick random enemy 
@@ -3879,7 +3922,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 		if ent:GetCollisionGroup() < COLLISION_GROUP_PLAYER or ent:GetCollisionGroup() > COLLISION_GROUP_NPC then return true end 
 		if ent:GetSolid() == 0 then return true end 
 		if ent:IsFlagSet(FL_DONTTOUCH) then return true end 
-		if bit.band(ent:GetSolidFlags(),FSOLID_NOT_SOLID) == FSOLID_NOT_SOLID then print(ent,"not solid")  return true end 
+		if bit.band(ent:GetSolidFlags(),FSOLID_NOT_SOLID) == FSOLID_NOT_SOLID then print(ent,"not solid") return true end 
 		if !ent:Alive() then return true end 
 		if ent:GetModel() == "models/error.mdl" then return true end 
 		return false 
@@ -3905,7 +3948,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	end 
 	
 	if string.find(HitDetectionType,"ActiveCollision") then 
-		if table.IsEmpty(tableofhittargets) then tableofhittargets = ents.FindInPVS and ents.FindInPVS(self) or ents.FindInSphere(self:GetPos(),100) end 
+		if table.IsEmpty(tableofhittargets) then tableofhittargets = ents.FindInPVS and ents.FindInPVS(self) or ents.FindInSphere(self:GetPos(),self:BoundingRadius()*5) end 
 		-- originally, characters have a SBCollisionGroupComponent 
 		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
 		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
@@ -3983,9 +4026,11 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	end 
 	
 	for k,v in pairs(tableofhittargets) do 
-		if !self.SBAI_SkillStep.HitEntities then self.SBAI_SkillStep.HitEntities = { } end 
-		if self.SBAI_SkillStep.HitEntities and self.SBAI_SkillStep.HitEntities[v] then continue end -- prevent hitting same entity multiple frames 
-		self.SBAI_SkillStep.HitEntities[v] = { ["CurTime"] = CurTime()} 
+		if self.SBAI_SkillStep then 
+			if !self.SBAI_SkillStep.HitEntities then self.SBAI_SkillStep.HitEntities = { } end 
+			if self.SBAI_SkillStep.HitEntities and self.SBAI_SkillStep.HitEntities[v] then continue end -- prevent hitting same entity multiple frames 
+			self.SBAI_SkillStep.HitEntities[v] = { ["CurTime"] = CurTime()} 
+		end 
 		local dmgtype = DMG_SLASH+DMG_ALWAYSGIB 
 		if v:IsVehicle() then -- make vehicle driver npcs vulnerable to this slash 
 			local driver = v:GetDriver() 
@@ -4013,7 +4058,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			if IsValid(v:GetOwner()) and v:GetOwner() == self then continue end 
 			if IsValid(v:GetParent()) and v:GetParent() == self then continue end 
 			-- print(v) 
-			local NearestPoint = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:GetShootPos()) 
+			local NearestPoint = NearestPoint2(v,self:GetShootPos()) 
 			dmg = DamageInfo() 
 			dmg:SetAttacker(self) 
 			dmg:SetWeapon(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
@@ -4027,13 +4072,13 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			Entity = v, 
 			Hit = true, 
 			-- HitPos = v:NearestPoint(self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()),
-			HitPos = scripted_ents.Get("cycler_actor2").NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()), 
-			HitNormal = self:GetAimVector(), 
+			HitPos = NearestPoint2(v,self:IsWeapon() and self:GetOwner():EyePos() or self:EyePos()), 
+			HitNormal = GetAimVector, 
 			HitWorld = false, 
 			HitMaterial = v:GetMaterial(), 
 			
 			-- Normal = (self:NearestPoint(v:EyePos()) - v:GetPos()):GetNormalized(), 
-			Normal = (scripted_ents.Get("cycler_actor2").NearestPoint2(self,v:EyePos()) - v:GetPos()):GetNormalized(), 
+			Normal = (NearestPoint2(self,v:EyePos()) - v:GetPos()):GetNormalized(), 
 			StartPos = NearestPoint 
 			} 
 			if v.SetPhysicsAttacker then 
@@ -4085,6 +4130,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			else 
 			
 				if bDamageBlocked then 
+					print("blocked damage:",v) 
 					bParry = true 
 					if SkillResultAliasWhenJustParry != "None" then 
 						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenJustParry,false,SkillStepTable.bCritical,tableOptional) 
@@ -4094,17 +4140,28 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 						-- return IsValid(enemy), self.SBAI_SkillStep.Hit, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
 						-- print("target result:",v,SkillResultAliasWhenParry) 
 					end 
+					
+					
+					if v.SBAI_SkillStep and v.SBAI_SkillStep.Data.SkillResultAlias != "None" then 
+					-- StellarBlade.StartSkillResult(target,dmginfo:GetAttacker(),SkillResultAlias) 
+						StellarBlade.StartSkillSelfResult(v,v.SBAI_SkillStep.Data.SkillResultAlias,SkillStepTable.bCritical,false) 
+						StellarBlade.StartSkillTargetResult(self,v.SBAI_SkillStep.Data.SkillResultAlias,SkillStepTable.bCritical,false) 
+					end 
+					
+					
+					
 				else 
 				
 					if SkillResultAlias != "None" then -- applied on self and target 
 						-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
 						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
 						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
-						self.SBAI_SkillStep.Hit = true 
+						print("self is:",self) 
+						if self.SBAI_SkillStep then self.SBAI_SkillStep.Hit = true end -- may be removed after blockskill 
 						if self.SBAI_SkillTable then 
 							self.SBAI_SkillTable.Hit = true 
 						end 
-						-- print("target result:",v,SkillResultAlias) 
+						print("target result:",v,SkillResultAlias) 
 					end 
 				end 
 			
@@ -4119,7 +4176,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			end 
 			
 			if SkillStepTable.NextStepAliasWhenJustParry != "None" then -- interpret as: getenemy is invincible or total damage is lesser than %10 
-				if bDamageBlocked then 
+				if bDamageBlocked and v:GetInternalVariable("m_flNextAttack") then -- CBaseCombatCharacter 
 					StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenJustParry) 
 					-- Entity(1):ChatPrint("Enemy in JustParry, calling "..SkillStepTable.NextStepAliasWhenJustParry) 
 				end 
@@ -4185,8 +4242,10 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			end 
 		end 
 	end 
-	self.SBAI_SkillStep.HitChecked = true 
-	return IsValid(enemy), self.SBAI_SkillStep.Hit, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
+	if self.SBAI_SkillStep then -- investigate cases why this is nil 
+		self.SBAI_SkillStep.HitChecked = true 
+	end 
+	return IsValid(enemy), self.SBAI_SkillStep and self.SBAI_SkillStep.Hit or false, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
 end 
 
 StellarBlade.TargetFilter = function(ent, filter, Cycle) 
@@ -4199,7 +4258,7 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 	if filter == "None" then return {} end 
 	-- shortcuts to simple checks 
 	if filter == "Self" then return {ent} end 
-	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and ent:GetEnemy() or StellarBlade.PickTarget(ent) end 
+	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and {ent:GetEnemy()} or {StellarBlade.PickTarget(ent)} end 
     if !TargetFilterTable then return {ent:GetEnemy()} end 
 	
     local ents_FindInSphere = ents.FindInSphere
@@ -4239,9 +4298,9 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 		local scale = minS + (maxS - minS) * c
 
 		-- scale global distances used in many shapes
-		ShapeForwardDistance = (ShapeForwardDistance or 0) * scale
-		ShapeRightDistance   = (ShapeRightDistance or 0) * scale
-		ShapeUpDistance      = (ShapeUpDistance or 0) * scale
+		ShapeForwardDistance = (ShapeForwardDistance) * scale
+		ShapeRightDistance   = (ShapeRightDistance) * scale
+		ShapeUpDistance      = (ShapeUpDistance) * scale
 		-- Near/Far distance will be scaled after they're read below (we reassign them there)
 
 		-- Now do shape-aware scaling for TargetCheckValues:
@@ -4627,7 +4686,7 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 	-- PrintTable(candidates) 
 
     -- Step 2: Filter out self
-	-- expang this depending on Target type 
+	-- expand this depending on Target type 
 	--[[ 
 	Target_None                              = 0,
 	Target_Self                              = 1,
@@ -4690,6 +4749,10 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 			end 
 		end 
 		table.insert(filtered,ent) 
+	elseif TargetType == "ESBTargetActor::Target_AIDetectTarget" then 
+		filtered[1] = ent:GetEnemy() 
+	elseif TargetType == "ESBTargetActor::Target_AIDetectSubTarget" then 
+		filtered = ent:GetKnownEnemies() 
 	else -- default action 
 		for _, target in ipairs(candidates) do
 			if IsValid(target)
@@ -5014,6 +5077,7 @@ StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitbox
     -- print("Hitbox collision count:", #filtered)
     return filtered
 end 
+
 -- Helper function to determine active states for an entity
 -- Returns a table where keys are state names and values are booleans
 local function GetEntityStates(entity)
@@ -5212,7 +5276,93 @@ StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLeve
 	return true 
 end
 
-StellarBlade.JustParryAnticipation = function(self, target)
+StellarBlade.JustParryAnticipation = function(self, target) 
+	if target.SBAI_SkillTable then 
+		if target.SBAI_SkillStep then 
+			local Type = target.SBAI_SkillStep.Data.Type -- get skill step type 
+			if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then 
+				-- local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
+				-- if !TargetFilterAlias or TargetFilterAlias == "None" then 
+					-- if target.SBAI_SkillTable then TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
+				-- end 
+				-- if !target.SBAI_SkillTable then return print(target,"there is a skill step but no skilltable") end 
+				local TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias 
+				-- normally collision to AttackedCollisionGroupArray is considered 
+				-- but most entities do not provide a consistent collision trace 
+				-- it is either bbox or some other vector away from bbox 
+				-- sometimes the hit direction isn't even constructed 
+				-- so we will just use target filter 
+				
+				-- SkillHitDetectionType_None               = 0,
+				-- SkillHitDetectionType_TargetFilter       = 1,
+				-- SkillHitDetectionType_ActiveCollision    = 2,
+				-- SkillHitDetectionType_TargetFilter_ActiveCollision = 3,
+				-- SkillHitDetectionType_MAX                = 4,
+				
+				-- local HitDetectionType = target.SBAI_SkillStep.Data.HitDetectionType 
+				-- if string.find(HitDetectionType,"TargetFilter") then 
+				local tableofhittargets = StellarBlade.TargetFilter(target,TargetFilterAlias) 
+				-- end 
+				-- print("TargetFilterAlias:",TargetFilterAlias) 
+				if !table.HasValue(tableofhittargets,self) then return end 
+				local tableofhitvectors = { } 
+				table.insert(tableofhitvectors, self.GetShootPos and self:GetShootPos() or self:EyePos()) 
+				-- table.insert(tableofhitvectors, dmginfo:GetReportedPosition()) 
+				if IsValid(self) then 
+					table.insert(tableofhitvectors, self:EyePos()) 
+					table.insert(tableofhitvectors, self:GetPos()) 
+				end 
+				local inViewCone = false 
+				local FinalDamagePosition = target:GetPos() 
+				for _,DamagePosition in ipairs(tableofhitvectors) do 
+					if !DamagePosition:IsZero() and DamagePosition != target:GetPos() then 
+						if target:IsNPC() then 
+							inViewCone = target:IsInViewCone(DamagePosition) 
+						else 
+							inViewCone = FInViewCone(target,DamagePosition) 
+						end 
+						if inViewCone then FinalDamagePosition = DamagePosition break end 
+					end 
+				end 
+		
+				if inViewCone then 
+					-- dmginfo:ScaleDamage(0) 
+					-- print("SkillResultAlias:", SkillResultAlias,self) 
+					if SkillResultAlias != "None" then 
+						-- StellarBlade.StartSkillResult(target,dmginfo:GetAttacker(),SkillResultAlias) 
+						-- StellarBlade.StartSkillSelfResult(target,SkillResultAlias,SkillStepTable.bCritical,false) 
+						-- if IsValid(self) then 
+							-- StellarBlade.StartSkillTargetResult(self,SkillResultAlias,SkillStepTable.bCritical,false) 
+						-- end 
+					end 
+					
+					
+					if IsValid(self) then 
+						if target.SBAI_SkillTable then 
+							if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities then 
+								target.SBAI_SkillTable.OnTakeDamage_ParriedEntities = { } 
+							end 
+							
+							if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[self] then 
+								target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[self] = 
+								{	["Time"] = CurTime(), 
+									["Capabilities"] = self.CapabilitiesGet and self:CapabilitiesGet() or nil 
+								} 
+							end 
+						end 
+						sound.EmitHint(SOUND_DANGER+SOUND_COMBAT+SOUND_MOVE_AWAY+SOUND_CONTEXT_REACT_TO_SOURCE,FinalDamagePosition,target:BoundingRadius()*4,1,target) 
+						
+						if self.SetCondition then 
+							self:SetCondition(COND.HEAR_DANGER) 
+						end 
+						-- local wep = self:GetActiveWeapon() 
+						return true 
+					end 
+				end 
+			end 
+		end 
+	end 
+	
     local bDamageBlocked = false -- Initialize the variable to false.
 
     -- Condition 1: The ent is a player and the GM:PlayerShouldTakeDamage hook returns false.
@@ -5232,7 +5382,6 @@ StellarBlade.JustParryAnticipation = function(self, target)
     end
     return bDamageBlocked
 end
-
 
 StellarBlade.SetSkillStep = function(self,strSkill) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
@@ -5272,7 +5421,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		end 
 	end } ) 
 	
-	for k,v in pairs(StellarBlade.SBAI_SkillStep) do 
+	for k,v in pairs(StellarBlade.SBAI_SkillStep) do -- copy skill step table to npc table for faster lookups 
 		SBAI_SkillStep[k] = v 
 	end 
 	
@@ -5300,7 +5449,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		-- clear move steps 
 		if self.SBAI_MoveTable then 
 			local ok, err = pcall(self.SBAI_MoveTable.Remove,self.SBAI_MoveTable) 
-			if !ok then print(self,"move table removal error:",err) end 
+			if !ok then print(self,"move table removal error:",err) self.SBAI_MoveTable = nil end 
 		end 
     end  
 	
