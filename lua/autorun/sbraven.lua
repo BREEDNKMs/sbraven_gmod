@@ -495,7 +495,7 @@ function StellarBlade.ActorState:Remove(effectOrName)
 	end
 
 	-- debug print
-	-- print("in ActorState:Remove(", targetName or "<none>", ")")
+	-- print("in ActorState:Remove('", targetName or "<none>", "')")
 
 	-- ensure Users is a table
 	self.Users = self.Users or { } 
@@ -512,15 +512,16 @@ function StellarBlade.ActorState:Remove(effectOrName)
 	end
 
 	-- if there are still users, do not remove the state
-	if #self.Users > 0 then
-		return false
-	end
+	if #self.Users > 0 then 
+		-- print("state has more users, not removing:",self.Name,self.Users) 
+		return false 
+	end 
 	
 	if !self.IsMarkedForDeletion then 
 		self.IsMarkedForDeletion = true 
 		-- Entity(1):ChatPrint("removing: "..self.Name) 
 		local ok, err = pcall(function() 
-		
+			-- print("removing state for actual:",self.Name) 
 			hook.Remove("Think",self) 
 			hook.Remove("EntityTakeDamage",self) 
 			hook.Remove("PostEntityTakeDamage",self) 
@@ -535,6 +536,7 @@ function StellarBlade.ActorState:Remove(effectOrName)
 				if self.SetMoveDelay then self:SetMoveDelay(0) end 
 			elseif self.Name == "ESBActorState::ActorState_BlockingBehavior" then 
 				if self.Outer:IsPlayer() then 
+					-- print("removing FL_FROZEN") 
 					self.Outer:Freeze(false) 
 				else 
 					if self.Outer:IsNPC() then 
@@ -597,9 +599,21 @@ function StellarBlade.ActorState:Think()
 				end 
 			end 
 		end 
+	elseif self.Name == "ESBActorState::ActorState_Down" then 
+		if !Outer:IsPlayer() then 
+			local result_state_knockdown_l,ltime = Outer:LookupSequence("result_state_knockdown_l") -- loop 
+			local result_state_knockdown_s_bw,stime = Outer:LookupSequence("result_state_knockdown_s_bw") -- start 
+			local result_state_knockdown_s_fw,stime = Outer:LookupSequence("result_state_knockdown_s_fw") -- start 
+			local result_state_knockdown_e,etime = Outer:LookupSequence("result_state_knockdown_e") -- exit 
+			if Outer:GetSequence() == result_state_knockdown_s_bw or Outer:GetSequence() == result_state_knockdown_l or Outer:GetSequence() == result_state_knockdown_s_fw then 
+				if Outer:IsSequenceFinished() then 
+					scripted_ents.Get("cycler_actor2").NPC_StartScriptedActivity(Outer,"result_state_knockdown_l",true) 
+				end 
+			end 
+		end 
 	elseif self.Name == "" then 
 		if Outer:IsPlayer() then 
-			self:SetSaveValue("m_debugOverlays", bit.band(self:GetInternalVariable("m_debugOverlays"), bit.bnot(33554432))) 
+			self:SetSaveValue("m_debugOverlays", bit.band(self:GetInternalVariable("m_debugOverlays"), bit.bnot(33554432))) -- buddha 
 		end 
 	end 
 end 
@@ -676,12 +690,18 @@ end
 
 function StellarBlade.ActorState:CalcMainActivity(ply,vel) -- called only for players 
 	-- print(self,self.Outer,ply) 
-	if self.Name == "ESBActorState::ActorState_Groggy" and ply == self.Outer then 
-		-- Result_State_Groggy_L will be the main sequence 
-		-- Groggy_S and Groggy_E will be played as Gesture Sequences, which lay on top of sequence 
-		ply.CalcIdeal = ACT_INVALID
-		ply.CalcSeqOverride = ply:LookupSequence("Result_State_Groggy_L") 
-		return ply.CalcIdeal, ply.CalcSeqOverride 
+	if ply == self.Outer then 
+		if self.Name == "ESBActorState::ActorState_Groggy" then 
+			-- Result_State_Groggy_L will be the main sequence 
+			-- Groggy_S and Groggy_E will be played as Gesture Sequences, which lay on top of sequence 
+			ply.CalcIdeal = ACT_INVALID
+			ply.CalcSeqOverride = ply:LookupSequence("Result_State_Groggy_L") 
+			return ply.CalcIdeal, ply.CalcSeqOverride 
+		elseif self.Name == "ESBActorState::ActorState_Down" then 
+			ply.CalcIdeal = ACT_INVALID
+			ply.CalcSeqOverride = ply:LookupSequence("result_state_knockdown_l") 
+			return ply.CalcIdeal, ply.CalcSeqOverride 
+		end 
 	end 
 end 
 
@@ -917,6 +937,9 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
 		-- keep as-is for now
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
+		if CurTime() > 5 + self.Time then 
+			return false 
+		end
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_ProjectileDependent" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_BeforeNextSkill" then -- removed after the lifetime, or prior to starting a skill 
 		if CurTime() > self.EndTime then 
@@ -926,6 +949,7 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 		if CurTime() > 5 + self.Time then 
 			return false 
 		end
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
@@ -1149,7 +1173,6 @@ if SERVER then
 end 
 
 StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...) 
-	-- print("adding effect:",strEffect) 
 	-- if tableOptional then PrintTable(tableOptional) end 
 	if strEffect then 
 		if strEffect == "DownFaceUP" then strEffect = "DownFaceUp" end 
@@ -1165,6 +1188,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	end 
 	
 	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then return false end 
+	-- print("adding effect:",strEffect) 
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
@@ -1627,7 +1651,7 @@ ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_Static
 end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_EffectAttackPower"] = function(ent,CalculationValue,StatValue) 
 	-- print("called EffectAttackPower",ent,CalculationValue,StatValue) 
-	print("calculating EffectAttackPower",ent) 
+	-- print("calculating EffectAttackPower",ent) 
 	local AttackPower = ent.PhysicAttackPower 
 	if !AttackPower then 
 		if StellarBlade.IsRaven(ent) then 
@@ -1724,7 +1748,14 @@ local statGetters = {
 
     ["ESBActorStatType::ActorStatType_MaxHP"] = function(proxy)
         local ent = proxy.Outer
-        if IsValid(ent) then
+        if IsValid(ent) then 
+			if StellarBlade.IsRaven(ent) then 
+				if ent.MaxHP then
+					return ent.MaxHP
+				else 
+					return scripted_ents.Get("npc_sb_raven").MaxHP 
+				end 
+			end 
             return ent:GetMaxHealth() or rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
@@ -1741,6 +1772,13 @@ local statGetters = {
 	["ESBActorStatType::ActorStatType_MaxHPRate"] = function(proxy)
         local ent = proxy.Outer
         if IsValid(ent) then
+			if StellarBlade.IsRaven(ent) then 
+				if ent.MaxHP then
+					return (ent:GetMaxHealth()/ent.MaxHP)*100
+				else 
+					return (ent:GetMaxHealth()/scripted_ents.Get("npc_sb_raven").MaxHP)*100 
+				end 
+			end 
             return ent:GetMaxHealth() or rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
@@ -1779,6 +1817,10 @@ local statGetters = {
         return rawget(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel") or 0
     end,
 	
+	["ESBActorStatType::ActorStatType_AdditiveHitLevel"] = function(proxy)
+        return rawget(proxy, "ESBActorStatType::ActorStatType_AdditiveHitLevel") or 0
+    end,
+	
 	["ESBActorStatType::ActorStatType_Stamina"] = function(proxy) 
 		if proxy.Outer["ESBActorStatType::ActorStatType_Stamina"] then 
 			return proxy.Outer["ESBActorStatType::ActorStatType_Stamina"] 
@@ -1788,11 +1830,11 @@ local statGetters = {
 	
 	["ESBActorStatType::ActorStatType_MaxStamina"] = function(proxy)
 		-- 1. Check entity level variable first (External)
-		local Outer = proxy.Outer 
-		if IsValid(Outer) then 
-			if StellarBlade.IsRaven(Outer) then 
-				if Outer.MaxStamina then
-					return proxy.Outer.MaxStamina
+		local ent = proxy.Outer 
+		if IsValid(ent) then 
+			if StellarBlade.IsRaven(ent) then 
+				if ent.MaxStamina then
+					return ent.MaxStamina
 				else 
 					return scripted_ents.Get("npc_sb_raven").MaxStamina 
 				end 
@@ -1817,7 +1859,7 @@ local statSetters = {
 	["ESBActorStatType::ActorStatType_HP"] = function(proxy, value)
 		-- prefer actual engine health for truth (fallback to stored)
 		local ent = proxy.Outer -- entity that has the effect applied 
-		print("constructor is:",proxy.Constructor) 
+		-- print("constructor is:",proxy.Constructor) 
 		local requestedHP = math.floor(value) 
 		local curHP = ent:Health() 
 
@@ -1905,6 +1947,10 @@ local statSetters = {
         rawset(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel", value)
     end,
 	
+	["ESBActorStatType::ActorStatType_AdditiveHitLevel"] = function(proxy, value)
+        rawset(proxy, "ESBActorStatType::ActorStatType_AdditiveHitLevel", value)
+    end,
+	
 	["ESBActorStatType::ActorStatType_Stamina"] = function(proxy, value) 
 		local Outer = proxy.Outer 
 		local MaxStamina = proxy["ESBActorStatType::ActorStatType_MaxStamina"] or 1 
@@ -1962,21 +2008,21 @@ end
 -- Utility: create/ensure proxy for an entity 
 -- use this to lookup ESBActorStat fields on any entity 
 -- it will create a template ESBActorStatType table and assign to entity 
-function StellarBlade.ActorStats(ent,forceReset) 
-    if !IsValid(ent) then error("Tried to use NULL Entity!") end
-    if ent.ESBActorStatType and getmetatable(ent.ESBActorStatType) == statProxyMT and !forceReset then
-        return ent.ESBActorStatType
+function StellarBlade.ActorStats(self,forceReset) 
+    if !IsValid(self) then error("Tried to use NULL Entity!") end
+    if self.ESBActorStatType and getmetatable(self.ESBActorStatType) == statProxyMT and !forceReset then
+        return self.ESBActorStatType
     end
 
     local proxy = {} 
-    proxy.Outer = ent 
+    proxy.Outer = self 
     setmetatable(proxy, statProxyMT) 
-	if StellarBlade.IsRaven(ent) then 
+	if StellarBlade.IsRaven(self) then 
 		-- setup properties for first time setup 
 		-- ESBActorStatType::ActorStatType_Stamina 
-		proxy["ESBActorStatType::ActorStatType_Stamina"] = proxy["ESBActorStatType::ActorStatType_MaxStamina"] 
+		proxy["ESBActorStatType::ActorStatType_Stamina"] = proxy["ESBActorStatType::ActorStatType_MaxStamina"] -- set stamina to maxstamina 
 	end 
-    ent.ESBActorStatType = proxy 
+    self.ESBActorStatType = proxy 
     return proxy 
 end 
 
@@ -2051,14 +2097,16 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
     if !table.IsEmpty(DispelFlagsArray) then
         -- local toRemoveAliases = {}
         for _, dispFlag in ipairs(DispelFlagsArray) do
+			-- print("flags:",dispFlag, "flag:",EffectTable.Flag) 
             if !dispFlag then continue end
             -- iterate over all effect aliases present on the entity
             for existName, existInstances in pairs(self.SB_EffectAlias) do
                 if existName != strEffect then -- don't remove the effect we just added
                     -- existInstances is an array of instance tables
                     for _, existInstance in ipairs(existInstances) do
+						-- print("instance:",EffectTable,"iteration:",existInstance) 
                         local existFlag = existInstance and existInstance.Flag
-                        if existFlag == dispFlag or existName == dispFlag then 
+                        if (existFlag == dispFlag or existName == dispFlag) and EffectTable != existInstance then -- ignore self instance 
 							if existInstance.Remove then 
 								existInstance:Remove() 
 							else 
@@ -2290,6 +2338,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		-- initialize state beneath 
 		-- ActorState_None                          = 0,
 		-- ActorState_BlockMove                     = 1,
+		-- print("applying state:",ActorState.Name) 
 		if ActorState.Name == "ESBActorState::ActorState_BlockMove" then 
 			if self.SetMoveDelay then 
 				self:SetMoveDelay(1) 
@@ -2309,6 +2358,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 			self:AddFlags(FL_NOTARGET) 
 		-- ActorState_Down                          = 6,
 		elseif ActorState.Name == "ESBActorState::ActorState_Down" then 
+			print(tostring(self).." is down") 
 		-- ActorState_Groggy                        = 7,
 		elseif ActorState.Name == "ESBActorState::ActorState_Groggy" then 
 		-- ActorState_Airborne                      = 8,
@@ -2340,6 +2390,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		-- ActorState_BlockingBehavior              = 20,
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockingBehavior" then 
 			if self:IsPlayer() then 
+				print("adding FL_FROZEN") 
 				self:Freeze(true) 
 			else 
 				if self:IsNPC() then 
@@ -4128,13 +4179,15 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				print(v,"simple target") 
 				v:DispatchTraceAttack(dmg,tr) 
 			else 
-			
+				local HitLevel_enemy = StellarBlade.ActorStats(v)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
+				local HitLevel_self = StellarBlade.ActorStats(self)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
+				local HitLevel = HitLevel_self >= HitLevel_enemy 
 				if bDamageBlocked then 
 					print("blocked damage:",v) 
 					bParry = true 
 					if SkillResultAliasWhenJustParry != "None" then 
-						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenJustParry,false,SkillStepTable.bCritical,tableOptional) 
-						StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenJustParry,false,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenJustParry,HitLevel,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenJustParry,HitLevel,SkillStepTable.bCritical,tableOptional) 
 						-- StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenJustParry) 
 						self.SBAI_SkillStep.HitChecked = true 
 						-- return IsValid(enemy), self.SBAI_SkillStep.Hit, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
@@ -4144,8 +4197,8 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 					
 					if v.SBAI_SkillStep and v.SBAI_SkillStep.Data.SkillResultAlias != "None" then 
 					-- StellarBlade.StartSkillResult(target,dmginfo:GetAttacker(),SkillResultAlias) 
-						StellarBlade.StartSkillSelfResult(v,v.SBAI_SkillStep.Data.SkillResultAlias,SkillStepTable.bCritical,false) 
-						StellarBlade.StartSkillTargetResult(self,v.SBAI_SkillStep.Data.SkillResultAlias,SkillStepTable.bCritical,false) 
+						StellarBlade.StartSkillSelfResult(v,v.SBAI_SkillStep.Data.SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(self,v.SBAI_SkillStep.Data.SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
 					end 
 					
 					
@@ -4154,9 +4207,9 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				
 					if SkillResultAlias != "None" then -- applied on self and target 
 						-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
-						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
-						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,false,SkillStepTable.bCritical,tableOptional) 
-						print("self is:",self) 
+						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
+						-- print("self is:",self) 
 						if self.SBAI_SkillStep then self.SBAI_SkillStep.Hit = true end -- may be removed after blockskill 
 						if self.SBAI_SkillTable then 
 							self.SBAI_SkillTable.Hit = true 
@@ -4258,7 +4311,7 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 	if filter == "None" then return {} end 
 	-- shortcuts to simple checks 
 	if filter == "Self" then return {ent} end 
-	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and {ent:GetEnemy()} or {StellarBlade.PickTarget(ent)} end 
+	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and {ent:GetEnemy()} or {StellarBlade.PickTarget(ent)[1]} end 
     if !TargetFilterTable then return {ent:GetEnemy()} end 
 	
     local ents_FindInSphere = ents.FindInSphere
@@ -5080,33 +5133,33 @@ end
 
 -- Helper function to determine active states for an entity
 -- Returns a table where keys are state names and values are booleans
-local function GetEntityStates(entity)
-	local physobj = entity:GetPhysicsObject()
+function StellarBlade:GetEntityStates()
+	local physobj = self:GetPhysicsObject()
 	
 	-- 1. Calculate Moving
-	local bMoving = (entity.IsMoving and entity:IsMoving()) or (!entity:GetVelocity():IsZero())
+	local bMoving = (self.IsMoving and self:IsMoving()) or (!self:GetVelocity():IsZero())
 	
 	-- 2. Calculate Air
-	local bAir = not entity:IsOnGround()
+	local bAir = not self:IsOnGround()
 	if physobj and physobj:IsValid() then
 		-- Use friction snapshot for physics objects if applicable
-		if (entity.GetMoveType and entity:GetMoveType() == MOVETYPE_VPHYSICS) or not entity.GetMoveType then
+		if (self.GetMoveType and self:GetMoveType() == MOVETYPE_VPHYSICS) or not self.GetMoveType then
 			bAir = table.IsEmpty(physobj:GetFrictionSnapshot())
 		end
 	end
 
 	-- 3. Calculate Airborne (Fly)
-	local bAirborne = (entity:GetMoveType() == MOVETYPE_FLY) 
-		or (entity.GetNavType and entity:GetNavType() == NAV_FLY) 
-		or (entity:IsFlagSet(FL_FLY))
+	local bAirborne = (self:GetMoveType() == MOVETYPE_FLY) 
+		or (self.GetNavType and self:GetNavType() == NAV_FLY) 
+		or (self:IsFlagSet(FL_FLY))
 
 	-- 4. Calculate Swimming
-	local bSwimming = (entity:WaterLevel() > 0)
+	local bSwimming = (self:WaterLevel() > 0)
 
 	-- Return state map matching JSON key segments
 	return {
-		Groggy = false, -- Logic for Groggy detection goes here if automated, currently passed via flags usually
-		Down = false,   -- Logic for Down detection goes here
+		Groggy = StellarBlade.IsGroggy(self), -- Logic for Groggy detection goes here if automated, currently passed via flags usually
+		Down = StellarBlade.IsDown(self),   -- Logic for Down detection goes here
 		Swimming = bSwimming,
 		Airborne = bAirborne,
 		Air = bAir,
@@ -5117,91 +5170,142 @@ end
 
 -- Shared function to resolve keys and apply actions
 local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget, HitLevel, tableOptional)
-	-- The Priority Order: High to Low
-	local priorityOrder = { "Groggy", "Down", "Swimming", "Airborne", "Air", "EventMoving", "Common" }
+    -- Add local boolean configuration for additive HitLevel results
+    local bHitLevelAdditive = true 
 
-	-- The "Slots" we need to fill
-	local selectedActions = {
-		Effect = nil,
-		ShowPath = nil,
-		MoveStep = nil
-	}
+    -- The Priority Order: High to Low
+    local priorityOrder = { "Groggy", "Down", "Swimming", "Airborne", "Air", "EventMoving", "Common" }
 
-	-- Iterate through priority list
-	for _, stateName in ipairs(priorityOrder) do
-		-- Only check if this state is actually active on the entity
-		-- Note: Groggy/Down/Weakpoint are usually passed in, but here we assume the boolean flags 
-		-- from the original script logic (bDown/bGroggy) would be set. 
-		-- Since the original script set bGroggy/bDown inside the function based on external flags not shown,
-		-- we will assume the state map is updated before this loop or defaults to false.
-		
-		if activeStates[stateName] then
-			
-			-- Construct JSON Key Prefixes
-			-- Target keys example: "HitLevelResultTargetCommonEffect" vs "ResultTargetCommonEffect"
-			-- Self keys example: "ResultSelfCommonEffect" (Self usually ignores HitLevel prefix based on your JSON)
-			
-			local prefix = "Result" .. (isTarget and "Target" or "Self") .. stateName
-			local hitLevelPrefix = "HitLevelResult" .. (isTarget and "Target" or "Self") .. stateName
-			
-			-- 1. Resolve EFFECT
-			if selectedActions.Effect == nil then
-				local val = ""
-				if isTarget and HitLevel then
-					val = SkillResult[hitLevelPrefix .. "Effect"]
-				else
-					val = SkillResult[prefix .. "Effect"]
-				end
-				
-				if val and val != "" then selectedActions.Effect = val end
-			end
+    -- The "Slots" now store arrays to accommodate multiple actions when additive
+    local selectedActions = {
+        Effect = {},
+        ShowPath = {},
+        MoveStep = {}
+    }
 
-			-- 2. Resolve SHOWPATH
-			if selectedActions.ShowPath == nil then
-				-- ShowPath usually doesn't have a HitLevel prefix in the provided JSON, but we check just in case or default to standard
-				local val = SkillResult[prefix .. "ShowPath"]
-				if val and val != "" then selectedActions.ShowPath = val end
-			end
+    -- Tracking flags to see if a slot has been filled by a higher-priority state
+    local filledSlots = {
+        Effect = false,
+        ShowPath = false,
+        MoveStep = false
+    }
 
-			-- 3. Resolve MOVESTEP (Targets only)
-			if isTarget and selectedActions.MoveStep == nil then
-				local val = ""
-				if HitLevel then
-					val = SkillResult[hitLevelPrefix .. "MoveAlias"]
-				else
-					val = SkillResult[prefix .. "MoveAlias"]
-				end
-				
-				-- "None" is treated as a valid value in JSON, but we usually want to treat it as 'not set' 
-				-- if we want to fall back. However, if "None" is an explicit instruction to Stop, 
-				-- keep it. Assuming empty string or missing key is the fallback trigger.
-				if val and val != "" and val != "None" then selectedActions.MoveStep = val end
-			end
-		end
-		
-		-- Optimization: Break if all slots are filled
-		if selectedActions.Effect and selectedActions.ShowPath and (!isTarget or selectedActions.MoveStep) then
-			break
-		end
-	end
+    -- Iterate through priority list
+    for _, stateName in ipairs(priorityOrder) do
+        -- Only check if this state is actually active on the entity
+        if activeStates[stateName] then
+            
+            -- Construct JSON Key Prefixes
+            local prefix = "Result" .. (isTarget and "Target" or "Self") .. stateName
+            local hitLevelPrefix = "HitLevelResult" .. (isTarget and "Target" or "Self") .. stateName
+            
+            -- 1. Resolve EFFECT
+            if !filledSlots.Effect then
+                if isTarget and HitLevel then
+                    local hitLevelVal = SkillResult[hitLevelPrefix .. "Effect"]
+                    local baseVal = SkillResult[prefix .. "Effect"]
+                    
+                    if bHitLevelAdditive then
+                        local added = false
+                        if baseVal and baseVal != "" then 
+                            table.insert(selectedActions.Effect, baseVal) 
+                            added = true
+                        end
+                        if hitLevelVal and hitLevelVal != "" then 
+                            table.insert(selectedActions.Effect, hitLevelVal) 
+                            added = true
+                        end
+                        if added then filledSlots.Effect = true end
+                    else
+                        -- Original behavior: HitLevel replaces base action
+                        if hitLevelVal and hitLevelVal != "" then 
+                            table.insert(selectedActions.Effect, hitLevelVal) 
+                            filledSlots.Effect = true 
+                        end
+                    end
+                else
+                    local baseVal = SkillResult[prefix .. "Effect"]
+                    if baseVal and baseVal != "" then 
+                        table.insert(selectedActions.Effect, baseVal) 
+                        filledSlots.Effect = true 
+                    end
+                end
+            end
 
-	-- EXECUTE SELECTED ACTIONS
-	
-	-- Apply Effect
-	if selectedActions.Effect and selectedActions.Effect != "" then
-		local strEffect = StellarBlade.ParseTableStrings(selectedActions.Effect)
-		StellarBlade.AddEffectFromTable(entity, strEffect, tableOptional)
-	end
+            -- 2. Resolve SHOWPATH
+            if !filledSlots.ShowPath then
+                local val = SkillResult[prefix .. "ShowPath"]
+                if val and val != "" then 
+                    table.insert(selectedActions.ShowPath, val)
+                    filledSlots.ShowPath = true 
+                end
+            end
 
-	-- Apply ShowPath
-	if selectedActions.ShowPath and selectedActions.ShowPath != "" then
-		StellarBlade.SetShow(entity, selectedActions.ShowPath, tableOptional)
-	end
+            -- 3. Resolve MOVESTEP (Targets only)
+            if isTarget and !filledSlots.MoveStep then
+                if HitLevel then
+                    local hitLevelVal = SkillResult[hitLevelPrefix .. "MoveAlias"]
+                    local baseVal = SkillResult[prefix .. "MoveAlias"]
+                    
+                    if bHitLevelAdditive then
+                        local added = false
+                        if baseVal and baseVal != "" and baseVal != "None" then 
+                            table.insert(selectedActions.MoveStep, baseVal) 
+                            added = true
+                        end
+                        if hitLevelVal and hitLevelVal != "" and hitLevelVal != "None" then 
+                            table.insert(selectedActions.MoveStep, hitLevelVal) 
+                            added = true
+                        end
+                        if added then filledSlots.MoveStep = true end
+                    else
+                        -- Original behavior: HitLevel replaces base action
+                        if hitLevelVal and hitLevelVal != "" and hitLevelVal != "None" then 
+                            table.insert(selectedActions.MoveStep, hitLevelVal) 
+                            filledSlots.MoveStep = true 
+                        end
+                    end
+                else
+                    local baseVal = SkillResult[prefix .. "MoveAlias"]
+                    if baseVal and baseVal != "" and baseVal != "None" then 
+                        table.insert(selectedActions.MoveStep, baseVal) 
+                        filledSlots.MoveStep = true 
+                    end
+                end
+            end
+        end
+        
+        -- Optimization: Break if all slots are filled
+        if filledSlots.Effect and filledSlots.ShowPath and (!isTarget or filledSlots.MoveStep) then
+            break
+        end
+    end
 
-	-- Apply MoveStep (Target Only)
-	if isTarget and selectedActions.MoveStep and selectedActions.MoveStep != "" and selectedActions.MoveStep != "None" then
-		StellarBlade.AddMoveStep(entity, selectedActions.MoveStep, tableOptional)
-	end
+    -- EXECUTE SELECTED ACTIONS
+    
+    -- Apply Effects
+    for _, effectStr in ipairs(selectedActions.Effect) do
+        if effectStr and effectStr != "" then
+            local strEffect = StellarBlade.ParseTableStrings(effectStr)
+            StellarBlade.AddEffectFromTable(entity, strEffect, tableOptional)
+        end
+    end
+
+    -- Apply ShowPath
+    for _, showPathStr in ipairs(selectedActions.ShowPath) do
+        if showPathStr and showPathStr != "" then
+            StellarBlade.SetShow(entity, showPathStr, tableOptional)
+        end
+    end
+
+    -- Apply MoveStep (Target Only)
+    if isTarget then
+        for _, moveStepStr in ipairs(selectedActions.MoveStep) do
+            if moveStepStr and moveStepStr != "" and moveStepStr != "None" then
+                StellarBlade.AddMoveStep(entity, moveStepStr, tableOptional)
+            end
+        end
+    end
 end
 
 StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, bCritical, tableOptional) 
@@ -5229,9 +5333,9 @@ StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, b
 	end 
 
 	-- 3. Calculate States
-	local activeStates = GetEntityStates(self)
+	local activeStates = StellarBlade.GetEntityStates(self)
 	-- Inject manual states that depend on external flags if necessary
-	activeStates.Groggy = false -- (Set your Groggy logic)
+	activeStates.Groggy = StellarBlade.IsGroggy(self) -- (Set your Groggy logic)
 	activeStates.Down = false   -- (Set your Down logic)
 	
 	-- 4. Process Waterfall Logic
@@ -5265,9 +5369,9 @@ StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLeve
 	end 
 	
 	-- 3. Calculate States
-	local activeStates = GetEntityStates(target)
+	local activeStates = StellarBlade.GetEntityStates(target)
 	-- Inject manual states
-	activeStates.Groggy = false 
+	activeStates.Groggy = StellarBlade.IsGroggy(target) 
 	activeStates.Down = false   
 	
 	-- 4. Process Waterfall Logic
@@ -7023,7 +7127,7 @@ end
 
 local tableofpassiveweapons = {["weapon_physgun"] = true, ["gmod_camera"] = true, ["gmod_tool"] = true, ["weapon_cubemap"] = true} 
 
-StellarBlade.IsBattle = function(self) 
+function StellarBlade:IsBattle() 
 	if self:IsPlayer() then 
 		if IsValid(self:GetActiveWeapon()) then 
 			if tableofpassiveweapons[self:GetActiveWeapon():GetClass()] then return false end 
@@ -7127,5 +7231,6 @@ hook.Add("Restored","SB_SaveRestore",function()
 	end 
 end) 
 
-StellarBlade.IsGroggy = function(self) return self["ESBActorState::ActorState_Groggy"] end 
+function StellarBlade:IsGroggy() return self["ESBActorState::ActorState_Groggy"] end 
+function StellarBlade:IsDown() return self["ESBActorState::ActorState_Down"] end 
 StellarBlade.ClearMoveTable = function(self) self.SBAI_MoveTable = { } end 
