@@ -302,11 +302,14 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
             if inViewCone then 
                 dmginfo:ScaleDamage(0) 
                 if SkillResultAlias != "None" then 
-                    StellarBlade.StartSkillSelfResult(target,SkillResultAlias,SkillStepTable.bCritical,false) 
+                    StellarBlade.StartSkillSelfResult(target,SkillResultAlias,true,SkillStepTable.bCritical,false) 
                     
                     -- Only apply target results if it is a normal, valid close-range target
                     if isNormalParryTarget and IsValid(attacker) then 
-                        StellarBlade.StartSkillTargetResult(attacker,SkillResultAlias,SkillStepTable.bCritical,false) 
+					local HitLevel_enemy = StellarBlade.ActorStats(attacker)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
+					local HitLevel_self = StellarBlade.ActorStats(target)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
+					local HitLevel = HitLevel_self >= HitLevel_enemy 
+                        StellarBlade.StartSkillTargetResult(attacker,SkillResultAlias,HitLevel,SkillStepTable.bCritical,false) 
                     end 
                 end 
                 
@@ -936,7 +939,10 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 		end 
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StanceDependent" then
 		-- keep as-is for now
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then 
+		if StellarBlade.IsRaven(self.Outer) then 
+			if CurTime() > scripted_ents.Get("npc_sb_raven").GetupTime + self.Time then return false end 
+		end 
 		if CurTime() > 5 + self.Time then 
 			return false 
 		end
@@ -945,7 +951,10 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 		if CurTime() > self.EndTime then 
 			return false 
 		end 
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then
+	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGroggyEndTime" then 
+		if StellarBlade.IsRaven(self.Outer) then 
+			if CurTime() > scripted_ents.Get("npc_sb_raven").GroggyEndTime + self.Time then return false end 
+		end 
 		if CurTime() > 5 + self.Time then 
 			return false 
 		end
@@ -1187,8 +1196,8 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		end 
 	end 
 	
-	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then return false end 
-	-- print("adding effect:",strEffect) 
+	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then print("rejected effect:",strEffect) return false end 
+	print("adding effect:",strEffect) 
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
@@ -1602,13 +1611,30 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 	if tableOptional and IsValid(tableOptional.Constructor) then -- KnockDownForward_Eve - KnockDownBackward_Eve 
 		local ConditionActive_MinAngleFromConstructor = math.NormalizeAngle(EffectTable.ConditionActive_MinAngleFromConstructor) 
 		local ConditionActive_MaxAngleFromConstructor = math.NormalizeAngle(EffectTable.ConditionActive_MaxAngleFromConstructor) 
+		
 		if ConditionActive_MinAngleFromConstructor != 0 and ConditionActive_MaxAngleFromConstructor != 0 then 
 			local Ang = tableOptional and tableOptional.TraceResult and tableOptional.TraceResult.HitNormal:GetNormalized():Angle() or self:WorldToLocalAngles((tableOptional.Constructor:GetPos() - self:GetPos()):GetNormalized():Angle()) 
-			if ConditionActive_MinAngleFromConstructor < Ang.y or ConditionActive_MaxAngleFromConstructor > Ang.y then 
+			
+			-- 1. Normalize Ang.y so it matches the -180 to 180 scale
+			local targetYaw = math.NormalizeAngle(Ang.y)
+			
+			-- 2. Correctly check if the angle is within the min/max arc (handling wrap-around)
+			local isInside = false
+			if ConditionActive_MinAngleFromConstructor <= ConditionActive_MaxAngleFromConstructor then
+				-- Standard range (e.g., -90 to 90)
+				isInside = (targetYaw >= ConditionActive_MinAngleFromConstructor and targetYaw <= ConditionActive_MaxAngleFromConstructor)
+			else
+				-- Wrapped range (e.g., 90 to -90)
+				isInside = (targetYaw >= ConditionActive_MinAngleFromConstructor or targetYaw <= ConditionActive_MaxAngleFromConstructor)
+			end
+
+			-- Reject if the angle is NOT inside the allowed arc
+			if not isInside then 
+				print("rejecting due to angle mins maxs", strEffect) 
 				return false 
 			end 
 		end 
-	end 
+	end
 
 	-- other generic checks could go here...
 
@@ -5923,6 +5949,9 @@ StellarBlade.AddMoveStep = function(self,strEffect)
 				end 
 				moveStep:Remove() 
 			else 
+				if CharacterMoveTable.bStopWhenBlockingFall then 
+					if ply:IsOnGround() then moveStep:Remove() end 
+				end 
 				-- check for movestep validity 
 			end 
 		end 
