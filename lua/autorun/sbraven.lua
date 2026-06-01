@@ -6331,25 +6331,10 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
                 upMove = CharacterMoveTable.UpValueWhenNoTarget or upMove
             end
         end
-		
-		if PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
-            if IsValid(enemy) then
-                anchorPos = enemy:GetPos()
-            else
-                -- fallback to "when no enemy" values
-                forwardMove = CharacterMoveTable.ForwardValueWhenNoTarget or forwardMove
-                rightMove = CharacterMoveTable.RightValueWhenNoTarget or rightMove
-                upMove = CharacterMoveTable.UpValueWhenNoTarget or upMove
-            end
-        end
 
         -- Ensure we have an initial position cache when behavior requires it:
         -- For STATIC + TARGET we cache the actor's initial position so interpolation goes from that initial -> desired.
         if PositionType == "ESBMovePositionType::MovePositionType_Target" then
-            moveStep.InitialPos = moveStep.InitialPos or self:GetPos()
-        end
-		
-		if PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
             moveStep.InitialPos = moveStep.InitialPos or self:GetPos()
         end
 
@@ -6390,22 +6375,6 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
                 -- non-target (self anchored): preserve previous incremental behaviour
                 movePosDelta = absNow - absPrev
             end
-			
-			if PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
-                -- STATIC: interpolate from cached initial pos → desired (InitialPos is fixed)
-                if moveStep.InitialPos then
-                    -- desired displacement from initial: desiredAbs - InitialPos
-                    local relNow = absNow - moveStep.InitialPos
-                    local relPrev = absPrev - moveStep.InitialPos
-                    movePosDelta = relNow - relPrev
-                else
-                    -- fallback: incremental between desired absolutes
-                    movePosDelta = absNow - absPrev
-                end
-            else
-                -- non-target (self anchored): preserve previous incremental behaviour
-                movePosDelta = absNow - absPrev
-            end
 
         else
             -- No curves: simple linear values
@@ -6429,26 +6398,6 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
                 -- default (self-anchored) behaviour
                 movePosDelta = totalDisplacement * (easedNow - easedPrev)
             end
-			
-			 if PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" and anchorPos then
-                local desiredAbs = anchorPos + totalDisplacement
-                if moveStep.InitialPos then
-                    -- STATIC semantics: interpolate from InitialPos to desiredAbs using eased differences:
-                    -- incremental delta = (desiredAbs - InitialPos) * (easedNow - easedPrev)
-                    local relNow = desiredAbs - moveStep.InitialPos
-                    local relPrev = desiredAbs - moveStep.InitialPos -- same desiredAbs for non-curved case but keep form
-                    movePosDelta = relNow * ( (easedNow) ) - relPrev * ( (easedPrev) )
-                    -- simplified => relNow * (easedNow - easedPrev)
-                    movePosDelta = relNow * (easedNow - easedPrev)
-                else
-                    -- Non-cached fallback (shouldn't happen for STATIC+TARGET since we set InitialPos), but keep safety:
-                    movePosDelta = totalDisplacement * (easedNow - easedPrev)
-                end
-            else
-                -- default (self-anchored) behaviour
-                movePosDelta = totalDisplacement * (easedNow - easedPrev)
-            end
-			
         end
 
     -- LocalAxis moves
@@ -6461,7 +6410,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
         local upVec = vecMoveDirection:Cross(Vector(0,1,0))
         local totalDisplacement = vecMoveDirection * localDisplacementDelta.x + rightVec * localDisplacementDelta.y + upVec * localDisplacementDelta.z
 
-        if PositionType == "ESBMovePositionType::MovePositionType_Target" or PositionType == "ESBMovePositionType::MovePositionType_TargetSocket" then
+        if PositionType == "ESBMovePositionType::MovePositionType_Target" then
             if IsValid(enemy) then
                 local anchorPos = enemy:GetPos()
                 -- desired absolute position is anchor + totalDisplacement
