@@ -129,8 +129,8 @@ local M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default
 local M_Raven_Phase2 = SB_CharacterStanceTable[1].Rows.M_Raven_Phase2  
 table.Merge(ENT,M_Raven_Phase2) 
 -- table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) 
-table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) 
-print(SysTime()) 
+table.Merge(ENT,SB_CharacterTable[1].Rows["M_Raven"]) -- overrides ENT.Type 
+-- print(SysTime()) 
 
 -- stuff related to health, shield is in CharacterTable.json 
 -- skilltable has skill information and the skill tree it starts from SkillActiveStepTable 
@@ -161,13 +161,17 @@ ENT.SBAI_bInBackgroundTask = false
 ENT.SB_EffectAlias = { } 
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
-ENT.CharacterSoundSetPath = "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
-ENT.EVE_CharacterSoundSetPath = "addons/sbraven/data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_PC_EVE.json" 
+ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json" 
+ENT.EVE_CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_PC_EVE.json" 
 SB_ImportJSON(ENT.CharacterSoundSetPath) 
 -- local M_Raven_AI = SB_ImportJSON("data_static/SB/Content/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI.json") 
 local BehaviorTreeRes = ENT.BehaviorTreeRes 
 BehaviorTreeRes = string.sub(BehaviorTreeRes,6) 
 BehaviorTreeRes = "data_static/SB/Content"..BehaviorTreeRes..".json" 
+
+-- BehaviorTreeRes = "data_static/SB/Content/GameDesign/Combat/BehaviorTree/NPC/N_TachyNPC_AI.json" 
+-- ENT.BehaviorTreeRes = BehaviorTreeRes
+
 SB_ImportJSON(BehaviorTreeRes) 
 -- print(BehaviorTreeRes)  
 -- "BehaviorTreeRes": "/Game/GameDesign/Combat/BehaviorTree/Monster/M_Raven_AI", 
@@ -234,7 +238,7 @@ end
 -- Call this in Initialize or OnEntityCreated, before trying to run the AI.
 function ENT:SBAI_IndexTree()
     -- Ensure the global raw table exists (imported via "BehaviorTreeRes = SB_ImportJSON(...)")
-	local AITable = "SB_"..string.StripExtension(string.GetFileFromFilename(BehaviorTreeRes)) 
+	local AITable = "SB_"..string.StripExtension(string.GetFileFromFilename(self.BehaviorTreeRes)) 
     local rawTable = _G[AITable] 
     if !rawTable then
         ErrorNoHalt("[SBAI] BehaviorTreeRes global table not found! Cannot index Behavior Tree.\n")
@@ -342,7 +346,7 @@ function ENT:SBAI_EvaluateEdge(childEntry)
             if self[funcName] then
                 -- Check condition
                 local success = self[funcName](self, decoNode.Properties, decoID) 
-				-- print("Decorator result is:", success) 
+				print(decoID, "Decorator result is:", success) 
 				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
                 if !success then return false end
             end
@@ -678,11 +682,6 @@ function ENT:SBAI_SelectTask(startNodeID)
     end
     
     return false
-end
-
-function ENT:NPC_GetRunActivity( act ) 
-	act = act or ACT_MP_WALK_MELEE 
-	return act 
 end 
 
 function ENT:NPC_GetWalkActivity( act ) 
@@ -763,7 +762,7 @@ function ENT:CustomRunAI()
 	elseif self:GetCurrentSchedule() == SCHED_MELEE_ATTACK1 then 
 		if self:NPC_HasCondition(COND.CAN_MELEE_ATTACK1) and self:TaskTime() > 0.25 then 
 		self:TaskComplete()
-		print("clearing schedule") 
+		print("raven clearing schedule") 
 			-- self.CurrentSchedule = nil 
 		end 
 	end 
@@ -821,8 +820,9 @@ function ENT:OnStateChange(oldState, newState)
 			if IsValid(otherWeapon) then 
 				self:SelectWeapon(otherWeapon) 
 			else 
-				self:SetSaveValue("m_hActiveWeapon", otherWeapon) 
+				self:SetSaveValue("m_hActiveWeapon", otherWeapon) -- set to NULL 
 			end 
+			ravenBlade:EmitSound("character/se/pc_foldsword_close.wav") 
 
         -- DRAW (Idle -> Alert/Combat)
         elseif oldState == NPC_STATE_IDLE and (newState >= NPC_STATE_ALERT and newState <= NPC_STATE_COMBAT) then -- there still may be an enemy 
@@ -1396,14 +1396,17 @@ function ENT:SbMoveToTarget(tbl)
 	local DistanceOfApproach = tbl.DistanceOfApproach or 250 -- i think this means walk until distancetoenemy < 250 
 	local enemyDist = self.enemyDist or 9999 
 	if enemyDist < DistanceOfApproach then 
+		self:ClearGoal(true) 
 		return true 
 	else 
 		local bBackgroundTask = tbl.bBackgroundTask 
 		local NodeName = tbl.NodeName 
 		local navSet = self:IsGoalActive() 
+		-- print(self:IsGoalActive(),self,self:GetCurWaypointPos(),self:GetActivity()) 
 		if !navSet then 
 			if IsValid(self:GetEnemy()) then 
-				navSet = self:NavSetGoalTarget(self:GetEnemy()) 
+				-- navSet = self:NavSetGoalTarget(self:GetEnemy()) 
+				navSet = self:NavSetGoalPos(self:GetPos() + (self:GetForward()*300)) 
 			else 
 				navSet = self:NavSetGoalPos(self:GetPos() + (self:GetForward()*300)) 
 			end 
@@ -1560,6 +1563,7 @@ function ENT:P_Eve_Beta_SwordAura(ent) return self:NPC_IsNPCAttacking(ent) end
 function ENT:P_Eve_Beta_SwordAura2(ent) return self:NPC_IsNPCAttacking(ent) end 
 function ENT:P_Eve_Beta_SwordAura3(ent) return self:NPC_IsNPCAttacking(ent) end 
 function ENT:M_Common_HitProjectileResult(ent) return self:NPC_IsNPCAttacking(ent) end 
+function ENT:Check_LinkSkillHit_Skill(ent) return true end 
 
 function ENT:ON_LIGHT_DAMAGE() 
 	-- get current skill step if available and see whether NextStepAliasWhenAttacked is set 
