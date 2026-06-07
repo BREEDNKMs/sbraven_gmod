@@ -325,7 +325,7 @@ function EFFECT:Think()
 				local initialDir = Vector(0, 0, 1)
 
 				p:SetVelocity(initialDir * initialSpeed) 
-				p:SetDieTime(5) 
+				p:SetDieTime(math.random(4,5)) 
 				p:SetStartAlpha(255)
 				p:SetEndAlpha(0)
 				p:SetStartSize(math.random()*10)
@@ -368,9 +368,9 @@ function EFFECT:Think()
 					local newDir = LerpVector(ft * 10, currentDir, prt.TargetDir):GetNormalized()
 					prt:SetVelocity(newDir * prt.Speed)
 					if prt:GetStartSize() >= 10 then 
-						prt.SizeIncrementType = -1 
+						prt.SizeIncrementType = -2 
 					elseif prt:GetStartSize() <= 0 then 
-						prt.SizeIncrementType = 1 
+						prt.SizeIncrementType = 2 
 					end 
 					prt:SetStartSize(prt:GetStartSize()+prt.SizeIncrementType) 
 					prt:SetEndSize(prt:GetEndSize()+prt.SizeIncrementType) 
@@ -385,10 +385,10 @@ function EFFECT:Think()
 					-- prt:SetRoll(motionAng.y * (math.pi / 180))
 					-- prt:SetColor(255*(1-Cycle),255,255) -- fade to cyan 
 
-					prt:SetNextThink(CurTime()) 
+					prt:SetNextThink(CurTime()+FrameTime()) 
 				end) 
 
-				p:SetNextThink(CurTime()) 
+				p:SetNextThink(CurTime()+FrameTime()) 
 			end
 		else 
 			local p = self.Emitter:Add("effects/spark", self:GetPos() + Rand) 

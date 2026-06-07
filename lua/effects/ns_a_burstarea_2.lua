@@ -69,7 +69,7 @@ function EFFECT:Init(data)
 	self.Scale = math.max(1, (data:GetScale() or 1))  -- user-supplied scale, default 1
 	self.Duration = (data:GetMagnitude() ~= 0) and data:GetMagnitude() or 2.65 -- emitter total duration fallback
 	if !enabled then return true end 
-	print("ns_a_burstarea_2 appeared at:",CurTime()) 
+	-- print("ns_a_burstarea_2 appeared at:",CurTime()) 
 
 	-- Beam lifetime (per beam). We pick a conservative short lifetime so beams scale and vanish.
 	self.BeamLife = math.min(1.25, self.Duration * 0.7)

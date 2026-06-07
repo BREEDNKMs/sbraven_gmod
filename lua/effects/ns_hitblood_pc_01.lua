@@ -15,7 +15,7 @@ local FX_BLOODSPRAY_ALL   = 255
 function EFFECT:Init( data )
 	local ent = data:GetEntity()
 	if !IsValid(ent) then return end
-	local bloodColor = ent.GetBloodColor and ent:GetBloodColor() or BLOOD_COLOR_RED
+	local bloodColor = ent.GetBloodColor and ent:GetBloodColor() or BLOOD_COLOR_RED 
 	if bloodColor == -1 then return end 	-- DONT_BLEED (-1) check 
 	local scale = data:GetScale()
 	if scale <= 0 then scale = 1.0 end

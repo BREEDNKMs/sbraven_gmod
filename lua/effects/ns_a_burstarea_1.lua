@@ -7,6 +7,7 @@
 local DEFAULT_LIFETIME = 2.74 
 local MIN_START_SCALE = 0.001
 local MODEL_BOUNDING_RADIUS = 54.6953125/0.42 -- in model units (hammer units)
+local MODEL_BOUNDING_RADIUS = 54.6953125/1 -- in model units (hammer units)
 local DEFAULT_RAMPUP = 0.08 -- seconds to visually reach target (practical)
 
 local ROTATION_AXIS = Vector(-0.92168778, 0.36867511, -0.12070813) -- decoded normalized axis (best-effort)
@@ -24,7 +25,7 @@ EFFECT.BurstAreaSlash_Slash = false
 function EFFECT:Init(data) 
     -- set model (model already has refract material) 
     self:SetModel("models/stellarblade/SM_C_SliceSphere_03.mdl") 
-	print("ns_a_burstarea_1 appeared at:",CurTime()) 
+	-- print("ns_a_burstarea_1 appeared at:",CurTime()) 
 
     -- position & orientation 
     -- self:SetPos(data:GetOrigin()) 
@@ -63,7 +64,7 @@ function EFFECT:Init(data)
     self:SetColor(self.Color)
 
     -- rotation: use decoded rotation axis + small spin seeded from the effect's entity index (try to be deterministic-ish)
-    local seed = math.max(1, math.floor((data:GetEntity() and IsValid(data:GetEntity()) and data:GetEntity():EntIndex()) or CurTime() * 1000) )
+    local seed = math.max(1, math.floor((data:GetEntity() and IsValid(data:GetEntity()) and data:GetEntity():EntIndex()) or CurTime() * 1000))
     -- util.SharedRandom is deterministic by-key; include seed for variation
     local spinBase = util.SharedRandom("burst_spin_base", 0, 360, true) + (seed % 360)
     self.SpinRate = util.SharedRandom("burst_spin_rate", 20, 90, true) -- degrees per second
