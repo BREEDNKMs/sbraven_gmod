@@ -598,6 +598,11 @@ function StellarBlade.ActorState:Remove(effectOrName)
 				self.Outer:SetSaveValue("m_takedamage",2) 
 			elseif self.Name == "ESBActorState::ActorState_NoDamage" then 
 				self.Outer:SetSaveValue("m_takedamage",2) 
+			elseif self.Name == "ESBActorState::ActorState_Down" then 
+				print(tostring(self).." is undown") 
+				for i = 0, self.Outer:GetBoneCount() do 
+					self.Outer:ManipulateBoneJiggle(i,0) 
+				end 
 			end 
 		
 		end) 
@@ -1029,7 +1034,7 @@ function StellarBlade.SB_EffectAlias:Think()
 	end 
 	
 	if !self.bPlayOnDead then 
-		if !self.Outer:Alive() then self:Remove() end 
+		if !self.Outer:Alive() then self:Remove() return end 
 	end 
 	
 	if self.bStopOnRevival then 
@@ -1037,9 +1042,59 @@ function StellarBlade.SB_EffectAlias:Think()
 			self.OuterDead = true 
 		elseif self.OuterDead then -- outerdead was set and outer is alive 
 			self:Remove() 
+			return 
 		end 
 	end 
-end 
+	
+-- Evaluate ending conditions (ConditionEnd1 to ConditionEnd5)
+    for i = 1, 5 do 
+        local condition_field = self["ConditionEnd" .. i] 
+        if condition_field and condition_field != "" then 
+            local parsed_condition_field = StellarBlade.ParseTableStrings(condition_field) 
+            
+            -- Process each condition block group
+            for _, condition_block in pairs(parsed_condition_field) do 
+                local condition_passed = true
+                local chain_effect = nil
+
+                -- Evaluate all keys inside this specific condition JSON block
+                for k2, v2 in pairs(condition_block) do 
+                    local upperkey = string.upper(k2) 
+                    
+                    if upperkey == "CHAINEFFECTALIAS" then
+                        chain_effect = v2
+                    elseif upperkey == "ISGROUND" then
+                        if !self.Outer:IsOnGround() then condition_passed = false break end
+                    elseif upperkey == "ISSWIMMING" then
+                        if self.Outer:WaterLevel() <= 1 then condition_passed = false break end
+                    elseif upperkey == "ISJUMP" then
+                        local is_jumping = self.Outer.GetNavType and self.Outer:GetNavType() == NAV_JUMP
+                        if !is_jumping then condition_passed = false break end
+                    elseif upperkey == "ISSPRINT" then
+                        local is_sprinting = self.Outer.IsSprinting and self.Outer:IsSprinting()
+                        if !is_sprinting then condition_passed = false break end
+                    elseif upperkey == "CHECKDELAYTIME" then 
+                        if CurTime() - self.Time < tonumber(v2) then condition_passed = false break end
+                    else
+                        -- If a condition isn't supported yet (e.g. IsSlopeMoving), 
+                        -- we fail it so it doesn't accidentally trigger an early removal.
+                        condition_passed = false
+                        break
+                    end 
+                end 
+
+                -- If all conditions in this block were successfully met, execute end sequence
+                if condition_passed then
+                    self:Remove()
+                    if chain_effect and chain_effect != "" then
+                        StellarBlade.AddEffect(self.Outer, chain_effect)
+                    end
+                    return -- Exit Think entirely since this effect is dead
+                end
+            end 
+        end 
+    end 
+end
 
 function StellarBlade.SB_EffectAlias:EntityTakeDamage(target,dmginfo)	
 	if target != self.Outer then return end 
@@ -1165,13 +1220,11 @@ end
 
 -- Minimal parser: returns a plain array table 
 -- Input is a string like "[{\"Alias\":\"HitStun\", \"Time\":1.5}, {\"Alias\":\"KnockDownForward_Eve\"}, {\"Alias\":\"KnockDownBackward_Eve\"}]" 
--- Output is: { 
--- [1] = { ["Alias"] = "HitStun", ["Time"] = 1.5 } 
--- [2] = { ["Alias"] = "KnockDownForward_Eve" } 
--- [3] = { ["Alias"] = "KnockDownBackward_Eve" } } 
+-- Or a single object like "{\"IsGround\":2, \"ChainEffectAlias\":\"KnockDownBackwardTumblingReady_Eve\"}"
+-- Output is always an array table
 StellarBlade.ParseTableStrings = function(t) 
-	if !t then error("no input to ParseTableStrings") end 
-
+    if !t then error("no input to ParseTableStrings") end 
+    
     local t2 = t
 
     if type(t) == "string" then
@@ -1179,8 +1232,8 @@ StellarBlade.ParseTableStrings = function(t)
         if type(t2) != "table" then return t end
     end
 
-    -- If passed a single effect object (table with Alias) convert to array
-    if type(t2) == "table" and t2.Alias != nil and t2[1] == nil then
+    -- CHANGE: If it's a non-empty dictionary/object (index 1 is nil, but keys exist), wrap it in an array
+    if type(t2) == "table" and t2[1] == nil and next(t2) != nil then
         t2 = { t2 }
     end
 
@@ -1232,7 +1285,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	end 
 	
 	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then print("rejected effect:",strEffect) return false end 
-	-- print("adding effect:",strEffect) 
+	print("adding effect:",strEffect) 
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
@@ -1524,7 +1577,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 	local CHECK_FALSE = "ESBConditionCheckType::ConditionCheckType_False"
 	local CHECK_NONE  = "ESBConditionCheckType::ConditionCheckType_None"
 
-	-- map condition-field -> evaluator(function returns boolean)
+	-- map condition field -> evaluator(function returns boolean)
 	local conditionEvaluators = {
 		ConditionActive_Swimming = function()
 			return (self:WaterLevel() or 0) > 0
@@ -1688,7 +1741,7 @@ ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_Physic
 			AttackPower = 100 
 		end 
 	end 
-	if ent.SBAI_SkillTable then AttackPower = AttackPower + ent.SBAI_SkillTable.AttackDamageRate end 
+	if ent.SBAI_SkillTable then AttackPower = AttackPower * ent.SBAI_SkillTable.AttackDamageRate end 
 	return StatValue + (CalculationValue * AttackPower) 
 end 
 
@@ -1730,7 +1783,7 @@ ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_Effect
 			AttackPower = 100 
 		end 
 	end 
-	if ent.SBAI_SkillTable then AttackPower = AttackPower + ent.SBAI_SkillTable.AttackDamageRate end 
+	if ent.SBAI_SkillTable then AttackPower = AttackPower * ent.SBAI_SkillTable.AttackDamageRate end 
 	return StatValue + (CalculationValue * AttackPower) 
 end 
 
@@ -2428,13 +2481,16 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		-- ActorState_Down                          = 6,
 		elseif ActorState.Name == "ESBActorState::ActorState_Down" then 
 			print(tostring(self).." is down") 
+			for i = 0, self:GetBoneCount() do 
+				self:ManipulateBoneJiggle(i,1) 
+			end 
 		-- ActorState_Groggy                        = 7,
 		elseif ActorState.Name == "ESBActorState::ActorState_Groggy" then 
 		-- ActorState_Airborne                      = 8,
 		elseif ActorState.Name == "ESBActorState::ActorState_Airborne" then 
 			self:RemoveFlags(FL_ONGROUND) 
 		-- ActorState_KnockBack                     = 9,
-		elseif ActorState.Name == "ESBActorState::ActorState_KnockBack" then -- play ACT_BIG_FLINCH 
+		elseif ActorState.Name == "ESBActorState::ActorState_KnockBack" then -- unused 
 		-- ActorState_BlockFalling                  = 10,
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockFalling" then 
 		-- ActorState_BlockShieldRegen              = 11,
@@ -2464,7 +2520,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 			else 
 				if self:IsNPC() then 
 					if StellarBlade.IsRaven(self) then -- npc_sb_raven or baseclasses 
-					
+						-- NPC_ShouldConductBehaviorTree already checks for ActorState_BlockingBehavior 
 					else 
 						self:SetSaveValue("m_flNextDecisionTime",10) 
 					end 
@@ -3116,7 +3172,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			-- ==========================================
 			-- 4. LEGACY HL2 NPC FLINCH/REACTION SUPPORT
 			-- ==========================================
-			if bCheckHitLevel then -- heuristic to distinguish "flinches" from active "attacks"
+			if bCheckHitLevel and SERVER then -- heuristic to distinguish "flinches" from active "attacks"
 				if self.SetCondition then 
 					self:SetCondition(COND.HEAR_DANGER) 
 				end 
@@ -3167,7 +3223,6 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					local Target = cachedState.Target
 
 					if IsValid(Target) then 
-						print("SoundScript.SoundPath:",SoundScript.SoundPath) 
 						Target:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume, Channel)
 					end 
 					-- print("EMITTING SOUND") 
@@ -3199,6 +3254,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 					end 
 					local key = props.CharacterReactKey or props.CharacterVoiceKey or props.CharacterHitKey 
 					if key then 
+						-- print("in ",key) 
 						local lookup = StellarBlade.LookupCharacterSound(self,key) 
 						CuePath = lookup and lookup.ObjectPath 
 					else 
@@ -3236,11 +3292,12 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 							-- Note: We leave TriggeredKeys as a TABLE. 
 							-- The main loop check `istable(...)` must allow this to continue processing next frame.
 						else 
-							print("SoundScript.SoundPath:",SoundScript.SoundPath) 
 							TargetForCharacterVoice:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume, Channel) 
 							-- print("EMITTING SOUND") 
 						end
-					end
+					else 
+						print("a sound not found for:",CuePath,self) 
+					end 
 				end 
 			end 
 		elseif data.Type == "SBShowActorAnimKey" then -- used for Eve in Menu mode, for her facial expressions 
@@ -3563,7 +3620,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				ef:SetScale(ParticleScale) -- scale 
 				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
 				util.Effect(AssetName,ef) 
-				-- Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " "..SBAI_ActiveShow.Elapsed.." "..tostring(CurTime()).. " "..tostring(relAng).." "..tostring(ef:GetMagnitude())) 
+				Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " "..SBAI_ActiveShow.Elapsed.." "..tostring(CurTime()).. " "..tostring(relAng).." "..tostring(ef:GetMagnitude())) 
 				-- debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
@@ -4253,6 +4310,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				local HitLevel_enemy = StellarBlade.ActorStats(v)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
 				local HitLevel_self = StellarBlade.ActorStats(self)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
 				local HitLevel = HitLevel_self >= HitLevel_enemy 
+				print("HitLevel:",HitLevel,HitLevel_self) 
 				if bDamageBlocked then 
 					print("blocked damage:",v) 
 					bParry = true 
@@ -5418,6 +5476,7 @@ end
 StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLevel, bCritical, tableOptional) 
 	-- HitLevel = false 	
 	local SkillResult = SB_SkillResultTable[1].Rows[SkillResultAlias] 
+	-- print("bCritical:",bCritical) 
 	
 	-- 1. Additive: Critical
 	if bCritical then 
@@ -5786,7 +5845,7 @@ StellarBlade.LookupCharacterSound = function(self, key, specifickeys)
     local CharacterSoundSet = string.GetFileFromFilename(string.StripExtension(self.CharacterSoundSetPath or "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json")) 
     CharacterSoundSet = _G["SB_"..CharacterSoundSet] -- the CharacterSoundSet imported from JSON is now a Lua table 
     
-    if !CharacterSoundSet or !CharacterSoundSet[1].Properties then return nil end
+    -- if !CharacterSoundSet or !CharacterSoundSet[1].Properties then return nil end
 
     -- Determine which categories to search based on the specifickeys boolean
     local categories = {}
