@@ -600,9 +600,9 @@ function StellarBlade.ActorState:Remove(effectOrName)
 				self.Outer:SetSaveValue("m_takedamage",2) 
 			elseif self.Name == "ESBActorState::ActorState_Down" then 
 				print(tostring(self).." is undown") 
-				for i = 0, self.Outer:GetBoneCount() do 
-					self.Outer:ManipulateBoneJiggle(i,0) 
-				end 
+				-- for i = 0, self.Outer:GetBoneCount() do 
+					-- self.Outer:ManipulateBoneJiggle(i,0) 
+				-- end 
 			end 
 		
 		end) 
@@ -870,6 +870,7 @@ end
 
 function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDamageTaken) 
 	if !self.Data.bIgnoreHitStop then 
+		-- print("wasDamageTaken:",wasDamageTaken) 
 		if target == self.Outer and wasDamageTaken and self:ShouldHitStop(target,dmginfo,wasDamageTaken) then 
 			-- print("bIgnoreHitStop:",self.Data.bIgnoreHitStop) 
 			self:Remove() 
@@ -883,16 +884,170 @@ function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDa
 				end 
 			end 
 			if target.SBAI_MoveTable then target.SBAI_MoveTable:Remove() end 
-			local tableOptional = { } 
-			tableOptional.DamageInfo = SaveDamageInfo(dmginfo)  
-			tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL  
-			tableOptional.Target = target 
-			StellarBlade.CompleteTableOptional(target,tableOptional) 
-			StellarBlade.AddEffect(target,"Item_C_GrenadeAreaKnockBack",tableOptional) -- has movealias Item_C_GrenadeAreaKnockBack M_Common_KnockBackWeak
-			target:EmitSound("M_Raven_vo_Dmg_S_Cue") 
-		end 
-	end 
-end 
+			-- Dynamic Effect Selection Logic
+            local ef = "HitImpactLight" -- Default fallback effect
+            local LifeTime = "LifeTime" -- will be overridden or not depending on effect 
+            local DeactiveShowPath = "DeactiveShowPath" -- will be overridden or not depending on effect 
+            local MoveAlias = "MoveAlias" -- will be overridden or not depending on effect 
+            local Hit_Back = "Hit_Back_050_100" -- Default fallback
+            local dmgAmt = dmginfo:GetDamage()
+
+            if IsValid(target) and not target:IsOnGround() and not dmginfo:IsDamageType(DMG_FALL) then
+                -- Character is hit while in the air (ignoring standard fall damage checks here)
+                local dmgForce = dmginfo:GetDamageForce()
+                
+                if dmgForce:LengthSqr() > 0 then
+                    local dmgDir = dmgForce:GetNormalized()
+                    local targetForward = target:GetForward()
+                    
+                    -- Dot product: < 0 means the force is pushing against the target's front
+                    if targetForward:Dot(dmgDir) < 0 then
+                        ef = "HitAirForward_Eve" -- Hit from the front, fly backward
+                    else
+                        ef = "HitAirBackward_Eve"  -- Hit from behind, fly forward
+                    end
+                else
+                    -- Fallback if damage force is zero vector
+                    ef = "HitAirForward_Eve"
+                end
+
+            -- Ground / Specific Damage Type matching
+            elseif dmginfo:IsDamageType(DMG_FALL) then
+                ef = math.random() > 0.5 and "HitAirForwardFall_Eve" or "HitAirBackwardFall_Eve"
+
+            elseif dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_BUCKSHOT) or dmginfo:IsDamageType(DMG_SNIPER) then
+                ef = "HitImpactProjectile"
+
+            elseif dmginfo:IsDamageType(DMG_SLASH) then
+                ef = (dmgAmt > 25) and "HitImpactSlash_Strong" or "HitImpactSlash_Light"
+				
+			elseif dmginfo:IsDamageType(DMG_VEHICLE) then
+                ef = "HitImpactHeavy" 
+
+            elseif dmginfo:IsDamageType(DMG_CLUB) or dmginfo:IsDamageType(DMG_CRUSH) then
+                ef = (dmgAmt > 25) and "HitImpactBlunt_Strong" or "HitImpactBlunt_Light"
+
+            elseif dmginfo:IsDamageType(DMG_BLAST) or dmginfo:IsDamageType(DMG_BLAST_SURFACE) then
+                ef = "HitImpactTiny_Explosion"
+
+            elseif dmginfo:IsDamageType(DMG_POISON) or dmginfo:IsDamageType(DMG_NERVEGAS) or dmginfo:IsDamageType(DMG_ACID) or dmginfo:IsDamageType(DMG_PARALYZE) then
+                ef = "HitImpactTiny_Poison"
+
+            else
+                -- Generic, Burn, Shock, Energy, etc. scaled by intensity
+                ef = (dmgAmt > 25) and "HitImpactStrong" or "HitImpactLight"
+            end 
+            
+            if string.find(ef,"HitAir") then 
+                LifeTime = "null" -- prevent override of original effect attribute 
+                DeactiveShowPath = "null"  -- prevent override of original effect attribute 
+                MoveAlias = "null"  -- prevent override of original effect attribute 
+            end 
+
+            -- Dynamic Hit_Back Override Calculation
+            if dmgAmt <= 0 then
+                Hit_Back = "Hit_Back_0"
+            else
+                local bits = dmginfo:GetDamageType()
+                local isPowerOfTwo = (bits > 0) and (bit.band(bits, bits - 1) == 0)
+                
+                -- 1. Determine Duration Tier based on Bit Complexity
+                local duration_tier = "010"
+                
+                -- Calculate highest active bit index (0 to 31)
+                local bit_pos = 0
+                local temp_bits = bits
+                while temp_bits > 1 do
+                    temp_bits = bit.rshift(temp_bits, 1)
+                    bit_pos = bit_pos + 1
+                end
+
+                if isPowerOfTwo then
+                    -- Pure power of two: assign to lower duration thresholds (0.10s to 0.45s)
+                    if bit_pos <= 4 then         -- Up to DMG_VEHICLE (16)
+                        duration_tier = "010"
+                    elseif bit_pos <= 8 then     -- Up to DMG_SHOCK (256)
+                        duration_tier = "020"
+                    elseif bit_pos <= 14 then    -- Up to DMG_PARALYZE (32768)
+                        duration_tier = "030"
+                    elseif bit_pos <= 22 then    -- Up to DMG_PHYSGUN (8388608)
+                        duration_tier = "040"
+                    else                         -- Up to DMG_MISSILEDEFENSE (2147483648)
+                        duration_tier = "045"
+                    end
+                else
+                    -- Compound bit flags: assign to high duration thresholds (0.50s to 0.90s)
+                    if bit_pos <= 8 then
+                        duration_tier = "050"
+                    elseif bit_pos <= 15 then
+                        duration_tier = "060"
+                    elseif bit_pos <= 22 then
+                        duration_tier = "070"
+                    elseif bit_pos <= 28 then
+                        duration_tier = "080"
+                    else
+                        duration_tier = "090"
+                    end
+                end
+
+                -- 2. Determine Ideal Distance based on Damage Value
+                local target_dist = 100
+                if dmgAmt <= 8 then        target_dist = 50
+                elseif dmgAmt <= 20 then   target_dist = 100
+                elseif dmgAmt <= 40 then   target_dist = 150
+                elseif dmgAmt <= 65 then   target_dist = 200
+                elseif dmgAmt <= 90 then   target_dist = 250
+                elseif dmgAmt <= 120 then  target_dist = 300
+                elseif dmgAmt <= 160 then  target_dist = 350
+                elseif dmgAmt <= 220 then  target_dist = 400
+                else                       target_dist = 800
+                end
+
+                -- 3. Match to the nearest valid distance available within that specific Duration Tier
+                local valid_distances = {
+                    ["010"] = {100, 150, 200, 300},
+                    ["020"] = {50, 150},
+                    ["030"] = {50, 100, 150, 200, 300},
+                    ["040"] = {100, 200, 400},
+                    ["045"] = {50, 100, 150},
+                    ["050"] = {100, 200, 250, 300},
+                    ["060"] = {50, 100, 150, 200, 250, 300},
+                    ["070"] = {300, 400},
+                    ["080"] = {300, 400},
+                    ["090"] = {250, 300, 350, 400, 800}
+                }
+
+                local pool = valid_distances[duration_tier]
+                local chosen_dist = pool[1]
+                local min_diff = math.abs(target_dist - chosen_dist)
+
+                for i = 2, #pool do
+                    local diff = math.abs(target_dist - pool[i])
+                    if diff < min_diff then
+                        min_diff = diff
+                        chosen_dist = pool[i]
+                    end
+                end
+
+                -- Format distance string matching your layout requirements (e.g., "050" instead of "50")
+                local dist_str = (chosen_dist < 100) and ("0" .. chosen_dist) or tostring(chosen_dist)
+                Hit_Back = "Hit_Back_" .. duration_tier .. "_" .. dist_str
+            end
+
+            local tableOptional = { } 
+            tableOptional.DamageInfo = SaveDamageInfo(dmginfo)  
+            tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL  
+            tableOptional.Target = target 
+            StellarBlade.CompleteTableOptional(target,tableOptional) 
+            
+            print("ef is:", ef, " | Hit_Back calculated:", Hit_Back) 
+            
+            StellarBlade.AddEffect(target,ef,tableOptional,"StartDelayTime",FrameTime(),DeactiveShowPath,"Hit/Result_Hit_Stand_LightAttack",LifeTime,0,MoveAlias,Hit_Back) 
+            -- StellarBlade.StartSkillTargetResult(target,"Result_Hit_Stand_LightAttack") 
+            -- target:EmitSound("M_Raven_vo_Dmg_S_Cue") 
+        end 
+    end 
+end
 
 function StellarBlade.SBAI_SkillTable:IsValid() 
 	if !IsValid(self.Outer) then return false end 
@@ -1046,7 +1201,7 @@ function StellarBlade.SB_EffectAlias:Think()
 		end 
 	end 
 	
--- Evaluate ending conditions (ConditionEnd1 to ConditionEnd5)
+	-- Evaluate ending conditions (ConditionEnd1 to ConditionEnd5)
     for i = 1, 5 do 
         local condition_field = self["ConditionEnd" .. i] 
         if condition_field and condition_field != "" then 
@@ -1632,7 +1787,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
     for _, f in ipairs(actorActiveFields) do
         local stateKey = EffectTable[f]
         if stateKey and stateKey != "ESBActorState::ActorState_None" then
-            local val = self[key] 
+            local val = self[stateKey] 
             if val == nil then
                 -- required active state is not present on self -> cannot add effect
                 return false
@@ -1644,7 +1799,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
     for _, f in ipairs(actorDeactiveFields) do
         local stateKey = EffectTable[f]
         if stateKey and stateKey != "ESBActorState::ActorState_None" then
-            local val = self[key] 
+            local val = self[stateKey] 
             if val != nil then
                 -- required deactive state is present on self -> cannot add effect
                 return false
@@ -1718,7 +1873,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 
 			-- Reject if the angle is NOT inside the allowed arc
 			if not isInside then 
-				print("rejecting due to angle mins maxs", strEffect) 
+				-- print("rejecting due to angle mins maxs", strEffect) 
 				return false 
 			end 
 		end 
@@ -2348,6 +2503,9 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 	hook.Remove("Think",EffectTable) 
 	hook.Remove("EntityTakeDamage",EffectTable) 
 	hook.Remove("PostEntityTakeDamage",EffectTable) 
+	
+	local DeactiveShowPath = EffectTable.DeactiveShowPath 
+	StellarBlade.SetShow(self,DeactiveShowPath) 
 end 
 
 -- Updated AddEffectFromTable to accept the plain array table produced by ParseTableStrings
@@ -2481,9 +2639,9 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		-- ActorState_Down                          = 6,
 		elseif ActorState.Name == "ESBActorState::ActorState_Down" then 
 			print(tostring(self).." is down") 
-			for i = 0, self:GetBoneCount() do 
-				self:ManipulateBoneJiggle(i,1) 
-			end 
+			-- for i = 0, self:GetBoneCount() do 
+				-- self:ManipulateBoneJiggle(i,1) 
+			-- end 
 		-- ActorState_Groggy                        = 7,
 		elseif ActorState.Name == "ESBActorState::ActorState_Groggy" then 
 		-- ActorState_Airborne                      = 8,
@@ -2953,19 +3111,23 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 	
 	local function HandleShowKeyEnd(data)
 		local props = data.Properties or {}
-
+		-- print("HandleShowKeyEnd",data.Type) 
 		if data.Type == "SBShowActorKey" then
 			local bUseActorHidden = props.bUseActorHidden 
 			if isstring(bUseActorHidden) then 
 				bUseActorHidden = tobool(bUseActorHidden) 
-			-- revert the actor to the opposite render state
+				-- revert the actor to the opposite render state
 				-- print("hidden end is:",bUseActorHidden) 
 				ApplyRenderState(self, !bUseActorHidden) 
 			end 
 
 		-- add additional end-behaviours here as required, e.g. for particle detach / stop,
 		-- animbp resets, etc. For now we keep it minimal since most cases are type-specific.
-		end
+		elseif data.Type == "SBShowRagdollKey" then 
+			for i = 0, self:GetBoneCount() do 
+				self:ManipulateBoneJiggle(i,0) 
+			end 
+		end 
 	end
 
 	-- Iterate all entries (SBShowAnimKey, SBShowActorKey, SBShowSoundKey, etc.)
@@ -3154,9 +3316,10 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 							Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD, 0, 0, true) 
 						end 
 						BroadcastLua("if IsValid(Entity("..Target:EntIndex()..")) then Entity("..Target:EntIndex().."):AddVCDSequenceToGestureSlot("..GESTURE_SLOT..","..Target:LookupSequence(AnimResourcePath)..",0,true) end") 
+						print("AnimResourcePath",AnimResourcePath,SBAI_ActiveShow.Name) 
 					else 
 						local animSequence = Target:LookupSequence(AnimResourcePath) 
-						print("AnimResourcePath",AnimResourcePath) 
+						print("AnimResourcePath",AnimResourcePath,SBAI_ActiveShow.Name) 
 						if !animSequence then break end 
 						if animSequence != ACT_INVALID then 
 							if scripted_ents.Get("cycler_actor2").NPC_IsSequenceLayered(Target,animSequence) then 
@@ -3718,7 +3881,10 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			end
 
 		elseif data.Type == "SBShowRagdollKey" then -- has ability to fade between ragdoll status and become normal again. right now just become ragdoll. 
-			self:BecomeRagdoll() -- fades at Properties.Duration 
+			-- self:BecomeRagdoll() -- fades at Properties.Duration 
+			for i = 0, self:GetBoneCount() do 
+				self:ManipulateBoneJiggle(i,1) 
+			end 
 		elseif data.Type == "SBShowRuleMoveKey" then -- already handled in OverrideMode 
 		elseif data.Type == "SBShowSetAIDecoratorKey" then -- Eve only 
 		elseif data.Type == "SBShowSkillResultKey" then 
@@ -6794,6 +6960,8 @@ StellarBlade.MaintainMoveTable = function(self)
 end 
 
 StellarBlade.BuildSoundScript = function(self,parsedjson) 
+	-- print("in BuildSoundScript",parsedjson) 
+	local pathName = parsedjson 
 	if !istable(parsedjson) then
 		parsedjson = SB_ImportJSON(parsedjson)
 	end
@@ -6889,6 +7057,14 @@ StellarBlade.BuildSoundScript = function(self,parsedjson)
 	local cue
 	for _, node in ipairs(parsedjson) do
 		if node.Type == "SoundCue" then cue = node; break end
+		if node.Type == "SoundWave" then 
+			print("BuildSoundScript directly hit wave instead of SoundCue") 
+			-- local wave = "data_static/SB/Content/Sound/MON/SkullJuggernaut/M_SkullJuggernaut_HammerImpact.json"
+			local wave = string.Replace(pathName,"data_static/SB/Content/Sound/","") 
+			wave = string.Replace(wave,"json","wav") 
+			SoundScript.SoundPath = wave 
+			return SoundScript 
+		end 
 	end
 	if not cue or not cue.Properties or not cue.Properties.FirstNode then
 		return SoundScript
