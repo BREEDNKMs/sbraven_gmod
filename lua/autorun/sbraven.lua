@@ -1,10 +1,10 @@
 -- BUG: function type values are not saverestored 
 -- ===== Add these client receivers near the top of the file (or anywhere in shared scope) ===== 
 
-if CLIENT then
+if CLIENT then 
     StellarBlade = StellarBlade or {} 
 	StellarBlade.NetworkBranchBlocked = false 
-    StellarBlade.NetworkedEffects = StellarBlade.NetworkedEffects or {}
+    StellarBlade.NetworkedEffects = StellarBlade.NetworkedEffects or {} 
 
     net.Receive("SB_AddEffect", function(len)
         local ent = net.ReadEntity()
@@ -367,7 +367,7 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
                     if attacker.SetCondition then 
                         attacker:SetCondition(COND.HEAR_DANGER) 
                     end 
-                    local wep = attacker:GetActiveWeapon() 
+                    local wep = attacker.GetActiveWeapon and attacker:GetActiveWeapon() 
                     
                     if IsValid(wep) and attacker:IsNPC() then wep:SetClip1(0) end 
                     
@@ -812,6 +812,24 @@ function StellarBlade.SBAI_ActiveShow:Initialize()
 	hook.Add("Tick",self,self.Tick) 
 end 
 
+function StellarBlade.SBAI_SkillStep:Initialize() 
+	setmetatable(self,{ __index = function(self,key) 
+		if key == "Cycle" then 
+			return math.Clamp((CurTime() - self.Time) / self.Data.Duration, 0, 1) 
+		end 
+	end } ) 
+	
+	for k,v in pairs(StellarBlade.SBAI_SkillStep) do -- copy skill step table to npc table for faster lookups 
+		self[k] = v 
+	end 
+	
+	hook.Add( "Think", self, function() 
+		-- print(self, self.Outer) -- NPC [120][npc_sb_raven]	nil 
+		StellarBlade.ProcessActiveSkill(self.Outer,self) 
+	end ) 
+	hook.Add("PostEntityTakeDamage",self,self.PostEntityTakeDamage) 
+end 
+
 function StellarBlade.SBAI_SkillStep:IsActive() 
 	-- print("is active",self.Data.PostStep) 
 	-- print("is active",self.Data.PostStepDelay) 
@@ -859,11 +877,14 @@ end
 function StellarBlade.SBAI_SkillStep:ShouldHitStop(target, dmginfo, wasDamageTaken) 
 	if self.Data.PostStep then return true end 
 	if self.Data.CanCutoff then return true end 
-	if dmginfo:IsDamageType(DMG_BLAST) then return true end 
 	if dmginfo:IsDamageType(DMG_SNIPER) then return true end 
-	if dmginfo:IsDamageType(DMG_PHYSGUN) then return true end 
-	if dmginfo:IsDamageType(DMG_CRUSH + DMG_VEHICLE + DMG_CLUB + DMG_ALWAYSGIB) then 
-		if dmginfo:GetDamage() > target:GetMaxHealth() * 0.5 then return true end 
+	-- if dmginfo:IsDamageType(DMG_AIRBOAT) then return true end 
+	if self.Data.Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then 
+		-- if dmginfo:IsDamageType(DMG_BLAST) then return true end 
+		if dmginfo:IsDamageType(DMG_PHYSGUN) then return true end 
+		if dmginfo:IsDamageType(DMG_CRUSH + DMG_VEHICLE + DMG_CLUB + DMG_ALWAYSGIB + DMG_BLAST) then 
+			if dmginfo:GetDamage() > target:GetMaxHealth() * 0.5 then return true end 
+		end 
 	end 
 	return false 
 end 
@@ -1127,7 +1148,7 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
 		if !self.Outer.SBAI_SkillStep or self.Outer.SBAI_SkillStep and !self.Outer.SBAI_SkillStep:IsActive() then 
 			return false 
-		end
+		end 
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
 		if CurTime() > self.EndTime then 
 			return false 
@@ -1163,7 +1184,7 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 end 
 
 function StellarBlade.SB_EffectAlias:IsValid() -- this is called by the engine every time any hook gets called 
--- if IsValid returns false, the hooks referenced as this table will be destructed 
+	-- if IsValid returns false, the hooks referenced as this table will be destructed 
 	if !IsValid(self.Outer) then return false end 
 	if self.IsMarkedForDeletion then return false end 
 	if !self:IsLifeTypeValid() then 
@@ -1175,7 +1196,7 @@ end
 
 function StellarBlade.SB_EffectAlias:Think() 
 	-- print(self.Outer,strEffect,self.Cycle) -- all of these are valid 
-	
+	-- print(self.tableOptional) 
 	if self.LoopTargetFilterAlias != "None" then 
 		for _, target in pairs(StellarBlade.TargetFilter(self.Outer,self.LoopTargetFilterAlias,self.Cycle)) do 
 			for k,v in ipairs(self.LoopTargetEffectAliasArray) do 
@@ -1185,6 +1206,11 @@ function StellarBlade.SB_EffectAlias:Think()
 					StellarBlade.AddEffect(target,v,tableOptional) 
 				end 
 			end 
+			
+			if self.LoopTargetResultShowPath != "" then 
+				StellarBlade.SetShow(target,self.LoopTargetResultShowPath,"LoopTargetResult",self.tableOptional) 
+			end 
+			
 		end 
 	end 
 	
@@ -1358,11 +1384,13 @@ function StellarBlade.SB_EffectAlias:Initialize(tableOptional)
 		hook.Add("EntityTakeDamage",self,self.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",self,self.PostEntityTakeDamage) 
 		-- fully initialized 
+		self.IsActive = function() return true end 
 		StellarBlade.OnAddEffect(self.Outer,self,tableOptional) 
 	end 
 	if StartDelayTime == 0 or self.IsNetworkedOrigin then 
 		Activate() 
 	else 
+		self.IsActive = function() return false end 
 		hook.Add("Think",self,function() 
 			if CurTime() >= self.Time + StartDelayTime then 
 				self.EndTime = CurTime() + self.LifeTime 
@@ -1728,6 +1756,30 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 		if !self:Alive() then return false end 
 	end 
 	
+	local ConditionActive_ChancePercent = EffectTable.ConditionActive_ChancePercent 
+	if ConditionActive_ChancePercent > 0 then 
+		if ConditionActive_ChancePercent > (math.random()*100) then return false end 
+	end 
+	
+    local anyActorTypeDefined = false
+    local anyActorTypeMatched = false
+
+    for i = 1, 3 do
+        local actorTypeKey = "ConditionActive_ActorType" .. i
+        local actorType = EffectTable[actorTypeKey]
+
+        if actorType ~= nil and actorType != "ESBActorType::ActorType_None" then
+            anyActorTypeDefined = true
+            if StellarBlade.ESBActorType(self, actorType) then
+                anyActorTypeMatched = true
+            end
+        end
+    end
+
+    if anyActorTypeDefined and !anyActorTypeMatched then
+        return false
+    end
+	
 	local CHECK_TRUE  = "ESBConditionCheckType::ConditionCheckType_True"
 	local CHECK_FALSE = "ESBConditionCheckType::ConditionCheckType_False"
 	local CHECK_NONE  = "ESBConditionCheckType::ConditionCheckType_None"
@@ -1833,8 +1885,8 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
             -- Iterate over every Instance of that Effect
             for _, activeInstance in pairs(effectInstances) do
                 
-                -- Check if this active instance provides any immunities
-                if activeInstance.ImmuneEffectGroupArray then
+                -- Check if this active instance provides any immunities 
+                if activeInstance:IsActive() and activeInstance.ImmuneEffectGroupArray then
                     
                     -- Loop through the immunity list
                     for _, immuneGroup in ipairs(activeInstance.ImmuneEffectGroupArray) do
@@ -1879,7 +1931,8 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 		end 
 	end
 
-	-- other generic checks could go here...
+	-- other generic checks could go here... 
+	-- ConditionActive_ItemAlias is unnecessary, it is used only for Bullet_Nikke 
 
 	return true
 end 
@@ -2286,7 +2339,15 @@ end
 -- use this to lookup ESBActorStat fields on any entity 
 -- it will create a template ESBActorStatType table and assign to entity 
 function StellarBlade.ActorStats(self,forceReset) 
-    if !IsValid(self) then error("Tried to use NULL Entity!") end
+    if !IsValid(self) then 
+		if isentity(self) then 
+			if self == Entity(0) then 
+			else 
+				error("Tried to use NULL Entity!") 
+			end 
+		end 
+		
+	end 
     if self.ESBActorStatType and getmetatable(self.ESBActorStatType) == statProxyMT and !forceReset then
         return self.ESBActorStatType
     end
@@ -2347,7 +2408,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 
     StellarBlade.AddMoveStep(self, EffectTable.MoveAlias) 
 	local ActiveShowPath = EffectTable.ActiveShowPath 
-	StellarBlade.SetShow(self,ActiveShowPath) 
+	StellarBlade.SetShow(self,ActiveShowPath,"ActiveShow",tableOptional) 
 	
 	-- ActiveTargetEffectAliasArray, ActiveTargetResultShowPath 
 	local ActiveTargetFilterAlias = EffectTable.ActiveTargetFilterAlias 
@@ -2356,7 +2417,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 	if ActiveTargetResultShowPath != "" or !table.IsEmpty(ActiveTargetEffectAliasArray) then 
 		for k,Target in ipairs(StellarBlade.TargetFilter(self,ActiveTargetFilterAlias)) do 
 			if ActiveTargetResultShowPath != "" then 
-				StellarBlade.SetShow(Target,ActiveTargetResultShowPath) 
+				StellarBlade.SetShow(Target,ActiveTargetResultShowPath,"ActiveTargetResult",tableOptional) 
 			end 
 			
 			if !table.IsEmpty(ActiveTargetEffectAliasArray) then 
@@ -2455,7 +2516,7 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 	if DeactiveTargetResultShowPath != "" or !table.IsEmpty(DeactiveTargetResultShowPath) then 
 		for k,Target in ipairs(StellarBlade.TargetFilter(self,DeactiveTargetFilterAlias)) do 
 			if DeactiveTargetResultShowPath != "" then 
-				StellarBlade.SetShow(Target,DeactiveTargetResultShowPath) 
+				StellarBlade.SetShow(Target,DeactiveTargetResultShowPath,"DeactiveTargetResult",tableOptional) 
 			end 
 			
 			if !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
@@ -2468,13 +2529,11 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 			
 		end 
 	end 
-	
 	for k,EffectAlias in ipairs(EffectTable.ChainEffectAliasArray) do 
 		if !EffectTable.IsNetworkedOrigin then 
 			StellarBlade.AddEffect(self,EffectAlias,tableOptional) 
 		end 
 	end 
-	
 	-- cleanup ActorState (1-5) 
 	for idx = 1, 10 do 
 		local ActorState = "ActorState"..idx 
@@ -2483,7 +2542,6 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 		DelayActorState = EffectTable[DelayActorState] 
 		if self[ActorState] then
 			local st = self[ActorState]
-			-- print("calling ActorState:Remove() ", ActorState, EffectTable.Name)
 			local ok, res = pcall(function() 
 				if st.Remove then 
 					return st:Remove(EffectTable) 
@@ -2505,7 +2563,7 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 	hook.Remove("PostEntityTakeDamage",EffectTable) 
 	
 	local DeactiveShowPath = EffectTable.DeactiveShowPath 
-	StellarBlade.SetShow(self,DeactiveShowPath) 
+	StellarBlade.SetShow(self,DeactiveShowPath,"DeactiveShow",tableOptional) 
 end 
 
 -- Updated AddEffectFromTable to accept the plain array table produced by ParseTableStrings
@@ -2942,6 +3000,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 			local success = StellarBlade.SetSkillStep(target,"P_Eve_BetaCounterRaven1_Cast1") 
 			StellarBlade.PickTarget = _PickTarget 
 			StellarBlade.AddEffect(self,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
+			StellarBlade.AddEffect(target,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
 			-- return success 
 		elseif FirstSkillActiveAlias == "M_Raven_ShieldBreakerCounter_Cast1" then 
 			target = self:GetEyeTrace().Entity 
@@ -2950,6 +3009,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 			local success = StellarBlade.SetSkillStep(target,"P_Eve_ShieldBreakerCounterRaven1_Cast1") 
 			StellarBlade.PickTarget = _PickTarget 
 			StellarBlade.AddEffect(self,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
+			StellarBlade.AddEffect(target,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
 		else 
 			self.SB_PickTargetTime = 0 
 			local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
@@ -2975,6 +3035,21 @@ StellarBlade.StartSkill = function(self,SkillName)
 			target.SBAI_SkillTable = SBAI_SkillTable 
 			target.SBAI_SkillTable.Outer = target 
 			hook.Add("Tick",target.SBAI_SkillTable, target.SBAI_SkillTable.Tick) 
+			
+			-- self.SBAI_SkillStep = table.Copy(target.SBAI_SkillStep) 
+			self.SBAI_SkillStep = { } 
+			local SBAI_SkillStep = self.SBAI_SkillStep 
+			SBAI_SkillStep.Name = FirstSkillActiveAlias 
+			SBAI_SkillStep.Data = table.Copy(SB_SkillActiveStepTable[1].Rows["P_Eve_ShieldBreakerCounterRaven1_Cast1"]) 
+			-- for k,v in pairs(SB_SkillActiveStepTable[1].Rows[FirstSkillActiveAlias]) do SBAI_SkillStep.Data[k] = v end 
+			-- print(SBAI_SkillStep,SBAI_SkillStep.Data) 
+			-- PrintTable(SBAI_SkillStep) 
+			SBAI_SkillStep.Time = CurTime() 
+			SBAI_SkillStep.Duration = CurTime() + 7 
+			SBAI_SkillStep.Outer = self 
+			SBAI_SkillStep.Hit = nil 
+			SBAI_SkillStep.Data.NextStepAlias = "None" 
+			StellarBlade.SBAI_SkillStep.Initialize(SBAI_SkillStep) 
 		end 
 		
 		return true 
@@ -3037,7 +3112,7 @@ StellarBlade.IsRaven = function(self)
 	return false 
 end 
 
-StellarBlade.SetShow = function(self,showpath,slot) 
+StellarBlade.SetShow = function(self,showpath,slot,tableOptional) 
 	if !showpath then return false end 
 	if #showpath == 0 then return false end 
 	if !string.find(showpath,"data_static") then -- append correct path if setshow has been directly called 
@@ -3080,11 +3155,11 @@ StellarBlade.SetShow = function(self,showpath,slot)
 	showname = "SB_"..showname 
 	-- self:SBAI_MaintainShow() 
 	-- scripted_ents.Get("npc_sb_raven").SBAI_MaintainShow(self) 
-	StellarBlade.MaintainShow(self,SBAI_ActiveShow) 
+	StellarBlade.MaintainShow(self,SBAI_ActiveShow,tableOptional) 
 	return showname -- return true on animation play, false on not play 
 end 
 
-StellarBlade.MaintainShow = function(self,SBAI_ActiveShow) 
+StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional) 
 	local flRescale = 0.42 
 	if !SBAI_ActiveShow or SBAI_ActiveShow.Stopped then return end
 	if !SBAI_ActiveShow.Name then return end
@@ -3303,11 +3378,15 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 			end 
 
 			if AnimResourcePath then 
-				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+				-- print("cast type is:",Target) 
+				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then -- use tableOptional.Constructor 
 					Target = self 
-				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
-					Target = StellarBlade.PickTarget(self) 
+					-- Target = tableOptional and IsValid(tableOptional.Constructor) and tableOptional.Constructor or self 
+				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then -- use tableOptional.Target 
+					-- Target = StellarBlade.PickTarget(self) 
+					Target = tableOptional and IsValid(tableOptional.Target) and tableOptional.Target or StellarBlade.PickTarget(self) 
 				end 
+				-- print("actual target is:",Target) 
 				
 				if IsValid(Target) then 
 					if Target:IsPlayer() then 
@@ -3801,7 +3880,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow)
 				ObjectPath = string.sub(ObjectPath,7) 
 				ObjectPath = "data_static/SB/Content/"..ObjectPath..".json" 
 				-- print("updated object path is:",ObjectPath) 
-				StellarBlade.SetShow(self,ObjectPath) 
+				StellarBlade.SetShow(self,ObjectPath,"Show",tableOptional) 
 			end 
 		elseif data.Type == "SBShowPlayTheaterKey" then -- play scripted event 
 		elseif data.Type == "SBShowPoseSnapshotKey" then -- used only by CH_M_NA_29_Bot 
@@ -4447,7 +4526,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			if SkillStepTable.TargetShowPath != "None" then 
 				local showpath = "adata_static/SB/Content/Art/Show/" 
 				showpath = showpath..SkillStepTable.TargetShowPath..".json" 
-				StellarBlade.SetShow(v,showpath,tableOptional) 
+				StellarBlade.SetShow(v,showpath,"SkillStep",tableOptional) 
 			end 
 			
 			-- "SkillResultAlias": "M_Raven_ChaseCombo_Hit2",
@@ -5142,7 +5221,6 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 		if radius == 0 or not radius then
 			radius = TargetCheckValue1 or 0
 		end
-		print("circle radius:",radius) 
 		local radiusSqr = radius * radius
 		local tmp = {}
 
@@ -5589,7 +5667,7 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
     -- Apply ShowPath
     for _, showPathStr in ipairs(selectedActions.ShowPath) do
         if showPathStr and showPathStr != "" then
-            StellarBlade.SetShow(entity, showPathStr, tableOptional)
+            StellarBlade.SetShow(entity, showPathStr, "HitResult", tableOptional)
         end
     end
 
@@ -5614,7 +5692,7 @@ StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, b
 			local table_ResultSelfCriticalEffect = StellarBlade.ParseTableStrings(critEffect) 
 			StellarBlade.AddEffectFromTable(self, table_ResultSelfCriticalEffect, tableOptional) 
 		end 
-		StellarBlade.SetShow(self, SkillResult.ResultSelfCriticalShowPath, tableOptional) 
+		StellarBlade.SetShow(self, SkillResult.ResultSelfCriticalShowPath, "HitResult", tableOptional) 
 	end 
 
 	-- 2. Additive: Weakpoint (Always runs if true)
@@ -5651,7 +5729,7 @@ StellarBlade.StartSkillTargetResult = function(target, SkillResultAlias, HitLeve
 			local table_ResultTargetCriticalEffect = StellarBlade.ParseTableStrings(critEffect) 
 			StellarBlade.AddEffectFromTable(target, table_ResultTargetCriticalEffect, tableOptional) 
 		end 
-		StellarBlade.SetShow(target, SkillResult.ResultTargetCriticalShowPath, tableOptional) 
+		StellarBlade.SetShow(target, SkillResult.ResultTargetCriticalShowPath, "HitResult", tableOptional) 
 	end 
 	
 	-- 2. Additive: Weakpoint
@@ -5817,22 +5895,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	SBAI_SkillStep.Outer = self 
 	SBAI_SkillStep.Hit = nil 
 	-- SBAI_SkillStep.Cycle = 0 
-	setmetatable(SBAI_SkillStep,{ __index = function(self,key) 
-		if key == "Cycle" then 
-			return math.Clamp((CurTime() - self.Time) / self.Data.Duration, 0, 1) 
-		end 
-	end } ) 
-	
-	for k,v in pairs(StellarBlade.SBAI_SkillStep) do -- copy skill step table to npc table for faster lookups 
-		SBAI_SkillStep[k] = v 
-	end 
-	
-	hook.Add( "Think", SBAI_SkillStep, function() 
-		-- print(self, self.Outer) -- NPC [120][npc_sb_raven]	nil 
-		StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep) 
-	end ) 
-	
-	hook.Add("PostEntityTakeDamage",SBAI_SkillStep,SBAI_SkillStep.PostEntityTakeDamage) 
+	StellarBlade.SBAI_SkillStep.Initialize(SBAI_SkillStep) 
 	
 	local StartSelfEffect = SkillStepTable.StartSelfEffect 
 	local StartTargetEffect = SkillStepTable.StartTargetEffect 
@@ -5860,10 +5923,10 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	local tableOptional = { } 
 	local dmginfo = DamageInfo() 
 	dmginfo:SetAttacker(self) 
-	dmginfo:SetInflictor(IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
+	dmginfo:SetInflictor(self.GetActiveWeapon and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self) 
 	dmginfo:SetDamagePosition(self:GetPos()) 
 	dmginfo:SetReportedPosition(self:GetPos()) 
-	dmginfo:SetDamageForce(self:GetAimVector()) 
+	dmginfo:SetDamageForce(self.GetAimVector and self:GetAimVector() or self:GetForward()) 
 	dmginfo:SetDamageType(DMG_SLASH) 
 	tableOptional.DamageInfo = SaveDamageInfo(dmginfo)  
 	tableOptional.Constructor = self 
@@ -5898,7 +5961,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	if ShowPath != "None" then 
 		local showpath = "data_static/SB/Content/Art/Show/" 
 		showpath = showpath..ShowPath..".json" 
-		StellarBlade.SetShow(self,showpath) 
+		StellarBlade.SetShow(self,showpath, "SkillStep", tableOptional) 
 	end 
 
     -- Apply the animation/movement for this step
@@ -7381,6 +7444,20 @@ StellarBlade.ShowKeyTagMap = function(self)
 		end 
 	end 
 	return ShowKeyTag 
+end 
+
+function StellarBlade:ESBActorType(ESBActorType) 
+		-- ActorType_None                           = 0,
+	-- ActorType_PC                             = 1,
+	-- ActorType_NPC                            = 2,
+	-- ActorType_Monster                        = 3,
+	-- ActorType_BossMonster                    = 4,
+	-- ActorType_MAX                            = 5,
+	if self:IsPlayer() then return ESBActorType == "ESBActorType::ActorType_PC" 
+	elseif self:IsNPC() and self:Classify() <= CLASS_PLAYER_ALLY_VITAL and self:Classify() != CLASS_NONE then return ESBActorType == "ESBActorType::ActorType_NPC" 
+	elseif self:IsNPC() or self:IsNextBot() then return ESBActorType == "ESBActorType::ActorType_Monster" 
+	else return ESBActorType == "ESBActorType::ActorType_None" 
+	end 
 end 
 
 StellarBlade.ESBAIActorType = function(self,ESBAIActorType) 
