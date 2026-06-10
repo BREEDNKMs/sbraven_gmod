@@ -218,7 +218,7 @@ local function RestoreDamageInfo(tbl)
 	dmg:SetMaxDamage(tbl.MaxDamage)
 	dmg:SetReportedPosition(tbl.ReportedPosition)
 	dmg:SetAttacker(tbl.Attacker)
-	dmg:SetInflictor(tbl.Inflictor)
+	dmg:SetInflictor(IsValid(tbl.Inflictor) and tbl.Inflictor or tbl.Attacker) 
 	dmg:SetWeapon(IsValid(tbl.Weapon) and tbl.Weapon or tbl.Attacker)
 	dmg:SetAmmoType(tbl.AmmoType)
 	return dmg
@@ -563,6 +563,10 @@ function StellarBlade.ActorState:Remove(effectOrName)
 			hook.Remove("Think",self) 
 			hook.Remove("EntityTakeDamage",self) 
 			hook.Remove("PostEntityTakeDamage",self) 
+			hook.Remove("OnNPCKilled",self) 
+			hook.Remove("SendDeathNotice",self) 
+			hook.Remove("PlayerDeath",self) 
+			hook.Remove("DoPlayerDeath",self) 
 			hook.Remove("SetupMove",self) -- player only 
 			hook.Remove("Move",self) -- player only 
 			hook.Remove("FinishMove",self) -- player only 
@@ -598,11 +602,28 @@ function StellarBlade.ActorState:Remove(effectOrName)
 				self.Outer:SetSaveValue("m_takedamage",2) 
 			elseif self.Name == "ESBActorState::ActorState_NoDamage" then 
 				self.Outer:SetSaveValue("m_takedamage",2) 
+			elseif self.Name == "ESBActorState::ActorState_DelayDeath" then 
+				if self.flags then 
+					if IsValid(self.attacker) then 
+						if !self.Outer:IsPlayer() then 
+							hook.Run("SendDeathNotice",self.attacker,self.inflictor,self.victim,self.flags) 
+						end 
+					end 
+				else 
+					if IsValid(self.attacker) then 
+						if !self.Outer:IsPlayer() then 
+							hook.Run("OnNPCKilled",self.Outer,self.attacker,self.inflictor) 
+						else 
+							if self.DamageInfo then 
+								self.Outer:SetSaveValue("m_lifeState",2) 
+								hook.Run("DoPlayerDeath",self.Outer,self.attacker,RestoreDamageInfo(self.DamageInfo)) 
+							else 
+								hook.Run("PlayerDeath",self.Outer,self.inflictor,self.attacker) 
+							end 
+						end 
+					end 
+				end 
 			elseif self.Name == "ESBActorState::ActorState_Down" then 
-				print(tostring(self).." is undown") 
-				-- for i = 0, self.Outer:GetBoneCount() do 
-					-- self.Outer:ManipulateBoneJiggle(i,0) 
-				-- end 
 			end 
 		
 		end) 
@@ -654,6 +675,17 @@ function StellarBlade.ActorState:Think()
 				end 
 			end 
 		end 
+	elseif self.Name == "ESBActorState::ActorState_DelayDeath" then 
+		Outer.NextSpawnTime = CurTime() + 1 
+		-- print(Outer:Alive(),Outer:IsOnGround()) 
+		if self.attacker then 
+			-- print(Outer:Alive(),Outer:IsOnGround()) 
+			if Outer:IsPlayer() then 
+				Outer:RemoveEffects(EF_NODRAW) 
+				Outer:SetSaveValue("m_lifeState",0) 
+			end 
+		end 
+		
 	elseif self.Name == "" then 
 		if Outer:IsPlayer() then 
 			self:SetSaveValue("m_debugOverlays", bit.band(self:GetInternalVariable("m_debugOverlays"), bit.bnot(33554432))) -- buddha 
@@ -669,6 +701,53 @@ end
 
 function StellarBlade.ActorState:PostEntityTakeDamage(target,dmginfo) 
 
+end 
+
+function StellarBlade.ActorState:OnNPCKilled(npc,attacker,inflictor) 
+	if npc == self.Outer then 
+		if self.Name == "ESBActorState::ActorState_DelayDeath" then 
+			self.attacker = attacker 
+			self.inflictor = inflictor 
+			return true 
+		end 
+	end 
+end 
+
+function StellarBlade.ActorState:PlayerDeath(npc,inflictor,attacker) 
+	if npc == self.Outer then 
+		if self.Name == "ESBActorState::ActorState_DelayDeath" then 
+			self.attacker = attacker 
+			self.inflictor = inflictor 
+			self.Outer.NextSpawnTime = 20 
+			self.Outer:SetSaveValue("m_lifeState",0) 
+			return true 
+		end 
+	end 
+end 
+
+function StellarBlade.ActorState:DoPlayerDeath(ply, attacker, dmg) 
+	if ply == self.Outer then 
+		if self.Name == "ESBActorState::ActorState_DelayDeath" then 
+			self.attacker = attacker 
+			self.DamageInfo = SaveDamageInfo(dmg) 
+			self.Outer.NextSpawnTime = 20 
+			self.Outer:SetSaveValue("m_lifeState",0) 
+			self.Outer:SetMoveType(MOVETYPE_WALK) 
+			return true 
+		end 
+	end 
+end 
+
+function StellarBlade.ActorState:SendDeathNotice(attacker,inflictor,victim,flags) 
+	if victim == self.Outer then 
+		if self.Name == "ESBActorState::ActorState_DelayDeath" then 
+			self.attacker = attacker 
+			self.inflictor = inflictor 
+			self.victim = victim 
+			self.flags = flags 
+			return true 
+		end 
+	end 
 end 
 
 function StellarBlade.ActorState:SetupMove(target,mv,cmd) -- called only for players 
@@ -1061,11 +1140,9 @@ function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDa
             tableOptional.Target = target 
             StellarBlade.CompleteTableOptional(target,tableOptional) 
             
-            print("ef is:", ef, " | Hit_Back calculated:", Hit_Back) 
+            -- print("ef is:", ef, " | Hit_Back calculated:", Hit_Back) 
             
             StellarBlade.AddEffect(target,ef,tableOptional,"StartDelayTime",FrameTime(),DeactiveShowPath,"Hit/Result_Hit_Stand_LightAttack",LifeTime,0,MoveAlias,Hit_Back) 
-            -- StellarBlade.StartSkillTargetResult(target,"Result_Hit_Stand_LightAttack") 
-            -- target:EmitSound("M_Raven_vo_Dmg_S_Cue") 
         end 
     end 
 end
@@ -1119,7 +1196,7 @@ function StellarBlade.SB_EffectAlias:Remove()
 		pcall(StellarBlade.OnRemoveEffect,self.Outer,self,tableOptional) -- prevent script being halt on error 
 		-- table.remove(curEffects[strEffect],chosenIndex) 
 		table.remove(self.Outer.SB_EffectAlias[strEffect],chosenIndex) 
-		-- print("removing effect:",strEffect,self) 
+		print("removing effect:",strEffect,self) 
 	end 
 end 
 function StellarBlade.SB_EffectAlias:CanActivate() -- passes activation conditions 
@@ -1234,6 +1311,9 @@ function StellarBlade.SB_EffectAlias:Think()
             local parsed_condition_field = StellarBlade.ParseTableStrings(condition_field) 
             
             -- Process each condition block group
+			
+			if isstring(parsed_condition_field) then print("bug: parsed_condition_field is string:",parsed_condition_field,condition_field,self.Name) return end 
+			
             for _, condition_block in pairs(parsed_condition_field) do 
                 local condition_passed = true
                 local chain_effect = nil
@@ -1249,7 +1329,12 @@ function StellarBlade.SB_EffectAlias:Think()
                     elseif upperkey == "ISSWIMMING" then
                         if self.Outer:WaterLevel() <= 1 then condition_passed = false break end
                     elseif upperkey == "ISJUMP" then
-                        local is_jumping = self.Outer.GetNavType and self.Outer:GetNavType() == NAV_JUMP
+                        local is_jumping = (self.Outer.GetNavType and self.Outer:GetNavType() == NAV_JUMP) 
+						if self.Outer:IsPlayer() then 
+							is_jumping = self.Outer.m_bJumping 
+						end 
+						if is_jumping and self.Outer:IsOnGround() then is_jumping = false else is_jumping = true end 
+						if v2 == 1 then is_jumping = !is_jumping end 
                         if !is_jumping then condition_passed = false break end
                     elseif upperkey == "ISSPRINT" then
                         local is_sprinting = self.Outer.IsSprinting and self.Outer:IsSprinting()
@@ -1263,6 +1348,31 @@ function StellarBlade.SB_EffectAlias:Think()
                         break
                     end 
                 end 
+				
+				local checkActorStat = condition_block.checkActorStat 
+				local checkActorStatValue = condition_block.checkActorStatValue 
+				local checkActorStatCompare = condition_block.checkActorStatCompare 
+				local CheckActorStatMaxRatePercent = condition_block.CheckActorStatMaxRatePercent 
+				if condition_block.checkActorStat then 
+					if checkActorStat == "ActorStatType_Stamina" then 
+						checkActorStat = StellarBlade.ActorStats(self.Outer)["ESBActorStatType::ActorStatType_Stamina"] 
+					elseif checkActorStat == "ActorStatType_MaxHPRate" then 
+						checkActorStat = StellarBlade.ActorStats(self.Outer)["ESBActorStatType::ActorStatType_MaxHPRate"] 
+					elseif checkActorStat == "ActorStatType_HP" then 
+						if CheckActorStatMaxRatePercent then 
+							checkActorStat = StellarBlade.ActorStats(self.Outer)["ESBActorStatType::ActorStatType_MaxHPRate"] 
+						else 
+							checkActorStat = StellarBlade.ActorStats(self.Outer)["ESBActorStatType::ActorStatType_HP"] 
+						end 
+					elseif checkActorStat == "ActorStatType_TachyGauge" then 
+						checkActorStat = StellarBlade.ActorStats(self.Outer)["ESBActorStatType::ActorStatType_TachyGauge"] 
+					end 
+					
+					checkActorStatCompare = "ESBCompare::"..checkActorStatCompare 
+					local checkActorStatCompareResult = StellarBlade.ESBCompare(checkActorStat,checkActorStatValue,checkActorStatCompare) 
+					-- print("checkActorStatCompare:",checkActorStatCompare,checkActorStat,checkActorStatValue,checkActorStatCompareResult) 
+					if checkActorStatCompareResult then condition_passed = true end 
+				end 
 
                 -- If all conditions in this block were successfully met, execute end sequence
                 if condition_passed then
@@ -1405,41 +1515,45 @@ end
 -- Input is a string like "[{\"Alias\":\"HitStun\", \"Time\":1.5}, {\"Alias\":\"KnockDownForward_Eve\"}, {\"Alias\":\"KnockDownBackward_Eve\"}]" 
 -- Or a single object like "{\"IsGround\":2, \"ChainEffectAlias\":\"KnockDownBackwardTumblingReady_Eve\"}"
 -- Output is always an array table
-StellarBlade.ParseTableStrings = function(t) 
-    if !t then error("no input to ParseTableStrings") end 
-    
+StellarBlade.ParseTableStrings = function(t)
+    if t == nil then error("no input to ParseTableStrings") end
+
     local t2 = t
 
     if type(t) == "string" then
+        -- Normalize common non-JSON booleans from Python-like serialization
+        t = t:gsub(":False", ":false")
+             :gsub(":True",  ":true")
+             :gsub("%f[%w]False%f[%W]", "false")
+             :gsub("%f[%w]True%f[%W]",  "true")
+
         t2 = util.JSONToTable(t)
-        if type(t2) != "table" then return t end
+
+        if type(t2) ~= "table" then
+            return {}
+        end
     end
 
-    -- CHANGE: If it's a non-empty dictionary/object (index 1 is nil, but keys exist), wrap it in an array
-    if type(t2) == "table" and t2[1] == nil and next(t2) != nil then
+    -- Wrap a single object into an array
+    if type(t2) == "table" and t2[1] == nil and next(t2) ~= nil then
         t2 = { t2 }
     end
 
     local out = {}
 
-    for i, entry in ipairs(t2) do
+    for _, entry in ipairs(t2) do
         if type(entry) == "table" then
             local e = {}
             for k, v in pairs(entry) do
                 if type(v) == "string" then
                     local n = tonumber(v)
-                    if n ~= nil then
-                        e[k] = n
-                    else
-                        e[k] = v
-                    end
+                    e[k] = n ~= nil and n or v
                 else
                     e[k] = v
                 end
             end
             out[#out + 1] = e
         else
-            -- non-table entry: wrap as Alias string
             out[#out + 1] = { Alias = tostring(entry) }
         end
     end
@@ -1702,7 +1816,43 @@ StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue)
 	elseif Action == "ESBEffectAction::EffectAction_FishingSuccess" then 
 	elseif Action == "ESBEffectAction::EffectAction_AttachEquipment" then 
 	elseif Action == "ESBEffectAction::EffectAction_ImmediateDeath" then 
+		if SERVER then 
+			if self:IsPlayer() then 
+				self:Kill() 
+			elseif self:IsNPC() or self:IsNextBot() then 
+				-- self:Fire("sethealth",-self:Health()) 
+				self:BecomeRagdoll(DamageInfo()) 
+				self:SetSaveValue("m_lifeState",1) 
+				if self:IsNPC() then 
+					self:SetSchedule(SCHED_DIE) 
+					self:SetNPCState(NPC_STATE_DEAD) 
+				end 
+				hook.Run("OnNPCKilled",self,self,self) 
+			else 
+				self:Fire("sethealth","-1") 
+				self:Fire("break","0") 
+				-- scripted_ents.Get("cycler_actor2").OnKilled(self) 
+			end 
+		end 
 	elseif Action == "ESBEffectAction::EffectAction_ImmediateDeathPossibleRevival" then 
+		if SERVER then 
+			if self:IsPlayer() then 
+				self:Kill() 
+			elseif self:IsNPC() or self:IsNextBot() then 
+				self:BecomeRagdoll(DamageInfo()) 
+				self:Fire("sethealth",-1) 
+				self:SetSaveValue("m_lifeState",2) 
+				if self:IsNPC() then 
+					self:SetSchedule(SCHED_DIE) 
+					self:SetNPCState(NPC_STATE_DEAD) 
+				end 
+				hook.Run("OnNPCKilled",self,self,self) 
+			else 
+				self:Fire("sethealth","-1") 
+				self:Fire("break","0") 
+				-- scripted_ents.Get("cycler_actor2").OnKilled(self) 
+			end 
+		end 
 	elseif Action == "ESBEffectAction::EffectAction_ScreenEffect" then 
 	elseif Action == "ESBEffectAction::EffectAction_TPSTutorial" then 
 	elseif Action == "ESBEffectAction::EffectAction_UIClientEvent" then 
@@ -2667,6 +2817,10 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		hook.Add("Think",ActorState,ActorState.Think) 
 		hook.Add("EntityTakeDamage",ActorState,ActorState.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",ActorState,ActorState.PostEntityTakeDamage) 
+		hook.Add("OnNPCKilled",ActorState,ActorState.OnNPCKilled) 
+		hook.Add("SendDeathNotice",ActorState,ActorState.SendDeathNotice) 
+		hook.Add("PlayerDeath",ActorState,ActorState.PlayerDeath) 
+		hook.Add("DoPlayerDeath",ActorState,ActorState.DoPlayerDeath) 
 		hook.Add("SetupMove",ActorState,ActorState.SetupMove) -- player only 
 		hook.Add("Move",ActorState,ActorState.Move) -- player only 
 		hook.Add("FinishMove",ActorState,ActorState.FinishMove) -- player only 
@@ -4452,7 +4606,9 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	for k,v in pairs(tableofhittargets) do 
 		if self.SBAI_SkillStep then 
 			if !self.SBAI_SkillStep.HitEntities then self.SBAI_SkillStep.HitEntities = { } end 
-			if self.SBAI_SkillStep.HitEntities and self.SBAI_SkillStep.HitEntities[v] then continue end -- prevent hitting same entity multiple frames 
+			if self.SBAI_SkillStep.HitEntities and self.SBAI_SkillStep.HitEntities[v] then 
+				continue -- prevent hitting same entity multiple frames 
+			end 
 			self.SBAI_SkillStep.HitEntities[v] = { ["CurTime"] = CurTime()} 
 		end 
 		local dmgtype = DMG_SLASH+DMG_ALWAYSGIB 
@@ -7447,7 +7603,7 @@ StellarBlade.ShowKeyTagMap = function(self)
 end 
 
 function StellarBlade:ESBActorType(ESBActorType) 
-		-- ActorType_None                           = 0,
+	-- ActorType_None                           = 0,
 	-- ActorType_PC                             = 1,
 	-- ActorType_NPC                            = 2,
 	-- ActorType_Monster                        = 3,
