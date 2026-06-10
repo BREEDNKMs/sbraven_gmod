@@ -1,14 +1,14 @@
 AddCSLuaFile() 
 
-function SB_ImportJSON(path)
-    -- Helper function to process a single JSON file (unchanged).
-    local function ProcessJSONFile(relativePath)
-        local fileName = string.match(relativePath, "([^/]+)%.json$")
-        if not fileName then
-            MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n")
-            return
-        end
-        local globalTableName = "SB_" .. fileName
+function SB_ImportJSON(path) 
+    -- Helper function to process a single JSON file (unchanged). 
+    local function ProcessJSONFile(relativePath) 
+        local fileName = string.match(relativePath, "([^/]+)%.json$") 
+        if not fileName then 
+            MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n") 
+            return 
+        end 
+        local globalTableName = "SB_" .. fileName 
 
         if _G[globalTableName] then
             MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
@@ -73,6 +73,9 @@ end
 local M_Raven_Default = "data_static/SB/Content/Local/Data/CharacterStanceTable.json" 
 SB_ImportJSON(M_Raven_Default) 
 M_Raven_Default = SB_CharacterStanceTable[1].Rows.M_Raven_Default 
+if !table.HasValue(M_Raven_Default.CommandArray,"M_Raven_ChaseChargeSlash") then 
+	table.insert(M_Raven_Default.CommandArray,"M_Raven_ChaseChargeSlash") 
+end 
 
 SWEP.Base = "weapon_ut99_base" 
 SWEP.Category = "Other" 
@@ -84,7 +87,7 @@ SWEP.Spawnable = true
 SWEP.Slot = 0 
 -- SWEP.SlotPos = 2 
 SWEP.RenderGroup = RENDERGROUP_BOTH 
-SWEP.DeploySound = "unreali/blade1s.wav" 
+SWEP.DeploySound = "character/se/pc_foldsword_open.wav" 
 
 SWEP.HoldType			= "knife" 
 SWEP.UseHands = true 
@@ -162,7 +165,9 @@ function SWEP:SpecialThink()
     end 
 	if IsValid(vm) then 
 		if vm:GetCycle() > 0.15 and vm:GetCycle() < 0.35 and self:GetActivity() == ACT_VM_SECONDARYATTACK then 
-			local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,5) 
+			if self:GetNextSecondaryFire() > CurTime() then 
+				local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,5) 
+			end 
 		end 
 	end 
 	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
@@ -207,18 +212,58 @@ function SWEP:SpecialInit()
 	self:BuildSkillList() 
 	self:SetSelectedSkillIndex(1) 
 	self.StellarBlade_SelectedSkill = "M_Raven_Slash" 
+	
 end 
 
-function SWEP:BuildSkillList()
-    -- Access the global table loaded by your JSON importer
-    if SB_CharacterStanceTable and SB_CharacterStanceTable[1] and SB_CharacterStanceTable[1].Rows then
-        local stanceData = SB_CharacterStanceTable[1].Rows.M_Raven_Default
-        if stanceData and stanceData.CommandArray then
-            self.CachedSkillList = stanceData.CommandArray
-            -- print("Raven Blade: Loaded " .. #self.CachedSkillList .. " skills.")
-        end
-    end
-end
+function SWEP:BuildSkillList() 
+	-- hack in custom skill ChaseChargeSlash 
+	SB_ImportJSON("data_static/SB/Content/Art/Show/CH_M_NA_53_Raven/Skill/M_Raven_ChaseChargeSlash.json") 
+	local M_Raven_ChaseChargeSlash = table.Copy(SB_SkillTable[1].Rows["M_Raven_Slash"]) 
+	local M_Raven_ChaseChargeSlash_Cast1 = SB_M_Raven_ChaseChargeSlash[4].Properties.ShowStepArray[1].StepProperty 
+	local M_Raven_ChaseChargeSlash_Hit1 = SB_M_Raven_ChaseChargeSlash[4].Properties.ShowStepArray[2].StepProperty 
+	local M_Raven_ChaseChargeSlash_Finish1 = SB_M_Raven_ChaseChargeSlash[4].Properties.ShowStepArray[3].StepProperty 
+	local M_Raven_ChaseChargeSlash_Move1 = table.Copy(SB_CharacterMoveTable[1].Rows["Move_Forward_20"]) 
+	local M_Raven_ChaseChargeSlash_Move2 = table.Copy(SB_CharacterMoveTable[1].Rows["Move_Forward_20"]) 
+	local M_Raven_ChaseChargeSlash_Move3 = table.Copy(SB_CharacterMoveTable[1].Rows["Move_Forward_20"]) 
+	local M_Raven_ChaseChargeSlash_Move4 = table.Copy(SB_CharacterMoveTable[1].Rows["Move_Forward_20"]) 
+	local SR_M_Raven_ChaseChargeSlash_Hit1 = table.Copy(SB_SkillResultTable[1].Rows["M_Raven_Slash_Hit1"]) 
+	M_Raven_ChaseChargeSlash.SkillType = "ESBSkillType::SkillType_MeleeAttack" 
+	M_Raven_ChaseChargeSlash.FirstSkillActiveAlias = "M_Raven_ChaseChargeSlash_Cast1" 
+	M_Raven_ChaseChargeSlash.CoolTime = 30
+	
+	M_Raven_ChaseChargeSlash_Hit1.OverrideTargetFilterAlias = "M_Raven_Slash_Target" 
+	M_Raven_ChaseChargeSlash_Hit1.bEveryFrameHitCheck = true 
+	
+	
+	M_Raven_ChaseChargeSlash_Move1 = table.Merge(M_Raven_ChaseChargeSlash_Move1, SB_M_Raven_ChaseChargeSlash[36].Properties.MoveTableProperty)
+	M_Raven_ChaseChargeSlash_Move2 = table.Merge(M_Raven_ChaseChargeSlash_Move2, SB_M_Raven_ChaseChargeSlash[37].Properties.MoveTableProperty)
+	M_Raven_ChaseChargeSlash_Move3 = table.Merge(M_Raven_ChaseChargeSlash_Move3, SB_M_Raven_ChaseChargeSlash[38].Properties.MoveTableProperty)
+	M_Raven_ChaseChargeSlash_Move4 = table.Merge(M_Raven_ChaseChargeSlash_Move4, SB_M_Raven_ChaseChargeSlash[39].Properties.MoveTableProperty)
+	SR_M_Raven_ChaseChargeSlash_Hit1 = table.Merge(SR_M_Raven_ChaseChargeSlash_Hit1, SB_M_Raven_ChaseChargeSlash[40].Properties.SkillResultTableProperty)
+	
+	SB_SkillTable[1].Rows["M_Raven_ChaseChargeSlash"] = M_Raven_ChaseChargeSlash 
+	SB_SkillActiveStepTable[1].Rows["M_Raven_ChaseChargeSlash_Cast1"] = M_Raven_ChaseChargeSlash_Cast1 
+	SB_SkillActiveStepTable[1].Rows["M_Raven_ChaseChargeSlash_Hit1"] = M_Raven_ChaseChargeSlash_Hit1 
+	SB_SkillActiveStepTable[1].Rows["M_Raven_ChaseChargeSlash_Finish1"] = M_Raven_ChaseChargeSlash_Finish1 
+	SB_SkillResultTable[1].Rows["M_Raven_ChaseChargeSlash_Hit1"] = SR_M_Raven_ChaseChargeSlash_Hit1
+	SB_CharacterMoveTable[1].Rows["M_Raven_ChaseChargeSlash_Move1"] = M_Raven_ChaseChargeSlash_Move1
+	SB_CharacterMoveTable[1].Rows["M_Raven_ChaseChargeSlash_Move2"] = M_Raven_ChaseChargeSlash_Move2
+	SB_CharacterMoveTable[1].Rows["M_Raven_ChaseChargeSlash_Move3"] = M_Raven_ChaseChargeSlash_Move3
+	SB_CharacterMoveTable[1].Rows["M_Raven_ChaseChargeSlash_Move4"] = M_Raven_ChaseChargeSlash_Move4 
+	
+	SCT_M_Raven_ChaseChargeSlash = table.Copy(SB_SkillCommandTable[1].Rows["M_Raven_Slash"]) 
+	SCT_M_Raven_ChaseChargeSlash.SkillAlias = "M_Raven_ChaseChargeSlash" 
+	SB_SkillCommandTable[1].Rows["M_Raven_ChaseChargeSlash"] = SCT_M_Raven_ChaseChargeSlash 
+	
+    -- Access the global table loaded by your JSON importer 
+    if SB_CharacterStanceTable and SB_CharacterStanceTable[1] and SB_CharacterStanceTable[1].Rows then 
+        local stanceData = SB_CharacterStanceTable[1].Rows.M_Raven_Default 
+        if stanceData and stanceData.CommandArray then 
+            self.CachedSkillList = stanceData.CommandArray 
+            -- print("Raven Blade: Loaded " .. #self.CachedSkillList .. " skills.") 
+        end 
+    end 
+end 
 
 function SWEP:PrimaryAttack() 
 	-- determine next attack time, relative with anim play rate 
@@ -289,30 +334,6 @@ function SWEP:Reload()
     -- 2. Check if we have a skill Queued
     if self.StellarBlade_SelectedSkill then 
 		if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !owner.SBAI_SkillStep:IsActive() then 
-				-- if strSkill then 
-					-- if strSkill == "M_Raven_ShieldBreakerCounter_Cast1" then strSkill = "P_Eve_ShieldBreakerCounterRaven1_Cast1" end 
-					-- if strSkill == "M_Raven_BetaSkillCounter_Cast1" then strSkill = "P_Eve_BetaCounterRaven1_Cast1" end 
-				-- end 
-			-- if self.StellarBlade_SelectedSkill == "M_Raven_BetaSkillCounter" then 
-				-- local target = owner:GetEyeTrace().Entity 
-				-- local _PickTarget = StellarBlade.PickTarget 
-				-- StellarBlade.PickTarget = function() return owner end 
-				-- local success = StellarBlade.SetSkillStep(target,"P_Eve_BetaCounterRaven1_Cast1") 
-				-- StellarBlade.PickTarget = _PickTarget 
-				-- -- StellarBlade.AddEffect(owner,"Test_BlockActionEnemy_Effect",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, StartDelayTime,0, LifeTime,7) 
-				-- -- StellarBlade.AddEffect(owner,"BlockSkill",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, StartDelayTime,0, LifeTime,7) 
-				-- StellarBlade.AddEffect(owner,"BlockAction",{Constructor = owner, Target = target, TraceResult = owner:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
-				-- return success 
-			-- end 
-			
-			-- if self.StellarBlade_SelectedSkill == "M_Raven_ShieldBreakerCounter" then 
-				-- local target = owner:GetEyeTrace().Entity 
-				-- local _PickTarget = StellarBlade.PickTarget 
-				-- StellarBlade.PickTarget = function() return owner end 
-				-- local success = StellarBlade.SetSkillStep(target,"P_Eve_ShieldBreakerCounterRaven1_Cast1") 
-				-- StellarBlade.PickTarget = _PickTarget 
-				-- return success 
-			-- end 
             local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill) 
             if success then return end 
         end 
