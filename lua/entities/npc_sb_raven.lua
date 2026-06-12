@@ -346,7 +346,7 @@ function ENT:SBAI_EvaluateEdge(childEntry)
             if self[funcName] then
                 -- Check condition
                 local success = self[funcName](self, decoNode.Properties, decoID) 
-				print(decoID, "Decorator result is:", success) 
+				-- print(decoID, "Decorator result is:", success) 
 				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
                 if !success then return false end
             end
@@ -791,7 +791,7 @@ function ENT:OnStateChange(oldState, newState)
 
     -- 1. SEARCH: Find the raven_blade anywhere in the inventory
     local ravenBlade, otherWeapon = NULL, NULL 
-    local weapons = self:GetWeapons()
+    local weapons = self:GetWeapons() 
 
 	for _, wep in ipairs(weapons) do 
 		if wep:GetClass() == "raven_blade" then 
@@ -804,19 +804,19 @@ function ENT:OnStateChange(oldState, newState)
 
     -- 2. LOGIC: Only proceed if we found the valid weapon entity
     if IsValid(ravenBlade) then 
-        print("has raven blade") 
 
         -- HOLSTER (Alert -> Idle)
-        if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() and self:GetKnownEnemyCount() < 1 then 
+		if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() and self:GetKnownEnemyCount() < 1 then 
             
-            local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS")
-            if seqID != -1 then
-                local layer = self:AddGestureSequence(seqID) 
+			local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS") 
+			if seqID != -1 then 
+				local layer = self:FindGestureSequenceLayer(seqID) 
+				layer = layer >= 0 and layer or self:AddGestureSequence(seqID) 
 				self:SetLayerPlaybackRate(layer,0.5) 
-                -- print("layer_Eve_Weapon_End_BS", layer) -- holster 
-            end
+				-- print("layer_Eve_Weapon_End_BS", layer) -- holster 
+			end 
 
-            ravenBlade:AddEffects(EF_NODRAW) 
+			ravenBlade:AddEffects(EF_NODRAW) 
 			if IsValid(otherWeapon) then 
 				self:SelectWeapon(otherWeapon) 
 			else 
@@ -828,11 +828,12 @@ function ENT:OnStateChange(oldState, newState)
         elseif oldState == NPC_STATE_IDLE and (newState >= NPC_STATE_ALERT and newState <= NPC_STATE_COMBAT) then -- there still may be an enemy 
             
             local seqID = self:LookupSequence("layer_Eve_Weapon_Start_Anim")
-            if seqID != -1 then
-                local layer = self:AddGestureSequence(seqID) 
+            if seqID != -1 then 
+				local layer = self:FindGestureSequenceLayer(seqID) 
+                layer = layer >= 0 and layer or self:AddGestureSequence(seqID) 
 				self:SetLayerPlaybackRate(layer,0.5) 
                 -- print("layer_Eve_Weapon_Start_Anim", layer) -- draw 
-            end
+            end 
 
             -- FIX: Select the specific weapon entity we found earlier
             self:SelectWeapon(ravenBlade) 
