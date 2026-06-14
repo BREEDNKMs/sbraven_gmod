@@ -617,6 +617,7 @@ function StellarBlade.ActorState:Remove(effectOrName)
 							if self.DamageInfo then 
 								self.Outer:SetSaveValue("m_lifeState",2) 
 								hook.Run("DoPlayerDeath",self.Outer,self.attacker,RestoreDamageInfo(self.DamageInfo)) 
+								hook.Run("PlayerDeath",self.Outer,self.inflictor,self.attacker) 
 							else 
 								hook.Run("PlayerDeath",self.Outer,self.inflictor,self.attacker) 
 							end 
@@ -708,6 +709,7 @@ function StellarBlade.ActorState:OnNPCKilled(npc,attacker,inflictor)
 		if self.Name == "ESBActorState::ActorState_DelayDeath" then 
 			self.attacker = attacker 
 			self.inflictor = inflictor 
+			self.hookname = "OnNPCKilled" 
 			return true 
 		end 
 	end 
@@ -720,6 +722,8 @@ function StellarBlade.ActorState:PlayerDeath(npc,inflictor,attacker)
 			self.inflictor = inflictor 
 			self.Outer.NextSpawnTime = 20 
 			self.Outer:SetSaveValue("m_lifeState",0) 
+			self.hookname = "PlayerDeath" 
+			print("called PlayerDeath",npc,inflictor,attacker) 
 			return true 
 		end 
 	end 
@@ -733,6 +737,8 @@ function StellarBlade.ActorState:DoPlayerDeath(ply, attacker, dmg)
 			self.Outer.NextSpawnTime = 20 
 			self.Outer:SetSaveValue("m_lifeState",0) 
 			self.Outer:SetMoveType(MOVETYPE_WALK) 
+			self.hookname = "DoPlayerDeath" 
+			print("called DoPlayerDeath",ply,attacker,dmg) 
 			return true 
 		end 
 	end 
@@ -745,6 +751,8 @@ function StellarBlade.ActorState:SendDeathNotice(attacker,inflictor,victim,flags
 			self.inflictor = inflictor 
 			self.victim = victim 
 			self.flags = flags 
+			self.hookname = "SendDeathNotice" 
+			print("called SendDeathNotice") 
 			return true 
 		end 
 	end 
@@ -1196,7 +1204,7 @@ function StellarBlade.SB_EffectAlias:Remove()
 		pcall(StellarBlade.OnRemoveEffect,self.Outer,self,tableOptional) -- prevent script being halt on error 
 		-- table.remove(curEffects[strEffect],chosenIndex) 
 		table.remove(self.Outer.SB_EffectAlias[strEffect],chosenIndex) 
-		print("removing effect:",strEffect,self) 
+		-- print("removing effect:",strEffect,self) 
 	end 
 end 
 function StellarBlade.SB_EffectAlias:CanActivate() -- passes activation conditions 
@@ -1274,7 +1282,8 @@ end
 function StellarBlade.SB_EffectAlias:Think() 
 	-- print(self.Outer,strEffect,self.Cycle) -- all of these are valid 
 	-- print(self.tableOptional) 
-	if self.LoopTargetFilterAlias != "None" then 
+	if self.LoopTargetFilterAlias != "None" and CurTime() >= self.LastLoopIntervalTime + self.LoopIntervalTime then 
+		self.LastLoopIntervalTime = CurTime() 
 		for _, target in pairs(StellarBlade.TargetFilter(self.Outer,self.LoopTargetFilterAlias,self.Cycle)) do 
 			for k,v in ipairs(self.LoopTargetEffectAliasArray) do 
 				if !self.IsNetworkedOrigin then 
@@ -1333,19 +1342,62 @@ function StellarBlade.SB_EffectAlias:Think()
 						if self.Outer:IsPlayer() then 
 							is_jumping = self.Outer.m_bJumping 
 						end 
-						if is_jumping and self.Outer:IsOnGround() then is_jumping = false else is_jumping = true end 
+						local act = self.Outer.GetActivity and self.Outer:GetActivity() 
+						local jumpact = { 
+						[ACT_JUMP] = true, 
+						[ACT_HOP] = true, 
+						[ACT_LEAP] = true, 
+						-- [ACT_LAND] = true, 
+						[ACT_MP_JUMP] = true, 
+						[ACT_MP_JUMP_START] = true, 
+						[ACT_MP_JUMP_FLOAT] = true, 
+						[ACT_MP_JUMP_LAND] = true, 
+						[ACT_MP_DOUBLEJUMP] = true, 
+						[ACT_MP_JUMP_PRIMARY] = true, 
+						[ACT_MP_JUMP_START_PRIMARY] = true, 
+						[ACT_MP_JUMP_FLOAT_PRIMARY] = true, 
+						[ACT_MP_JUMP_LAND_PRIMARY] = true, 
+						[ACT_MP_JUMP_SECONDARY] = true, 
+						[ACT_MP_JUMP_START_SECONDARY] = true, 
+						[ACT_MP_JUMP_FLOAT_SECONDARY] = true, 
+						[ACT_MP_JUMP_LAND_SECONDARY] = true, 
+						[ACT_MP_JUMP_MELEE] = true, 
+						[ACT_MP_JUMP_START_MELEE] = true, 
+						[ACT_MP_JUMP_FLOAT_MELEE] = true, 
+						[ACT_MP_JUMP_LAND_MELEE] = true,
+						[ACT_MP_JUMP_BUILDING] = true, 
+						[ACT_MP_JUMP_START_BUILDING] = true, 
+						[ACT_MP_JUMP_FLOAT_BUILDING] = true, 
+						[ACT_MP_JUMP_LAND_BUILDING] = true,
+						[ACT_MP_JUMP_PDA] = true, 
+						[ACT_MP_JUMP_START_PDA] = true, 
+						[ACT_MP_JUMP_FLOAT_PDA] = true, 
+						[ACT_MP_JUMP_LAND_PDA] = true,
+						[ACT_HL2MP_JUMP_MAGIC] = true,
+						[ACT_HL2MP_JUMP_REVOLVER] = true, 
+						[ACT_HL2MP_JUMP_CAMERA] = true, 
+						[ACT_HL2MP_JUMP_ANGRY] = true, 
+						[ACT_HL2MP_JUMP_SCARED] = true, 
+						[ACT_HL2MP_JUMP_ZOMBIE] = true,
+						[ACT_HL2MP_JUMP_SUITCASE] = true,
+						[ACT_HL2MP_JUMP] = true,
+						[ACT_HL2MP_JUMP_PISTOL] = true,
+						[ACT_HL2MP_JUMP_SMG1] = true } 
+						if act and jumpact[act] then is_jumping = true end 
+						-- if is_jumping and self.Outer:IsOnGround() then is_jumping = false else is_jumping = true end 
 						if v2 == 1 then is_jumping = !is_jumping end 
+						-- print("is_jumping:",is_jumping) 
                         if !is_jumping then condition_passed = false break end
                     elseif upperkey == "ISSPRINT" then
                         local is_sprinting = self.Outer.IsSprinting and self.Outer:IsSprinting()
                         if !is_sprinting then condition_passed = false break end
                     elseif upperkey == "CHECKDELAYTIME" then 
-                        if CurTime() - self.Time < tonumber(v2) then condition_passed = false break end
-                    else
+                        if CurTime() - self.Time < tonumber(v2) then condition_passed = false break end 
+                    else 
                         -- If a condition isn't supported yet (e.g. IsSlopeMoving), 
                         -- we fail it so it doesn't accidentally trigger an early removal.
-                        condition_passed = false
-                        break
+                        condition_passed = false 
+                        break 
                     end 
                 end 
 				
@@ -1582,7 +1634,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	end 
 	
 	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then print("rejected effect:",strEffect) return false end 
-	print("adding effect:",strEffect) 
+	-- print("adding effect:",strEffect) 
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
@@ -1677,6 +1729,7 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 	curEffect.chosenIndex = chosenIndex 
     curEffect.EndTime = CurTime() + curEffect.LifeTime + StartDelayTime 
     curEffect.Time = CurTime() 
+    curEffect.LastLoopIntervalTime = CurTime() 
 	if tableOptional and tableOptional.TraceResult then 
 		curEffect.TraceResult = tableOptional.TraceResult 
 	end 
@@ -1745,9 +1798,9 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
     end
     -- (extend cases as you need) 
 	StellarBlade.SB_EffectAlias.Initialize(curEffect,tableOptional) 
-    -- Optionally return chosenIndex and curEffect for caller convenience
-    return chosenIndex, curEffect
-end
+    -- Optionally return chosenIndex and curEffect for caller convenience 
+    return chosenIndex, curEffect 
+end 
 
 StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue) 
 	ParsedActionValue = StellarBlade.ParseTableStrings(ActionValue) 
@@ -3276,6 +3329,16 @@ StellarBlade.SetShow = function(self,showpath,slot,tableOptional)
 	if !self.SBAI_ActiveShows then 
 		self.SBAI_ActiveShows = {} 
 	end 
+	
+	local bClearDuplicateSlot = true 
+	if bClearDuplicateSlot then 
+		for k,v in pairs(self.SBAI_ActiveShows) do 
+			if v.Slot == slot then 
+				v:Remove() 
+			end 
+		end 
+	end 
+	
 	local SBAI_ActiveShow = {["Time"] = CurTime(),["RunTime"] = CurTime()} 
 	-- self.SBAI_ActiveShow = {["Time"] = CurTime(),["RunTime"] = CurTime(), ["Cycle"] = 0} 
 	SBAI_ActiveShow.Dir = showpath 
@@ -4016,7 +4079,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 				ef:SetScale(ParticleScale) -- scale 
 				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
 				util.Effect(AssetName,ef) 
-				Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " "..SBAI_ActiveShow.Elapsed.." "..tostring(CurTime()).. " "..tostring(relAng).." "..tostring(ef:GetMagnitude())) 
+				-- Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " elapsed: "..SBAI_ActiveShow.Elapsed.." "..tostring(relAng).." mag:"..tostring(ef:GetMagnitude())) 
 				-- debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
@@ -4273,7 +4336,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 end 
 
 StellarBlade.ProcessActiveSkill = function(self,tbl) 
-	-- if !tbl then print(self,"ProcessActiveSkill was called without tbl, skill may have removed during execution") return debug.Trace() end 
+	if !tbl then print(self,"ProcessActiveSkill was called without tbl, skill may have removed during execution") return debug.Trace() end 
 	if !tbl then return false end 
     local Name = tbl.Name 
     if !Name then return end 
@@ -4348,8 +4411,8 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 		end 
 		if NextStepAlias and NextStepAlias != "None" then
 			-- Transition to the next skill step
-			StellarBlade.SetSkillStep(self,NextStepAlias) 
-			StellarBlade.ProcessActiveSkill(self,self.SBAI_SkillStep) 
+			local SBAI_SkillStep = StellarBlade.SetSkillStep(self,NextStepAlias) 
+			StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep) 
 		else 
 			-- No next step, so the skill is finished 
 			StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_SkillDependent") 
@@ -4471,10 +4534,11 @@ end
 
 StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck) 
 	local ID = SkillStepTable.ID 
+	local SBAI_SkillStep = self.SBAI_SkillStep 
 	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and call necessary effects 
 	-- moved damage event in ActorStat 
 	if !bEveryFrameHitCheck then 
-		if self.SBAI_SkillStep.HitChecked then 
+		if SBAI_SkillStep.HitChecked then 
 			return true 
 		end 
 	end 
@@ -4522,7 +4586,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	
 	local HitDetectionType = SkillStepTable.HitDetectionType 
 	if string.find(HitDetectionType,"TargetFilter") then 
-		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias,self.SBAI_SkillStep.Cycle) 
+		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias,SBAI_SkillStep.Cycle) 
 	end 
 	
 	if string.find(HitDetectionType,"ActiveCollision") then 
@@ -4594,8 +4658,8 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	
 	-- print("tableofhittargets size is:",#tableofhittargets) 
 	
-	if !self.SBAI_SkillStep.Hit then 
-		self.SBAI_SkillStep.Hit = false 
+	if !SBAI_SkillStep.Hit then 
+		SBAI_SkillStep.Hit = false 
 	end 
 	if self.SBAI_SkillTable then 
 		if self.SBAI_SkillTable.Hit == nil then 
@@ -4604,12 +4668,12 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	end 
 	
 	for k,v in pairs(tableofhittargets) do 
-		if self.SBAI_SkillStep then 
-			if !self.SBAI_SkillStep.HitEntities then self.SBAI_SkillStep.HitEntities = { } end 
-			if self.SBAI_SkillStep.HitEntities and self.SBAI_SkillStep.HitEntities[v] then 
+		if SBAI_SkillStep then 
+			if !SBAI_SkillStep.HitEntities then SBAI_SkillStep.HitEntities = { } end 
+			if SBAI_SkillStep.HitEntities and SBAI_SkillStep.HitEntities[v] then 
 				continue -- prevent hitting same entity multiple frames 
 			end 
-			self.SBAI_SkillStep.HitEntities[v] = { ["CurTime"] = CurTime()} 
+			SBAI_SkillStep.HitEntities[v] = { ["CurTime"] = CurTime()} 
 		end 
 		local dmgtype = DMG_SLASH+DMG_ALWAYSGIB 
 		if v:IsVehicle() then -- make vehicle driver npcs vulnerable to this slash 
@@ -4719,7 +4783,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenJustParry,HitLevel,SkillStepTable.bCritical,tableOptional) 
 						StellarBlade.StartSkillTargetResult(v,SkillResultAliasWhenJustParry,HitLevel,SkillStepTable.bCritical,tableOptional) 
 						-- StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenJustParry) 
-						self.SBAI_SkillStep.HitChecked = true 
+						SBAI_SkillStep.HitChecked = true 
 						-- return IsValid(enemy), self.SBAI_SkillStep.Hit, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
 						-- print("target result:",v,SkillResultAliasWhenParry) 
 					end 
@@ -4740,7 +4804,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
 						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
 						-- print("self is:",self) 
-						if self.SBAI_SkillStep then self.SBAI_SkillStep.Hit = true end -- may be removed after blockskill 
+						SBAI_SkillStep.Hit = true -- may be removed after blockskill 
 						if self.SBAI_SkillTable then 
 							self.SBAI_SkillTable.Hit = true 
 						end 
@@ -4825,10 +4889,8 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			end 
 		end 
 	end 
-	if self.SBAI_SkillStep then -- investigate cases why this is nil 
-		self.SBAI_SkillStep.HitChecked = true 
-	end 
-	return IsValid(enemy), self.SBAI_SkillStep and self.SBAI_SkillStep.Hit or false, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
+	SBAI_SkillStep.HitChecked = true 
+	return IsValid(enemy), SBAI_SkillStep.Hit, bParry, bParry -- bCheckTarget, bHit, bParry, bJustParry 
 end 
 
 StellarBlade.TargetFilter = function(ent, filter, Cycle) 
@@ -4841,7 +4903,9 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 	if filter == "None" then return {} end 
 	-- shortcuts to simple checks 
 	if filter == "Self" then return {ent} end 
+	if filter == "SelfDead" and !ent:Alive() then return {ent} end 
 	if filter == "Enemy" then return ent.GetEnemy and IsValid(ent:GetEnemy()) and {ent:GetEnemy()} or {StellarBlade.PickTarget(ent)[1]} end 
+	if filter == "TestEffect_All_Target" then return ents.GetAll() end 
     if !TargetFilterTable then return {ent:GetEnemy()} end 
 	
     local ents_FindInSphere = ents.FindInSphere
@@ -5672,7 +5736,7 @@ function StellarBlade:GetEntityStates()
 	local bAir = not self:IsOnGround()
 	if physobj and physobj:IsValid() then
 		-- Use friction snapshot for physics objects if applicable
-		if (self.GetMoveType and self:GetMoveType() == MOVETYPE_VPHYSICS) or not self.GetMoveType then
+		if (self.GetMoveType and self:GetMoveType() == MOVETYPE_VPHYSICS) or !self.GetMoveType then
 			bAir = table.IsEmpty(physobj:GetFrictionSnapshot())
 		end
 	end
@@ -5698,9 +5762,37 @@ function StellarBlade:GetEntityStates()
 end
 
 -- Shared function to resolve keys and apply actions
+-- Shared function to resolve keys and apply actions
 local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget, HitLevel, tableOptional)
-    -- Add local boolean configuration for additive HitLevel results
+    -- Existing local boolean configuration for additive HitLevel results
     local bHitLevelAdditive = true 
+
+    -- Toggles to enable or disable the mapping features
+    local bEnableAdditiveMapping = true
+    local bEnableOverrideMapping = false
+
+    -- Additive Table Mapping: {[SourceKey] = TargetKeyToAdd}
+    -- Include any standard or HitLevel* results here
+    -- Additive Table Mapping: {[CurrentStateKey] = AdditionalKeyToPullFrom}
+	local tAdditiveMapping = {
+    -- When processing base Airborne, pull base Moving
+    ["ResultTargetAirborneEffect"]          = "ResultTargetEventMovingEffect",
+    
+    -- When processing base Air, pull base Moving
+    ["ResultTargetAirEffect"]              = "ResultTargetEventMovingEffect",
+    
+    -- When processing HitLevel Airborne, pull base Moving
+    ["HitLevelResultTargetAirborneEffect"]  = "ResultTargetEventMovingEffect",
+    
+    -- When processing HitLevel Air, pull base Moving
+    ["HitLevelResultTargetAirEffect"]      = "ResultTargetEventMovingEffect"
+}
+
+    -- Override Table Mapping: {[OverrideSource] = TargetKeyToReplace}
+    -- This configuration uses the exact syntax format requested: Key replaces Value.
+    local tOverrideMapping = {
+        ["ResultTargetEventMovingEffect"] = "ResultTargetAirEffect"
+    }
 
     -- The Priority Order: High to Low
     local priorityOrder = { "Groggy", "Down", "Swimming", "Airborne", "Air", "EventMoving", "Common" }
@@ -5719,6 +5811,46 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
         MoveStep = false
     }
 
+    -- Internal helper to process keys, overrides, and additions dynamically
+    local function fetchValues(origKey, outTable)
+        if !origKey or origKey == "" then return false end
+
+        local finalKey = origKey
+
+        -- 1. Resolve Override Mapping
+        if bEnableOverrideMapping then
+            for src, tgt in pairs(tOverrideMapping) do
+                if tgt == origKey then
+                    finalKey = src
+                    break
+                end
+            end
+        end
+
+        -- Fetch the actual resolved content
+        local added = false
+        local val = SkillResult[finalKey]
+        if val and val != "" and val != "None" then
+            table.insert(outTable, val)
+            added = true
+        end
+
+        -- 2. Resolve Additive Mapping
+        if bEnableAdditiveMapping then
+            local addKey = tAdditiveMapping[finalKey] 
+            if addKey and addKey != "" then
+                local addVal = SkillResult[addKey]
+                if addVal and addVal != "" and addVal != "None" then
+					print(addKey,addVal) 
+                    table.insert(outTable, addVal)
+                    added = true
+                end
+            end
+        end
+
+        return added
+    end
+
     -- Iterate through priority list
     for _, stateName in ipairs(priorityOrder) do
         -- Only check if this state is actually active on the entity
@@ -5730,75 +5862,62 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
             
             -- 1. Resolve EFFECT
             if !filledSlots.Effect then
+                local baseKey = prefix .. "Effect"
+                local hitKey = hitLevelPrefix .. "Effect"
+
                 if isTarget and HitLevel then
-                    local hitLevelVal = SkillResult[hitLevelPrefix .. "Effect"]
-                    local baseVal = SkillResult[prefix .. "Effect"]
-                    
                     if bHitLevelAdditive then
-                        local added = false
-                        if baseVal and baseVal != "" then 
-                            table.insert(selectedActions.Effect, baseVal) 
-                            added = true
-                        end
-                        if hitLevelVal and hitLevelVal != "" then 
-                            table.insert(selectedActions.Effect, hitLevelVal) 
-                            added = true
-                        end
-                        if added then filledSlots.Effect = true end
+                        local addedBase = fetchValues(baseKey, selectedActions.Effect)
+                        local addedHit = fetchValues(hitKey, selectedActions.Effect)
+                        if addedBase or addedHit then filledSlots.Effect = true end
                     else
                         -- Original behavior: HitLevel replaces base action
-                        if hitLevelVal and hitLevelVal != "" then 
-                            table.insert(selectedActions.Effect, hitLevelVal) 
-                            filledSlots.Effect = true 
+                        local temp = {}
+                        if fetchValues(hitKey, temp) then
+                            for _, v in ipairs(temp) do
+                                table.insert(selectedActions.Effect, v)
+                            end
+                            filledSlots.Effect = true
                         end
                     end
                 else
-                    local baseVal = SkillResult[prefix .. "Effect"]
-                    if baseVal and baseVal != "" then 
-                        table.insert(selectedActions.Effect, baseVal) 
-                        filledSlots.Effect = true 
+                    if fetchValues(baseKey, selectedActions.Effect) then
+                        filledSlots.Effect = true
                     end
                 end
             end
 
             -- 2. Resolve SHOWPATH
             if !filledSlots.ShowPath then
-                local val = SkillResult[prefix .. "ShowPath"]
-                if val and val != "" then 
-                    table.insert(selectedActions.ShowPath, val)
-                    filledSlots.ShowPath = true 
+                local showPathKey = prefix .. "ShowPath"
+                if fetchValues(showPathKey, selectedActions.ShowPath) then
+                    filledSlots.ShowPath = true
                 end
             end
 
             -- 3. Resolve MOVESTEP (Targets only)
             if isTarget and !filledSlots.MoveStep then
+                local baseMoveKey = prefix .. "MoveAlias"
+                local hitMoveKey = hitLevelPrefix .. "MoveAlias"
+
                 if HitLevel then
-                    local hitLevelVal = SkillResult[hitLevelPrefix .. "MoveAlias"]
-                    local baseVal = SkillResult[prefix .. "MoveAlias"]
-                    
                     if bHitLevelAdditive then
-                        local added = false
-                        if baseVal and baseVal != "" and baseVal != "None" then 
-                            table.insert(selectedActions.MoveStep, baseVal) 
-                            added = true
-                        end
-                        if hitLevelVal and hitLevelVal != "" and hitLevelVal != "None" then 
-                            table.insert(selectedActions.MoveStep, hitLevelVal) 
-                            added = true
-                        end
-                        if added then filledSlots.MoveStep = true end
+                        local addedBase = fetchValues(baseMoveKey, selectedActions.MoveStep)
+                        local addedHit = fetchValues(hitMoveKey, selectedActions.MoveStep)
+                        if addedBase or addedHit then filledSlots.MoveStep = true end
                     else
                         -- Original behavior: HitLevel replaces base action
-                        if hitLevelVal and hitLevelVal != "" and hitLevelVal != "None" then 
-                            table.insert(selectedActions.MoveStep, hitLevelVal) 
-                            filledSlots.MoveStep = true 
+                        local temp = {}
+                        if fetchValues(hitMoveKey, temp) then
+                            for _, v in ipairs(temp) do
+                                table.insert(selectedActions.MoveStep, v)
+                            end
+                            filledSlots.MoveStep = true
                         end
                     end
                 else
-                    local baseVal = SkillResult[prefix .. "MoveAlias"]
-                    if baseVal and baseVal != "" and baseVal != "None" then 
-                        table.insert(selectedActions.MoveStep, baseVal) 
-                        filledSlots.MoveStep = true 
+                    if fetchValues(baseMoveKey, selectedActions.MoveStep) then
+                        filledSlots.MoveStep = true
                     end
                 end
             end
@@ -6194,8 +6313,8 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		end 
 	end 
 
-	StellarBlade.ProcessActiveSkill(self,self.SBAI_SkillStep) 
-	return true 
+	StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep) 
+	return SBAI_SkillStep 
 end 
 
 --==============================================================================
@@ -7738,21 +7857,22 @@ hook.Add("Restored","SB_SaveRestore",function()
 				end 
 			-- restore SBAI_SkillStep 
 			elseif k == "SBAI_SkillStep" then 
+				StellarBlade.SBAI_SkillStep.Initialize(v) 
 			
-			setmetatable(v,{ __index = function(v,key) 
-				if key == "Cycle" then 
-					return math.Clamp((CurTime() - v.Time) / v.Data.Duration, 0, 1) 
-				end 
-			end } ) 
-			for originaltable,originalvalue in pairs(StellarBlade.SBAI_SkillStep) do 
-				v[originaltable] = originalvalue 
-			end 
-			hook.Add( "Think", v, function() 
+			-- setmetatable(v,{ __index = function(v,key) 
+				-- if key == "Cycle" then 
+					-- return math.Clamp((CurTime() - v.Time) / v.Data.Duration, 0, 1) 
+				-- end 
+			-- end } ) 
+			-- for originaltable,originalvalue in pairs(StellarBlade.SBAI_SkillStep) do 
+				-- v[originaltable] = originalvalue 
+			-- end 
+			-- hook.Add( "Think", v, function() 
 				-- print(self, self.Outer) -- NPC [120][npc_sb_raven]	nil 
-				StellarBlade.ProcessActiveSkill(v.Outer,v) 
-			end ) 
+				-- StellarBlade.ProcessActiveSkill(v.Outer,v) 
+			-- end ) 
 			
-			hook.Add("PostEntityTakeDamage",v,v.PostEntityTakeDamage) 
+			-- hook.Add("PostEntityTakeDamage",v,v.PostEntityTakeDamage) 
 			
 			-- restore SBAI_SkillTable 
 			elseif k == "SBAI_SkillTable" then 
@@ -7761,7 +7881,6 @@ hook.Add("Restored","SB_SaveRestore",function()
 			elseif k == "SB_EffectAlias" then 
 				for EffectInstance, EffectTable in pairs(v) do 
 					for _,EffectAlias in pairs(EffectTable) do 
-						print("calling Initialize on:",EffectAlias,EffectAlias.Name) 
 						StellarBlade.SB_EffectAlias.Initialize(EffectAlias) 
 					end 
 					-- PrintTable(EffectAlias) 
