@@ -1552,13 +1552,13 @@ function StellarBlade.SB_EffectAlias:Initialize(tableOptional)
 		hook.Add("EntityTakeDamage",self,self.EntityTakeDamage) 
 		hook.Add("PostEntityTakeDamage",self,self.PostEntityTakeDamage) 
 		-- fully initialized 
-		self.IsActive = function() return true end 
+		self.IsActive = true 
 		StellarBlade.OnAddEffect(self.Outer,self,tableOptional) 
 	end 
 	if StartDelayTime == 0 or self.IsNetworkedOrigin then 
 		Activate() 
 	else 
-		self.IsActive = function() return false end 
+		self.IsActive = false 
 		hook.Add("Think",self,function() 
 			if CurTime() >= self.Time + StartDelayTime then 
 				self.EndTime = CurTime() + self.LifeTime 
@@ -2095,7 +2095,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
             for _, activeInstance in pairs(effectInstances) do
                 
                 -- Check if this active instance provides any immunities 
-                if activeInstance:IsActive() and activeInstance.ImmuneEffectGroupArray then
+                if activeInstance.IsActive and activeInstance.ImmuneEffectGroupArray then
                     
                     -- Loop through the immunity list
                     for _, immuneGroup in ipairs(activeInstance.ImmuneEffectGroupArray) do
@@ -6361,7 +6361,8 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		if Hit then 
 			-- add on skill step end stat 
 		end 
-		self.SBAI_SkillStep:Remove(false) 
+		-- self.SBAI_SkillStep:Remove(false) 
+		StellarBlade.SBAI_SkillStep.Remove(self.SBAI_SkillStep,false) 
 	else 
 		StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_BeforeNextSkill") 
 	end 
@@ -6457,7 +6458,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
         StellarBlade.AddMoveStep(self,SelfMoveAlias,tableOptional) 
     end 
 	
-	if SkillStepTable.Type != "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+	if SkillStepTable.Type != "ESBSkillActiveStepType::SkillActiveStepType_Hit" and IsValid(enemy) then 
 		for _, TargetMoveAliasArray in ipairs(SkillStepTable.TargetMoveAliasArray) do 
 			StellarBlade.AddMoveStep(enemy,TargetMoveAliasArray,tableOptional) 
 		end 
@@ -6825,38 +6826,29 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		-- print("in FinishMove",ply,mv) 
 		-- print(mv.Data) 
 		-- print(ply:IsFlagSet(FL_FROZEN),self.movePosDelta) 
+		
+		local bIgnoreCollision 
+		for i,moveStep in ipairs(self) do 
+			local name = moveStep.MoveArrayName 
+			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+			bIgnoreCollision = CharacterMoveTable.bIgnoreCollision 
+		end 
+		
 		if ply:IsPlayer() and ply:IsFlagSet(FL_FROZEN) then -- Move doesn't call during ply:Freeze(true) 
 			self:Move(ply,mv) 
 			-- print("ended self.Move",CurTime()) 
 		end 
 		local finalPos, finalAng = mv:GetOrigin() + self.movePosDelta, self.moveAngDelta 
-		-- print("pre FinishMove:	",SysTime()) 
-		-- also apply root movement on gestures as well 
-		--[[ 
-		for layerID = 0, 15 do 
-			if ply:IsValidLayer(layerID) then 
-				-- print(layerID) 
-				-- print("pre GetIntervalMovement:",SysTime()) 
-				local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ply,FrameTime(),layerID) -- true, newPosition, newAngles, bMoveSeqFinished 
-				-- print(bMoved, newPosition, newAngles, bMoveSeqFinished) 
-				-- print("post GetIntervalMovement:",SysTime()) 
-				-- print(layerID,bMoved) 
-				if bMoved then 
-					-- local moveResult = IterativeHybridMoveLimit(ply, ply:GetPos(), newPosition) 
-					-- ply:SetLocalPos(moveResult.vEndPosition) 
-					local angles = ply:GetLocalAngles() 
-					ply:SetLocalAngles(Angle(angles.x,newAngles.y,angles.z)) 
-					newPosition = newPosition - ply:GetPos() 
-					self.movePosDelta = self.movePosDelta + newPosition 
-					break 
-				end 
-			end 
-		end 
-		--]] 
 		
 		if self.movePosDelta != vector_origin then 
 			-- print("pre IterativeHybridMoveLimit:",SysTime()) 
-			local moveResult = IterativeHybridMoveLimit(ply, mv:GetOrigin(), finalPos) 
+			local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT 
+			local mask = nil 
+			if bIgnoreCollision then 
+				collisiongroup = COLLISION_GROUP_IN_VEHICLE 
+				mask = 0 
+			end 
+			local moveResult = IterativeHybridMoveLimit(ply, mv:GetOrigin(), finalPos, { collisiongroup = collisiongroup, mask = mask }) 
 			-- print("post IterativeHybridMoveLimit:",SysTime()) 
 			-- ply:SetLocalPos(moveResult.vEndPosition) 
 			-- print("calling moveResult",CurTime()) 
@@ -7244,6 +7236,27 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 			-- print("dir:",dir) 
 			moveAngDelta = moveAngDelta + dir 
 		end 
+	elseif RotationType == "ESBMoveRotationType::MoveRotationType_MoveDirection" then 
+        -- Prefer the pre-calculated vecMoveDirection from the DirectionAxis logic
+        if vecMoveDirection and vecMoveDirection:LengthSqr() > 0 then
+            local dir = vecMoveDirection:GetNormalized():Angle()
+            moveAngDelta = moveAngDelta + dir
+        -- Fallback to the actual translational movement delta if the axis is zeroed
+        elseif movePosDelta and movePosDelta:LengthSqr() > 0 then
+            local dir = movePosDelta:GetNormalized():Angle()
+            moveAngDelta = moveAngDelta + dir
+        end
+    elseif RotationType == "ESBMoveRotationType::MoveRotationType_Target_FirstPosition" then 
+        if IsValid(enemy) then 
+            -- Calculate and cache the angle if it hasn't been set yet for this move step
+            if not moveStep.FirstTargetAngle then
+                local dir = (enemy:GetPos() - self:GetPos()):GetNormalized()
+                moveStep.FirstTargetAngle = dir:Angle()
+            end
+            
+            -- Apply the cached angle
+            moveAngDelta = moveAngDelta + moveStep.FirstTargetAngle
+        end
 	end 
 	-- print("post Move Offset Calc:",SysTime()) 
 	
