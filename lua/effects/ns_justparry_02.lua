@@ -1,6 +1,6 @@
 -- ns_parryblock_01 
 -- Cache the material outside of the functions for performance
-local RefractMat = Material("sprites/physg_glow1")
+local RefractMat = Material("sprites/physg_glow1") 
 
 -- Clientside only
 
@@ -365,14 +365,14 @@ end
 function EFFECT:Render()
     -- Calculate remaining lifetime ratio (starts at 1.0, counts down to 0.0)
     local remaining = self.DieTime - CurTime()
-    local ratio = math.Clamp(remaining / self.Lifetime, 0, 1)
+    local Cycle = math.Clamp(remaining / self.Lifetime, 0, 1)
 
-    -- Linearly decrease $refractamount from 0.1 to 0 based on the lifetime ratio
-    -- RefractMat:SetFloat("$refractamount", ratio * 0.01)
+    -- Linearly decrease $refractamount from 0.1 to 0 based on the lifetime Cycle
+    -- RefractMat:SetFloat("$refractamount", Cycle * 0.01)
 
     -- Render the material as a 2D sprite facing the player's EyePos()
     render.SetMaterial(RefractMat) 
 	for i = 1,3 do 
-		render.DrawSprite(self:GetPos(), self:GetModelScale()*10, self:GetModelScale()*0.5, Color(255,93,0))
+		render.DrawSprite(self:GetPos(), self:GetModelScale()*10, self:GetModelScale()*0.5, Color(255,93,0)) 
 	end 
 end

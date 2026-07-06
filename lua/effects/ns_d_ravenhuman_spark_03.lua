@@ -9,11 +9,6 @@ function EFFECT:Init(data)
     self:SetOwner(data:GetEntity()) 
     self.CreationTime = CurTime() 
     self.DieTime = data:GetMagnitude()  
-
-    local origin = entPos or localPos or vector_origin
-    if localPos and localPos != vector_origin then
-        origin = localPos
-    end
     
     self.Attachment = data:GetAttachment() 
     self:Think() 
@@ -26,7 +21,7 @@ function EFFECT:Init(data)
     -- UPDATE: Calculate tangent from hit normal and floor normal
     -- local hitNormal = Normal
     -- local tangent = hitNormal:Cross(FloorNormal or vector_up):GetNormalized()
-	local forward = self:GetOwner():GetOwner():GetForward()
+	local forward = IsValid(self:GetOwner()) and IsValid(self:GetOwner():GetOwner()) and self:GetOwner():GetOwner():GetForward() or self:GetForward() 
 	local ang = forward:Angle()
 	ang.pitch = ang.pitch - 60  -- lift by 20 degrees upward 
 	forward = ang:Forward()
@@ -42,8 +37,8 @@ function EFFECT:Init(data)
     util.Effect("ManhackSparks",ef) 
     util.Effect("ManhackSparks",ef) 
     -- util.Effect("Explosion",ef) 
-    print("finish ns_d_ravenhuman_spark_03",self:GetPos(),self:GetOwner():GetOwner():GetForward()) 
-end
+    -- print("finish ns_d_ravenhuman_spark_03",self:GetPos(),self:GetOwner():GetOwner():GetForward()) 
+end 
 
 function EFFECT:Think() 
 	-- print("self:GetCreationTime()",self:GetCreationTime()) 

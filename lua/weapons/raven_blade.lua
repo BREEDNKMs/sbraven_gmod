@@ -114,7 +114,7 @@ SWEP.Secondary.Sound			= Sound("M_Raven_SwordSwish_L_Cue")
 SWEP.Melee_HitSound	=	Sound("M_Raven_Skill_Stab_Cue") 
 
 function SWEP:SpecialDT() 
-    self:NetworkVar("Int", 0, "SelectedSkillIndex") 
+    self:NetworkVar("Int", "SelectedSkillIndex") 
     -- self:NetworkVar("Bool", 0, "InSkillMode") -- SetAttack will be used instead 
 end 
 
@@ -174,7 +174,7 @@ function SWEP:SpecialThink()
 end 
 
 function SWEP:CycleSkill(direction)
-    if #self.CachedSkillList == 0 then self:BuildSkillList() return end
+    if !self.CachedSkillList or #self.CachedSkillList == 0 then self:BuildSkillList() return end
     
     local cur = self:GetSelectedSkillIndex()
     local nextIndex = cur + direction
@@ -235,11 +235,16 @@ function SWEP:BuildSkillList()
 	M_Raven_ChaseChargeSlash_Hit1.bEveryFrameHitCheck = true 
 	
 	
-	M_Raven_ChaseChargeSlash_Move1 = table.Merge(M_Raven_ChaseChargeSlash_Move1, SB_M_Raven_ChaseChargeSlash[36].Properties.MoveTableProperty)
-	M_Raven_ChaseChargeSlash_Move2 = table.Merge(M_Raven_ChaseChargeSlash_Move2, SB_M_Raven_ChaseChargeSlash[37].Properties.MoveTableProperty)
-	M_Raven_ChaseChargeSlash_Move3 = table.Merge(M_Raven_ChaseChargeSlash_Move3, SB_M_Raven_ChaseChargeSlash[38].Properties.MoveTableProperty)
-	M_Raven_ChaseChargeSlash_Move4 = table.Merge(M_Raven_ChaseChargeSlash_Move4, SB_M_Raven_ChaseChargeSlash[39].Properties.MoveTableProperty)
-	SR_M_Raven_ChaseChargeSlash_Hit1 = table.Merge(SR_M_Raven_ChaseChargeSlash_Hit1, SB_M_Raven_ChaseChargeSlash[40].Properties.SkillResultTableProperty)
+	M_Raven_ChaseChargeSlash_Move1 = table.Merge(M_Raven_ChaseChargeSlash_Move1, SB_M_Raven_ChaseChargeSlash[36].Properties.MoveTableProperty) 
+	M_Raven_ChaseChargeSlash_Move2 = table.Merge(M_Raven_ChaseChargeSlash_Move2, SB_M_Raven_ChaseChargeSlash[37].Properties.MoveTableProperty) 
+	M_Raven_ChaseChargeSlash_Move3 = table.Merge(M_Raven_ChaseChargeSlash_Move3, SB_M_Raven_ChaseChargeSlash[38].Properties.MoveTableProperty) 
+	M_Raven_ChaseChargeSlash_Move4 = table.Merge(M_Raven_ChaseChargeSlash_Move4, SB_M_Raven_ChaseChargeSlash[39].Properties.MoveTableProperty) 
+	SR_M_Raven_ChaseChargeSlash_Hit1 = table.Merge(SR_M_Raven_ChaseChargeSlash_Hit1, SB_M_Raven_ChaseChargeSlash[40].Properties.SkillResultTableProperty) 
+	
+	M_Raven_ChaseChargeSlash_Move1.bIgnoreCollision = false 
+	M_Raven_ChaseChargeSlash_Move2.bIgnoreCollision = true 
+	M_Raven_ChaseChargeSlash_Move3.bIgnoreCollision = true 
+	M_Raven_ChaseChargeSlash_Move4.bIgnoreCollision = true 
 	
 	SB_SkillTable[1].Rows["M_Raven_ChaseChargeSlash"] = M_Raven_ChaseChargeSlash 
 	SB_SkillActiveStepTable[1].Rows["M_Raven_ChaseChargeSlash_Cast1"] = M_Raven_ChaseChargeSlash_Cast1 
@@ -333,7 +338,8 @@ function SWEP:Reload()
 
     -- 2. Check if we have a skill Queued
     if self.StellarBlade_SelectedSkill then 
-		if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !owner.SBAI_SkillStep:IsActive() then 
+		-- if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !owner.SBAI_SkillStep:IsActive() then 
+		if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !StellarBlade.SBAI_SkillStep.IsActive(owner.SBAI_SkillStep) then 
             local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill) 
             if success then return end 
         end 
