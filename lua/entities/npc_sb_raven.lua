@@ -342,11 +342,11 @@ function ENT:SBAI_EvaluateEdge(childEntry)
             local rawName = decoNode.Type or decoNode.Name
             local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
 			
-			-- print("Decorator is:",funcName) 
+			print("Decorator is:",funcName) 
             if self[funcName] then
                 -- Check condition
                 local success = self[funcName](self, decoNode.Properties, decoID) 
-				-- print(decoID, "Decorator result is:", success) 
+				print(decoID, "Decorator result is:", success) 
 				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
                 if !success then return false end
             end
@@ -529,6 +529,9 @@ function ENT:SBAI_SelectTask(startNodeID)
     local max_ops = 500 
 
     while #self.SBAI_ExecutionStack > 0 do
+		print("startNodeID:",startNodeID,"ops:",ops) 
+		local frame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
+		PrintTable(frame)
         ops = ops + 1
         if ops > max_ops then
             print("[SBAI] Infinite Loop Detected! Tree resolved too many nodes without yielding.")
@@ -645,9 +648,9 @@ function ENT:SBAI_SelectTask(startNodeID)
 
             -- Run Task
             if self[taskName] then 
-				-- print("Task is:",taskName) 
+				print("Task is:",taskName) 
                 local result = self[taskName](self, taskNode.Properties, taskID) 
-				-- print("Task result is:",result) 
+				print("Task result is:",result) 
                 
                 if result == nil then
                     coroutine.yield() -- Running
@@ -717,11 +720,16 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	local pos = self:WorldToLocal(self:GetEnemy():WorldSpaceCenter()) 
 	if pos.z < -800 or pos.z > 800 then return false end 
 	-- has raven melee weapon 
-	if IsValid(self:GetActiveWeapon()) then 
-		if self:GetActiveWeapon():GetClass() != "raven_blade" then return false end 
-	else 
-		return false 
-	end 
+	-- FIX: Check if we possess the raven_blade in our inventory, rather than if it's currently active.
+    -- This allows us to transition back to the blade when switching away from a secondary weapon.
+    local hasRavenBlade = false
+    for _, wep in ipairs(self:GetWeapons()) do
+        if wep:GetClass() == "raven_blade" then
+            hasRavenBlade = true
+            break
+        end
+    end
+    if not hasRavenBlade then return false end
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
 	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
 	if self:NPC_HasCondition(COND.ENEMY_OCCLUDED) then return false end 
@@ -747,11 +755,71 @@ function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
 end 
 
 function ENT:CustomRunAI() 
-	-- self:SBAI_ProcessActiveSkill(self.SBAI_SkillStep) 
-	local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
-	if NPC_ShouldConductBehaviorTree then 
-		return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
+	local enemy = self:GetEnemy()
+    local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
+    local skipBehaviorTree = false
+	
+	if self:GetCurrentSchedule() == SCHED_SCENE_GENERIC then -- may be in a skill task 
+		if self.SBAI_SkillStep and self.SBAI_SkillStep.Name then 
+			if self.SBAI_SkillStep:IsValid() then goto inskill end 
+		end 
 	end 
+
+    -- 1. INTERSECTION CHECK: Waypoint segment intersection with enemy position
+    if not NPC_ShouldConductBehaviorTree and self.enemyDist and self.enemyDist < 100 and IsValid(enemy) then
+        local lineStart = self:GetPos()
+        local lineEnd = self:GetCurWaypointPos()
+        local pointPos = enemy:GetPos()
+		if lineEnd == vector_origin then skipBehaviorTree = true end 
+
+        if lineEnd and lineEnd != vector_origin then
+            local distToLine, nearestPoint, distAlongLine = util.DistanceToLine(lineStart, lineEnd, pointPos)
+            -- Tolerance uses the enemy's bounding radius (fallback to standard 32 units)
+            local tolerance = enemy:BoundingRadius() or 32
+            if distToLine <= tolerance then
+                skipBehaviorTree = true
+            end
+        end
+    end
+
+    -- 2. DYNAMIC WEAPON HANDLING (Combat/Alert States)
+    if IsValid(enemy) and self:GetNPCState() != NPC_STATE_DEAD then
+        if (NPC_ShouldConductBehaviorTree and not skipBehaviorTree) or skipBehaviorTree then
+            -- High priority targets OR Interception condition met -> Force raven_blade
+            local ravenBlade = NULL
+            for _, wep in ipairs(self:GetWeapons()) do
+                if wep:GetClass() == "raven_blade" then ravenBlade = wep; break end
+            end
+            if IsValid(ravenBlade) and self:GetActiveWeapon() != ravenBlade then
+                self:SelectWeapon(ravenBlade)
+                ravenBlade:RemoveEffects(EF_NODRAW)
+				-- Entity(1):ChatPrint("selecting blade") 
+                if ravenBlade.DeploySound then
+                    ravenBlade:EmitSound(ravenBlade.DeploySound)
+                end
+            end
+        else
+            -- Behavior tree should not be accessed -> Draw secondary weapon (ranged, etc.)
+            local secondaryWep = NULL
+            for _, wep in ipairs(self:GetWeapons()) do
+                if wep:GetClass() != "raven_blade" then secondaryWep = wep; break end
+            end
+            if IsValid(secondaryWep) then
+                if self:GetActiveWeapon() != secondaryWep then
+                    self:SelectWeapon(secondaryWep)
+                    secondaryWep:RemoveEffects(EF_NODRAW)
+					Entity(1):ChatPrint("selecting secondary weapon") 
+                end
+            end
+        end
+    end
+	
+	::inskill:: 
+
+    -- 3. BEHAVIOR TREE RUN EXECUTION
+    if NPC_ShouldConductBehaviorTree and not skipBehaviorTree then 
+        return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
+    end
 	local layer = self:FindGestureLayer(ACT_GESTURE_MELEE_ATTACK1) 
 	if layer and layer >= 0 then 
 		if self:GetLayerCycle(layer) > 0.25 then 
@@ -762,7 +830,7 @@ function ENT:CustomRunAI()
 	elseif self:GetCurrentSchedule() == SCHED_MELEE_ATTACK1 then 
 		if self:NPC_HasCondition(COND.CAN_MELEE_ATTACK1) and self:TaskTime() > 0.25 then 
 		self:TaskComplete()
-		print("raven clearing schedule") 
+		-- print("raven clearing schedule") 
 			-- self.CurrentSchedule = nil 
 		end 
 	end 
@@ -787,69 +855,71 @@ function ENT:OnRemove(fullUpdate)
 end 
 
 function ENT:OnStateChange(oldState, newState) 
-    -- print("state change", oldState, newState) 
-
-    -- 1. SEARCH: Find the raven_blade anywhere in the inventory
     local ravenBlade, otherWeapon = NULL, NULL 
     local weapons = self:GetWeapons() 
 
-	for _, wep in ipairs(weapons) do 
-		if wep:GetClass() == "raven_blade" then 
-			ravenBlade = wep 
-		else 
-			otherWeapon = wep 
-		end 
-		if IsValid(ravenBlade) and IsValid(otherWeapon) then break end 
-	end 
+    for _, wep in ipairs(weapons) do 
+        if wep:GetClass() == "raven_blade" then 
+            ravenBlade = wep 
+        else 
+            otherWeapon = wep 
+        end 
+        if IsValid(ravenBlade) and IsValid(otherWeapon) then break end 
+    end 
 
-    -- 2. LOGIC: Only proceed if we found the valid weapon entity
     if IsValid(ravenBlade) then 
-
-        -- HOLSTER (Alert -> Idle)
-		if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and ravenBlade == self:GetActiveWeapon() and self:GetKnownEnemyCount() < 1 then 
+        -- HOLSTER (Alert/Combat -> Idle)
+        -- Triggers when there are absolutely no targets left and entering IDLE.
+        if (oldState >= NPC_STATE_ALERT or oldState <= NPC_STATE_NONE) and newState == NPC_STATE_IDLE and self:GetKnownEnemyCount() < 1 then 
             
-			local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS") 
-			if seqID != -1 then 
-				local layer = self:FindGestureSequenceLayer(seqID) 
-				layer = layer >= 0 and layer or self:AddGestureSequence(seqID) 
-				self:SetLayerPlaybackRate(layer,0.5) 
-				-- print("layer_Eve_Weapon_End_BS", layer) -- holster 
-			end 
-
-			ravenBlade:AddEffects(EF_NODRAW) 
-			if IsValid(otherWeapon) then 
-				self:SelectWeapon(otherWeapon) 
-			else 
-				self:SetSaveValue("m_hActiveWeapon", otherWeapon) -- set to NULL 
-			end 
-			ravenBlade:EmitSound("character/se/pc_foldsword_close.wav") 
-
-        -- DRAW (Idle -> Alert/Combat)
-        elseif oldState == NPC_STATE_IDLE and (newState >= NPC_STATE_ALERT and newState <= NPC_STATE_COMBAT) then -- there still may be an enemy 
-            
-            local seqID = self:LookupSequence("layer_Eve_Weapon_Start_Anim")
+            local seqID = self:LookupSequence("layer_Eve_Weapon_End_BS") 
             if seqID != -1 then 
-				local layer = self:FindGestureSequenceLayer(seqID) 
+                local layer = self:FindGestureSequenceLayer(seqID) 
                 layer = layer >= 0 and layer or self:AddGestureSequence(seqID) 
-				self:SetLayerPlaybackRate(layer,0.5) 
-                -- print("layer_Eve_Weapon_Start_Anim", layer) -- draw 
+                self:SetLayerPlaybackRate(layer,0.5) 
             end 
 
-            -- FIX: Select the specific weapon entity we found earlier
-            self:SelectWeapon(ravenBlade) 
-            
-            -- FIX: Use the variable 'ravenBlade' directly so we don't crash
-            -- if the engine hasn't updated GetActiveWeapon() yet.
-            -- ravenBlade:RemoveEffects(EF_NODRAW) 
-            
-            if ravenBlade.DeploySound then
-                ravenBlade:EmitSound(ravenBlade.DeploySound) 
-            end
+            ravenBlade:AddEffects(EF_NODRAW) 
+            if IsValid(otherWeapon) then 
+                self:SelectWeapon(otherWeapon) 
+            else 
+                self:SetSaveValue("m_hActiveWeapon", NULL) 
+            end 
+			Entity(1):ChatPrint("OnStateChange no targets: Selecting OtherWeapon"..tostring(otherWeapon).." "..tostring(oldState).." "..tostring(newState)) 
+            ravenBlade:EmitSound("character/se/pc_foldsword_close.wav") 
 
-            self:ResetIdealActivity(ACT_IDLE) 
+        -- DRAW (Idle -> Alert/Combat)
+        elseif oldState == NPC_STATE_IDLE and (newState >= NPC_STATE_ALERT and newState <= NPC_STATE_COMBAT) then 
+            
+            if self:NPC_ShouldConductBehaviorTree() then
+                -- Target requires Behavior Tree -> Setup Raven Blade gestures
+                local seqID = self:LookupSequence("layer_Eve_Weapon_Start_Anim")
+                if seqID != -1 then 
+                    local layer = self:FindGestureSequenceLayer(seqID) 
+                    layer = layer >= 0 and layer or self:AddGestureSequence(seqID) 
+                    self:SetLayerPlaybackRate(layer,0.5) 
+                end 
+
+                self:SelectWeapon(ravenBlade) 
+				Entity(1):ChatPrint("OnStateChange high priority: Selecting ravenBlade"..tostring(ravenBlade).." "..tostring(oldState).." "..tostring(newState)) 
+                if ravenBlade.DeploySound then
+                    ravenBlade:EmitSound(ravenBlade.DeploySound) 
+                end
+                self:ResetIdealActivity(ACT_IDLE) 
+            else
+                -- Target is low priority -> Instantly select secondary weapon without sword gestures
+                if IsValid(otherWeapon) then 
+                    self:SelectWeapon(otherWeapon) 
+                    otherWeapon:RemoveEffects(EF_NODRAW)
+					Entity(1):ChatPrint("OnStateChange low priority: Selecting otherWeapon"..tostring(otherWeapon).." "..tostring(oldState).." "..tostring(newState)) 
+                else
+                    self:SelectWeapon(ravenBlade) 
+					Entity(1):ChatPrint("OnStateChange low priority: Selecting ravenBlade"..tostring(ravenBlade).." "..tostring(oldState).." "..tostring(newState)) 
+                end
+            end
         end 
     end 
-end 
+end
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
@@ -880,7 +950,6 @@ function ENT:SbAimMe(tbl) -- doesn't have any additional properties
 end 
 
 function ENT:SbBlackboard(tbl) 
-	-- PrintTable(tbl) 
 	-- 1. Default IntValue should be 0 
     local testvalue = tbl.IntValue or 0 
     local CompareOP = tbl.CompareOP or "ESBCompare::Equal" 
@@ -894,7 +963,7 @@ function ENT:SbBlackboard(tbl)
     if tbl.bReturnSucceeded != nil then 
         -- Task: Write to Blackboard 
         -- print("[SBAI] Writing BB:", tbl.KeyName, tbl.IntValue) 
-		Entity(1):ChatPrint("saving to SBAI_BlackBoard: "..tbl.KeyName..tostring(tbl.IntValue).." ") 
+		-- Entity(1):ChatPrint("saving to SBAI_BlackBoard: "..tbl.KeyName..tostring(tbl.IntValue).." ") 
         self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
         return tbl.bReturnSucceeded 
     end 
@@ -1029,7 +1098,6 @@ function ENT:SbDistanceToTarget(tbl) -- distance to enemy
 end 
 
 function ENT:SbIsAlive(tbl) 
-	-- PrintTable(tbl) 
 	local ActorType = tbl.ActorType or "ESBAIActorType::Target" -- Target, Self, SubTarget, Owner. Default: Self 
 	local CheckType = tbl.CheckType or "ESBBTDecoratorAliveCheckType::Alive" -- Coma, Dead, Alive. Default: Alive 
 	-- print("ActorType",ActorType) 
@@ -1442,9 +1510,9 @@ end
 
 function ENT:SbUseSkill(tbl, nodeID) 
     -- This function is now simplified, as setup logic has moved to SetSkillStep. 
-	-- PrintTable(tbl) 
+	PrintTable(tbl) 
 	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted") 
-	-- print("Started:",nodeID,Started) 
+	print("Started:",nodeID,Started) 
     if !Started then 
         for k, v in RandomPairs(tbl.SkillName) do 
             if isnumber(k) then -- do not accidentally start variables 
@@ -1483,7 +1551,7 @@ function ENT:SbUseSkill(tbl, nodeID)
 			self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
 			return false 
 		end 
-		return nil -- not started, maybe all tasks are in delay? 
+		return false -- not started, maybe all tasks are in delay? 
 	end 
 	
 	self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
