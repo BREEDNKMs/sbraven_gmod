@@ -1,0 +1,89 @@
+"VertexLitGeneric"
+{
+	// ==========================================
+	// BASE UE4 PROPERTIES & MATERIAL OVERRIDES
+	// ==========================================
+	"$basetexture"                "sprites/T_A_NoiseTurbulence_02" // Mapping BaseTex
+	//"$bumpmap"						"sprites/T_A_SwirlNoise_02_N"
+	"$translucent"                "1"                               // BlendMode: BLEND_Translucent
+	"$nocull"                     "1"                               // TwoSided: true
+	"$color"                     "[1 1 1]"                       // Parameter: Color (Hex FFFFFF)
+	"$additive"						"1"
+
+	// ==========================================
+	// DETAIL LAYER (Using Cached Aura Texture)
+	// ==========================================
+	"$detail"                     "sprites/T_A_Aura_03"           // Secondary Cached Texture
+	"$detailblendmode"            "5"                               // Unlit Additive (Glow effect matching MSM_Unlit)
+	"$detailblendfactor"          "0.7"                           // Parameter: BaseTexHardness (0.7)
+	"$detailscale"                "[1 1]"                         // Base_TileX / Base_TileY
+
+	// ==========================================
+	// EMISSIVE BLEND (Flowing UV Distortion)
+	// ==========================================
+	"$emissiveblendenabled"       "1"
+	"$emissiveblendtexture"       "sprites/T_A_NoiseTurbulence_02" // Panning Noise Texture
+	"$emissiveblendbasetexture"   "sprites/T_B_StreakNoise_02"     // Parameter: MaskTex (Static Mask)
+	"$emissiveblendflowtexture"   "sprites/T_A_SwirlNoise_02_N"    // Parameter: UVNoiseTex (Flow/Normal map)
+	
+	// BaseIntensity (2.0) * MaskIntensity (1.2) = 2.4 multiplier
+	"$emissiveblendtint"          "[2.4 2.4 2.4]" 
+	"$emissiveblendtint_default"          "[2.4 2.4 2.4]" 
+	"$emissiveblendstrength"      "1.0"
+	
+	// X- / Y+ scrolling vector matching Base_PannX (-0.5)
+	"$emissiveblendscrollvector"  "[-0.5 0.0]"                    
+
+	// ==========================================
+	// FRESNEL & EDGE LIGHTING (Rimlight Emulation)
+	// ==========================================
+	"$phong"                      "1"
+	"$phongboost"                 "1.0"
+	"$phongfresnelranges"         "[0 0.5 1]"
+	"$phongtint"                  "[0.1 0.1 0.1]"                 // Parameter: Edge Color
+
+	"$rimlight"                   "1"
+	"$rimlightexponent"           "2"                               // Parameter: FresnelPower (S) (2.0)
+	"$rimlightboost"              "1"                               // Parameter: Edgethick (1.0)
+
+	// ==========================================
+	// MATERIAL PROXIES FOR DYNAMIC PANNING
+	// ==========================================
+	"Proxies"
+	{
+		// Animates the main base texture movement
+		"TextureScroll"
+		{
+			"texturescrollvar"     "$basetexturetransform"
+			"texturescrollrate"    "-0.5"                           // Parameter: Base_PannX (-0.5)
+			"texturescrollangle"   "0"
+		}
+
+		// Animates the detail layer independently 
+		"TextureScroll"
+		{
+			"texturescrollvar"     "$detailtexturetransform"
+			"texturescrollrate"    "-0.15"                          // Parameter: UVNoise_PannX (-0.15)
+			"texturescrollangle"   "0"
+		}
+		"Alpha"
+		{
+			"resultVar"	"$alpha" 
+		} 
+		"Equals"
+		{
+			"srcVar1"	"$alpha"
+			"resultVar"	"$emissiveblendstrength" 
+		}
+		"EntityColor"
+        {
+            "resultVar" "$color"
+        }
+		"Multiply" 
+		{ 
+			"srcVar1"	"$color"
+			"srcVar2"	"$emissiveblendtint_default"
+			"resultVar"	"$emissiveblendtint" 
+		} 
+	}
+}

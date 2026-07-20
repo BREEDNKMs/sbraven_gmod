@@ -1,0 +1,11 @@
+"Refract"
+{
+	//"$normalmap" "sprites/T_A_WaterFlowNoise_03_N"
+	"$normalmap" "shadertest/sphere"
+
+	"$normalmap2"	"" 
+	"$dudvmap" "" 
+	"$refractamount" "0.1" 
+	"$nowritez" "1" 
+	"$refracttint" "[1 1 1]"
+}

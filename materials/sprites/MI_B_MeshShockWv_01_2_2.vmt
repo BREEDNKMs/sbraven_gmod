@@ -1,0 +1,49 @@
+"VertexLitGeneric"
+{
+	// --- Base Properties & Unlit Simulation ---
+	"$basetexture"				"vgui/white"
+	"$additive" 				"1" 
+	"$color2"					"[0 0 0]"			// Blacks out diffuse lighting; since $emissiveblend is additive and doesn't read from diffuse, this simulates the Unlit shading model.
+	"$translucent"				1					// Replicates BLEND_Translucent.
+	"$nocull"					1					// Replicates TwoSided = true (disables backface culling).
+
+	// --- Emissive Blend Configuration ---
+	"$emissiveblendenabled"		1					// Enables the advanced self-illumination effect[cite: 10].
+	"$emissiveblendstrength"	1					// Controls overall opacity (set to full strength)[cite: 17, 18].
+	
+	// --- Texture Mappings ---
+	"$emissiveblendtexture"		"sprites/T_A_StreakLiquid_03"			// Mapped from RampTex (The actual glowing overlay texture).
+	"$emissiveblendbasetexture"	"sprites/T_A_Gradient_Vertical_04"		// Mapped from MaskTex_1 (Acts as the overall static mask)[cite: 12, 13, 14].
+	"$emissiveblendflowtexture"	"sprites/T_B_NoiseTurbulence_01" // Mapped from UvNoiseTex01 (The flowmap driving the movement).
+
+	// --- Color, Intensity & Motion ---
+	// HighlightColor [1 1 1] multiplied by MaskIntensity (2.0) = [2 2 2] to allow the glow to exceed standard brightness.
+	"$emissiveblendtint"		"[2 2 2]"			
+	"$emissiveblendtint_def"		"[2 2 2]"			
+	"$emissiveblendscrollvector" "[0.67 0]"			// Mapped from Ramp_PannY = 0.0; directional movement is handled by the flowmap[cite: 19, 30].
+	"Proxies"
+	{ 
+		"Multiply" 
+		{ 
+			"srcVar1" "$emissiveblendtint_def" 
+			"srcVar2" "$color" 
+			"resultVar" "$emissiveblendtint" 
+		} 
+		"Alpha" 
+		{ 
+			
+		} 
+		"Equals" 
+		{
+			"srcVar1" "$alpha" 
+			"resultVar" "$emissiveblendstrength" 
+		} 
+		"TextureScroll"
+        {
+            "texturescrollvar"   "$basetexturetransform" // Workaround to scroll the mask/flow
+            //"texturescrollrate"  "0.15"
+            "texturescrollrate"  "1.5"
+            "texturescrollangle" "0.0"
+        }
+	} 
+}

@@ -1,0 +1,44 @@
+"VertexLitGeneric"
+{
+	// --- Base Properties ---
+	"$basetexture"				"sprites/T_A_SphereMask_02"
+	"$additive"					"1"
+	"$color"					"[1 1 1]" 
+	"$color2"					"[1 1 1]" // Forces the base diffuse to black to emulate an Unlit Shading Model
+	"$nocull"					"1"	
+
+	// --- Depth Fade ---
+	"$depthblend"				"1"
+	"$depthblendscale"			"20"    // Maps 1:1 to UE4's FadeDistance (20.0)
+
+	// --- Layer 1: Emissive Blend (Main Shockwave Ring & Distortion) ---
+	"$emissiveblendenabled"		"1"
+	"$emissiveblendbasetexture"	"sprites/T_A_SphereMask_02" // Static mask constraining the effect boundary
+	"$emissiveblendtexture"		"sprites/T_C_NoiseTile_01"  // Main shockwave body/ring texture
+	"$emissiveblendflowtexture"	"sprites/T_A_NoiseRGB_01"   // Used as a flowmap to warp the UVs (Uses R & G channels)
+	
+	// Color calculation: EdgeColor [0.503, 0.920, 1.0] multiplied by RampIntensity (5.0)
+	"$emissiveblendtint"		"[1 1 1]" 
+	"$emissiveblendscrollvector" "[0.1 -0.2]"                 // Scrolls the texture along Y to match UvNoise01_PannY
+	"$emissiveblendstrength"	"1" 
+	"$vertexcolor" "1" 
+	"$vertexalpha" "1" 
+
+	// --- Layer 2: Detail Texture (Additional Scrolling Noise) ---
+	"$detail"					"sprites/T_C_NoiseTile_01"
+	"$detailblendmode"			"8"                         
+	"$detailscale"				"[4.0 0.25]"                // Maps to Additional_TileX (4.0) and TileY (0.25)
+	"$detailblendfactor"		"2.0"                       // Maps to Additional_Intensity (2.0)
+	"$detailtint"				"[0.503 0.920 1.0]"         // Tints the noise layer to match the EdgeColor
+
+	// --- Animation Proxies ---
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"textureScrollVar"		"$detailtexturetransform"
+			"textureScrollRate"		"0.1"               // Maps to Additional_PannY (0.1)
+			"textureScrollAngle"	"90"                // 90 degrees scrolls vertically upwards along the Y axis
+		}
+	}
+}

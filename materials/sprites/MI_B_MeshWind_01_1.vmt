@@ -1,0 +1,73 @@
+"VertexLitGeneric"
+{
+    // ==========================================
+    // Base Rendering & UE4 Blend Mode Overrides
+    // ==========================================
+    "$basetexture"               "sprites/T_A_Aura_03"
+	//"$bumpmap"  "sprites/T_A_SwirlNoise_02_N" 
+    "$translucent"               "1"   // Maps to BLEND_Translucent
+    "$nocull"                    "1"   // Maps to TwoSided: true
+    "$surfaceprop"               "no_decal"
+	"$additive"				"1" 
+	"$color"				"[1	1 1]" 
+
+    // ==========================================
+    // Layer 1: Base Noise Layer ($detail)
+    // ==========================================
+    "$detail"                    "sprites/T_A_NoiseTurbulence_02" // BaseTex
+    "$detailblendmode"           "5"   // Unlit Additive (Glows independent of lighting)
+    "$detailblendfactor"         "1.5" // BaseIntensity: 1.5
+    "$detailscale"               "[1.0 0.75]" // Base_TileX and Base_TileY
+
+    // ==========================================
+    // Layer 2: Flowmap Distortion Layer ($emissiveblend)
+    // ==========================================
+    "$emissiveblendenabled"      "1"
+    
+    // MaskTex: Functions as the overall container/mask for the glow effect
+    "$emissiveblendbasetexture"  "sprites/T_A_Aura_03" 
+    
+    // Secondary noise layer picked up from cached referenced assets
+    "$emissiveblendtexture"      "sprites/T_A_BaseNoise_06" 
+    
+    // UVNoiseTex: The flowmap driving the fluid distortion effect
+    "$emissiveblendflowtexture"  "sprites/T_A_SwirlNoise_02_N" 
+    
+    "$emissiveblendstrength"     "1"
+    "$emissiveblendscrollvector" "[-0.3 0]" // UVNoise_PannX: -0.3
+    "$emissiveblendtint"         "[4.0 4.0 4.0]" // MaskIntensity: 4.0
+    "$emissiveblendtint_default"         "[4.0 4.0 4.0]" // MaskIntensity: 4.0
+
+    // ==========================================
+    // Material Proxies for Real-time Animation
+    // ==========================================
+    "Proxies"
+    {
+        // Pans the primary BaseTex ($detail) horizontally over time
+        "TextureScroll"
+        {
+            "textureScrollVar"   "$detailtexturetransform"
+            "textureScrollRate"  "-0.5" // Base_PannX: -0.5
+            "textureScrollAngle" "0"
+        }
+		"Alpha"
+		{
+			"resultVar"	"$alpha" 
+		} 
+		"Equals"
+		{
+			"srcVar1"	"$alpha"
+			"resultVar"	"$emissiveblendstrength" 
+		}
+		"EntityColor"
+        {
+            "resultVar" "$color"
+        }
+		"Multiply" 
+		{ 
+			"srcVar1"	"$color"
+			"srcVar2"	"$emissiveblendtint_default"
+			"resultVar"	"$emissiveblendtint" 
+		} 
+    }
+}
