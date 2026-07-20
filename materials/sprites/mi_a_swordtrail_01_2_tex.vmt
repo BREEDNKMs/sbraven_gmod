@@ -61,4 +61,4 @@
 
     // Optional: tweak blending to emulate an emissive/unlit trail look
     "$halflambert" "1" // not supported in all engines; leave commented if unknown
-}
+} 

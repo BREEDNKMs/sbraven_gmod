@@ -4,18 +4,27 @@
 "UnlitGeneric"
 {
 	"$basetexture" "sprites/T_A_ScreenDirt_01"
-	"$additive" 1
-	"$translucent" 1
+	"$additive" "1"
+	"$translucent" "1"
 
-	"$nowritez" 1
+	"$ignorez" "1"
 
 	// "$sprite" 1
 	// Implied by: "bUsedWithNiagaraSprites": true
-	"$sprite" 1
+	"$sprite" "1"
 
 	// "$nocull" 1
 	// Standard for 2D sprites to ensure they render from both sides.
-	"$nocull" 1
-	"$vertexcolor" "0" 
-	"$vertexalpha" "0" 
+	"$nocull" "1"
+	"$vertexcolor" "1" 
+	"$vertexalpha" "1" 
+	"Proxies"
+	{
+		"TextureScroll"
+        {
+            "texturescrollvar"   "$basetexturetransform" // Workaround to scroll the mask/flow
+            "texturescrollrate"  "0.15"
+            "texturescrollangle" "90.0"
+        }
+	} 
 }

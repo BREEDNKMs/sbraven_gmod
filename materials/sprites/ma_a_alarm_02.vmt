@@ -1,0 +1,22 @@
+"UnlitGeneric" 
+{ 
+	"$basetexture"	"sprites/T_D_Liq_StreakSwirl_01" 
+	//"$basetexturetransform"	"center 0.5 0.5 scale 1 1 rotate 90 translate 0 1"
+	"$additive"	"1"	
+	"$vertexcolor"	"1"	
+	"$vertexalpha"	"1"	
+	"Proxies"
+    {
+        // TextureScroll is commonly supported; it writes a matrix to $basetexturetransform.
+        // Many Source builds accept "resultVar" and "scrollspeed".
+        "TextureScroll"
+        {
+			"textureScrollVar"      "$basetexturetransform"
+			"textureScrollRate"    "1.0"
+			"textureScrollAngle"    "0"
+			"textureScale"    "1"
+        }
+
+        // Optional: you can chain other proxies (e.g. a periodic speed multiplier) here.
+    }
+} 

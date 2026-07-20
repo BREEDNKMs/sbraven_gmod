@@ -1,0 +1,17 @@
+"VertexLitGeneric" 
+{ 
+	"$basetexture"	"vgui/black" // sprites/t_flare_circle_02_g 
+	"$nocull" "1"
+	"$additive"	"1"	
+	"$translucent"	"1"	
+	"$emissiveblendenabled" "1"
+	"$detail"		"sprites/t_flare_circle_02_g" 
+	"$detailblendmode"	"1"	
+	"$detailscale" "1"
+    "$emissiveblendtexture" "sprites/t_a_streakliquid_04"       // T_A_rainbowRamp
+    "$emissiveblendbasetexture" "sprites/t_flare_circle_02_g"   // T_A_GrungeNoise_01
+    "$emissiveblendflowtexture" "sprites/T_C_NoiseTile_01"     // optional normal/flowmap
+    "$emissiveblendtint" "[1.0 1.0 1.0]"
+    "$emissiveblendstrength" "1.0"
+    "$emissiveblendscrollvector" "[0.4 0]"             // slow horizontal flow
+} 
