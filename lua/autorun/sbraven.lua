@@ -162,7 +162,7 @@ hook.Add("Think", "StellarBlade_RunSkills", function()
 					if ent.SBAI_MoveTable then 
 						for _, MoveStep in ipairs(ent.SBAI_MoveTable) do -- accesses MoveStep 
 							-- ignore root movement on animating model when we have root motion MoveTable active 
-							if MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then return end 
+							if MoveStep.IsActive and MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then return end 
 						end 
 					end 
 					-- print(layerID) 
@@ -546,7 +546,7 @@ function StellarBlade.ActorState:Remove(effectOrName)
 
 	-- if there are still users, do not remove the state
 	if #self.Users > 0 then 
-		-- print("state has more users, not removing:",self.Name,self.Users) 
+		-- print("state has more users, not removing:",self.Name,#self.Users) 
 		return false 
 	end 
 	
@@ -628,6 +628,11 @@ function StellarBlade.ActorState:Remove(effectOrName)
 		if self.Outer and self.Outer[self.Name] then
 			self.Outer[self.Name] = nil
 		end
+		return true 
+	else 
+		if self.Outer and self.Outer[self.Name] then 
+			self.Outer[self.Name] = nil 
+		end 
 		return true 
 	end 
 	return false 
@@ -831,27 +836,45 @@ function StellarBlade.ActorState:CalcMainActivity(ply,vel) -- called only for pl
 end 
 
 function StellarBlade.ActorState:CalcView(ply,origin,angles,fov,znear,zfar) -- called clientside only for players 
-	-- print(self,self.Outer,ply) 
 	if self.Name == "ESBActorState::ActorState_Groggy" and ply == self.Outer then 
-		local origin = ply:GetAttachment(ply:LookupAttachment("eyes")).Pos 
-		local angles = ply:GetAttachment(ply:LookupAttachment("eyes")).Ang 
-		local view = { 
-		origin = origin, 
-		angles = angles, 
-		fov = fov, 
-		drawviewer = false 
-		} 
-		return view 
-	end 
+		if origin:DistToSqr(ply:EyePos()) > 4 then -- thirdperson check 
+            return
+        end
+        local attachIdx = ply:LookupAttachment("eyes")
+        local attach = attachIdx > 0 and ply:GetAttachment(attachIdx)
+
+        if attach then
+            -- Add the eye attachment offset in-place to preserve view modifications from other addons
+            origin:Add(attach.Pos - ply:EyePos())
+            angles:Add(attach.Ang - ply:EyeAngles())
+
+            -- return { 
+                -- origin = origin, 
+                -- angles = angles, 
+                -- fov = fov, 
+                -- drawviewer = false 
+            -- } 
+        end
+    end
 end 
 
 function StellarBlade.ActorState:CalcViewModelView(wep, vm, oldPos, oldAng, pos, ang) -- called clientside only for players 
 	-- print(self,self.Outer,ply) 
-	if self.Name == "ESBActorState::ActorState_Groggy" and wep:GetOwner() == self.Outer then 
-		local Pos = wep:GetOwner():GetAttachment(wep:GetOwner():LookupAttachment("eyes")).Pos 
-		local Ang = wep:GetOwner():GetAttachment(wep:GetOwner():LookupAttachment("eyes")).Ang 
-		return Pos, Ang 
-	end 
+	if self.Name == "ESBActorState::ActorState_Groggy" then 
+        local owner = wep:GetOwner()
+        if IsValid(owner) and owner == self.Outer then 
+            local attachIdx = owner:LookupAttachment("eyes")
+            local attach = attachIdx > 0 and owner:GetAttachment(attachIdx)
+
+            if attach then
+                -- Apply viewmodel delta in-place using Vector:Add and Angle:Add
+                pos:Add(attach.Pos - oldPos)
+                ang:Add(attach.Ang - oldAng)
+
+                -- return pos, ang 
+            end
+        end 
+    end
 end 
 
 function StellarBlade.SBAI_ActiveShow:Remove() 
@@ -987,7 +1010,7 @@ function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDa
 		-- print("wasDamageTaken:",wasDamageTaken) 
 		if wasDamageTaken and self:ShouldHitStop(target,dmginfo,wasDamageTaken) then 
 			-- print("bIgnoreHitStop:",self.Data.bIgnoreHitStop) 
-			self:Remove() 
+			-- self:Remove() 
 			if target.SBAI_ActiveShows then 
 				for k,v in pairs(target.SBAI_ActiveShows) do 
 					if v.Remove then 
@@ -1149,8 +1172,8 @@ function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDa
             end
 
             local tableOptional = { } 
-            tableOptional.DamageInfo = SaveDamageInfo(dmginfo)  
-            tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL  
+            tableOptional.DamageInfo = SaveDamageInfo(dmginfo) 
+            tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL 
             tableOptional.Target = target 
             StellarBlade.CompleteTableOptional(target,tableOptional) 
             
@@ -3211,6 +3234,14 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
     return true
 end 
 
+function StellarBlade:ForceClearActorState(state) 
+	for k,v in pairs(self:GetTable()) do 
+		if string.find(k,state or "ESBActorState") then 
+			self[k] = nil 
+		end 
+	end 
+end 
+
 StellarBlade.ActorApplyStat = function(self,StatType,StatCalculationType,CalculationMultipleValue,CalculationValue) 
 
 	
@@ -3239,6 +3270,15 @@ end
 
 StellarBlade.StartSkill = function(self,SkillName) 
 	local Realm = SERVER and " SERVER" or " CLIENT" 
+	
+	if self.SBAI_SkillTable and !self.SBAI_SkillTable.IsValid then 
+		self.SBAI_SkillTable = nil 
+		self.SBAI_SkillStep = nil 
+		self.SBAI_SkillTimers = nil 
+		self.SBAI_SkillUseCount = nil 
+		StellarBlade.ForceClearActorState(owner) 
+	end 
+	
 	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
 	if StellarBlade.CanStartSkill(self,SkillName) then 
 		self.SBAI_SkillTable = table.Copy(SkillTable) 
@@ -3381,7 +3421,7 @@ StellarBlade.SetShow = function(self,showpath,slot,tableOptional)
 	if bClearDuplicateSlot then 
 		for k,v in pairs(self.SBAI_ActiveShows) do 
 			if v.Slot == slot then 
-				v:Remove() 
+				if v.Remove then v:Remove() else StellarBlade.SBAI_ActiveShow.Remove(v) end 
 			end 
 		end 
 	end 
@@ -3738,7 +3778,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 			end 
 		elseif data.Type == "SBShowActorKey" then 
 			local bUseActorHidden = props.bUseActorHidden 
-			print(data,data.Name,SBAI_ActiveShow) 
+			-- print(data,data.Name,SBAI_ActiveShow) 
 			if isstring(bUseActorHidden) or isbool(bUseActorHidden) then 
 				local bUseActorHidden = bUseActorHidden 
 				bUseActorHidden = tobool(bUseActorHidden) 
@@ -3782,7 +3822,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					if self.GetEnemy and IsValid(self:GetEnemy()) then 
 						TargetForCharacterVoice = self:GetEnemy() 
 					elseif IsValid(self.PickTarget) then 
-						TargetForCharacterVoice = self.PickTarget
+						TargetForCharacterVoice = self.PickTarget 
 					else 
 						TargetForCharacterVoice = self 
 					end 
@@ -3995,8 +4035,8 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 			local airshake = true
 			local filter = nil
 			util.ScreenShake(pos, amplitude, frequency, duration, radius, airshake, filter)
-			-- Debug print
-			-- Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f ", amplitude, frequency, duration))
+			-- Debug print 
+			-- Entity(1):ChatPrint(string.format("[SBAI-ShowData] CamShake: amp=%.1f, freq=%.1f, dur=%.2f ", amplitude, frequency, duration)) 
 
 		elseif data.Type == "SBShowChangeAttachTo" then -- call function with named parameter after passing some conditions 
 		elseif data.Type == "SBShowClientEventKey" then 
@@ -4164,7 +4204,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 				ef:SetScale(ParticleScale) -- scale 
 				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
 				util.Effect(AssetName,ef) 
-				Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " elapsed: "..SBAI_ActiveShow.Elapsed.." "..tostring(relAng).." mag:"..tostring(ef:GetMagnitude())) 
+				-- Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " elapsed: "..SBAI_ActiveShow.Elapsed.." "..tostring(relAng).." mag:"..tostring(ef:GetMagnitude())) 
 				-- debugoverlay.Cross(worldPos,10,2) 
 				-- debugoverlay.Cross(Pos,10,5) 
 			elseif data.Properties.bUsePhysParticle then 
@@ -4904,7 +4944,6 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 		if v != self and (!v:IsFlagSet(FL_GODMODE) or IsValid(enemy) and enemy == v) then 
 			if IsValid(v:GetOwner()) and v:GetOwner() == self then continue end 
 			if IsValid(v:GetParent()) and v:GetParent() == self then continue end 
-			-- print(v) 
 			local NearestPoint = NearestPoint2(v,GetShootPos) 
 			dmg = DamageInfo() 
 			dmg:SetAttacker(self) 
@@ -4972,7 +5011,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			-- prioritize SkillResultAliasWhenParry, JustParry, PerfectParry, Guard, BreakGuard, Default 
 			-- SKILL RESULT BETWEEN ACTORS 
 			if IsSimpleTarget(v) then 
-				print(v,"simple target") 
+				-- print(v,"simple target") 
 				v:DispatchTraceAttack(dmg,tr) 
 			else 
 				local HitLevel_enemy = StellarBlade.ActorStats(v)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
@@ -4980,7 +5019,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				local HitLevel = HitLevel_self >= HitLevel_enemy 
 				-- print("HitLevel:",HitLevel,HitLevel_self) 
 				if bDamageBlocked then 
-					print("blocked damage:",v) 
+					-- print("blocked damage:",v) 
 					bParry = true 
 					if SkillResultAliasWhenJustParry != "None" then 
 						StellarBlade.StartSkillSelfResult(self,SkillResultAliasWhenJustParry,HitLevel,SkillStepTable.bCritical,tableOptional) 
@@ -5003,10 +5042,87 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 				else 
 					if SkillResultAlias != "None" then -- applied on self and target 
 						-- StellarBlade.StartSkillResult(self,v,SkillResultAlias) 
+						-- print("SBAI_SkillStep.PickTarget pre",SBAI_SkillStep.PickTarget,SBAI_SkillStep.PickTarget:Alive(),v,StellarBlade.PickTarget(self)) 
 						StellarBlade.StartSkillSelfResult(self,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
-						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) 
+						StellarBlade.StartSkillTargetResult(v,SkillResultAlias,HitLevel,SkillStepTable.bCritical,tableOptional) -- the magic where enemy takes damage and dies 
+						-- print("SBAI_SkillStep.PickTarget post", SBAI_SkillStep.PickTarget, SBAI_SkillStep.PickTarget and SBAI_SkillStep.PickTarget:Alive(), v) 
+    
+						if SBAI_SkillStep.PickTarget then 
+							if !IsValid(SBAI_SkillStep.PickTarget) or !SBAI_SkillStep.PickTarget:Alive() then 
+								local knownEnemies = self.GetKnownEnemies and self:GetKnownEnemies() or {}
+								local bestTarget = nil
+								local maxScore = -1
+
+								-- Local scoring processor to find the most situational fallback target
+								local function evaluateTargets(targetList)
+									if !targetList then return end
+									for i = #targetList, 1, -1 do
+										local tgt = targetList[i]
+										if IsValid(tgt) then
+											print("better targets:", tgt) -- Preserves console diagnostic behavior
+											if tgt:Alive() then
+												local score = 0
+												
+												-- Condition 1: Enemy actively targets self entity
+												if tgt.GetEnemy and tgt:GetEnemy() == self then
+													score = score + 4
+												end
+												
+												-- Condition 2: Enemy is in list of GetKnownEnemies
+												if table.HasValue(knownEnemies, tgt) then
+													score = score + 2
+												end
+												
+												-- Condition 3: Enemy's PickTarget returns to self entity
+												if tgt.SB_PickTarget == self then
+													score = score + 1
+												end
+
+												-- Keep tracking candidate with the highest threat rating
+												if score > maxScore then
+													maxScore = score
+													bestTarget = tgt
+												end
+											end
+										end
+									end
+								end
+
+								-- 1. Try to evaluate better targets first
+								evaluateTargets(self.SB_BetterTargets)
+								
+								-- 2. If no prioritized candidate is found, look across all remaining tracked targets
+								if maxScore <= 0 then
+									evaluateTargets(self.SB_AllTargets)
+								end
+								
+								-- 3. Ultimate Fallback: If no priorities match, select the next available living entity
+								if !bestTarget then
+									if self.SB_BetterTargets then
+										for i = #self.SB_BetterTargets, 1, -1 do
+											local tgt = self.SB_BetterTargets[i]
+											if IsValid(tgt) and tgt:Alive() then bestTarget = tgt break end
+										end
+									end
+									if !bestTarget and self.SB_AllTargets then
+										for i = #self.SB_AllTargets, 1, -1 do
+											local tgt = self.SB_AllTargets[i]
+											if IsValid(tgt) and tgt:Alive() then bestTarget = tgt break end
+										end
+									end
+								end
+
+								-- Apply the best selected candidate
+								if bestTarget then
+									SBAI_SkillStep.PickTarget = bestTarget
+									self.SB_PickTarget = bestTarget
+								end
+							end 
+						end 
+						
+						-- print("SBAI_SkillStep.PickTarget post2", SBAI_SkillStep.PickTarget, SBAI_SkillStep.PickTarget and SBAI_SkillStep.PickTarget:Alive()) 
 						-- print("self is:",self) 
-						SBAI_SkillStep.Hit = true -- may be removed after blockskill 
+						SBAI_SkillStep.Hit = true -- may be removed after blockskill
 						if self.SBAI_SkillTable then 
 							self.SBAI_SkillTable.Hit = true 
 						end 
@@ -5574,7 +5690,6 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
 				table.insert(filtered,target) 
 			end 
 		end 
-		-- table.insert(filtered,ent.GetEnemy and ent:GetEnemy() or ent.PickTarget) 
 	elseif TargetType == "ESBTargetActor::Target_Owner" then 
 		filtered[1] = IsValid(ent:GetOwner()) and ent:GetOwner() 
 	elseif TargetType == "ESBTargetActor::Target_All" then 
@@ -6376,7 +6491,6 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	SBAI_SkillStep.Duration = curTime + SkillStepTable.Duration 
 	SBAI_SkillStep.Outer = self 
 	SBAI_SkillStep.Hit = nil 
-	-- SBAI_SkillStep.Cycle = 0 
 	StellarBlade.SBAI_SkillStep.Initialize(SBAI_SkillStep) 
 	
 	local StartSelfEffect = SkillStepTable.StartSelfEffect 
@@ -6511,7 +6625,53 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 				local NextStepAlias = SkillStepTable.NextStepAlias 
 				NextStepAlias = SB_SkillActiveStepTable[1].Rows[NextStepAlias] 
 				if NextStepAlias then NextDuration = NextStepAlias.Duration end 
-				hWeapon:SendWeaponAnim(math.random() > 0.5 and ACT_VM_PRIMARYATTACK or ACT_VM_SECONDARYATTACK)
+
+				-- Check activity availability on the viewmodel
+				local candidateActs = {
+					ACT_VM_MISSCENTER,
+					ACT_VM_HITCENTER,
+					ACT_VM_HITKILL,
+					ACT_VM_PRIMARYATTACK,
+					ACT_VM_SECONDARYATTACK
+				}
+
+				local availableActs = {}
+				local validList = {}
+
+				for _, act in ipairs(candidateActs) do
+					if hViewModel:SelectWeightedSequence(act) ~= -1 then
+						availableActs[act] = true
+						table.insert(validList, act)
+					end
+				end
+
+				-- Priority selection logic
+				local chosenAct = nil
+				if SkillStepTable.bCritical then
+					if availableActs[ACT_VM_HITKILL] then
+						chosenAct = ACT_VM_HITKILL
+					elseif availableActs[ACT_VM_HITCENTER] then
+						chosenAct = ACT_VM_HITCENTER
+					elseif availableActs[ACT_VM_SECONDARYATTACK] then
+						chosenAct = ACT_VM_SECONDARYATTACK
+					end
+				else
+					if availableActs[ACT_VM_MISSCENTER] then
+						chosenAct = ACT_VM_MISSCENTER
+					elseif availableActs[ACT_VM_PRIMARYATTACK] then
+						chosenAct = ACT_VM_PRIMARYATTACK
+					end
+				end
+
+				-- Fallback: Select a random existing activity if prioritized options do not exist
+				if not chosenAct and #validList > 0 then
+					chosenAct = validList[math.random(#validList)]
+				end
+
+				if chosenAct then
+					hWeapon:SendWeaponAnim(chosenAct)
+				end
+
 				local vmDuration = hViewModel:SequenceDuration(hViewModel:GetSequence()) 
 				-- Calculate playback rate to match SkillStepTable.Duration 
 				local PlaybackRate = vmDuration / (SkillStepTable.Duration + NextDuration) 
@@ -6520,7 +6680,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 				if hWeapon.SetIdleDelay then hWeapon:SetIdleDelay(CurTime() + SkillStepTable.Duration+NextDuration) end 
 			end 
 		end 
-	end 
+	end
 
 	StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep) 
 	return SBAI_SkillStep 
@@ -6660,8 +6820,33 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		["MoveTable"] = SBAI_MoveTable, 
 		["Outer"] = self, 
 		["RunTime"] = CurTime(), 
-		["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0) 
+		["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0),
+		["bExecuteSeparately"] = CharacterMoveTable.bExecuteSeparately or false
 	} 
+	
+	print(strEffect,CurTime(),CharacterMoveTable.StartDelayTime) 
+	
+	local tableofexecuteseparately = { } 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move1 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move2 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move3 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move4 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move5 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move6 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move7 = true 
+	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move8 = true 
+	if tableofexecuteseparately[strEffect] then newMoveStep.bExecuteSeparately = true end 
+	
+	local tableofignorecollision = { } 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move1 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move2 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move3 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move4 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move5 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move6 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move7 = true 
+	-- tableofignorecollision.M_Raven_ChaseGrab_Move8 = true 
+	if tableofignorecollision[strEffect] then newMoveStep.CharacterMoveTable.bIgnoreCollision = true end 
 	
 	if tableOptional then newMoveStep.tableOptional = tableOptional end 
 	
@@ -6673,17 +6858,14 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		if #self < 1 then return false end 
 		if self.IsMarkedForDeletion then return false end 
 		-- print("calling movestep for:",self.Outer) 
-		return self.Outer:IsValid() and self.Outer:Alive() 
+		-- return self.Outer:IsValid() and self.Outer:Alive() 
+		return self.Outer:IsValid() 
 	end 
 	
 	function newMoveStep:IsActive() 
 		if CurTime() < self.StartTime then return false end 
 		if CurTime() >= self.StartTime + self.CharacterMoveTable.Time then return false end 
 		return true 
-	end 
-	
-	function newMoveStep:Evaluate() 
-	
 	end 
 	
 	function newMoveStep:Remove() 
@@ -6731,15 +6913,22 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		
 		local ply = self.Outer 
 		self:Move(ply) 
-		-- print("move is:",ply) 
 		
 		local movePosDelta = Vector(0,0,0) 
 		local finalPos, finalAng = ply:GetLocalPos() + self.movePosDelta, self.moveAngDelta 
 
 		if self.movePosDelta != vector_origin then 
-			local moveResult = IterativeHybridMoveLimit(ply, ply:GetLocalPos(), finalPos) 
+			local filter = { self.Outer } 
+			
+			for i,moveStep in ipairs(self) do 
+				-- local name = moveStep.MoveArrayName 
+				-- local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+				if moveStep.CharacterMoveTable.bMoveIgnoreTargetCharacter and self.GetEnemy and IsValid(self:GetEnemy()) then table.insert(filter,self:GetEnemy()) end 
+			end 
+			
+			local moveResult = IterativeHybridMoveLimit(ply, ply:GetLocalPos(), finalPos, {filter = filter}) 
 			if ply:IsVehicle() then 
-				ply:GetPhysicsObject():SetPos(moveResult.vEndPosition) 
+				ply:SetPos(moveResult.vEndPosition,true) 
 			else 
 				ply:SetLocalPos(moveResult.vEndPosition) 
 			end 
@@ -6791,55 +6980,90 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 	
 	function SBAI_MoveTable:Move(ply,mv) -- player only 
 		if self.Outer != ply then return end 
-		-- print("calling self.Move",CurTime(),ply) 
+		if IsValid(ply:GetParent()) then ply = ply:GetParent() end 
 		self.movePosDelta = vector_origin 
 		self.moveAngDelta = angle_zero 
+		local enemy = StellarBlade.PickTarget(ply) 
 		if #self > 0 then
 			for i = 1, #self do
 				local moveStep = self[i] 
 				local flInterval = CurTime() - moveStep.RunTime 
 				moveStep.RunTime = CurTime() 
 				if !moveStep:IsActive() then continue end 
-				-- print("pre EvaluateMoveStep",SysTime()) 
 				local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(ply, moveStep, flInterval) 
-				-- print("post EvaluateMoveStep",SysTime()) 
 				moveStep.movePosDelta = movePosDelta 
 				moveStep.moveAngDelta = moveAngDelta 
-				self.movePosDelta = self.movePosDelta + movePosDelta 
-				self.moveAngDelta = self.moveAngDelta + moveAngDelta 
-				-- print("called self.Move",CurTime()) 
-				-- print("moveAngDelta",self.moveAngDelta) 
+
+				if moveStep.bExecuteSeparately then 
+					-- Don't cache into the shared batch delta. Resolve this movestep's own 
+					-- collision-limited move immediately, independent of any other movestep 
+					-- running on the same entity this tick. 
+					if movePosDelta != vector_origin then 
+						local curOrigin = mv and mv:GetOrigin() or ply:GetLocalPos() 
+						local finalPos = curOrigin + movePosDelta 
+						-- Mirror FinishMove's bIgnoreCollision handling, but scoped to 
+						-- this movestep's own CharacterMoveTable rather than the batch. 
+						local bIgnoreCollision = moveStep.CharacterMoveTable.bIgnoreCollision 
+						local filter = { self } 
+						if moveStep.CharacterMoveTable.bMoveIgnoreTargetCharacter and IsValid(enemy) then table.insert(filter,enemy) end 
+						local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT 
+						local mask = nil 
+						if bIgnoreCollision then 
+							collisiongroup = COLLISION_GROUP_IN_VEHICLE 
+							mask = 0 
+						end 
+
+						local moveResult = IterativeHybridMoveLimit(ply, curOrigin, finalPos, { filter = filter, collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(ply) }) 
+
+						if mv then 
+							mv:SetOrigin(moveResult.vEndPosition) 
+						else 
+							ply:SetLocalPos(moveResult.vEndPosition) 
+						end 
+					end 
+
+					if moveAngDelta != angle_zero then 
+						if ply.SetIdealYawAndUpdate then 
+							ply:SetIdealYawAndUpdate(moveAngDelta.y, -1) 
+						else 
+							if bIgnoreCollision then 
+								ply:SetEyeAngles(moveAngDelta) 
+							else 
+								ply:SetEyeAngles(Angle(ply:EyeAngles().x,moveAngDelta.y,ply:EyeAngles().z)) 
+							end 
+						end 
+					end 
+				else 
+					self.movePosDelta = self.movePosDelta + movePosDelta 
+					self.moveAngDelta = self.moveAngDelta + moveAngDelta 
+				end 
 			end 
 		end 
-		-- print("post Move:",SysTime()) 
-	end 
+	end
 	
 	function SBAI_MoveTable:FinishMove(ply,mv) -- player only 
 		if self.Outer != ply then return end 
-		-- print(ply) -- ensure whether the move is called for skill player 
-		-- if ply.GetVehicle and IsValid(ply:GetVehicle()) and ply:GetVehicle() then 
-			-- self.Outer = ply:GetVehicle() 
-			-- self:Think() 
-			-- return 
-		-- end 
-		-- local ply = ply.GetVehicle and IsValid(ply:GetVehicle()) and ply:GetVehicle() or ply 
-		-- print("in FinishMove",ply,mv) 
-		-- print(mv.Data) 
-		-- print(ply:IsFlagSet(FL_FROZEN),self.movePosDelta) 
+		local plytemp = ply 
+		if IsValid(ply:GetParent()) then 
+			ply = ply:GetParent() 
+		end 
 		
 		local bIgnoreCollision 
 		for i,moveStep in ipairs(self) do 
-			local name = moveStep.MoveArrayName 
-			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
-			bIgnoreCollision = CharacterMoveTable.bIgnoreCollision 
+			-- local name = moveStep.MoveArrayName 
+			-- local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
+			bIgnoreCollision = moveStep.CharacterMoveTable.bIgnoreCollision 
 		end 
 		
-		if ply:IsPlayer() and ply:IsFlagSet(FL_FROZEN) then -- Move doesn't call during ply:Freeze(true) 
-			self:Move(ply,mv) 
+		if plytemp:IsPlayer() and (plytemp:IsFlagSet(FL_FROZEN) or plytemp:InVehicle()) then -- Move doesn't call during ply:Freeze(true) 
+			self:Move(plytemp,mv) 
 			-- print("ended self.Move",CurTime()) 
 		end 
-		local finalPos, finalAng = mv:GetOrigin() + self.movePosDelta, self.moveAngDelta 
 		
+		-- FIX: Determine the correct starting position based on what we are actually moving.
+		local currentOrigin = (ply == plytemp) and mv:GetOrigin() or ply:GetPos()
+		
+		local finalPos, finalAng = currentOrigin + self.movePosDelta, self.moveAngDelta
 		if self.movePosDelta != vector_origin then 
 			-- print("pre IterativeHybridMoveLimit:",SysTime()) 
 			local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT 
@@ -6848,10 +7072,12 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 				collisiongroup = COLLISION_GROUP_IN_VEHICLE 
 				mask = 0 
 			end 
-			local moveResult = IterativeHybridMoveLimit(ply, mv:GetOrigin(), finalPos, { collisiongroup = collisiongroup, mask = mask }) 
+			local moveResult = IterativeHybridMoveLimit(ply, currentOrigin, finalPos, { collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(plytemp)}) 
 			-- print("post IterativeHybridMoveLimit:",SysTime()) 
 			-- ply:SetLocalPos(moveResult.vEndPosition) 
-			-- print("calling moveResult",CurTime()) 
+			if !ply:IsPlayer() then 
+				ply:SetPos(moveResult.vEndPosition) 
+			end 
 			mv:SetOrigin(moveResult.vEndPosition) 
 			-- ply:SetSaveValue("basevelocity",self.movePosDelta / (FrameTime())) 
 			-- ply:AddFlags(FL_BASEVELOCITY) 
@@ -6861,7 +7087,11 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		-- self.LastVelocity = newPosition2 
 		
 		if finalAng != angle_zero then 
-			ply:SetEyeAngles(Angle(ply:EyeAngles().x,self.moveAngDelta.y,ply:EyeAngles().z)) 
+			if bIgnoreCollision then 
+				ply:SetEyeAngles(self.moveAngDelta) 
+			else 
+				ply:SetEyeAngles(Angle(ply:EyeAngles().x,self.moveAngDelta.y,ply:EyeAngles().z)) 
+			end 
 		end 
 		
 		for i,moveStep in ipairs(self) do 
@@ -7838,47 +8068,120 @@ StellarBlade.ESBCompare = function(val1,val2,operator)
 	return result 
 end 
 
-function StellarBlade:PickTarget() 
-	local Time = CurTime() 
-	local GetEnemy = self.GetEnemy and self:GetEnemy() or nil 
-	if GetEnemy then 
-		if IsValid(GetEnemy) and !GetEnemy:Alive() then self:SetEnemy(NULL) end 
-	end 
-	-- print("PickTarget",Time) 
-	
-	-- return cached PickTarget if exists within skill step 
-	-- return nil if PickTarget is NULL 
-	if !self:Alive() then return end 
-	if self.GetEnemy and IsValid(self:GetEnemy()) then return self:GetEnemy() end 
-	local SBAI_SkillStep = self.SBAI_SkillStep 
-	if SBAI_SkillStep then 
-		if SBAI_SkillStep.PickTarget then 
-			-- print("cached SBAI_SkillStep.PickTarget is:",SBAI_SkillStep.PickTarget) 
-			if !IsValid(SBAI_SkillStep.PickTarget) then return end 
-			if SBAI_SkillStep.PickTarget:Alive() then 
-				-- print("returning cached Entity within skill step:",SBAI_SkillStep.PickTarget) 
-				return SBAI_SkillStep.PickTarget 
-			end 
-		end 
-	end 
-	
-	-- return cached PickTarget if called again for same CurTime 
-	-- cache NULL if the entity is nil or NULL 
-	-- cache Entity if the Entity selected to self table, and also skill step table if exists 
-	if !self.SB_PickTargetTime or self.SB_PickTargetTime and Time > self.SB_PickTargetTime then 
-		local bestAim, bestDist, FireDir, projStart = -1, 2500 
-		local PickTarget = scripted_ents.Get("proj_unreali_skaarjprojectile").PickTarget(self,-1,bestDist) 
-		-- print("calling actual PickTarget:",PickTarget,CurTime(),SBAI_SkillStep) 
-		self.SB_PickTarget = IsValid(PickTarget) and PickTarget or NULL  
-		self.SB_PickTargetTime = Time + FrameTime() 
-		if SBAI_SkillStep then 
-			SBAI_SkillStep.PickTarget = IsValid(PickTarget) and PickTarget or NULL 
-		end 
-		return PickTarget 
-	else 
-		return self.SB_PickTarget 
-	end 
-end 
+-- Helper function to select the most appropriate fallback target based on situational priority
+local function GetBestFallbackTarget(self, targets)
+    if !targets or table.IsEmpty(targets) then return nil end
+    
+    local knownEnemies = self.GetKnownEnemies and self:GetKnownEnemies() or {}
+    local bestTarget = nil
+    local maxScore = -1
+    
+    -- Evaluate targets backwards (retaining higher filter weight prioritization)
+    for i = #targets, 1, -1 do
+        local tgt = targets[i]
+        if IsValid(tgt) and tgt:Alive() then
+            local score = 0
+            
+            -- Priority 1: Enemy actively targets self entity
+            if tgt.GetEnemy and tgt:GetEnemy() == self then
+                score = score + 4
+            end
+            
+            -- Priority 2: Enemy is in the list of GetKnownEnemies
+            if table.HasValue(knownEnemies, tgt) then
+                score = score + 2
+            end
+            
+            -- Priority 3: Enemy's PickTarget returns to self (using safe cached verification)
+            if tgt.SB_PickTarget == self then
+                score = score + 1
+            end
+            
+            -- Track candidate with the highest contextual match rate
+            if score > maxScore then
+                maxScore = score
+                bestTarget = tgt
+            end
+        end
+    end
+    
+    -- Ultimate fallback: if no targets match active criteria, pick the next available living entity
+    if !bestTarget or maxScore == 0 then
+        for i = #targets, 1, -1 do
+            local tgt = targets[i]
+            if IsValid(tgt) and tgt:Alive() then
+                return tgt
+            end
+        end
+    end
+    
+    return bestTarget
+end
+
+function StellarBlade:PickTarget(potentialTargets) 
+    local Time = CurTime() 
+    local GetEnemy = self.GetEnemy and self:GetEnemy() or nil 
+    if GetEnemy then 
+        if IsValid(GetEnemy) and !GetEnemy:Alive() then self:SetEnemy(NULL) end 
+    end 
+    
+    if !self:Alive() then return end 
+    if self.GetEnemy and IsValid(self:GetEnemy()) then return self:GetEnemy() end 
+    
+    local SBAI_SkillStep = self.SBAI_SkillStep 
+    
+    -- 1. Active SkillStep check: Look for fallback options if current target is dead or missing
+    if SBAI_SkillStep and SBAI_SkillStep.PickTarget then 
+        if !IsValid(SBAI_SkillStep.PickTarget) or !SBAI_SkillStep.PickTarget:Alive() then 
+            local fallback = GetBestFallbackTarget(self, self.SB_BetterTargets) or GetBestFallbackTarget(self, self.SB_AllTargets)
+            if fallback then 
+                SBAI_SkillStep.PickTarget = fallback
+                self.SB_PickTarget = fallback
+                return fallback
+            end 
+        end 
+
+        if IsValid(SBAI_SkillStep.PickTarget) and SBAI_SkillStep.PickTarget:Alive() then 
+            return SBAI_SkillStep.PickTarget 
+        end 
+    end 
+    
+    -- 2. Fresh Target Scanning block (Time threshold exceeded)
+    if !self.SB_PickTargetTime or (self.SB_PickTargetTime and Time > self.SB_PickTargetTime) then 
+        local bestDist = 2500 
+        
+        -- Passes 'potentialTargets' forward to the baseline projectile script logic
+        local PickTarget, betterTargets, allTargets = scripted_ents.Get("proj_unreali_skaarjprojectile").PickTarget(self, -1, bestDist, nil, nil, potentialTargets) 
+        
+        self.SB_BetterTargets = betterTargets 
+        self.SB_AllTargets = allTargets
+        self.SB_PickTargetTime = Time + FrameTime() 
+        
+        -- If the primary scanning pass yields an invalid/dead target, look for context fallbacks immediately
+        if !IsValid(PickTarget) or !PickTarget:Alive() then
+            PickTarget = GetBestFallbackTarget(self, betterTargets) or GetBestFallbackTarget(self, allTargets) or NULL
+        end
+        
+        self.SB_PickTarget = PickTarget 
+        if SBAI_SkillStep then 
+            SBAI_SkillStep.PickTarget = PickTarget 
+        end 
+        return PickTarget, betterTargets, allTargets 
+    else 
+        -- 3. Identical CurTime frame processing: safely replace target if current option died mid-tick
+        if !IsValid(self.SB_PickTarget) or !self.SB_PickTarget:Alive() then 
+            local fallback = GetBestFallbackTarget(self, self.SB_BetterTargets) or GetBestFallbackTarget(self, self.SB_AllTargets)
+            if fallback then 
+                self.SB_PickTarget = fallback
+                if SBAI_SkillStep then 
+                    SBAI_SkillStep.PickTarget = fallback
+                end 
+                return fallback
+            end 
+        end 
+        return self.SB_PickTarget 
+    end 
+end
 
 local tableofpassiveweapons = {["weapon_physgun"] = true, ["gmod_camera"] = true, ["gmod_tool"] = true, ["weapon_cubemap"] = true} 
 
