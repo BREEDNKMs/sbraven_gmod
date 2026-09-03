@@ -204,7 +204,7 @@ function SWEP:SpecialInit()
 	ef:SetFlags(0) -- 1 to kill given effects 
 	ef:SetMagnitude(0) 
 	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
-	util.Effect("mi_a_gpusparks_01",ef) 
+	-- util.Effect("mi_a_gpusparks_01",ef) 
 	util.Effect("MI_A_Flares_01_23",ef) 
 	ef:SetAttachment(2) 
 	util.Effect("ne_ribbonm",ef) 
@@ -245,6 +245,10 @@ function SWEP:BuildSkillList()
 	M_Raven_ChaseChargeSlash_Move2.bIgnoreCollision = true 
 	M_Raven_ChaseChargeSlash_Move3.bIgnoreCollision = true 
 	M_Raven_ChaseChargeSlash_Move4.bIgnoreCollision = true 
+	
+	M_Raven_ChaseChargeSlash_Move2.bExecuteSeparately = true 
+	M_Raven_ChaseChargeSlash_Move3.bExecuteSeparately = true 
+	M_Raven_ChaseChargeSlash_Move4.bExecuteSeparately = true 
 	
 	SB_SkillTable[1].Rows["M_Raven_ChaseChargeSlash"] = M_Raven_ChaseChargeSlash 
 	SB_SkillActiveStepTable[1].Rows["M_Raven_ChaseChargeSlash_Cast1"] = M_Raven_ChaseChargeSlash_Cast1 
@@ -339,8 +343,18 @@ function SWEP:Reload()
     -- 2. Check if we have a skill Queued
     if self.StellarBlade_SelectedSkill then 
 		-- if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !owner.SBAI_SkillStep:IsActive() then 
+		
+		if owner.SBAI_SkillTable and !owner.SBAI_SkillTable.IsValid then 
+			owner.SBAI_SkillTable = nil 
+			owner.SBAI_SkillStep = nil 
+			owner.SBAI_SkillTimers = nil 
+			owner.SBAI_SkillUseCount = nil 
+			StellarBlade.ForceClearActorState(owner) 
+		end 
+		
 		if !owner.SBAI_SkillStep or owner.SBAI_SkillStep and !StellarBlade.SBAI_SkillStep.IsActive(owner.SBAI_SkillStep) then 
             local success = StellarBlade.StartSkillCommand(owner, self.StellarBlade_SelectedSkill) 
+			-- print("success",success) 
             if success then return end 
         end 
     end 
@@ -358,7 +372,8 @@ function SWEP:OnRemove()
 	weapons.Get("weapon_ut99_base").OnRemove(self) 
 	if IsValid(self.GlowProjectedTexture) then
         self.GlowProjectedTexture:Remove()
-    end
+    end 
+	if IsValid(self.Emitter) then self.Emitter:Finish() end 
 end 
 
 function SWEP:GetCapabilities() return CAP_WEAPON_MELEE_ATTACK1 + CAP_WEAPON_MELEE_ATTACK2 end 
@@ -453,13 +468,10 @@ local lensObjLayers = {
     }
 }
 
--- Cache of active flare particles
-SWEP.NiagaraFlares = SWEP.NiagaraFlares or {}
-SWEP.NiagaraLensObjs = SWEP.NiagaraLensObjs or {}
-
 function SWEP:ViewModelDrawn(vm)
     weapons.Get("weapon_ut99_base").ViewModelDrawn(self, vm) 
 	self:Raven_Blade_Flare(0.4,0.5,"v_weapon.Knife_Handle") 
+	self:Raven_Blade_Sparks(vm) 
 end 
 
 function SWEP:CustomAmmoDisplay() 
@@ -477,10 +489,11 @@ function SWEP:DrawWorldModelTranslucent(flags)
 		base.DrawWorldModelTranslucent(self, flags) 
 	end 
 	self:Raven_Blade_Flare(1.3,1.5,"ValveBiped.Bip01_R_Hand") 
+	self:Raven_Blade_Sparks(IsValid(self:GetOwner()) and self:GetOwner() or self) 
 end 
 
 function SWEP:Raven_Blade_Flare(mins,maxs,bonename) 
-	local ViewModel = IsValid(self:GetOwner()) and self:GetOwner().GetActiveWeapon and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and GetViewEntity().GetActiveWeapon and IsValid(GetViewEntity():GetActiveWeapon()) and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
+	local ViewModel = IsValid(self:GetOwner()) and self:GetOwner().GetActiveWeapon and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and GetViewEntity().GetActiveWeapon and IsValid(GetViewEntity():GetActiveWeapon()) and GetViewEntity().GetViewModel and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
 	local renderer = ViewModel and self:GetOwner():IsPlayer() and !self:GetOwner():ShouldDrawLocalPlayer() and self:GetOwner():GetViewModel() or self 
 	local handBone = renderer:LookupBone(bonename)
 	if !handBone then return end
@@ -500,6 +513,7 @@ function SWEP:Raven_Blade_Flare(mins,maxs,bonename)
     local view = EyePos()
     local distSqr = pos:DistToSqr(view)
     local dist = math.sqrt(distSqr)
+	local distAlpha = math.Clamp(dist / 150, 0, 1)
 
     -- Niagara-style distance emissive scaling
     local maxRange = 4096
@@ -531,101 +545,135 @@ function SWEP:Raven_Blade_Flare(mins,maxs,bonename)
 	end
 
     -- ============================================================
-    -- === Flares ===
+    -- === Direct Flare Rendering ===
     -- ============================================================
-    if not self.NextFlareSpawn or CurTime() > self.NextFlareSpawn then
-        self.NextFlareSpawn = CurTime() + 0.05
-        table.insert(self.NiagaraFlares, {
-            pos = pos,
-            life = 0,
-            maxlife = 0.4 + math.Rand(0.2, 0.4),
-            scale = math.Rand(mins,maxs),
-            seed = math.Rand(0, 100)
-        })
-    end
+    local baseScale = (mins and maxs) and ((mins + maxs) * 0.5) or 1.0
+    local flicker = 1 + (math.sin(CurTime() * 17.3) + math.sin(CurTime() * 11.8)) * 0.02
+    local pulse = 1 + math.sin(CurTime() * 6) * 0.05
+    local flareScale = baseScale * pulse * flicker
 
-    for i = #self.NiagaraFlares, 1, -1 do
-        local p = self.NiagaraFlares[i]
-        p.life = p.life + FrameTime()
-        local frac = p.life / p.maxlife
+    for _, layer in ipairs(flareLayers) do
+        render.SetMaterial(layer.mat)
+        local col = layer.color
+        local size = layer.size * flareScale
 
-        if frac >= 1 then
-            table.remove(self.NiagaraFlares, i)
-        else
-            local fadeIn = math.Clamp(frac / 0.2, 0, 1)
-            local fadeOut = 1 - math.Clamp((frac - 0.8) / 0.2, 0, 1)
-            local alphaMul = fadeIn * fadeOut
-
-            local flicker = 1 + (math.sin(CurTime() * 17.3 + p.seed) + math.sin(CurTime() * 11.8 + p.seed)) * 0.02
-            local pulse = 1 + math.sin(CurTime() * 6 + p.seed) * 0.05
-
-            local lifeScale = p.scale * pulse * flicker
-            local brightness = alphaMul * intensity
-
-            for _, layer in ipairs(flareLayers) do
-                render.SetMaterial(layer.mat)
-                local col = layer.color
-                local size = layer.size * lifeScale
-                render.DrawSprite(
-                    pos,
-                    size,
-                    size,
-                    Color(
-                        col.r * brightness * layer.hardness,
-                        col.g * brightness * layer.hardness,
-                        col.b * brightness * layer.hardness,
-                        255 * brightness
-                    )
-                )
-            end
-        end
+        render.DrawSprite(
+            pos,
+            size,
+            size,
+            Color(
+                col.r,
+                col.g,
+                col.b,
+                255 * distAlpha
+            )
+        )
     end
 
     -- ============================================================
-    -- === Lens Objects ===
+    -- === Direct Lens Object Rendering ===
     -- ============================================================
-    if not self.NextLensSpawn or CurTime() > self.NextLensSpawn then
-        self.NextLensSpawn = CurTime() + 0.12
-        table.insert(self.NiagaraLensObjs, {
-            pos = pos,
-            life = 0,
-            maxlife = 0.8 + math.Rand(0.5, 1.2),
-            scale = 1.0,
-            seed = math.random(0, 100)
-        })
+    for _, layer in ipairs(lensObjLayers) do
+        render.SetMaterial(layer.mat)
+        local col = layer.color
+        local flicker2 = 1 + math.sin(CurTime() * (layer.flickerSpeed or 1.0)) * 0.05
+        local size = layer.baseSize * flicker2
+
+        render.DrawSprite(
+            pos,
+            size * 0.10,
+            size * 0.15,
+            Color(
+                col.r,
+                col.g,
+                col.b,
+                255 * distAlpha
+            )
+        )
     end
+end 
 
-    for i = #self.NiagaraLensObjs, 1, -1 do
-        local p = self.NiagaraLensObjs[i]
-        p.life = p.life + FrameTime()
-        local frac = p.life / p.maxlife
+function SWEP:Raven_Blade_Sparks(ent) 
+	if self.Raven_Blade_Sparks_NextTime and self.Raven_Blade_Sparks_NextTime >= CurTime() then return end 
+	self.Raven_Blade_Sparks_NextTime = CurTime() + 0.1 
+	local handBone = ent:LookupBone("ValveBiped.Bip01_R_Hand")
+	if !handBone then return end
 
-        if frac >= 1 then
-            table.remove(self.NiagaraLensObjs, i)
-        else
-            -- Slower flicker and expansion over distance
-            local flicker = 1.0 + math.sin(CurTime() * 1.5 + p.seed) * 0.08
-            local distScale = math.Clamp(dist / 512, 0.4, 2.5)
-            local scale = p.scale * distScale * flicker
-            local brightness = Lerp(1 - frac, 1.4, 0.8) * intensity
+	local matrix = ent:GetBoneMatrix(handBone)
+	if !matrix then return end
 
-            for _, layer in ipairs(lensObjLayers) do
-                render.SetMaterial(layer.mat)
-                local col = layer.color
-                local size = layer.baseSize * scale
-                local flicker2 = 1 + math.sin(CurTime() * layer.flickerSpeed + p.seed) * 0.05
-                render.DrawSprite(
-                    pos,
-                    (size * flicker2) * 0.10,
-                    (size * flicker2) * 0.15,
-                    Color(
-                        col.r * brightness * layer.hardness,
-                        col.g * brightness * layer.hardness,
-                        col.b * brightness * layer.hardness,
-                        255 * brightness
-                    )
-                )
-            end
-        end
-    end
+	local pos = matrix:GetTranslation()
+	local ang = matrix:GetAngles() 
+	if ent:GetClass() == "viewmodel" then 
+		local forward = ang:Up() * -7
+		pos = pos + forward
+	else 
+		pos = pos - ang:Up() * 9 
+	end 
+	if !self.Emitter then self.Emitter = ParticleEmitter(pos) end 
+	local p = self.Emitter:Add("effects/spark", pos) 
+
+	if p then
+		local initialSpeed = 50
+		local initialDir = VectorRand()
+
+		p:SetVelocity(initialDir * initialSpeed) 
+		p:SetDieTime(math.Rand(1,2)) 
+		p:SetStartAlpha(255)
+		p:SetEndAlpha(0)
+		p:SetStartSize(2)
+		p:SetEndSize(0)
+		p:SetColor(0, 200, 255)
+		p:SetGravity(initialDir) 
+		p:SetStartLength(0.1) 
+		p:SetEndLength(0) 
+		p:SetVelocityScale(true) 
+		
+		-- Initialize custom variables for the Think function
+		p.CreationTime = CurTime() 
+		p.NextTurnTime = CurTime() -- Force the first turn calculation immediately
+		p.Speed = initialSpeed
+		p.TargetDir = initialDir
+
+		p:SetThinkFunction(function(prt) 
+			local ct = CurTime()
+			local ft = FrameTime()
+
+			-- 1. Choose a new direction every 0.15 seconds
+			if ct >= prt.NextTurnTime then
+				local dir = prt:GetVelocity():GetNormalized()
+
+				-- Apply random rotation logic based on your example.
+				-- Note: math.random() without args cleanly returns a float between 0 and 1.
+				dir.x = dir.x + 0.7 * (0.5 - math.random()) 
+				dir.y = dir.y + 0.7 * (0.5 - math.random()) 
+				dir.z = dir.z + 0.7 * (0.5 - math.random()) 
+
+				prt.TargetDir = dir:GetNormalized()
+				prt.NextTurnTime = ct + 0.15
+			end
+
+			-- 2. Smoothly apply rotation and velocity every frame
+			local currentDir = prt:GetVelocity():GetNormalized()
+			
+			-- LerpVector provides the smooth transition. The '10' is the turn speed.
+			local newDir = LerpVector(ft * 10, currentDir, prt.TargetDir):GetNormalized()
+			prt:SetVelocity(newDir * prt.Speed)
+
+			-- 3. Set particle angles and roll according to motion dir
+			local motionAng = newDir:Angle()
+			
+			-- Applies 3D orientation (Useful if the material supports 3D rendering)
+			prt:SetAngles(motionAng)
+			
+			-- Applies 2D Sprite Roll. SetRoll expects radians, so we convert the Angle's yaw/roll.
+			prt:SetRoll(motionAng.y * (math.pi / 180))
+			local interval = prt:GetLifeTime()/prt:GetDieTime() 
+			-- prt:SetColor(255*(1-interval),255,255) -- fade to cyan 
+
+			prt:SetNextThink(CurTime()) 
+		end) 
+
+		p:SetNextThink(CurTime()) 
+	end
 end 
