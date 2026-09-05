@@ -205,14 +205,13 @@ function SWEP:SpecialInit()
 	ef:SetMagnitude(0) 
 	util.Effect("P_D_RavenHuman_AnimTrail_Loop_01",ef) 
 	-- util.Effect("mi_a_gpusparks_01",ef) 
-	util.Effect("MI_A_Flares_01_23",ef) 
+	-- util.Effect("MI_A_Flares_01_23",ef) 
 	ef:SetAttachment(2) 
 	util.Effect("ne_ribbonm",ef) 
 	self.CachedSkillList = {} 
 	self:BuildSkillList() 
 	self:SetSelectedSkillIndex(1) 
 	self.StellarBlade_SelectedSkill = "M_Raven_Slash" 
-	
 end 
 
 function SWEP:BuildSkillList() 
@@ -470,8 +469,9 @@ local lensObjLayers = {
 
 function SWEP:ViewModelDrawn(vm)
     weapons.Get("weapon_ut99_base").ViewModelDrawn(self, vm) 
-	self:Raven_Blade_Flare(0.4,0.5,"v_weapon.Knife_Handle") 
+	self:Raven_Blade_Flare(vm,0.4,0.5,"v_weapon.Knife_Handle") 
 	self:Raven_Blade_Sparks(vm) 
+	self:Raven_Blade_Beam(vm) 
 end 
 
 function SWEP:CustomAmmoDisplay() 
@@ -488,26 +488,105 @@ function SWEP:DrawWorldModelTranslucent(flags)
 	if base and base.DrawWorldModelTranslucent then 
 		base.DrawWorldModelTranslucent(self, flags) 
 	end 
-	self:Raven_Blade_Flare(1.3,1.5,"ValveBiped.Bip01_R_Hand") 
+	self:Raven_Blade_Flare(self,1.3,1.5,"ValveBiped.Bip01_R_Hand") 
 	self:Raven_Blade_Sparks(IsValid(self:GetOwner()) and self:GetOwner() or self) 
+	self:Raven_Blade_Beam(self) 
 end 
 
-function SWEP:Raven_Blade_Flare(mins,maxs,bonename) 
-	local ViewModel = IsValid(self:GetOwner()) and self:GetOwner().GetActiveWeapon and IsValid(self:GetOwner():GetActiveWeapon()) and IsValid(GetViewEntity()) and GetViewEntity().GetActiveWeapon and IsValid(GetViewEntity():GetActiveWeapon()) and GetViewEntity().GetViewModel and IsValid(GetViewEntity():GetViewModel()) and self == GetViewEntity():GetActiveWeapon() 
-	local renderer = ViewModel and self:GetOwner():IsPlayer() and !self:GetOwner():ShouldDrawLocalPlayer() and self:GetOwner():GetViewModel() or self 
-	local handBone = renderer:LookupBone(bonename)
+-- Cache materials and colors to prevent garbage collection stuttering
+local GLOW_MAT = Material("sprites/glow04_noz")
+local BEAM_MAT = Material("effects/laser1")
+function SWEP:Raven_Blade_Beam(ent) 
+    local handBone = ent:LookupBone("v_weapon.Knife_Handle") -- following bone doesn't exist on worldmodel 
+    if !handBone then handBone = ent:LookupBone("ValveBiped.Bip01_R_Hand") end -- exists on worldmodel 
+    if !handBone then return end 
+    local matrix = ent:GetBoneMatrix(handBone) 
+    local pos = matrix:GetTranslation()
+    local startPos, endPos = ent:GetPos(), ent:GetPos() 
+    local startPos_beam, endPos_beam = ent:GetPos(), ent:GetPos() 
+    local ang = matrix:GetAngles() 
+    if ent:GetClass() == "viewmodel" then -- drawing viewmodel 
+        -- print(ViewModel) 
+        -- ang:RotateAroundAxis(self:GetOwner():GetForward(),-1)  
+        -- local forward = ang:Up() * 7
+        -- pos = pos + forward 
+        -- endPos = pos + (forward * 3)
+		startPos = pos + (ang:Forward() * 1) + (ang:Right() * 1) + (ang:Up() * -14) 
+        endPos = pos + (ang:Forward() * 1) + (ang:Right() * 1) + (ang:Up() * 50) 
+		startPos = startPos + (startPos - endPos):GetNormalized()*10
+		-- debugoverlay.Cross(endPos,4,FrameTime()*2) 
+    else -- drawing worldmodel 
+        -- startPos = pos + (ang:Forward() * 2.5) + (ang:Right() * 1) + (ang:Up() * -9) 
+        -- endPos = pos + (ang:Forward() * 8) + (ang:Right() * -11) + (ang:Up() * -60) 
+        startPos = pos + (ang:Forward() * 1.1) + (ang:Right() * 6) + (ang:Up() * 15.4)
+        endPos = pos + (ang:Forward() * 10.6) + (ang:Right() * -19.5) + (ang:Up() * -88.3)
+		startPos = startPos + (startPos - endPos):GetNormalized()*21
+		-- debugoverlay.Cross(startPos,4,FrameTime()*2) 
+		-- debugoverlay.Cross(endPos,4,FrameTime()*2) 
+    end 
+	
+	if ent:GetClass() == "viewmodel" then -- drawing viewmodel 
+        -- print(ViewModel) 
+        -- ang:RotateAroundAxis(self:GetOwner():GetForward(),-1)  
+        -- local forward = ang:Up() * 7
+        -- pos = pos + forward 
+        -- endPos = pos + (forward * 3)
+		startPos_beam = pos + (ang:Up() * 7) 
+        endPos_beam = pos + (ang:Up() * 65) 
+		-- debugoverlay.Cross(endPos,4,FrameTime()*2) 
+    else -- drawing worldmodel 
+        -- startPos = pos + (ang:Forward() * 2.5) + (ang:Right() * 1) + (ang:Up() * -9) 
+        -- endPos = pos + (ang:Forward() * 8) + (ang:Right() * -11) + (ang:Up() * -60) 
+        startPos_beam = pos + (ang:Forward() * 3.4) + (ang:Right() * 0.6) + (ang:Up() * -8.9)
+        endPos_beam = pos + (ang:Forward() * 8.5) + (ang:Right() * -12.8) + (ang:Up() * -63.1)
+		-- debugoverlay.Cross(startPos,4,FrameTime()*2) 
+		-- debugoverlay.Cross(endPos,4,FrameTime()*2) 
+    end 
+	
+    -- Set RGB Color (Cyan core glow)
+    local glowColor = Color(0, 210, 255, 255)
+    
+    -- 1. Draw outer wide beam (Blade Aura)
+    render.SetMaterial(GLOW_MAT)
+    render.DrawBeam(startPos, endPos, 32, 0, 1, glowColor)
+    -- 2. Draw inner bright core beam
+    render.DrawBeam(startPos, endPos, 6, 0, 1, Color(220, 250, 255, 255))
+	-- print((startPos - endPos):GetNormalized()) 
+	
+	render.SetMaterial(BEAM_MAT)
+    render.DrawBeam(startPos_beam, endPos_beam, 6, 0, 1, glowColor)
+    -- 2. Draw inner bright core beam
+    render.DrawBeam(startPos_beam, endPos_beam, 3, 0, 1, Color(220, 250, 255, 255))
+	--[[ 
+	if ent:GetClass() ~= "viewmodel" then
+		local delta = LocalPlayer():EyePos() - pos
+		local fwd = math.Round(delta:Dot(ang:Forward()), 1)
+		local rgt = math.Round(delta:Dot(ang:Right()), 1)
+		local up  = math.Round(delta:Dot(ang:Up()), 1)
+
+		-- Throttle prints to 4 times per second to prevent console spam
+		if (self.NextWorldDebug or 0) < RealTime() then
+			self.NextWorldDebug = RealTime() + 0.25
+			print(string.format("pos + (ang:Forward() * %g) + (ang:Right() * %g) + (ang:Up() * %g)", fwd, rgt, up))
+		end
+	end
+ --]] 
+end 
+
+function SWEP:Raven_Blade_Flare(ent,mins,maxs,bonename) 
+	local handBone = ent:LookupBone(bonename)
 	if !handBone then return end
 
-	local matrix = renderer:GetBoneMatrix(handBone)
+	local matrix = ent:GetBoneMatrix(handBone)
 	if !matrix then return end
 
 	local pos = matrix:GetTranslation()
 	local ang = matrix:GetAngles() 
-	if ViewModel then 
+	if ent:GetClass() == "viewmodel" then 
 		local forward = ang:Up() * 7
 		pos = pos + forward
 	else 
-		pos = pos - ang:Up() * 9 
+		pos = pos + (ang:Forward() * 3.4) + (ang:Right() * 0.6) + (ang:Up() * -8.9)
 	end 
 
     local view = EyePos()
