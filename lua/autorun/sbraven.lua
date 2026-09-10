@@ -151,38 +151,59 @@ local function GetIntervalMovement(ent, flIntervalUsed, layerID)
 end 
 
 hook.Add("Think", "StellarBlade_RunSkills", function() 
-	if SERVER then 
-		for _,ent in ents.Iterator() do 
-			-- if !IsValid(ent) then continue end 
-			-- StellarBlade.MaintainMoveTable(ent) 
-			if !ent.SBAI_SkillUseCount then ent.SBAI_SkillUseCount = { } end 
-			-- also apply root movement on gestures as well 
-			for layerID = 0, 15 do 
-				if ent:IsValidLayer(layerID) then 
-					if ent.SBAI_MoveTable then 
-						for _, MoveStep in ipairs(ent.SBAI_MoveTable) do -- accesses MoveStep 
-							-- ignore root movement on animating model when we have root motion MoveTable active 
-							if MoveStep.IsActive and MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then return end 
-						end 
-					end 
-					-- print(layerID) 
-					-- print("pre GetIntervalMovement:",SysTime()) 
-					local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ent,FrameTime(),layerID) -- true, newPosition, newAngles, bMoveSeqFinished 
-					-- print(bMoved, newPosition, newAngles, bMoveSeqFinished) 
-					-- print("post GetIntervalMovement:",SysTime()) 
-					-- print(layerID,bMoved) 
-					if bMoved then 
-						local moveResult = IterativeHybridMoveLimit(ent, ent:GetPos(), newPosition) 
-						ent:SetLocalPos(moveResult.vEndPosition) 
-						local angles = ent:GetLocalAngles() 
-						ent:SetLocalAngles(Angle(angles.x,newAngles.y,angles.z)) 
-						break 
-					end 
-				end 
-			end 
-		end 
-	end 
-end) 
+    -- local tStart = SysTime()
+
+    local bEnable = true 
+    if !bEnable then return end 
+
+    if SERVER then 
+        for _,ent in ents.Iterator() do 
+            -- if !IsValid(ent) then continue end 
+            -- StellarBlade.MaintainMoveTable(ent) 
+			if !ent.GetActiveWeapon then continue end -- whitelist to only CBaseCombatCharacter 
+			local model = ent:GetModel()
+			if !model then continue end 
+			if #model < 1 then continue end 
+			if !util.IsValidModel(model) then continue end 
+			
+			-- print("running hook for:",ent) 
+			-- if bEnable then continue end 
+            -- also apply root movement on gestures as well 
+            for layerID = 0, 15 do 
+                if ent:IsValidLayer(layerID) then 
+                    if ent.SBAI_MoveTable then 
+                        for _, MoveStep in ipairs(ent.SBAI_MoveTable) do -- accesses MoveStep 
+                            -- ignore root movement on animating model when we have root motion MoveTable active 
+                            if MoveStep.IsActive and MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then 
+                                -- print(string.format("[Bench] StellarBlade_RunSkills (Early Exit): %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
+                                return 
+                            end 
+                        end 
+                    end 
+                    local layer_walk_injured = ent:LookupSequence("layer_walk_injured") 
+                    local layer_run_injured = ent:LookupSequence("layer_run_injured") 
+                    if layer_walk_injured > 0 and ent:GetLayerSequence(layerID) == layer_walk_injured then continue end 
+                    if layer_run_injured > 0 and ent:GetLayerSequence(layerID) == layer_run_injured then continue end 
+                    -- print(layerID) 
+                    -- print("pre GetIntervalMovement:",SysTime()) 
+                    local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ent,FrameTime(),layerID) -- true, newPosition, newAngles, bMoveSeqFinished 
+                    -- print(bMoved, newPosition, newAngles, bMoveSeqFinished) 
+                    -- print("post GetIntervalMovement:",SysTime()) 
+                    -- print(layerID,bMoved) 
+                    if bMoved then 
+                        local moveResult = IterativeHybridMoveLimit(ent, ent:GetPos(), newPosition) 
+                        ent:SetLocalPos(moveResult.vEndPosition) 
+                        local angles = ent:GetLocalAngles() 
+                        ent:SetLocalAngles(Angle(angles.x,newAngles.y,angles.z)) 
+                        break 
+                    end 
+                end 
+            end 
+        end 
+    end 
+
+    -- print(string.format("[Bench] StellarBlade_RunSkills: %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
+end)
 
 local function SaveDamageInfo(dmg) 
 	local tbl = { } 
@@ -3276,7 +3297,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 		self.SBAI_SkillStep = nil 
 		self.SBAI_SkillTimers = nil 
 		self.SBAI_SkillUseCount = nil 
-		StellarBlade.ForceClearActorState(owner) 
+		StellarBlade.ForceClearActorState(self) 
 	end 
 	
 	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
@@ -4931,6 +4952,9 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 			dmgtype = DMG_BLAST 
 		elseif v:GetClass() == "prop_dropship_container" or v:GetClass() == "npc_helicopter" then 
 			dmgtype = DMG_AIRBOAT + DMG_BLAST 
+		elseif v:GetClass() == "npc_combinedropship" then 
+			v:SetKeyValue("CanTakeDamageAndDie",1) 
+			dmgtype = dmgtype + DMG_BLAST 
 		elseif v.IsKratos then 
 			dmgtype = DMG_BLAST 
 			if SkillStepTable.bCritical then 
@@ -4944,6 +4968,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 		if v != self and (!v:IsFlagSet(FL_GODMODE) or IsValid(enemy) and enemy == v) then 
 			if IsValid(v:GetOwner()) and v:GetOwner() == self then continue end 
 			if IsValid(v:GetParent()) and v:GetParent() == self then continue end 
+			if v.GetObserverTarget and v:GetObserverTarget() == self then continue end 
 			local NearestPoint = NearestPoint2(v,GetShootPos) 
 			dmg = DamageInfo() 
 			dmg:SetAttacker(self) 
@@ -5873,77 +5898,94 @@ end
 ]]-- 
 
 StellarBlade.CheckWeaponCollision = function(self, entityList)
+	local ENABLE_SWEEP_INTERPOLATION = true
     local wep = self:GetActiveWeapon() 
 	if !IsValid(wep) then wep = self end 
     -- 1. Get the Collision Bounds of the weapon (Local Space)
-    local mins, maxs = wep:GetCollisionBounds()
+	local mins, maxs = wep:GetCollisionBounds()
 
-    -- 2. Get the Hand Bone Matrix (Simulating the visual bonemerge on the server)
-    local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
-    if !boneIndex then return {} end
+	-- 2. Get the Hand Bone Matrix (Simulating the visual bonemerge on the server)
+	local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
+	if !boneIndex then return {} end
 
-    local matrix = self:GetBoneMatrix(boneIndex)
-    local bonePos = matrix:GetTranslation()
-    local boneAng = matrix:GetAngles()
+	local matrix = self:GetBoneMatrix(boneIndex)
+	if !matrix then return {} end
+
+	local bonePos = matrix:GetTranslation()
+	local boneAng = matrix:GetAngles()
 	boneAng:RotateAroundAxis(Vector(0,0,0),90) 
 	mins.z = mins.z * 2 
 	maxs.z = maxs.z * 2 
 
-    -- 3. Calculate the "Fat" Axis-Aligned Bounding Box (AABB)
-    -- We must rotate all 8 corners of the local bounds to find the true World Min/Max
-    -- because standard collision checks (FindInBox) do not support rotation.
-    local corners = {
-        Vector(mins.x, mins.y, mins.z),
-        Vector(mins.x, mins.y, maxs.z),
-        Vector(mins.x, maxs.y, mins.z),
-        Vector(mins.x, maxs.y, maxs.z),
-        Vector(maxs.x, mins.y, mins.z),
-        Vector(maxs.x, mins.y, maxs.z),
-        Vector(maxs.x, maxs.y, mins.z),
-        Vector(maxs.x, maxs.y, maxs.z),
-    }
+	-- 3. Calculate the "Fat" Axis-Aligned Bounding Box (AABB)
+	local corners = {
+		Vector(mins.x, mins.y, mins.z),
+		Vector(mins.x, mins.y, maxs.z),
+		Vector(mins.x, maxs.y, mins.z),
+		Vector(mins.x, maxs.y, maxs.z),
+		Vector(maxs.x, mins.y, mins.z),
+		Vector(maxs.x, mins.y, maxs.z),
+		Vector(maxs.x, maxs.y, mins.z),
+		Vector(maxs.x, maxs.y, maxs.z),
+	}
 
-    local worldMins = Vector(math.huge, math.huge, math.huge)
-    local worldMaxs = Vector(-math.huge, -math.huge, -math.huge)
+	local worldMins = Vector(math.huge, math.huge, math.huge)
+	local worldMaxs = Vector(-math.huge, -math.huge, -math.huge)
 
-    for _, corner in ipairs(corners) do
-        -- Transform the local corner into world space relative to the hand
-        local worldPt = LocalToWorld(corner, angle_zero, bonePos, boneAng)
+	for _, corner in ipairs(corners) do
+		local worldPt = LocalToWorld(corner, angle_zero, bonePos, boneAng)
 
-        -- Expand the world bounds to fit this point
-        if worldPt.x < worldMins.x then worldMins.x = worldPt.x end
-        if worldPt.y < worldMins.y then worldMins.y = worldPt.y end
-        if worldPt.z < worldMins.z then worldMins.z = worldPt.z end
+		if worldPt.x < worldMins.x then worldMins.x = worldPt.x end
+		if worldPt.y < worldMins.y then worldMins.y = worldPt.y end
+		if worldPt.z < worldMins.z then worldMins.z = worldPt.z end
 
-        if worldPt.x > worldMaxs.x then worldMaxs.x = worldPt.x end
-        if worldPt.y > worldMaxs.y then worldMaxs.y = worldPt.y end
-        if worldPt.z > worldMaxs.z then worldMaxs.z = worldPt.z end
-    end
+		if worldPt.x > worldMaxs.x then worldMaxs.x = worldPt.x end
+		if worldPt.y > worldMaxs.y then worldMaxs.y = worldPt.y end
+		if worldPt.z > worldMaxs.z then worldMaxs.z = worldPt.z end
+	end
 
-    -- 4. Find all entities within the calculated "Fat" AABB
-    local hitEnts = ents.FindInBox(worldMins, worldMaxs)
+	-- 3.5. Interpolate / Sweep Bounds with Cached Frame Data
+	local currentTime = CurTime()
 
-    -- 5. Filter: Keep only entities that were in the original entityList
-    local filtered = {}
-    local hitAnything = false
+	if ENABLE_SWEEP_INTERPOLATION and self.CheckWeaponCollision_lastWeaponCheckTime then
+		local deltaTime = currentTime - self.CheckWeaponCollision_lastWeaponCheckTime
 
-    for _, ent in ipairs(hitEnts) do
-        if IsValid(ent) and table.HasValue(entityList, ent) then
-            table.insert(filtered, ent)
-            hitAnything = true
-        end
-    end
+		if deltaTime <= (FrameTime() * 3) and self.CheckWeaponCollision_lastWorldMins and self.CheckWeaponCollision_lastWorldMaxs then
+			worldMins.x = math.min(worldMins.x, self.CheckWeaponCollision_lastWorldMins.x)
+			worldMins.y = math.min(worldMins.y, self.CheckWeaponCollision_lastWorldMins.y)
+			worldMins.z = math.min(worldMins.z, self.CheckWeaponCollision_lastWorldMins.z)
 
-    -- 6. Visualization
-    -- RED Rotated Box: Represents the precise visual weapon alignment (OBB)
-    -- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
-    
-    -- BLUE Wireframe Box: Represents the actual detection area (AABB)
-    -- Use SweptBox with 0 distance to draw a clean wireframe
-    local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
-    -- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
+			worldMaxs.x = math.max(worldMaxs.x, self.CheckWeaponCollision_lastWorldMaxs.x)
+			worldMaxs.y = math.max(worldMaxs.y, self.CheckWeaponCollision_lastWorldMaxs.y)
+			worldMaxs.z = math.max(worldMaxs.z, self.CheckWeaponCollision_lastWorldMaxs.z)
+		end
+	end
 
-    return filtered
+	-- Update self entity cache with vector copies
+	self.CheckWeaponCollision_lastWeaponCheckTime = currentTime
+	self.CheckWeaponCollision_lastWorldMins = Vector(worldMins)
+	self.CheckWeaponCollision_lastWorldMaxs = Vector(worldMaxs)
+
+	-- 4. Find all entities within the calculated "Fat" AABB
+	local hitEnts = ents.FindInBox(worldMins, worldMaxs)
+
+	-- 5. Filter: Keep only entities that were in the original entityList
+	local filtered = {}
+	local hitAnything = false
+
+	for _, ent in ipairs(hitEnts) do
+		if IsValid(ent) and table.HasValue(entityList, ent) then
+			table.insert(filtered, ent)
+			hitAnything = true
+		end
+	end
+
+	-- 6. Visualization
+	-- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
+	local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
+	-- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
+
+	return filtered
 end
 
 --[[ 
@@ -6821,6 +6863,7 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		["Outer"] = self, 
 		["RunTime"] = CurTime(), 
 		["StartTime"] = CurTime() + (CharacterMoveTable.StartDelayTime or 0),
+		-- ["InitialPos"] = self:GetPos(), 
 		["bExecuteSeparately"] = CharacterMoveTable.bExecuteSeparately or false
 	} 
 	
@@ -6876,6 +6919,61 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 			hook.Remove("Move",self) 
 			hook.Remove("FinishMove",self) 
 			
+			if strEffect == "M_Raven_ChaseChargeSlash_Move3" then 
+				if tableOptional and IsValid(tableOptional.Target) then 
+					print("teleporting to enemy",tableOptional.Target) 
+					local target = tableOptional.Target
+					local outer = self.Outer
+					local startPos = self.InitialPos 
+					-- local targetPos = target:NearestPoint(startPos)
+					local targetPos = scripted_ents.Get("cycler_actor2").NearestPoint2(tableOptional.Target,self.InitialPos) 
+
+					-- 1. Trace from MoveStep's initial position to target's nearest hull (whitelisting only the target)
+					local traceData = {
+						start = startPos,
+						endpos = targetPos,
+						mins = IsValid(outer) and outer:OBBMins() or Vector(-16, -16, 0),
+						maxs = IsValid(outer) and outer:OBBMaxs() or Vector(16, 16, 72),
+						filter = { target },
+						whitelist = true,
+						mask = MASK_PLAYERSOLID
+					}
+					local tr = util.TraceHull(traceData)
+
+					local destPos = tr.Hit and tr.HitPos or targetPos
+
+					-- 2. Drop down properly to ground level to avoid getting stuck in mid-air or geometry
+					if IsValid(outer) then
+						local dropTr = util.TraceHull({
+							start = destPos,
+							endpos = destPos - Vector(0, 0, 512),
+							mins = outer:OBBMins(),
+							maxs = outer:OBBMaxs(),
+							filter = { outer, target },
+							mask = MASK_PLAYERSOLID
+						})
+
+						local finalPos = dropTr.Hit and dropTr.HitPos or destPos
+						outer:SetLocalPos(finalPos)
+						-- print(outer) 
+						-- debugoverlay.Cross(finalPos,256,10) 
+						-- debugoverlay.Cross(self.InitialPos,256,10) 
+						-- debugoverlay.Cross(targetPos,256,10,Color(255,255,0)) 
+						-- debugoverlay.Line(self.InitialPos,finalPos,10) 
+						-- debugoverlay.Line(startPos,tr.HitPos,10,Color(255,0,0)) 
+
+						-- 3. Turn outer entity to face target after teleportation
+						-- local faceAng = (target:GetPos() - finalPos):Angle()
+						-- faceAng.p = 0
+						-- faceAng.r = 0
+						-- if outer.SetEyeAngles then
+							-- outer:SetEyeAngles(faceAng)
+						-- else
+							-- outer:SetAngles(faceAng)
+						-- end
+					end 
+				end 
+			end
 			local MoveTable = self.MoveTable 
 			for i = 1,#MoveTable do 
 				-- local iMoveStep = self.Outer.SBAI_MoveTable[i] 
@@ -7016,7 +7114,65 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 						local moveResult = IterativeHybridMoveLimit(ply, curOrigin, finalPos, { filter = filter, collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(ply) }) 
 
 						if mv then 
-							mv:SetOrigin(moveResult.vEndPosition) 
+							if strEffect == "M_Raven_ChaseChargeSlash_Move3" then 
+								if tableOptional and IsValid(tableOptional.Target) then 
+									print("teleporting to enemy",tableOptional.Target) 
+									local target = tableOptional.Target
+									local outer = self.Outer
+									local startPos = moveStep.InitialPos 
+									print(startPos,"startPos") 
+									-- local targetPos = target:NearestPoint(startPos)
+									local targetPos = scripted_ents.Get("cycler_actor2").NearestPoint2(tableOptional.Target,startPos) 
+
+									-- 1. Trace from MoveStep's initial position to target's nearest hull (whitelisting only the target)
+									local traceData = {
+										start = startPos,
+										endpos = targetPos,
+										mins = IsValid(outer) and outer:OBBMins() or Vector(-16, -16, 0),
+										maxs = IsValid(outer) and outer:OBBMaxs() or Vector(16, 16, 72),
+										filter = { target },
+										whitelist = true,
+										mask = MASK_PLAYERSOLID
+									}
+									local tr = util.TraceHull(traceData)
+
+									local destPos = tr.Hit and tr.HitPos or targetPos
+
+									-- 2. Drop down properly to ground level to avoid getting stuck in mid-air or geometry
+									if IsValid(outer) then
+										local dropTr = util.TraceHull({
+											start = destPos,
+											endpos = destPos - Vector(0, 0, 512),
+											mins = outer:OBBMins(),
+											maxs = outer:OBBMaxs(),
+											filter = { outer, target },
+											mask = MASK_PLAYERSOLID
+										})
+
+										local finalPos = dropTr.Hit and dropTr.HitPos or destPos
+										-- outer:SetLocalPos(finalPos)
+										mv:SetOrigin(finalPos) 
+										print(outer) 
+										debugoverlay.Cross(finalPos,256,10) 
+										-- debugoverlay.Cross(self.InitialPos,256,10) 
+										-- debugoverlay.Cross(targetPos,256,10,Color(255,255,0)) 
+										-- debugoverlay.Line(self.InitialPos,finalPos,10) 
+										-- debugoverlay.Line(startPos,tr.HitPos,10,Color(255,0,0)) 
+
+										-- 3. Turn outer entity to face target after teleportation
+										-- local faceAng = (target:GetPos() - finalPos):Angle()
+										-- faceAng.p = 0
+										-- faceAng.r = 0
+										-- if outer.SetEyeAngles then
+											-- outer:SetEyeAngles(faceAng)
+										-- else
+											-- outer:SetAngles(faceAng)
+										-- end
+									end 
+								end 
+							else 
+								mv:SetOrigin(moveResult.vEndPosition) 
+							end 
 						else 
 							ply:SetLocalPos(moveResult.vEndPosition) 
 						end 
@@ -7184,7 +7340,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     else
         return false, Vector(0,0,0), Angle(0,0,0)
     end
-
+	
     -- Resolve CharacterMoveTable
     local name = moveStep.MoveArrayName
     if !name or !SB_CharacterMoveTable or !SB_CharacterMoveTable[1] or !SB_CharacterMoveTable[1].Rows[name] then
@@ -7192,7 +7348,16 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     end
 	
     local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
-
+	moveStep.InitialPos = moveStep.InitialPos or self:GetPos() 
+	-- print(name) 
+	for k,v in ipairs(self.SBAI_MoveTable) do 
+		-- mute other movesteps 
+		-- print(v.MoveArrayName) 
+		-- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name == "M_Raven_ChaseChargeSlash_Move2" then return false, vector_origin, angle_zero end 
+		-- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" and v:IsActive() then return false, vector_origin, angle_zero end 
+		if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" then return false, vector_origin, angle_zero end 
+	end 
+	
     local Time = CharacterMoveTable.Time or 0
     local moveStartTimeCfg = CharacterMoveTable.MoveStartTime or 0
     local moveEndTimeCfg = CharacterMoveTable.MoveEndTime or Time
@@ -7257,7 +7422,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 	
 	local PositionType = CharacterMoveTable.PositionType 
 	
-    local enemy = StellarBlade.PickTarget(self) 
+    local enemy = tableOptional and IsValid(tableOptional.Target) and tableOptional.Target or StellarBlade.PickTarget(self) 
     if !IsValid(enemy) then enemy = Entity(0) end 
 	-- print("post StellarBlade.PickTarget:",SysTime()) 
 
@@ -7327,12 +7492,6 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
                 rightMove = CharacterMoveTable.RightValueWhenNoTarget or rightMove
                 upMove = CharacterMoveTable.UpValueWhenNoTarget or upMove
             end
-        end
-
-        -- Ensure we have an initial position cache when behavior requires it:
-        -- For STATIC + TARGET we cache the actor's initial position so interpolation goes from that initial -> desired.
-        if PositionType == "ESBMovePositionType::MovePositionType_Target" then
-            moveStep.InitialPos = moveStep.InitialPos or self:GetPos()
         end
 
         -- Helper: compute desired absolute position for given multipliers
@@ -7429,6 +7588,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
         else
             -- Original LocalAxis behaviour (self-anchored)
             movePosDelta = totalDisplacement * (easedNow - easedPrev)
+			-- print(PositionType,movePosDelta) 
         end
 
     elseif MoveType == "ESBMoveTransformType::MoveTransformType_WorldLocation" then 
