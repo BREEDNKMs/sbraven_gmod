@@ -124,6 +124,17 @@ NE_SparkM003.MAX_INTERP_STEPS = 8
 NE_SparkM003.TWINKLE_PROBABILITY = 0.06  -- small chance at spawn to be a bright twinkle
 NE_SparkM003.TWINKLE_BRIGHT_MULT = 2.4
 
+util.PrecacheModel("models/stellarblade/SM_C_SwordPrjTrail_01.mdl") 
+Material(NE_SparkM003.BASE_MATERIAL) 
+Material("sprites/MI_D_RavenHuman_SwordProjectileSprite_02.vmt") 
+Material("sprites/MI_D_RavenHuman_SwordProjectileSprite_05.vmt") 
+Material("sprites/MI_D_RavenHuman_SwordProjectileSprite_06.vmt") 
+Material("sprites/MI_A_GPUSparks_01_Tr_000") 
+Material("sprites/MI_A_GPUSparks_01_Tr_001") 
+Material("sprites/MI_A_GPUSparks_01_Tr_002") 
+Material("sprites/MI_A_GPUSparks_01_Tr_003") 
+-- Material(NE_RibbonM001.Mat) 
+
 local function GetQualityScale()
     -- In the JSON there is a scalability override that reduces spawn to 0.1 on low quality.
     -- We'll check a typical GMod cvar and map it simply (you can expand).
