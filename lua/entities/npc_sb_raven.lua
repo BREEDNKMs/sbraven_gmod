@@ -883,7 +883,7 @@ function ENT:OnStateChange(oldState, newState)
             if IsValid(otherWeapon) then 
                 self:SelectWeapon(otherWeapon) 
             else 
-                self:SetSaveValue("m_hActiveWeapon", NULL) 
+				SafeRemoveEntity(self:Give("basehl2mpcombatweapon")) -- sets active weapon to something and removes it, effectively sets active weapon to nil 
             end 
 			Entity(1):ChatPrint("OnStateChange no targets: Selecting OtherWeapon"..tostring(otherWeapon).." "..tostring(oldState).." "..tostring(newState)) 
             ravenBlade:EmitSound("character/se/pc_foldsword_close.wav") 
