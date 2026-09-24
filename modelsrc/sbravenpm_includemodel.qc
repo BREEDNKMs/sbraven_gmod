@@ -4,7 +4,7 @@ $ambientboost // please always include this into your player models and arm mode
 $origin 0 0 1.85 0 
 $modelname "alvaroports/SBRavenPM.mdl"
 
-$model head "head_2.smd" {
+$model head "head.smd" {
 
 	eyeball righteye "ValveBiped.Bip01_Head1" -1.23759 -2.507 67.4045 "Eye_r" 1 4 "pupil_r" 1.2
 	eyeball lefteye "ValveBiped.Bip01_Head1" 1.23759 -2.507 67.4045 "Eye_l" 1 -4 "pupil_l" 1.2
@@ -24,11 +24,11 @@ $model head "head_2.smd" {
 	mouth 0 "mouth" "ValveBiped.Bip01_Head1" 0 1 0		// mouth illumination
 
 	flexfile "head" {
-		$include "standardflex_v3.qci"
+		$include "standardflex_xsi.qci"
 	}
 
-	$include "facerules_v3.qci"
-//	$include "Bodyrules_xsi.qci"
+	$include "facerules_xsi.qci"
+//  $include "Bodyrules_xsi.qci"
 }
 
 $bodygroup "body"
@@ -849,6 +849,7 @@ $sequence "reference" {
 	fadein 1
 	fadeout 1
 	fps 1 
+	activity ACT_DIERAGDOLL 1 
 	snap 
 }
 
@@ -857,7 +858,7 @@ $sequence "reference" {
 //$include "sbravenpm_testposes.qci" 
 
 $includemodel "stellarblade/raven_animations.mdl"
-//$includemodel "stellarblade/eve_animations.mdl"
+$includemodel "stellarblade/eve_animations.mdl"
 $include "c_knife_anims.qci" 
 $includemodel "f_anm.mdl"
 $includemodel "alyx_animat_ep2.mdl"
