@@ -150,24 +150,51 @@ local function GetIntervalMovement(ent, flIntervalUsed, layerID)
     return true, newPosition, newAngles, bMoveSeqFinished
 end 
 
-hook.Add("Think", "StellarBlade_RunSkills", function() 
-    -- local tStart = SysTime()
+hook.Add("OnEntityCreated", "StellarBlade_CBaseCombatCharacter", function(ent)
+    timer.Simple(0, function()
+        if IsValid(ent) and ent.GetActiveWeapon then
+            StellarBlade.CBaseCombatCharacter = StellarBlade.CBaseCombatCharacter or {}
+            StellarBlade.CBaseCombatCharacter[ent] = true 
+			StellarBlade.ActorStats(ent) -- initialize entity ESBActorStatType 
+        end
+    end)
+end)
+
+hook.Add("EntityRemoved", "StellarBlade_CBaseCombatCharacter", function(ent)
+    if StellarBlade.CBaseCombatCharacter then
+        StellarBlade.CBaseCombatCharacter[ent] = nil
+    end
+end)
+
+hook.Add("Think", "StellarBlade_GestureAutoMovement", function() 
+    local tStart = SysTime()
 
     local bEnable = true 
     if !bEnable then return end 
 
     if SERVER then 
-        for _,ent in ents.Iterator() do 
-            -- if !IsValid(ent) then continue end 
-            -- StellarBlade.MaintainMoveTable(ent) 
-			if !ent.GetActiveWeapon then continue end -- whitelist to only CBaseCombatCharacter 
-			local model = ent:GetModel()
-			if !model then continue end 
-			if #model < 1 then continue end 
-			if !util.IsValidModel(model) then continue end 
+        if !StellarBlade.CBaseCombatCharacter then
+            StellarBlade.CBaseCombatCharacter = {}
+            for _, ent in ents.Iterator() do
+                if ent.GetActiveWeapon then
+                    StellarBlade.CBaseCombatCharacter[ent] = true
+                end
+            end
+        end
+
+        for ent in pairs(StellarBlade.CBaseCombatCharacter) do 
+            if !IsValid(ent) then 
+                StellarBlade.CBaseCombatCharacter[ent] = nil 
+                continue 
+            end 
 			
-			-- print("running hook for:",ent) 
-			-- if bEnable then continue end 
+            local model = ent:GetModel()
+            if !model then continue end 
+            if #model < 1 then continue end 
+            if !util.IsValidModel(model) then continue end 
+			if ent:GetSequenceCount() <= 1 then continue end 
+			if IsValid(ent:GetParent()) then continue end 
+            
             -- also apply root movement on gestures as well 
             for layerID = 0, 15 do 
                 if ent:IsValidLayer(layerID) then 
@@ -184,12 +211,8 @@ hook.Add("Think", "StellarBlade_RunSkills", function()
                     local layer_run_injured = ent:LookupSequence("layer_run_injured") 
                     if layer_walk_injured > 0 and ent:GetLayerSequence(layerID) == layer_walk_injured then continue end 
                     if layer_run_injured > 0 and ent:GetLayerSequence(layerID) == layer_run_injured then continue end 
-                    -- print(layerID) 
-                    -- print("pre GetIntervalMovement:",SysTime()) 
-                    local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ent,FrameTime(),layerID) -- true, newPosition, newAngles, bMoveSeqFinished 
-                    -- print(bMoved, newPosition, newAngles, bMoveSeqFinished) 
-                    -- print("post GetIntervalMovement:",SysTime()) 
-                    -- print(layerID,bMoved) 
+
+                    local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ent,FrameTime(),layerID) 
                     if bMoved then 
                         local moveResult = IterativeHybridMoveLimit(ent, ent:GetPos(), newPosition) 
                         ent:SetLocalPos(moveResult.vEndPosition) 
@@ -958,6 +981,7 @@ function StellarBlade.SBAI_SkillStep:Initialize()
 	
 	hook.Add( "Think", self, function() 
 		-- print(self, self.Outer) -- NPC [120][npc_sb_raven]	nil 
+		-- local SBAI_SkillTable = self.Outer.SBAI_SkillTable 
 		StellarBlade.ProcessActiveSkill(self.Outer,self) 
 	end ) 
 	hook.Add("PostEntityTakeDamage",self,self.PostEntityTakeDamage) 
@@ -996,12 +1020,12 @@ end
 function StellarBlade.SBAI_SkillStep:Remove(stopAnimations) 
 	self.IsMarkedForDeletion = true 
 	pcall(self.OnRemove,self) 
-	-- if IsValid(self.Outer) then 
-		-- self.Outer.SBAI_SkillStep = nil 
-	-- end 
-	-- if self.Outer.SBAI_SkillTable then 
-		-- self.Outer.SBAI_SkillTable:Remove(stopAnimations) 
-	-- end 
+	if IsValid(self.Outer) then 
+		self.Outer.SBAI_SkillStep = nil 
+	end 
+	if self.SBAI_SkillTable then 
+		StellarBlade.SBAI_SkillTable.Remove(self.SBAI_SkillTable,stopAnimations) 
+	end 
 end 
 
 function StellarBlade.SBAI_SkillStep:OnRemove() 
@@ -1012,9 +1036,11 @@ end
 
 function StellarBlade.SBAI_SkillStep:ShouldHitStop(target, dmginfo, wasDamageTaken) 
 	if self.Data.PostStep then return true end 
-	if self.Data.CanCutoff then return true end 
+	if self.Data.CanCutoff then return true end -- found at Finish* steps, bIgnoreHitStop is false when this is true 
+	if hook.Run("StellarBlade_OnShouldHitStop",self,target,dmginfo,wasDamageTaken) then return true end 
+	print(dmginfo:GetAttacker(),target) 
 	if dmginfo:IsDamageType(DMG_SNIPER) then return true end 
-	if IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() == target then return true end 
+	if IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() == target then return true end -- to self 
 	-- if dmginfo:IsDamageType(DMG_AIRBOAT) then return true end 
 	if self.Data.Type == "ESBSkillActiveStepType::SkillActiveStepType_None" then 
 		-- if dmginfo:IsDamageType(DMG_BLAST) then return true end 
@@ -1027,183 +1053,244 @@ function StellarBlade.SBAI_SkillStep:ShouldHitStop(target, dmginfo, wasDamageTak
 end 
 
 function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDamageTaken) 
-	if target == self.Outer and !self.Data.bIgnoreHitStop then 
-		-- print("wasDamageTaken:",wasDamageTaken) 
-		if wasDamageTaken and self:ShouldHitStop(target,dmginfo,wasDamageTaken) then 
-			-- print("bIgnoreHitStop:",self.Data.bIgnoreHitStop) 
-			-- self:Remove() 
-			if target.SBAI_ActiveShows then 
-				for k,v in pairs(target.SBAI_ActiveShows) do 
-					if v.Remove then 
-						v:Remove() 
-					else 
-						target.SBAI_ActiveShows[k] = nil 
+	if target == self.Outer then 
+		if wasDamageTaken then 
+			self.SBAI_SkillTable.TakeDamageCount = self.SBAI_SkillTable.TakeDamageCount + 1 
+			if !self.TakeDamageCount then self.TakeDamageCount = 0 end 
+			self.TakeDamageCount = self.TakeDamageCount + 1 
+		end 
+		if !self.Data.bIgnoreHitStop then 
+			-- print("wasDamageTaken:",wasDamageTaken) 
+			if wasDamageTaken and self:ShouldHitStop(target,dmginfo,wasDamageTaken) then 
+				-- print("bIgnoreHitStop:",self.Data.bIgnoreHitStop) 
+				-- self:Remove() 
+				if target.SBAI_ActiveShows then 
+					for k,v in pairs(target.SBAI_ActiveShows) do 
+						if v.Remove then 
+							v:Remove() 
+						else 
+							target.SBAI_ActiveShows[k] = nil 
+						end 
 					end 
 				end 
-			end 
-			if target.SBAI_MoveTable then target.SBAI_MoveTable:Remove() end 
-			-- Dynamic Effect Selection Logic
-            local ef = "HitImpactLight" -- Default fallback effect
-            local LifeTime = "LifeTime" -- will be overridden or not depending on effect 
-            local DeactiveShowPath = "DeactiveShowPath" -- will be overridden or not depending on effect 
-            local MoveAlias = "MoveAlias" -- will be overridden or not depending on effect 
-            local Hit_Back = "Hit_Back_050_100" -- Default fallback
-            local dmgAmt = dmginfo:GetDamage()
+				if target.SBAI_MoveTable then target.SBAI_MoveTable:Remove() end 
+				-- Dynamic Effect Selection Logic
+				local ef = "HitImpactLight" -- Default fallback effect
+				local LifeTime = "LifeTime" -- will be overridden or not depending on effect 
+				local DeactiveShowPath = "DeactiveShowPath" -- will be overridden or not depending on effect 
+				local MoveAlias = "MoveAlias" -- will be overridden or not depending on effect 
+				local Hit_Back = "Hit_Back_050_100" -- Default fallback
+				local dmgAmt = dmginfo:GetDamage()
 
-            if IsValid(target) and not target:IsOnGround() and not dmginfo:IsDamageType(DMG_FALL) then
-                -- Character is hit while in the air (ignoring standard fall damage checks here)
-                local dmgForce = dmginfo:GetDamageForce()
-                
-                if dmgForce:LengthSqr() > 0 then
-                    local dmgDir = dmgForce:GetNormalized()
-                    local targetForward = target:GetForward()
-                    
-                    -- Dot product: < 0 means the force is pushing against the target's front
-                    if targetForward:Dot(dmgDir) < 0 then
-                        ef = "HitAirForward_Eve" -- Hit from the front, fly backward
-                    else
-                        ef = "HitAirBackward_Eve"  -- Hit from behind, fly forward
-                    end
-                else
-                    -- Fallback if damage force is zero vector
-                    ef = "HitAirForward_Eve"
-                end
+				if IsValid(target) and not target:IsOnGround() and not dmginfo:IsDamageType(DMG_FALL) then
+					-- Character is hit while in the air (ignoring standard fall damage checks here)
+					local dmgForce = dmginfo:GetDamageForce()
+					
+					if dmgForce:LengthSqr() > 0 then
+						local dmgDir = dmgForce:GetNormalized()
+						local targetForward = target:GetForward()
+						
+						-- Dot product: < 0 means the force is pushing against the target's front
+						if targetForward:Dot(dmgDir) < 0 then
+							ef = "HitAirForward_Eve" -- Hit from the front, fly backward
+						else
+							ef = "HitAirBackward_Eve"  -- Hit from behind, fly forward
+						end
+					else
+						-- Fallback if damage force is zero vector
+						ef = "HitAirForward_Eve"
+					end
 
-            -- Ground / Specific Damage Type matching
-            elseif dmginfo:IsDamageType(DMG_FALL) then
-                ef = math.random() > 0.5 and "HitAirForwardFall_Eve" or "HitAirBackwardFall_Eve"
+				-- Ground / Specific Damage Type matching
+				elseif dmginfo:IsDamageType(DMG_FALL) then
+					ef = math.random() > 0.5 and "HitAirForwardFall_Eve" or "HitAirBackwardFall_Eve"
 
-            elseif dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_BUCKSHOT) or dmginfo:IsDamageType(DMG_SNIPER) then
-                ef = "HitImpactProjectile"
+				elseif dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_BUCKSHOT) or dmginfo:IsDamageType(DMG_SNIPER) then
+					ef = "HitImpactProjectile"
 
-            elseif dmginfo:IsDamageType(DMG_SLASH) then
-                ef = (dmgAmt > 25) and "HitImpactSlash_Strong" or "HitImpactSlash_Light"
+				elseif dmginfo:IsDamageType(DMG_SLASH) then
+					ef = (dmgAmt > 25) and "HitImpactSlash_Strong" or "HitImpactSlash_Light"
+					
+				elseif dmginfo:IsDamageType(DMG_VEHICLE) then
+					ef = "HitImpactHeavy" 
+
+				elseif dmginfo:IsDamageType(DMG_CLUB) or dmginfo:IsDamageType(DMG_CRUSH) then
+					ef = (dmgAmt > 25) and "HitImpactBlunt_Strong" or "HitImpactBlunt_Light"
+
+				elseif dmginfo:IsDamageType(DMG_BLAST) or dmginfo:IsDamageType(DMG_BLAST_SURFACE) then
+					ef = "HitImpactTiny_Explosion"
+
+				elseif dmginfo:IsDamageType(DMG_POISON) or dmginfo:IsDamageType(DMG_NERVEGAS) or dmginfo:IsDamageType(DMG_ACID) or dmginfo:IsDamageType(DMG_PARALYZE) then
+					ef = "HitImpactTiny_Poison"
+
+				else
+					-- Generic, Burn, Shock, Energy, etc. scaled by intensity
+					ef = (dmgAmt > 25) and "HitImpactStrong" or "HitImpactLight"
+				end 
 				
-			elseif dmginfo:IsDamageType(DMG_VEHICLE) then
-                ef = "HitImpactHeavy" 
+				if string.find(ef,"HitAir") then 
+					LifeTime = "null" -- prevent override of original effect attribute 
+					DeactiveShowPath = "null"  -- prevent override of original effect attribute 
+					MoveAlias = "null"  -- prevent override of original effect attribute 
+				end 
 
-            elseif dmginfo:IsDamageType(DMG_CLUB) or dmginfo:IsDamageType(DMG_CRUSH) then
-                ef = (dmgAmt > 25) and "HitImpactBlunt_Strong" or "HitImpactBlunt_Light"
+				-- Dynamic Hit_Back Override Calculation
+				if dmgAmt <= 0 then
+					Hit_Back = "Hit_Back_0"
+				else
+					local bits = dmginfo:GetDamageType()
+					local isPowerOfTwo = (bits > 0) and (bit.band(bits, bits - 1) == 0)
+					
+					-- 1. Determine Duration Tier based on Bit Complexity
+					local duration_tier = "010"
+					
+					-- Calculate highest active bit index (0 to 31)
+					local bit_pos = 0
+					local temp_bits = bits
+					while temp_bits > 1 do
+						temp_bits = bit.rshift(temp_bits, 1)
+						bit_pos = bit_pos + 1
+					end
 
-            elseif dmginfo:IsDamageType(DMG_BLAST) or dmginfo:IsDamageType(DMG_BLAST_SURFACE) then
-                ef = "HitImpactTiny_Explosion"
+					if isPowerOfTwo then
+						-- Pure power of two: assign to lower duration thresholds (0.10s to 0.45s)
+						if bit_pos <= 4 then         -- Up to DMG_VEHICLE (16)
+							duration_tier = "010"
+						elseif bit_pos <= 8 then     -- Up to DMG_SHOCK (256)
+							duration_tier = "020"
+						elseif bit_pos <= 14 then    -- Up to DMG_PARALYZE (32768)
+							duration_tier = "030"
+						elseif bit_pos <= 22 then    -- Up to DMG_PHYSGUN (8388608)
+							duration_tier = "040"
+						else                         -- Up to DMG_MISSILEDEFENSE (2147483648)
+							duration_tier = "045"
+						end
+					else
+						-- Compound bit flags: assign to high duration thresholds (0.50s to 0.90s)
+						if bit_pos <= 8 then
+							duration_tier = "050"
+						elseif bit_pos <= 15 then
+							duration_tier = "060"
+						elseif bit_pos <= 22 then
+							duration_tier = "070"
+						elseif bit_pos <= 28 then
+							duration_tier = "080"
+						else
+							duration_tier = "090"
+						end
+					end
 
-            elseif dmginfo:IsDamageType(DMG_POISON) or dmginfo:IsDamageType(DMG_NERVEGAS) or dmginfo:IsDamageType(DMG_ACID) or dmginfo:IsDamageType(DMG_PARALYZE) then
-                ef = "HitImpactTiny_Poison"
+					-- 2. Determine Ideal Distance based on Damage Value
+					local target_dist = 100
+					if dmgAmt <= 8 then        target_dist = 50
+					elseif dmgAmt <= 20 then   target_dist = 100
+					elseif dmgAmt <= 40 then   target_dist = 150
+					elseif dmgAmt <= 65 then   target_dist = 200
+					elseif dmgAmt <= 90 then   target_dist = 250
+					elseif dmgAmt <= 120 then  target_dist = 300
+					elseif dmgAmt <= 160 then  target_dist = 350
+					elseif dmgAmt <= 220 then  target_dist = 400
+					else                       target_dist = 800
+					end
 
-            else
-                -- Generic, Burn, Shock, Energy, etc. scaled by intensity
-                ef = (dmgAmt > 25) and "HitImpactStrong" or "HitImpactLight"
-            end 
-            
-            if string.find(ef,"HitAir") then 
-                LifeTime = "null" -- prevent override of original effect attribute 
-                DeactiveShowPath = "null"  -- prevent override of original effect attribute 
-                MoveAlias = "null"  -- prevent override of original effect attribute 
-            end 
+					-- 3. Match to the nearest valid distance available within that specific Duration Tier
+					local valid_distances = {
+						["010"] = {100, 150, 200, 300},
+						["020"] = {50, 150},
+						["030"] = {50, 100, 150, 200, 300},
+						["040"] = {100, 200, 400},
+						["045"] = {50, 100, 150},
+						["050"] = {100, 200, 250, 300},
+						["060"] = {50, 100, 150, 200, 250, 300},
+						["070"] = {300, 400},
+						["080"] = {300, 400},
+						["090"] = {250, 300, 350, 400, 800}
+					}
 
-            -- Dynamic Hit_Back Override Calculation
-            if dmgAmt <= 0 then
-                Hit_Back = "Hit_Back_0"
-            else
-                local bits = dmginfo:GetDamageType()
-                local isPowerOfTwo = (bits > 0) and (bit.band(bits, bits - 1) == 0)
-                
-                -- 1. Determine Duration Tier based on Bit Complexity
-                local duration_tier = "010"
-                
-                -- Calculate highest active bit index (0 to 31)
-                local bit_pos = 0
-                local temp_bits = bits
-                while temp_bits > 1 do
-                    temp_bits = bit.rshift(temp_bits, 1)
-                    bit_pos = bit_pos + 1
-                end
+					local pool = valid_distances[duration_tier]
+					local chosen_dist = pool[1]
+					local min_diff = math.abs(target_dist - chosen_dist)
 
-                if isPowerOfTwo then
-                    -- Pure power of two: assign to lower duration thresholds (0.10s to 0.45s)
-                    if bit_pos <= 4 then         -- Up to DMG_VEHICLE (16)
-                        duration_tier = "010"
-                    elseif bit_pos <= 8 then     -- Up to DMG_SHOCK (256)
-                        duration_tier = "020"
-                    elseif bit_pos <= 14 then    -- Up to DMG_PARALYZE (32768)
-                        duration_tier = "030"
-                    elseif bit_pos <= 22 then    -- Up to DMG_PHYSGUN (8388608)
-                        duration_tier = "040"
-                    else                         -- Up to DMG_MISSILEDEFENSE (2147483648)
-                        duration_tier = "045"
-                    end
+					for i = 2, #pool do
+						local diff = math.abs(target_dist - pool[i])
+						if diff < min_diff then
+							min_diff = diff
+							chosen_dist = pool[i]
+						end
+					end
+
+					-- Format distance string matching your layout requirements (e.g., "050" instead of "50")
+					local dist_str = (chosen_dist < 100) and ("0" .. chosen_dist) or tostring(chosen_dist)
+					Hit_Back = "Hit_Back_" .. duration_tier .. "_" .. dist_str
+				end
+
+				local tableOptional = { } 
+				tableOptional.DamageInfo = SaveDamageInfo(dmginfo) 
+				tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL 
+				tableOptional.Target = target 
+				StellarBlade.CompleteTableOptional(target,tableOptional) 
+				
+				-- print("ef is:", ef, " | Hit_Back calculated:", Hit_Back) 
+				-- =========================================================
+                -- HIT RESULT SELECTION LOGIC
+                -- =========================================================
+                local HitResults = { 
+                    "Hit/Result_Hit_Projectile_LightAttack",  -- Level 1
+                    "Hit/Result_Hit_Projectile_Heavy",        -- Level 2
+                    "Hit/Result_Hit_Stand_LightAttack",       -- Level 3
+                    "Hit/Result_Hit_Stand_StrongAttack"       -- Level 4
+                } 
+
+                -- 1. Projectile vs Stand/Melee Check
+                local isProjectile = dmginfo:IsBulletDamage() or dmginfo:IsExplosionDamage()
+
+                -- 2. Heavy Attack Conditions Check
+                local curHealth = IsValid(self.Outer) and self.Outer:Health() or 0
+                local initialHealth = self.Health or curHealth
+                local hasLostHalfHealth = (initialHealth > 0) and ((initialHealth - curHealth) >= (initialHealth * 0.5))
+
+                local isBluntHeavy = (dmginfo:IsDamageType(DMG_CLUB) or dmginfo:IsDamageType(DMG_CRUSH)) and (dmgAmt > 30)
+                local isForceHeavy = dmginfo:GetDamageForce():Length() > 50
+                local isRepetitiveDamage = self.TakeDamageCount and self.TakeDamageCount >= 5
+
+                local isHeavy = dmginfo:IsExplosionDamage() 
+                             or dmginfo:IsDamageType(DMG_SNIPER) 
+                             or isForceHeavy 
+                             or hasLostHalfHealth 
+                             or isBluntHeavy 
+                             or isRepetitiveDamage
+
+                -- 3. Level Assignment
+                local calculatedLevel = 1
+                if isProjectile then
+                    calculatedLevel = isHeavy and 2 or 1
                 else
-                    -- Compound bit flags: assign to high duration thresholds (0.50s to 0.90s)
-                    if bit_pos <= 8 then
-                        duration_tier = "050"
-                    elseif bit_pos <= 15 then
-                        duration_tier = "060"
-                    elseif bit_pos <= 22 then
-                        duration_tier = "070"
-                    elseif bit_pos <= 28 then
-                        duration_tier = "080"
-                    else
-                        duration_tier = "090"
-                    end
+                    calculatedLevel = isHeavy and 4 or 3
                 end
 
-                -- 2. Determine Ideal Distance based on Damage Value
-                local target_dist = 100
-                if dmgAmt <= 8 then        target_dist = 50
-                elseif dmgAmt <= 20 then   target_dist = 100
-                elseif dmgAmt <= 40 then   target_dist = 150
-                elseif dmgAmt <= 65 then   target_dist = 200
-                elseif dmgAmt <= 90 then   target_dist = 250
-                elseif dmgAmt <= 120 then  target_dist = 300
-                elseif dmgAmt <= 160 then  target_dist = 350
-                elseif dmgAmt <= 220 then  target_dist = 400
-                else                       target_dist = 800
+                -- 4. Level Persistence & NoAnim Fallback Logic
+                self.MaxHitResultLevel = self.MaxHitResultLevel or 0
+
+                local HitResult = ""
+                if calculatedLevel < self.MaxHitResultLevel then
+                    -- Dropdown detected: play static no-anim result
+                    HitResult = "Hit/Result_Hit_Stand_LightAttack_NoAnim"
+                else
+                    -- Level maintained or upgraded
+                    HitResult = HitResults[calculatedLevel]
+                    self.MaxHitResultLevel = calculatedLevel
                 end
-
-                -- 3. Match to the nearest valid distance available within that specific Duration Tier
-                local valid_distances = {
-                    ["010"] = {100, 150, 200, 300},
-                    ["020"] = {50, 150},
-                    ["030"] = {50, 100, 150, 200, 300},
-                    ["040"] = {100, 200, 400},
-                    ["045"] = {50, 100, 150},
-                    ["050"] = {100, 200, 250, 300},
-                    ["060"] = {50, 100, 150, 200, 250, 300},
-                    ["070"] = {300, 400},
-                    ["080"] = {300, 400},
-                    ["090"] = {250, 300, 350, 400, 800}
-                }
-
-                local pool = valid_distances[duration_tier]
-                local chosen_dist = pool[1]
-                local min_diff = math.abs(target_dist - chosen_dist)
-
-                for i = 2, #pool do
-                    local diff = math.abs(target_dist - pool[i])
-                    if diff < min_diff then
-                        min_diff = diff
-                        chosen_dist = pool[i]
-                    end
-                end
-
-                -- Format distance string matching your layout requirements (e.g., "050" instead of "50")
-                local dist_str = (chosen_dist < 100) and ("0" .. chosen_dist) or tostring(chosen_dist)
-                Hit_Back = "Hit_Back_" .. duration_tier .. "_" .. dist_str
-            end
-
-            local tableOptional = { } 
-            tableOptional.DamageInfo = SaveDamageInfo(dmginfo) 
-            tableOptional.Constructor = IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() or NULL 
-            tableOptional.Target = target 
-            StellarBlade.CompleteTableOptional(target,tableOptional) 
-            
-            -- print("ef is:", ef, " | Hit_Back calculated:", Hit_Back) 
-            
-            StellarBlade.AddEffect(target,ef,tableOptional,"StartDelayTime",FrameTime(),DeactiveShowPath,"Hit/Result_Hit_Stand_LightAttack",LifeTime,0,MoveAlias,Hit_Back) 
-        end 
+				
+				StellarBlade.AddEffect(target,ef,tableOptional,"StartDelayTime",FrameTime(),DeactiveShowPath,HitResult,LifeTime,0,MoveAlias,Hit_Back) 
+				self:EndSkillStep() 
+			end 
+		end 
     end 
-end
+	
+	if IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() == self.Outer then -- skill owner dealt damage to a target 
+	
+	end 
+end 
 
 function StellarBlade.SBAI_SkillTable:IsValid() 
 	if !IsValid(self.Outer) then return false end 
@@ -1229,16 +1316,23 @@ function StellarBlade.SBAI_SkillTable:Remove(stopAnimations)
 		end 
 	end 
 	-- destruct skill table 
+	-- print("removing skill table from outer:",self.Outer,self.Outer.SBAI_SkillTable) 
 	Outer.SBAI_SkillTable = nil 
 	-- also destruct skill step table if exists 
 end 
 
+function StellarBlade.SBAI_SkillTable:PostEntityTakeDamage(target,dmginfo,wasDamageTaken) 
+
+end 
+
 function StellarBlade.SBAI_SkillTable:Tick() end 
+
 function StellarBlade.SBAI_SkillTable:Initialize() 
 	for k,v in pairs(StellarBlade.SBAI_SkillTable) do 
 		self[k] = v 
 	end 
 	hook.Add("Tick",self, self.Tick) 
+	hook.Add("PostEntityTakeDamage",self, self.PostEntityTakeDamage) 
 end 
 
 function StellarBlade.SB_EffectAlias:Remove() 
@@ -1257,6 +1351,7 @@ function StellarBlade.SB_EffectAlias:Remove()
 		-- print("removing effect:",strEffect,self) 
 	end 
 end 
+
 function StellarBlade.SB_EffectAlias:CanActivate() -- passes activation conditions 
 	return true 
 end 
@@ -2311,18 +2406,40 @@ if test2 then
 	StellarBlade.AddEffect(Entity(1),effecttoassign) 
 end 
 
+-- Only contains entries where the ActorStatType suffix differs from the JSON/Entity key
+local StatAliasMap = { 
+    ["GearSlot"]                = "GearSlotCount",
+    ["ProtectorSlot"]           = "ExoSpineSlotCount",
+    ["MoveSpeedRate"]           = "MoveSpeed",
+    ["ItemStackRecoveryPotion"] = "StackRecoveryPotion",
+    ["ItemStackBullet1"]        = "StackBullet1",
+    ["ItemStackBullet2"]        = "StackBullet2",
+    ["ItemStackBullet3"]        = "StackBullet3",
+    ["ItemStackBullet4"]        = "StackBullet4",
+    ["ItemStackBullet5"]        = "StackBullet5",
+    ["ItemStackBullet6"]        = "StackBullet6",
+    ["ItemStackConsumable1"]    = "StackConsumable1",
+    ["ItemStackConsumable2"]    = "StackConsumable2",
+    ["ItemStackConsumable3"]    = "StackConsumable3",
+    ["ItemStackConsumable4"]    = "StackConsumable4",
+    ["ItemStackConsumable5"]    = "StackConsumable5",
+    ["ItemStackConsumable6"]    = "StackConsumable6",
+    ["ItemStackConsumable7"]    = "StackConsumable7",
+} 
+
+local STAT_PREFIX = "ESBActorStatType::ActorStatType_" 
+local STAT_PREFIX_LEN = #STAT_PREFIX 
+
 
 local statProxyMT = {}
 
 -- getters: if stat not stored on proxy table, these functions are used
 local statGetters = {
 	["ESBActorStatType::ActorStatType_None"] = function(proxy)
-        -- prefer actual engine health for truth (fallback to stored)
         return 0 -- or nil 
     end,
 	
     ["ESBActorStatType::ActorStatType_HP"] = function(proxy)
-        -- prefer actual engine health for truth (fallback to stored)
         if IsValid(proxy.Outer) then
             return proxy.Outer:Health()
         end
@@ -2332,44 +2449,32 @@ local statGetters = {
     ["ESBActorStatType::ActorStatType_MaxHP"] = function(proxy)
         local ent = proxy.Outer
         if IsValid(ent) then 
-			if StellarBlade.IsRaven(ent) then 
-				if ent.MaxHP then
-					return ent.MaxHP
-				else 
-					return scripted_ents.Get("npc_sb_raven").MaxHP 
-				end 
-			end 
+            if StellarBlade.IsRaven(ent) then 
+                return ent.MaxHP or (scripted_ents.Get("npc_sb_raven") and scripted_ents.Get("npc_sb_raven").MaxHP) or 100
+            end 
             return ent:GetMaxHealth() or rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
     end,
 	
 	["ESBActorStatType::ActorStatType_MaxHPValue"] = function(proxy)
-        local ent = proxy.Outer
-        if IsValid(ent) then
-            return ent:GetMaxHealth() or rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
-        end
-        return rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
-    end,
+        return statGetters["ESBActorStatType::ActorStatType_MaxHP"](proxy)
+	end, 
 	
 	["ESBActorStatType::ActorStatType_MaxHPRate"] = function(proxy)
         local ent = proxy.Outer
         if IsValid(ent) then
-			if StellarBlade.IsRaven(ent) then 
-				if ent.MaxHP then
-					return (ent:GetMaxHealth()/ent.MaxHP)*100
-				else 
-					return (ent:GetMaxHealth()/scripted_ents.Get("npc_sb_raven").MaxHP)*100 
-				end 
-			end 
-            return ent:GetMaxHealth() or rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
+            local baseMax = statGetters["ESBActorStatType::ActorStatType_MaxHP"](proxy)
+            if baseMax and baseMax > 0 then
+                return (ent:GetMaxHealth() / baseMax) * 100
+            end
         end
-        return rawget(proxy, "ESBActorStatType::ActorStatType_MaxHP") or 100
+        return 100
     end,
 
     ["ESBActorStatType::ActorStatType_Shield"] = function(proxy)
         local ent = proxy.Outer
-        if ent.Armor then
+        if IsValid(ent) and ent.Armor then
             return ent:Armor()
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_Shield") or 0
@@ -2385,47 +2490,48 @@ local statGetters = {
 
 	["ESBActorStatType::ActorStatType_MaxShieldRate"] = function(proxy)
         local ent = proxy.Outer
-        if ent.GetMaxArmor then
-            return ent:GetMaxArmor() / 100 -- modify 100 to actual max shield value 
+        if IsValid(ent) and ent.GetMaxArmor then
+            return ent:GetMaxArmor() / 100
         end
         return rawget(proxy, "ESBActorStatType::ActorStatType_MaxShieldRate") or 0
     end,
 
-    ["ESBActorStatType::ActorStatType_MinimumHP"] = function(proxy)
+    -- ["ESBActorStatType::ActorStatType_MinimumHP"] = function(proxy)
         -- store as percent (e.g. 75 means 75%)
-        return rawget(proxy, "ESBActorStatType::ActorStatType_MinimumHP") or 0
-    end,
+        -- return rawget(proxy, "ESBActorStatType::ActorStatType_MinimumHP") or 0
+    -- end,
 	
-	["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy)
-        return rawget(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel") or 0
-    end,
+	-- ["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy)
+        -- return rawget(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel") or 0
+    -- end,
 	
 	["ESBActorStatType::ActorStatType_AdditiveHitLevel"] = function(proxy)
         return rawget(proxy, "ESBActorStatType::ActorStatType_AdditiveHitLevel") or 0
     end,
 	
 	["ESBActorStatType::ActorStatType_Stamina"] = function(proxy) 
-		if proxy.Outer["ESBActorStatType::ActorStatType_Stamina"] then 
-			return proxy.Outer["ESBActorStatType::ActorStatType_Stamina"] 
-		end 
+		local ent = proxy.Outer
+        if IsValid(ent) and ent["ESBActorStatType::ActorStatType_Stamina"] != nil then
+            return ent["ESBActorStatType::ActorStatType_Stamina"]
+        end
         return rawget(proxy, "ESBActorStatType::ActorStatType_Stamina") or 0
     end,
 	
-	["ESBActorStatType::ActorStatType_MaxStamina"] = function(proxy)
+	-- ["ESBActorStatType::ActorStatType_MaxStamina"] = function(proxy)
 		-- 1. Check entity level variable first (External)
-		local ent = proxy.Outer 
-		if IsValid(ent) then 
-			if StellarBlade.IsRaven(ent) then 
-				if ent.MaxStamina then
-					return ent.MaxStamina
-				else 
-					return scripted_ents.Get("npc_sb_raven").MaxStamina 
-				end 
-			end 
-		end 
+		-- local ent = proxy.Outer 
+		-- if IsValid(ent) then 
+			-- if StellarBlade.IsRaven(ent) then 
+				-- if ent.MaxStamina then
+					-- return ent.MaxStamina
+				-- else 
+					-- return scripted_ents.Get("npc_sb_raven").MaxStamina 
+				-- end 
+			-- end 
+		-- end 
 		-- 2. Fallback to internal table
-		return rawget(proxy, "ESBActorStatType::ActorStatType_MaxStamina") or 1
-	end,
+		-- return rawget(proxy, "ESBActorStatType::ActorStatType_MaxStamina") or 1
+	-- end,
 	
 	["TraceResult"] = function(proxy) -- default return if no trace result 
 		return {Entity = proxy.Outer, Fraction = 0.99, Hit = true, HitBox = 0, HitNoDraw = false, HitNonWorld = true, HitNormal = -proxy.Outer:GetForward(), HitPos = proxy.Outer:GetPos(), Normal = -proxy.Outer:GetForward(), StartPos = vector_origin} 
@@ -2445,6 +2551,7 @@ local statSetters = {
 		-- print("constructor is:",proxy.Constructor) 
 		local requestedHP = math.floor(value) 
 		local curHP = ent:Health() 
+		-- print("ent:",ent,"curHP:",curHP,"requestedHP:",requestedHP) 
 
 		-- If drain-by-attack is enabled, apply the *difference* as damage via the damage system
 		if proxy.bDrainHpByAttack then 
@@ -2462,13 +2569,12 @@ local statSetters = {
 
 				-- allow custom damage type, fallback to DMG_GENERIC
 				local dmgType = proxy.DrainHpByAttackDamageType or DMG_GENERIC 
-				-- if ent.IsKratos then dmginfo:SetDamageType(DMG_BLAST) end 
 				-- print("applying damage:",dmginfo) 
 				ent:DispatchTraceAttack(dmginfo, proxy.TraceResult) 
 				return
 			elseif damageToDeal < 0 then
-				-- requestedHP > curHP -> healing: clamp to max
-				local maxhp = ent:GetMaxHealth() 
+				-- requestedHP > curHP -> healing: clamp to max, allow if health is already higher than max 
+				local maxhp = math.max(ent:GetMaxHealth(), ent:Health()) 
 				ent:SetHealth(math.Clamp(requestedHP,-1,maxhp)) 
 				return
 			else
@@ -2521,56 +2627,92 @@ local statSetters = {
 		end 
     end,
 
-    ["ESBActorStatType::ActorStatType_MinimumHP"] = function(proxy, value)
+    -- ["ESBActorStatType::ActorStatType_MinimumHP"] = function(proxy, value)
         -- store percent floor
         -- rawset(proxy, "ESBActorStatType::ActorStatType_MinimumHP", value)
-    end,
+    -- end,
 	
-	["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy, value)
-        rawset(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel", value)
-    end,
+	-- ["ESBActorStatType::ActorStatType_HitDefenseLevel"] = function(proxy, value)
+        -- rawset(proxy, "ESBActorStatType::ActorStatType_HitDefenseLevel", value)
+    -- end,
 	
 	["ESBActorStatType::ActorStatType_AdditiveHitLevel"] = function(proxy, value)
         rawset(proxy, "ESBActorStatType::ActorStatType_AdditiveHitLevel", value)
     end,
 	
 	["ESBActorStatType::ActorStatType_Stamina"] = function(proxy, value) 
-		local Outer = proxy.Outer 
-		local MaxStamina = proxy["ESBActorStatType::ActorStatType_MaxStamina"] or 1 
-		Outer["ESBActorStatType::ActorStatType_Stamina"] = math.min(value,MaxStamina) 
-        -- rawset(proxy, "ESBActorStatType::ActorStatType_Stamina", math.min(value,MaxStamina)) 
+		local ent = proxy.Outer
+        local maxStamina = proxy["ESBActorStatType::ActorStatType_MaxStamina"] or 1
+        local clamped = math.Clamp(value, 0, maxStamina)
+        if IsValid(ent) then
+            ent["ESBActorStatType::ActorStatType_Stamina"] = clamped
+        end
+        rawset(proxy, "ESBActorStatType::ActorStatType_Stamina", clamped)
     end, 
 	
-	["ESBActorStatType::ActorStatType_MaxStamina"] = function(proxy, value)
+	-- ["ESBActorStatType::ActorStatType_MaxStamina"] = function(proxy, value)
 		-- 1. Update entity variable (External)
-		if proxy.Outer then 
-			proxy.Outer.MaxStamina = value
-		else rawset(proxy, "ESBActorStatType::ActorStatType_MaxStamina", value)
-		end 
-	end
+		-- if proxy.Outer then 
+			-- proxy.Outer.MaxStamina = value
+		-- else rawset(proxy, "ESBActorStatType::ActorStatType_MaxStamina", value)
+		-- end 
+	-- end
     -- add other setters as needed
 }
 
 -- __index: return stored value if present, otherwise use statGetters mapping
-statProxyMT.__index = function(self, key) 
+-- resolve special getters, or dynamically strip prefix and check Entity / npc_sb_raven
+statProxyMT.__index = function(self, key)
+    -- 1. Explicit special getters (HP, Shield, TraceResult, etc.)
     local g = statGetters[key]
     if g then
         return g(self)
     end
 
-    return nil
+    -- 2. Dynamic string concatenation/stripping for ESBActorStatType
+    if isstring(key) and string.sub(key, 1, STAT_PREFIX_LEN) == STAT_PREFIX then
+        local rawStat = string.sub(key, STAT_PREFIX_LEN + 1)
+        local ent = self.Outer
+
+        if IsValid(ent) and StellarBlade.IsRaven(ent) then
+            local kvName = StatAliasMap[rawStat] or rawStat
+
+            -- Check character's own table
+            if ent[kvName] != nil then
+                return ent[kvName]
+            end
+
+            -- Fallback to npc_sb_raven's class table
+            local ravenBase = scripted_ents.Get("npc_sb_raven")
+            if ravenBase and ravenBase[kvName] != nil then
+                return ravenBase[kvName]
+            end
+        end
+    end
+
+    -- 3. Stored internal proxy value
+    return rawget(self, key)
 end
 
 -- __newindex: when someone does proxy[key] = value
+-- resolve special setters, or dynamically write to both entity key and proxy
 statProxyMT.__newindex = function(self, key, value)
     local s = statSetters[key]
     if s then
         s(self, value)
     else
-        -- default: just store on proxy
+        if isstring(key) and string.sub(key, 1, STAT_PREFIX_LEN) == STAT_PREFIX then
+            local rawStat = string.sub(key, STAT_PREFIX_LEN + 1)
+            local ent = self.Outer
+
+            if IsValid(ent) and StellarBlade.IsRaven(ent) then
+                local kvName = StatAliasMap[rawStat] or rawStat
+                ent[kvName] = value
+            end
+        end
+
         rawset(self, key, value)
     end
-	return nil 
 end
 
 -- __call: set key/value pair via proxy("key", value)
@@ -2589,18 +2731,16 @@ statProxyMT.__call = function(self, key, value)
 end
 
 -- Utility: create/ensure proxy for an entity 
--- use this to lookup ESBActorStat fields on any entity 
+-- use this to lookup ESBActorStatType fields on any entity 
 -- it will create a template ESBActorStatType table and assign to entity 
-function StellarBlade.ActorStats(self,forceReset) 
-    if !IsValid(self) then 
-		if isentity(self) then 
-			if self == Entity(0) then 
-			else 
-				error("Tried to use NULL Entity!") 
-			end 
-		end 
-		
-	end 
+-- When reading or writing, it checks for statGetters/statSetters first. If missing, it strips "ESBActorStatType::ActorStatType_", translates using StatAliasMap if needed, and directly reads or writes to the entity. 
+function StellarBlade.ActorStats(self, forceReset)
+    if !IsValid(self) then -- worlds don't pass IsValid 
+        if isentity(self) and self != Entity(0) then -- do not consider worldspawn NULL 
+            error("Tried to use NULL Entity!") 
+        end 
+    end 
+
     if self.ESBActorStatType and getmetatable(self.ESBActorStatType) == statProxyMT and !forceReset then
         return self.ESBActorStatType
     end
@@ -2608,14 +2748,19 @@ function StellarBlade.ActorStats(self,forceReset)
     local proxy = {} 
     proxy.Outer = self 
     setmetatable(proxy, statProxyMT) 
-	if StellarBlade.IsRaven(self) then 
-		-- setup properties for first time setup 
-		-- ESBActorStatType::ActorStatType_Stamina 
-		proxy["ESBActorStatType::ActorStatType_Stamina"] = proxy["ESBActorStatType::ActorStatType_MaxStamina"] -- set stamina to maxstamina 
-	end 
+
+    if StellarBlade.IsRaven(self) then 
+        -- Initialize dynamic resource gauges to their respective Max values
+        proxy["ESBActorStatType::ActorStatType_Stamina"] = proxy["ESBActorStatType::ActorStatType_MaxStamina"] -- to Raven's 18 
+		if CurTime() > 10 then -- some time after player's initialization, those values are OP for player 
+			proxy["ESBActorStatType::ActorStatType_Shield"]  = proxy["ESBActorStatType::ActorStatType_MaxShield"] -- to Raven's 4805 
+			proxy["ESBActorStatType::ActorStatType_HP"]      = proxy["ESBActorStatType::ActorStatType_MaxHP"] -- to Raven's 248304 
+		end 
+    end 
+
     self.ESBActorStatType = proxy 
     return proxy 
-end 
+end
 
 StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional) 
 	local StatType = EffectTable.StatType 
@@ -3292,7 +3437,7 @@ end
 StellarBlade.StartSkill = function(self,SkillName) 
 	local Realm = SERVER and " SERVER" or " CLIENT" 
 	
-	if self.SBAI_SkillTable and !self.SBAI_SkillTable.IsValid then 
+	if self.SBAI_SkillTable and !self.SBAI_SkillTable.IsValid then -- SkillTable may not have restored properly, perform cleanup 
 		self.SBAI_SkillTable = nil 
 		self.SBAI_SkillStep = nil 
 		self.SBAI_SkillTimers = nil 
@@ -3305,6 +3450,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 		self.SBAI_SkillTable = table.Copy(SkillTable) 
 		local SBAI_SkillTable = self.SBAI_SkillTable 
 		SBAI_SkillTable.Outer = self 
+		SBAI_SkillTable.TakeDamageCount = 0 
 		local FirstSkillActiveAlias = SkillTable.FirstSkillActiveAlias 
 		local target 
 		-- This now correctly handles all the data-driven setup for the first step 
@@ -3327,7 +3473,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 			StellarBlade.AddEffect(target,"BlockAction",{Constructor = self, Target = target, TraceResult = self:GetEyeTrace()}, "StartDelayTime",0, "LifeTime",7) 
 		else 
 			self.SB_PickTargetTime = 0 
-			local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias) 
+			local bSkillStep = StellarBlade.SetSkillStep(self,FirstSkillActiveAlias,SBAI_SkillTable) 
 			if !bSkillStep then 
 				Entity(1):ChatPrint("skill start failed for ".. FirstSkillActiveAlias) 
 				if self.SBAI_SkillStep then self.SBAI_SkillStep:Remove() end 
@@ -3418,7 +3564,7 @@ local function ApplyRenderState(ent, hide)
 end 
 
 StellarBlade.IsRaven = function(self) 
-	if self:IsPlayer() and self:GetModel() == "models/alvaroports/sbravenpm.mdl" then 
+	if self:GetModel() == "models/alvaroports/sbravenpm.mdl" then 
 		return true 
 	end 
 	if !self:IsPlayer() and (scripted_ents.IsBasedOn(self:GetClass(),"npc_sb_raven") or self:GetClass() == "npc_sb_raven") then 
@@ -4481,7 +4627,64 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 	end
 end 
 
-StellarBlade.ProcessActiveSkill = function(self,tbl) 
+function StellarBlade.SBAI_SkillStep:EndSkillStep()
+    local Outer = self.Outer
+    -- Do nothing if the character is invalid, not on an active skill, or not on an active skill step
+    if not IsValid(Outer) or not Outer.SBAI_SkillTable or not Outer.SBAI_SkillStep then
+        return
+    end
+
+    local currentStepData = self.Data
+    if not currentStepData then return end
+
+    -- Check if we are already on the last stack of skill cast steps
+    local nextStepAlias = currentStepData.NextStepAlias
+    if not nextStepAlias or nextStepAlias == "None" or nextStepAlias == "" then
+        return
+    end
+
+    local stepRows = SB_SkillActiveStepTable and SB_SkillActiveStepTable[1] and SB_SkillActiveStepTable[1].Rows
+    if not stepRows or not stepRows[nextStepAlias] then
+        return
+    end
+
+    -- Traverse the remaining skill step stack to find the next PostStep or the last step in the chain
+    local targetStep = nil
+    local currAlias = nextStepAlias
+    local visited = {}
+
+    while currAlias and currAlias ~= "None" and currAlias ~= "" do
+        if visited[currAlias] then break end -- Safeguard against circular chains
+        visited[currAlias] = true
+
+        local stepData = stepRows[currAlias]
+        if not stepData then break end
+
+        -- Condition 1: Next skill step with PostStep = true
+        if tobool(stepData.PostStep) then
+            targetStep = currAlias
+            break
+        end
+
+        local nextAlias = stepData.NextStepAlias
+        -- Condition 2: Last skill step on the stack (no further steps)
+        if not nextAlias or nextAlias == "None" or nextAlias == "" or not stepRows[nextAlias] then
+            targetStep = currAlias
+            break
+        end
+
+        currAlias = nextAlias
+    end
+
+    -- Set the character's skill step to the resolved step
+    if targetStep then
+        return StellarBlade.SetSkillStep(Outer, targetStep,self.SBAI_SkillTable) 
+    end
+end
+
+StellarBlade.ProcessActiveSkill = function(self,tbl) -- called every Tick 
+	local SBAI_SkillTable = tbl.SBAI_SkillTable 
+	-- print("SBAI_SkillTable is:",SBAI_SkillTable) 
 	if !tbl then print(self,"ProcessActiveSkill was called without tbl, skill may have removed during execution") return debug.Trace() end 
 	if !tbl then return false end 
     local Name = tbl.Name 
@@ -4513,7 +4716,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 	-- handled in JustParryAnticipation 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
 		local bEveryFrameHitCheck = SkillStepTable.bEveryFrameHitCheck 
-		CheckTarget, Hit, Parry, JustParry = StellarBlade.CheckSkillHit(self,SkillStepTable,bEveryFrameHitCheck) 
+		CheckTarget, Hit, Parry, JustParry = StellarBlade.CheckSkillHit(self,tbl,SkillStepTable,bEveryFrameHitCheck) 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Hold" then -- unused 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_SuperParry" then -- unused 
 	elseif Type == "ESBSkillActiveStepType::SkillActiveStepType_Item" then -- eve only: use item 
@@ -4535,7 +4738,7 @@ StellarBlade.ProcessActiveSkill = function(self,tbl)
 				if v.bCheckTarget and !IsValid(hCheckTarget) then break end 
 				-- print("bHit, bParry, bJustParry:",bHit, bParry, bJustParry) 
 				if bHit == Hit and bParry == Parry and bJustParry == JustParry then 
-					-- print("calling effect next step") 
+					print("calling effect next step",SBAI_SkillTable) 
 					StellarBlade.SetSkillStep(self,v.NextStepAlias) 
 					break 
 				end 
@@ -4797,9 +5000,9 @@ function StellarBlade:Raven_GrabVictim(target)
     end 
 end
 
-StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck) 
+StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck) 
 	local ID = SkillStepTable.ID 
-	local SBAI_SkillStep = self.SBAI_SkillStep 
+	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
 	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and call necessary effects 
 	-- moved damage event in ActorStat 
 	if !bEveryFrameHitCheck then 
@@ -4925,10 +5128,8 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 	if !SBAI_SkillStep.Hit then 
 		SBAI_SkillStep.Hit = false 
 	end 
-	if self.SBAI_SkillTable then 
-		if self.SBAI_SkillTable.Hit == nil then 
-			self.SBAI_SkillTable.Hit = false 
-		end 
+	if SBAI_SkillTable.Hit == nil then 
+		SBAI_SkillTable.Hit = false 
 	end 
 	
 	for k,v in pairs(tableofhittargets) do 
@@ -4966,9 +5167,10 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 		v:ForcePlayerDrop() 
 		-- print(v:IsPlayerHolding()) 
 		if v != self and (!v:IsFlagSet(FL_GODMODE) or IsValid(enemy) and enemy == v) then 
+			if hook.Run("StellarBlade_OnCheckSkillHit",self,v,SkillStepTable,dmginfo) then continue end -- return true to prevent being hit 
 			if IsValid(v:GetOwner()) and v:GetOwner() == self then continue end 
 			if IsValid(v:GetParent()) and v:GetParent() == self then continue end 
-			if v.GetObserverTarget and v:GetObserverTarget() == self then continue end 
+			if v.GetObserverTarget and v:GetObserverTarget() == self then continue end -- is this entity spectating me? if so, it is always teleported to my origin 
 			local NearestPoint = NearestPoint2(v,GetShootPos) 
 			dmg = DamageInfo() 
 			dmg:SetAttacker(self) 
@@ -5148,9 +5350,7 @@ StellarBlade.CheckSkillHit = function(self,SkillStepTable,bEveryFrameHitCheck)
 						-- print("SBAI_SkillStep.PickTarget post2", SBAI_SkillStep.PickTarget, SBAI_SkillStep.PickTarget and SBAI_SkillStep.PickTarget:Alive()) 
 						-- print("self is:",self) 
 						SBAI_SkillStep.Hit = true -- may be removed after blockskill
-						if self.SBAI_SkillTable then 
-							self.SBAI_SkillTable.Hit = true 
-						end 
+						SBAI_SkillTable.Hit = true 
 						-- print("target result:",v,SkillResultAlias) 
 					end 
 					-- StellarBlade.StopSkill(self) 
@@ -5342,8 +5542,9 @@ StellarBlade.TargetFilter = function(ent, filter, Cycle)
         if t:GetCollisionGroup() == COLLISION_GROUP_NONE then return true end
         if t:IsFlagSet(FL_DONTTOUCH) then return true end
         return false
-    end
-    -- Step 1: Candidate pool
+    end 
+	
+    -- Step 1: Candidate pool 
     local shape = TargetFilterTable.TargetCheckShape or ""
 	if shape == "ESBCheckShape::CheckShape_2DArc" then
         local far = FarDistance or 0
@@ -5979,6 +6180,8 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
 			hitAnything = true
 		end
 	end
+	
+	hook.Run("StellarBlade_OnCheckWeaponCollision",worldMins,worldMaxs,entityList,filtered) -- allow outer hooks to modify result 
 
 	-- 6. Visualization
 	-- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
@@ -6075,6 +6278,8 @@ StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitbox
             hitAnything = true
         end
     end
+	
+	hook.Run("StellarBlade_OnCheckHitboxCollision",worldMins,worldMaxs,entityList,hitboxID, hitboxSetfiltered) -- allow outer hooks to modify result 
 
     -- 7. Visualization (Identical style to Weapon Collision)
     -- RED Rotated Box: Represents the actual hitbox orientation (OBB)
@@ -6500,7 +6705,11 @@ StellarBlade.JustParryAnticipation = function(self, target)
     return bDamageBlocked
 end
 
-StellarBlade.SetSkillStep = function(self,strSkill) 
+-- inputs: 
+-- self is the entity pointer, mostly a player or NPC 
+-- strSkill is a skill step name from FirstSkillActiveAlias table 
+-- SBAI_SkillTable sets the skill table that the skill steps derive from. it is used to provide some initial information about how skill starts, and additionally stores data such as hit counter 
+StellarBlade.SetSkillStep = function(self,strSkill,SBAI_SkillTable) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
     if !SkillStepTable then
         if self.SBAI_SkillStep then self.SBAI_SkillStep:Remove() end 
@@ -6519,9 +6728,21 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 			-- add on skill step end stat 
 		end 
 		-- self.SBAI_SkillStep:Remove(false) 
-		StellarBlade.SBAI_SkillStep.Remove(self.SBAI_SkillStep,false) 
+		StellarBlade.SBAI_SkillStep.Remove(self.SBAI_SkillStep,false) -- note that there, SBAI_SkillTable is erased from self:GetTable() 
 	else 
 		StellarBlade.RemoveEffectLifeTypes(self,"ESBEffectLifeType::EffectLifeType_BeforeNextSkill") 
+	end 
+	
+	if !SBAI_SkillTable and self.SBAI_SkillStep then -- try to restore skilltable 
+		SBAI_SkillTable = self.SBAI_SkillStep.SBAI_SkillTable 
+	end 
+	
+	if !SBAI_SkillTable and SBAI_SkillStep then -- try to restore skilltable 
+		SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
+	end 
+	
+	if !SBAI_SkillTable and self.SBAI_SkillTable then -- try to restore skilltable 
+		SBAI_SkillTable = self.SBAI_SkillTable 
 	end 
 	
 	-- construct new SkillStep object 
@@ -6533,7 +6754,11 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 	SBAI_SkillStep.Duration = curTime + SkillStepTable.Duration 
 	SBAI_SkillStep.Outer = self 
 	SBAI_SkillStep.Hit = nil 
+	SBAI_SkillStep.Health = self:Health() 
+	SBAI_SkillStep.SBAI_SkillTable = SBAI_SkillTable or SBAI_SkillStep.SBAI_SkillTable or self.SBAI_SkillTable 
 	StellarBlade.SBAI_SkillStep.Initialize(SBAI_SkillStep) 
+	
+	-- print("SBAI_SkillStep.SBAI_SkillTable is:",SBAI_SkillStep.SBAI_SkillTable) 
 	
 	local StartSelfEffect = SkillStepTable.StartSelfEffect 
 	local StartTargetEffect = SkillStepTable.StartTargetEffect 
@@ -6620,13 +6845,12 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		end 
 	end 
 	
-	
 	-- custom way to reward or penalize Player for successfully damaging targets 
 	if SkillStepTable.NextStepAlias == "None" then -- no more skills 
-		if self.SBAI_SkillTable.Hit == false then -- was in a Hit event but failed to hit targets until the last skillstep 
+		if SBAI_SkillStep.SBAI_SkillTable.Hit == false then -- was in a Hit event but failed to hit targets until the last skillstep 
 			-- print(self, " did not hit anything during attack skill, penalizing with decrease in Stamina") 
 			StellarBlade.AddEffect(self, "JustParryStaminaDamage", {Constructor = self, Target = enemy, DamageInfo = SaveDamageInfo(dmginfo)}) 
-		elseif self.SBAI_SkillTable.Hit == true then 
+		elseif SBAI_SkillStep.SBAI_SkillTable.Hit == true then 
 			if self:IsPlayer() then 
 				-- print("rewarding player with hp",self) 
 				-- "CalculationValue": 10.0, -- you can override calcvalue for custom health 
@@ -6724,7 +6948,7 @@ StellarBlade.SetSkillStep = function(self,strSkill)
 		end 
 	end
 
-	StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep) 
+	StellarBlade.ProcessActiveSkill(self,SBAI_SkillStep,SBAI_SkillTable) 
 	return SBAI_SkillStep 
 end 
 
@@ -6867,7 +7091,7 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		["bExecuteSeparately"] = CharacterMoveTable.bExecuteSeparately or false
 	} 
 	
-	print(strEffect,CurTime(),CharacterMoveTable.StartDelayTime) 
+	-- print(strEffect,CurTime(),CharacterMoveTable.StartDelayTime) 
 	
 	local tableofexecuteseparately = { } 
 	-- tableofexecuteseparately.M_Raven_ChaseGrab_Move1 = true 
@@ -6919,61 +7143,6 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 			hook.Remove("Move",self) 
 			hook.Remove("FinishMove",self) 
 			
-			if strEffect == "M_Raven_ChaseChargeSlash_Move3" then 
-				if tableOptional and IsValid(tableOptional.Target) then 
-					print("teleporting to enemy",tableOptional.Target) 
-					local target = tableOptional.Target
-					local outer = self.Outer
-					local startPos = self.InitialPos 
-					-- local targetPos = target:NearestPoint(startPos)
-					local targetPos = scripted_ents.Get("cycler_actor2").NearestPoint2(tableOptional.Target,self.InitialPos) 
-
-					-- 1. Trace from MoveStep's initial position to target's nearest hull (whitelisting only the target)
-					local traceData = {
-						start = startPos,
-						endpos = targetPos,
-						mins = IsValid(outer) and outer:OBBMins() or Vector(-16, -16, 0),
-						maxs = IsValid(outer) and outer:OBBMaxs() or Vector(16, 16, 72),
-						filter = { target },
-						whitelist = true,
-						mask = MASK_PLAYERSOLID
-					}
-					local tr = util.TraceHull(traceData)
-
-					local destPos = tr.Hit and tr.HitPos or targetPos
-
-					-- 2. Drop down properly to ground level to avoid getting stuck in mid-air or geometry
-					if IsValid(outer) then
-						local dropTr = util.TraceHull({
-							start = destPos,
-							endpos = destPos - Vector(0, 0, 512),
-							mins = outer:OBBMins(),
-							maxs = outer:OBBMaxs(),
-							filter = { outer, target },
-							mask = MASK_PLAYERSOLID
-						})
-
-						local finalPos = dropTr.Hit and dropTr.HitPos or destPos
-						outer:SetLocalPos(finalPos)
-						-- print(outer) 
-						-- debugoverlay.Cross(finalPos,256,10) 
-						-- debugoverlay.Cross(self.InitialPos,256,10) 
-						-- debugoverlay.Cross(targetPos,256,10,Color(255,255,0)) 
-						-- debugoverlay.Line(self.InitialPos,finalPos,10) 
-						-- debugoverlay.Line(startPos,tr.HitPos,10,Color(255,0,0)) 
-
-						-- 3. Turn outer entity to face target after teleportation
-						-- local faceAng = (target:GetPos() - finalPos):Angle()
-						-- faceAng.p = 0
-						-- faceAng.r = 0
-						-- if outer.SetEyeAngles then
-							-- outer:SetEyeAngles(faceAng)
-						-- else
-							-- outer:SetAngles(faceAng)
-						-- end
-					end 
-				end 
-			end
 			local MoveTable = self.MoveTable 
 			for i = 1,#MoveTable do 
 				-- local iMoveStep = self.Outer.SBAI_MoveTable[i] 
@@ -7114,66 +7283,14 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 						local moveResult = IterativeHybridMoveLimit(ply, curOrigin, finalPos, { filter = filter, collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(ply) }) 
 
 						if mv then 
-							if strEffect == "M_Raven_ChaseChargeSlash_Move3" then 
-								if tableOptional and IsValid(tableOptional.Target) then 
-									print("teleporting to enemy",tableOptional.Target) 
-									local target = tableOptional.Target
-									local outer = self.Outer
-									local startPos = moveStep.InitialPos 
-									print(startPos,"startPos") 
-									-- local targetPos = target:NearestPoint(startPos)
-									local targetPos = scripted_ents.Get("cycler_actor2").NearestPoint2(tableOptional.Target,startPos) 
-
-									-- 1. Trace from MoveStep's initial position to target's nearest hull (whitelisting only the target)
-									local traceData = {
-										start = startPos,
-										endpos = targetPos,
-										mins = IsValid(outer) and outer:OBBMins() or Vector(-16, -16, 0),
-										maxs = IsValid(outer) and outer:OBBMaxs() or Vector(16, 16, 72),
-										filter = { target },
-										whitelist = true,
-										mask = MASK_PLAYERSOLID
-									}
-									local tr = util.TraceHull(traceData)
-
-									local destPos = tr.Hit and tr.HitPos or targetPos
-
-									-- 2. Drop down properly to ground level to avoid getting stuck in mid-air or geometry
-									if IsValid(outer) then
-										local dropTr = util.TraceHull({
-											start = destPos,
-											endpos = destPos - Vector(0, 0, 512),
-											mins = outer:OBBMins(),
-											maxs = outer:OBBMaxs(),
-											filter = { outer, target },
-											mask = MASK_PLAYERSOLID
-										})
-
-										local finalPos = dropTr.Hit and dropTr.HitPos or destPos
-										-- outer:SetLocalPos(finalPos)
-										mv:SetOrigin(finalPos) 
-										print(outer) 
-										debugoverlay.Cross(finalPos,256,10) 
-										-- debugoverlay.Cross(self.InitialPos,256,10) 
-										-- debugoverlay.Cross(targetPos,256,10,Color(255,255,0)) 
-										-- debugoverlay.Line(self.InitialPos,finalPos,10) 
-										-- debugoverlay.Line(startPos,tr.HitPos,10,Color(255,0,0)) 
-
-										-- 3. Turn outer entity to face target after teleportation
-										-- local faceAng = (target:GetPos() - finalPos):Angle()
-										-- faceAng.p = 0
-										-- faceAng.r = 0
-										-- if outer.SetEyeAngles then
-											-- outer:SetEyeAngles(faceAng)
-										-- else
-											-- outer:SetAngles(faceAng)
-										-- end
-									end 
-								end 
+							if strEffect == "some move step name" then 
+								-- put your mv:SetOrigin here 
 							else 
+								-- print("in mv:SetOrigin",moveResult.vEndPosition) 
 								mv:SetOrigin(moveResult.vEndPosition) 
 							end 
 						else 
+							-- print("in ply:SetLocalPos",moveResult.vEndPosition) 
 							ply:SetLocalPos(moveResult.vEndPosition) 
 						end 
 					end 
@@ -7231,10 +7348,11 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 			local moveResult = IterativeHybridMoveLimit(ply, currentOrigin, finalPos, { collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(plytemp)}) 
 			-- print("post IterativeHybridMoveLimit:",SysTime()) 
 			-- ply:SetLocalPos(moveResult.vEndPosition) 
-			if !ply:IsPlayer() then 
+			if !ply:IsPlayer() then -- player's vehicle 
 				ply:SetPos(moveResult.vEndPosition) 
+			else -- actual player, not vehicle 
+				mv:SetOrigin(moveResult.vEndPosition) 
 			end 
-			mv:SetOrigin(moveResult.vEndPosition) 
 			-- ply:SetSaveValue("basevelocity",self.movePosDelta / (FrameTime())) 
 			-- ply:AddFlags(FL_BASEVELOCITY) 
 		end 
@@ -7350,13 +7468,15 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name]
 	moveStep.InitialPos = moveStep.InitialPos or self:GetPos() 
 	-- print(name) 
-	for k,v in ipairs(self.SBAI_MoveTable) do 
-		-- mute other movesteps 
-		-- print(v.MoveArrayName) 
-		-- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name == "M_Raven_ChaseChargeSlash_Move2" then return false, vector_origin, angle_zero end 
-		-- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" and v:IsActive() then return false, vector_origin, angle_zero end 
-		if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" then return false, vector_origin, angle_zero end 
-	end 
+	-- if self.SBAI_MoveTable then 
+		-- for k,v in ipairs(self.SBAI_MoveTable) do 
+			-- -- mute other movesteps 
+			-- -- print(v.MoveArrayName) 
+			-- -- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name == "M_Raven_ChaseChargeSlash_Move2" then return false, vector_origin, angle_zero end 
+			-- -- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" and v:IsActive() then return false, vector_origin, angle_zero end 
+			-- if v.MoveArrayName == "M_Raven_ChaseChargeSlash_Move3" and name != "M_Raven_ChaseChargeSlash_Move3" then return false, vector_origin, angle_zero end 
+		-- end 
+	-- end 
 	
     local Time = CharacterMoveTable.Time or 0
     local moveStartTimeCfg = CharacterMoveTable.MoveStartTime or 0
