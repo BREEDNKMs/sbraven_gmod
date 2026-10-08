@@ -1,5 +1,6 @@
 -- BUG: function type values are not saverestored 
 -- ===== Add these client receivers near the top of the file (or anywhere in shared scope) ===== 
+local strRealm = SERVER and "SERVER" or "CLIENT" 
 
 if CLIENT then 
     StellarBlade = StellarBlade or {} 
@@ -230,7 +231,7 @@ end)
 
 local function SaveDamageInfo(dmg) 
 	local tbl = { } 
-	tbl.BaseDamage = dmg:GetBaseDamage() 
+	tbl.BaseDamage = dmg:GetBaseDamage() or 0 
 	tbl.Damage = dmg:GetDamage() 
 	tbl.DamageType = dmg:GetDamageType() 
 	tbl.DamageBonus = dmg:GetDamageBonus() 
@@ -305,8 +306,9 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
         local SkillResultAlias = SkillStepTable.SkillResultAlias 
         if Type == "ESBSkillActiveStepType::SkillActiveStepType_Parry" then 
         
-            if !target.SBAI_SkillTable then return print(target,"there is a skill step but no skilltable") end 
-            local TargetFilterAlias = target.SBAI_SkillTable.TargetFilterAlias 
+			local SBAI_SkillTable = target.SBAI_SkillStep.SBAI_SkillTable 
+            if !SBAI_SkillTable then return print(target,"there is a skill step but no skilltable") end 
+            local TargetFilterAlias = SBAI_SkillTable.TargetFilterAlias 
             
 			-- normally collision to AttackedCollisionGroupArray is considered 
 
@@ -389,13 +391,13 @@ hook.Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
                 
                 -- Only apply attacker disruptions and side-effects if it is a normal close-range target
                 if isNormalParryTarget and IsValid(attacker) then 
-                    if target.SBAI_SkillTable then 
-                        if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities then 
-                            target.SBAI_SkillTable.OnTakeDamage_ParriedEntities = { } 
+                    if SBAI_SkillTable then 
+                        if !SBAI_SkillTable.OnTakeDamage_ParriedEntities then 
+                            SBAI_SkillTable.OnTakeDamage_ParriedEntities = { } 
                         end 
                         
-                        if !target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] then 
-                            target.SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] = 
+                        if !SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] then 
+                            SBAI_SkillTable.OnTakeDamage_ParriedEntities[attacker] = 
                             {   ["Time"] = CurTime(), 
                                 ["Capabilities"] = attacker.CapabilitiesGet and attacker:CapabilitiesGet() or nil 
                             } 
@@ -562,37 +564,32 @@ StellarBlade.SBAI_SkillStep = { }
 StellarBlade.SBAI_SkillTable = { } 
 StellarBlade.SB_EffectAlias = { } 
 function StellarBlade.ActorState:Remove(effectOrName) 
-	-- effectOrName may be nil / table / string
-	local t = type(effectOrName)
 	local targetName = nil
-	if t == "table" then
+	if type(effectOrName) == "table" then
 		targetName = effectOrName.Name
-	elseif t == "string" then
+	elseif type(effectOrName) == "string" then
 		targetName = effectOrName
 	end
 
-	-- debug print
-	-- print("in ActorState:Remove('", targetName or "<none>", "')")
+	self.Users = self.Users or {} 
 
-	-- ensure Users is a table
-	self.Users = self.Users or { } 
-	-- if an effect was specified: remove any matching entries (by reference first, then by name)
-	if effectOrName then
-		for i = #self.Users, 1, -1 do
-			local u = self.Users[i]
-			if u == effectOrName then
-				table.remove(self.Users, i)
-			elseif type(u) == "table" and targetName and u.Name == targetName then
-				table.remove(self.Users, i)
-			end
+	-- Prune users matching reference, name, or already marked for deletion
+	for i = #self.Users, 1, -1 do
+		local u = self.Users[i]
+		if effectOrName and u == effectOrName then
+			table.remove(self.Users, i)
+		elseif targetName and type(u) == "table" and u.Name == targetName then
+			table.remove(self.Users, i)
+		elseif type(u) == "table" and u.IsMarkedForDeletion then
+			table.remove(self.Users, i)
 		end
 	end
 
-	-- if there are still users, do not remove the state
+	-- If there are still valid active users, do not tear down the state
 	if #self.Users > 0 then 
-		-- print("state has more users, not removing:",self.Name,#self.Users) 
 		return false 
 	end 
+	
 	
 	if !self.IsMarkedForDeletion then 
 		self.IsMarkedForDeletion = true 
@@ -626,7 +623,8 @@ function StellarBlade.ActorState:Remove(effectOrName)
 						else 
 						
 						end 
-					else 
+						self.Outer:SetSaveValue("m_flNextDecisionTime",self.Outer:GetAnimTimeInterval()) 
+					else -- prop_dynamic, nextbot 
 					
 					end 
 					-- self.Outer:SetMoveType(MOVETYPE_STEP) 
@@ -704,7 +702,7 @@ function StellarBlade.ActorState:Think()
 			local Result_State_Groggy_E,etime = Outer:LookupSequence("Result_State_Groggy_E") -- exit 
 			if Outer:GetSequence() == Result_State_Groggy_S or Outer:GetSequence() == Result_State_Groggy_L then 
 				if Outer:IsSequenceFinished() then 
-					scripted_ents.Get("cycler_actor2").NPC_StartScriptedActivity(Outer,"Result_State_Groggy_L",true) 
+					scripted_ents.Get("cycler_actor2").NPC_StartScriptedActivity(Outer,"Result_State_Groggy_L",true,self.LifeTime) 
 				end 
 			end 
 		end 
@@ -716,7 +714,7 @@ function StellarBlade.ActorState:Think()
 			local result_state_knockdown_e,etime = Outer:LookupSequence("result_state_knockdown_e") -- exit 
 			if Outer:GetSequence() == result_state_knockdown_s_bw or Outer:GetSequence() == result_state_knockdown_l or Outer:GetSequence() == result_state_knockdown_s_fw then 
 				if Outer:IsSequenceFinished() then 
-					scripted_ents.Get("cycler_actor2").NPC_StartScriptedActivity(Outer,"result_state_knockdown_l",true) 
+					scripted_ents.Get("cycler_actor2").NPC_StartScriptedActivity(Outer,"result_state_knockdown_l",true,self.LifeTime) 
 				end 
 			end 
 		end 
@@ -1020,9 +1018,9 @@ end
 function StellarBlade.SBAI_SkillStep:Remove(stopAnimations) 
 	self.IsMarkedForDeletion = true 
 	pcall(self.OnRemove,self) 
-	if IsValid(self.Outer) then 
-		self.Outer.SBAI_SkillStep = nil 
-	end 
+	if IsValid(self.Outer) and self.Outer.SBAI_SkillStep == self then 
+        self.Outer.SBAI_SkillStep = nil 
+    end 
 	if self.SBAI_SkillTable then 
 		StellarBlade.SBAI_SkillTable.Remove(self.SBAI_SkillTable,stopAnimations) 
 	end 
@@ -1038,7 +1036,6 @@ function StellarBlade.SBAI_SkillStep:ShouldHitStop(target, dmginfo, wasDamageTak
 	if self.Data.PostStep then return true end 
 	if self.Data.CanCutoff then return true end -- found at Finish* steps, bIgnoreHitStop is false when this is true 
 	if hook.Run("StellarBlade_OnShouldHitStop",self,target,dmginfo,wasDamageTaken) then return true end 
-	print(dmginfo:GetAttacker(),target) 
 	if dmginfo:IsDamageType(DMG_SNIPER) then return true end 
 	if IsValid(dmginfo:GetAttacker()) and dmginfo:GetAttacker() == target then return true end -- to self 
 	-- if dmginfo:IsDamageType(DMG_AIRBOAT) then return true end 
@@ -1051,6 +1048,40 @@ function StellarBlade.SBAI_SkillStep:ShouldHitStop(target, dmginfo, wasDamageTak
 	end 
 	return false 
 end 
+
+-- lua_run print(StellarBlade.StartSkillTargetResult(Entity(1),"M_ElderPhase2_KillRoutine_Hit1",true,true,{Constructor = Entity(89)})) -- HitImpactBlunt_Strong 
+-- M_SkullJuggernaut_BodyAttack_Hit1 -- HitImpactBlunt_Light
+-- P_Eve_Tachy_Start2_Hit1 -- Result_Hit_Stand_Sword_Critical
+-- M_Tachy_PhaseChange2_Hit2 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_GorillaB_S24_PhaseChange2_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_RavenBeast_StanceChangeFly_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_WeaponMasterA_PhaseChange3_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_Mann_Smoke2_Hit1 -- 
+-- M_RavenBeast_FlyStamp_Hit1 -- HitStun of 1.1, Result_Hit_Stand_Blunt_StrongAttack, 
+-- M_SkullJuggernaut_S05_Push_Hit1 -- Result_Hit_Stand_LightAttack, has HitStun of 1.5 if HitLevel 
+-- M_WeaponMasterA_PhaseChange3_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_WeaponMasterA_PhaseChange2_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_HedgeBoarBrute_PhaseChange_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_WeaponMasterA_GreatSwordSwing_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel  
+-- M_RavenBeast_FlyRoutine1_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, HitStun of 1.5 if HitLevel 
+-- M_Crawler_1PhaseShift1_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_Marionette_SoundBombPhaseChange_Hit1 
+-- P_Eve_Sword_Normal_FlashBehindAttack4_2_Hit1
+-- M_ElderPhase2_PhaseChange3_Hit2 
+-- M_ElderPhase2_KillRoutine_Hit1 
+-- P_Eve_GunNikke_BurstSkill1_1_Hit1 
+-- M_ElderPhase2_BlinkDash_Hit1 
+-- M_Tachy_SwordAuraDash_Hit1 -- Result_Hit_Stand_Blunt_StrongAttack, has HitStun of 0.4 on bHitLevel,  
+-- M_RavenBeast_PhaseChange3_Hit2 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_Scarlet_Airspin_Hit1 -- Result_Hit_Stand_StrongAttack if !HitLevel, adds KnockDownBackward_Eve if HitLevel 
+-- M_Mann_PhaseChange_Hit2 
+-- M_Opener_PhaseChange_Hit1 -- Result_Hit_Stand_StrongAttack_Opener 
+-- M_SawsharkWasteland_PhaseChange_Hit1 
+-- M_Tachy_PhaseChange2_Hit1 
+-- M_TurretLaser_Laser_Projectile_Hit2: explosion sphere that deals 70 dmg, HitAirBackward_Eve if HitLevel 
+-- P_Eve_Tachy_Start1_Hit1: Result_Hit_Stand_Sword_Tachy_Attack, 
+-- M_HedgeBoarBrute_PhaseChange_Hit3 
+-- M_Tachy_Grab_Hit1 
 
 function StellarBlade.SBAI_SkillStep:PostEntityTakeDamage(target, dmginfo, wasDamageTaken) 
 	if target == self.Outer then 
@@ -1317,7 +1348,9 @@ function StellarBlade.SBAI_SkillTable:Remove(stopAnimations)
 	end 
 	-- destruct skill table 
 	-- print("removing skill table from outer:",self.Outer,self.Outer.SBAI_SkillTable) 
-	Outer.SBAI_SkillTable = nil 
+	if IsValid(Outer) and Outer.SBAI_SkillTable == self then 
+        Outer.SBAI_SkillTable = nil 
+    end
 	-- also destruct skill step table if exists 
 end 
 
@@ -1336,19 +1369,25 @@ function StellarBlade.SBAI_SkillTable:Initialize()
 end 
 
 function StellarBlade.SB_EffectAlias:Remove() 
-	-- if !curEffects[strEffect][chosenIndex] then return end 
-	-- if curEffects[strEffect][chosenIndex] != curEffect then return end 
-	-- print("called effect remove",CurTime(),curEffect.Name) 
-	-- debug.Trace() 
 	local strEffect = self.Name 
 	local chosenIndex = self.chosenIndex 
 	if !self.IsMarkedForDeletion then 
 		self.IsMarkedForDeletion = true 
+		hook.Remove("Think", self)
+		hook.Remove("EntityTakeDamage", self)
+		hook.Remove("PostEntityTakeDamage", self)
+
 		local tableOptional = tableOptional or self.tableOptional 
-		pcall(StellarBlade.OnRemoveEffect,self.Outer,self,tableOptional) -- prevent script being halt on error 
-		-- table.remove(curEffects[strEffect],chosenIndex) 
-		table.remove(self.Outer.SB_EffectAlias[strEffect],chosenIndex) 
-		-- print("removing effect:",strEffect,self) 
+		pcall(StellarBlade.OnRemoveEffect, self.Outer, self, tableOptional) -- prevent script halting on error. 
+
+		if self.Outer and self.Outer.SB_EffectAlias and self.Outer.SB_EffectAlias[strEffect] then
+			for i = #self.Outer.SB_EffectAlias[strEffect], 1, -1 do
+				if self.Outer.SB_EffectAlias[strEffect][i] == self then
+					table.remove(self.Outer.SB_EffectAlias[strEffect], i)
+					break
+				end
+			end
+		end
 	end 
 end 
 
@@ -1404,7 +1443,6 @@ function StellarBlade.SB_EffectAlias:IsLifeTypeValid()
 		if CurTime() > 5 + self.Time then 
 			return false 
 		end
-	elseif LifeType == "ESBEffectLifeType::EffectLifeType_CharacterGetupTime" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_NextSkillDependent" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_LevelSequenceDependent" then
 	elseif LifeType == "ESBEffectLifeType::EffectLifeType_EquipmentDependent" then
@@ -1425,7 +1463,7 @@ function StellarBlade.SB_EffectAlias:IsValid() -- this is called by the engine e
 end 
 
 function StellarBlade.SB_EffectAlias:Think() 
-	-- print(self.Outer,strEffect,self.Cycle) -- all of these are valid 
+	-- print(self.Outer,self.Name,self.Cycle) -- all of these are valid 
 	-- print(self.tableOptional) 
 	if self.LoopTargetFilterAlias != "None" and CurTime() >= self.LastLoopIntervalTime + self.LoopIntervalTime then 
 		self.LastLoopIntervalTime = CurTime() 
@@ -1637,13 +1675,9 @@ function StellarBlade.SB_EffectAlias:PostEntityTakeDamage(target,dmginfo) -- SER
 	if !IsValid(attacker) then return end 
 
 	-- 2. Validate Ownership (CRITICAL)
-	-- We must check if the attacker is the actual owner of THIS effect instance (self).
-	-- This prevents the hook from firing when other entities deal damage.
-	-- Ensure you added 'EffectTable.Outer = self' inside 'StellarBlade.OnAddEffect'
 	if attacker != self.Outer then return end 
 
 	-- 3. Execute Logic for THIS effect only
-	-- Do NOT loop through 'attacker.SB_EffectAlias'. Use 'self' directly.
 	local ConditionChainType = self.ConditionChainType
 
 	local ConditionChainSelfEffectAliasArray = self.ConditionChainSelfEffectAliasArray
@@ -1673,38 +1707,46 @@ function StellarBlade.SB_EffectAlias:PostEntityTakeDamage(target,dmginfo) -- SER
 end 
 
 function StellarBlade.SB_EffectAlias:Initialize(tableOptional) 
-	-- print("self:",self) 
-	local StartDelayTime = self.StartDelayTime 
-	setmetatable(self,{ __index = function(self,key) 
-		if key == "Cycle" then 
-			if self.LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
-				-- (Current Time - Start Time) / Total Duration
-				return math.Clamp((CurTime() - self.Time) / self.LifeTime, 0, 1)
-			end
+	local StartDelayTime = tonumber(self.StartDelayTime) or 0 
+	setmetatable(self, { 
+		__index = function(t, key) 
+			if key == "Cycle" then 
+				if t.LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" and t.LifeTime and t.LifeTime > 0 then
+					return math.Clamp((CurTime() - t.Time) / t.LifeTime, 0, 1)
+				end
+			end 
 		end 
-	end } ) 
-	for k,v in pairs(StellarBlade.SB_EffectAlias) do 
+	}) 
+
+	for k, v in pairs(StellarBlade.SB_EffectAlias) do 
 		self[k] = v 
 	end 
+
 	local function Activate() 
-		hook.Add("Think",self,self.Think) 
-		hook.Add("EntityTakeDamage",self,self.EntityTakeDamage) 
-		hook.Add("PostEntityTakeDamage",self,self.PostEntityTakeDamage) 
-		-- fully initialized 
+		if self.IsMarkedForDeletion or !IsValid(self.Outer) then return end
+		hook.Add("Think", self, function(self) self:Think(self) end) 
+		hook.Add("EntityTakeDamage", self, function(self, ent, dmg) return self:EntityTakeDamage(ent, dmg) end) 
+		hook.Add("PostEntityTakeDamage", self, function(self, ent, dmg) return self:PostEntityTakeDamage(ent, dmg) end) 
 		self.IsActive = true 
-		StellarBlade.OnAddEffect(self.Outer,self,tableOptional) 
+		StellarBlade.OnAddEffect(self.Outer, self, tableOptional) 
 	end 
-	if StartDelayTime == 0 or self.IsNetworkedOrigin then 
+
+	if StartDelayTime <= 0 or self.IsNetworkedOrigin then 
 		Activate() 
 	else 
 		self.IsActive = false 
-		hook.Add("Think",self,function() 
+		hook.Add("Think", self, function() 
+			if self.IsMarkedForDeletion or !IsValid(self.Outer) then 
+				hook.Remove("Think", self)
+				return 
+			end
 			if CurTime() >= self.Time + StartDelayTime then 
-				self.EndTime = CurTime() + self.LifeTime 
+				hook.Remove("Think", self)
+				self.EndTime = CurTime() + (tonumber(self.LifeTime) or 0) 
 				self.Time = CurTime() 
-				Activate() -- the hook.Add in Activate() will override this hook pointer 
+				Activate() 
 			end 
-		end ) 
+		end) 
 	end 
 end 
 
@@ -1764,7 +1806,6 @@ if SERVER then
 end 
 
 StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...) 
-	-- if tableOptional then PrintTable(tableOptional) end 
 	if strEffect then 
 		if strEffect == "DownFaceUP" then strEffect = "DownFaceUp" end 
 	end 
@@ -1778,8 +1819,28 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 		end 
 	end 
 	
-	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then print("rejected effect:",strEffect) return false end 
-	-- print("adding effect:",strEffect) 
+	if !StellarBlade.CanAddEffect(self, strEffect, EffectTable, tableOptional) then return false end 
+	-- print("adding effect:",strEffect, CurTime(), strRealm) 
+
+    -- Parse vararg overrides upfront
+    local overrides = {}
+    local args = { ... }
+    local n = #args
+    for i = 1, n, 2 do
+        local key = args[i]
+        local val = args[i + 1]
+        if key != nil then
+            if type(val) == "string" then
+                local num = tonumber(val)
+                if num != nil then val = num end
+            end
+            local strKey = tostring(key)
+            if strKey == "Time" or strKey == "time" then strKey = "LifeTime" end
+            if strKey == "startDelayTime" or strKey == "startdelaytime" then strKey = "StartDelayTime" end
+            overrides[strKey] = val
+        end
+    end
+
     -- Ensure our container exists 
     self.SB_EffectAlias = self.SB_EffectAlias or {} 
     local curEffects = self.SB_EffectAlias 
@@ -1789,11 +1850,15 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
     end 
     -- Prepare a fresh instance from canonical table (copy)
     local template = SB_EffectTable and SB_EffectTable[1] and SB_EffectTable[1].Rows and SB_EffectTable[1].Rows[strEffect]
-    local newInstance = template and table.Copy(template) or {}
+    local newInstance = template and table.Copy(template) or (EffectTable and table.Copy(EffectTable)) or {}
+
+    -- Apply overrides to new instance before overlap resolution
+    for k, v in pairs(overrides) do
+        newInstance[k] = v
+    end
 
     -- The effect definition (metadata) from npc table (may include Overlap too)
     local Overlap = EffectTable.Overlap
-
     local chosenIndex = nil 
 
 	if Overlap == "ESBEffectOverlap::EffectOverlap_Overlap" then
@@ -1805,7 +1870,9 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 			-- BLACKLIST: Numeric keys here will Overwrite instead of Add
 			local NoSumKeys = {
 				["CalculationMultipleValue"] = true,
-				["CalculationMultipleWhenBacksideHit"] = true
+				["CalculationMultipleWhenBacksideHit"] = true,
+				["LifeTime"] = true,
+				["StartDelayTime"] = true,
 			}
 
 			-- Merge numeric values: add numbers; otherwise override/assign
@@ -1853,32 +1920,39 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
         curEffects[strEffect][1] = newInstance
         chosenIndex = 1
     end
+
     -- The instance we're working with
     local curEffect = curEffects[strEffect][chosenIndex]
-
-    -- ensure curEffect exists (defensive)
     if !curEffect then
         curEffect = newInstance
         curEffects[strEffect][chosenIndex or 1] = curEffect
     end 
-	-- print(getmetatable(curEffect)) 
-	-- print(getmetatable(curEffect).__index) 
-	-- getmetatable(curEffect).__index = function(self,key) end 
 
-    -- timestamp / lifetime anchor 
-	local StartDelayTime = curEffect.StartDelayTime 
+    -- Ensure all overrides are applied to the active instance
+    for k, v in pairs(overrides) do
+        curEffect[k] = v
+    end
+
+    -- Timestamps and Lifetime calculations (calculated using overridden values)
+	local StartDelayTime = tonumber(curEffect.StartDelayTime) or 0
+    local LifeTime = tonumber(curEffect.LifeTime) or 0
+    curEffect.StartDelayTime = StartDelayTime
+    curEffect.LifeTime = LifeTime
+
 	curEffect.IsNetworkedOrigin = false 
 	curEffect.IsMarkedForDeletion = false 
 	curEffect.Name = strEffect 
 	curEffect.Outer = self 
 	curEffect.chosenIndex = chosenIndex 
-    curEffect.EndTime = CurTime() + curEffect.LifeTime + StartDelayTime 
     curEffect.Time = CurTime() 
     curEffect.LastLoopIntervalTime = CurTime() 
+    curEffect.EndTime = CurTime() + LifeTime + StartDelayTime 
+
 	if tableOptional and tableOptional.TraceResult then 
 		curEffect.TraceResult = tableOptional.TraceResult 
 	end 
 	if tableOptional then curEffect.tableOptional = tableOptional end 
+
 	if CLIENT then
         local stack_level = 0
         while true do
@@ -1887,7 +1961,6 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
 
             if info.short_src then
                 local filename = string.GetFileFromFilename(info.short_src)
-                -- If we find net.lua, this effect is a ROOT Networked effect.
                 if filename == "net.lua" then
                     curEffect.IsNetworkedOrigin = true
                     break
@@ -1896,56 +1969,21 @@ StellarBlade.AddEffect = function(self, strEffect, tableOptional, ...)
             stack_level = stack_level + 1
         end
     end
-	-- Generate a unique network identifier for this effect instance and store it
+
     local netID = "SBFX_" .. tostring(CurTime()) .. "_" .. tostring(math.random(0, 1e9))
     curEffect.NetworkID = netID
 
-    -- store mapping on EffectTable for lookup by network identifier (optional)
-    -- EffectTable._NetworkedInstances = EffectTable._NetworkedInstances or {}
-    -- EffectTable._NetworkedInstances[netID] = curEffect
-
-    -- Broadcast to all clients that a new effect has been added (ignore varargs/tableOptional per request)
     if SERVER then
-        -- ensure netstrings exist (pcall used earlier)
         net.Start("SB_AddEffect")
             net.WriteEntity(self)        -- the affected entity
             net.WriteString(strEffect)   -- effect alias
             net.WriteString(netID)       -- unique id for this instance
         net.Broadcast()
     end
-    -- Process vararg key/value pairs and write into chosen instance
-    local args = { ... }
-    local n = #args
-    for i = 1, n, 2 do
-        local key = args[i]
-        local val = args[i + 1]
-        if key != nil then
-            -- try to convert numeric-like strings to numbers
-            if type(val) == "string" then
-                local num = tonumber(val)
-                if num != nil then
-                    val = num
-                end
-            end
-            curEffect[tostring(key)] = val
-        end
-    end
-    -- Handle life type if you need to perform special registration/tracking
-    local LifeType = curEffect.LifeType
-    if LifeType == "ESBEffectLifeType::EffectLifeType_Infinite" then
-        -- keep as-is (no time limit)
-    elseif LifeType == "ESBEffectLifeType::EffectLifeType_SkillDependent" then
-        -- curEffect.ActiveSkill = self.SBAI_SkillTable and self.SBAI_SkillTable.SkillName
-    elseif LifeType == "ESBEffectLifeType::EffectLifeType_StepDependent" then
-        -- handle step-dependent logic if needed
-    elseif LifeType == "ESBEffectLifeType::EffectLifeType_IndependentTime" then
-        -- curEffect.ExpireTime = CurTime() + (EffectTable.LifeTime or curEffect.LifeTime or 0)
-    end
-    -- (extend cases as you need) 
-	StellarBlade.SB_EffectAlias.Initialize(curEffect,tableOptional) 
-    -- Optionally return chosenIndex and curEffect for caller convenience 
+
+	StellarBlade.SB_EffectAlias.Initialize(curEffect, tableOptional) 
     return chosenIndex, curEffect 
-end 
+end
 
 StellarBlade.ApplyEffectAction = function(self,EffectTable,Action,ActionValue) 
 	ParsedActionValue = StellarBlade.ParseTableStrings(ActionValue) 
@@ -2213,7 +2251,7 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
 		if self.SB_EffectAlias and self.SB_EffectAlias[EffectInstances] then 
 			-- print("found effect already bound:",EffectInstances,self.SB_EffectAlias[EffectInstances],CurTime()) 
 			if !table.IsEmpty(self.SB_EffectAlias[EffectInstances]) then 
-				-- print("returning false",CurTime()) 
+				print("returning false",CurTime()) 
 				return false 
 			end 
 		end 
@@ -2252,30 +2290,34 @@ StellarBlade.CanAddEffect = function(self, strEffect, EffectTable, tableOptional
     end
 	
 	if tableOptional and IsValid(tableOptional.Constructor) then -- KnockDownForward_Eve - KnockDownBackward_Eve 
-		local ConditionActive_MinAngleFromConstructor = math.NormalizeAngle(EffectTable.ConditionActive_MinAngleFromConstructor) 
-		local ConditionActive_MaxAngleFromConstructor = math.NormalizeAngle(EffectTable.ConditionActive_MaxAngleFromConstructor) 
+		local minAngle = EffectTable.ConditionActive_MinAngleFromConstructor
+		local maxAngle = EffectTable.ConditionActive_MaxAngleFromConstructor
 		
-		if ConditionActive_MinAngleFromConstructor != 0 and ConditionActive_MaxAngleFromConstructor != 0 then 
-			local Ang = tableOptional and tableOptional.TraceResult and tableOptional.TraceResult.HitNormal:GetNormalized():Angle() or self:WorldToLocalAngles((tableOptional.Constructor:GetPos() - self:GetPos()):GetNormalized():Angle()) 
-			
-			-- 1. Normalize Ang.y so it matches the -180 to 180 scale
-			local targetYaw = math.NormalizeAngle(Ang.y)
-			
-			-- 2. Correctly check if the angle is within the min/max arc (handling wrap-around)
-			local isInside = false
-			if ConditionActive_MinAngleFromConstructor <= ConditionActive_MaxAngleFromConstructor then
-				-- Standard range (e.g., -90 to 90)
-				isInside = (targetYaw >= ConditionActive_MinAngleFromConstructor and targetYaw <= ConditionActive_MaxAngleFromConstructor)
-			else
-				-- Wrapped range (e.g., 90 to -90)
-				isInside = (targetYaw >= ConditionActive_MinAngleFromConstructor or targetYaw <= ConditionActive_MaxAngleFromConstructor)
+		if minAngle != 0 or maxAngle != 0 then 
+			local worldDir
+			if tableOptional.TraceResult and tableOptional.TraceResult.HitNormal and !tableOptional.TraceResult.HitNormal:IsZero() then
+				worldDir = -tableOptional.TraceResult.HitNormal:GetNormalized()
+			elseif IsValid(tableOptional.Constructor) then
+				worldDir = (tableOptional.Constructor:GetPos() - self:GetPos()):GetNormalized()
 			end
 
-			-- Reject if the angle is NOT inside the allowed arc
-			if not isInside then 
-				-- print("rejecting due to angle mins maxs", strEffect) 
-				return false 
-			end 
+			if worldDir then
+				local localAngle = self:WorldToLocalAngles(worldDir:Angle())
+				local targetYaw = math.NormalizeAngle(localAngle.y)
+				local normMin = math.NormalizeAngle(minAngle)
+				local normMax = math.NormalizeAngle(maxAngle)
+
+				local isInside = false
+				if normMin <= normMax then
+					isInside = (targetYaw >= normMin and targetYaw <= normMax)
+				else
+					isInside = (targetYaw >= normMin or targetYaw <= normMax)
+				end
+
+				if not isInside then 
+					return false 
+				end 
+			end
 		end 
 	end
 
@@ -2734,32 +2776,433 @@ end
 -- use this to lookup ESBActorStatType fields on any entity 
 -- it will create a template ESBActorStatType table and assign to entity 
 -- When reading or writing, it checks for statGetters/statSetters first. If missing, it strips "ESBActorStatType::ActorStatType_", translates using StatAliasMap if needed, and directly reads or writes to the entity. 
-function StellarBlade.ActorStats(self, forceReset)
-    if !IsValid(self) then -- worlds don't pass IsValid 
-        if isentity(self) and self != Entity(0) then -- do not consider worldspawn NULL 
-            error("Tried to use NULL Entity!") 
-        end 
-    end 
+--==============================================================================
+-- DYNAMIC HIT REACTION & DAMAGE EVENT EVALUATOR
+--==============================================================================
 
-    if self.ESBActorStatType and getmetatable(self.ESBActorStatType) == statProxyMT and !forceReset then
+local function EvaluateDynamicDamageReaction(statProxy, target, dmginfo)
+	-- 1. Master Toggle & Skill State Checks
+	if not statProxy.bEnableDynamicHitReactions then return end
+	if target.SBAI_SkillTable and target.SBAI_SkillTable:IsValid() then return end
+	if target.SBAI_SkillStep and StellarBlade.SBAI_SkillStep.IsValid(target.SBAI_SkillStep) then return end 
+	if not StellarBlade.IsRaven(target) then return end
+	local lowDamage = target:IsPlayer() and 20 or 50  
+
+	local curTime = CurTime()
+	local dmgAmt = dmginfo:GetDamage()
+	local dmgType = dmginfo:GetDamageType()
+	local dmgForce = dmginfo:GetDamageForce()
+	local attacker = dmginfo:GetAttacker()
+	local ammoType = dmginfo:GetAmmoType()
+
+	-- 2. Store in 16-Entry Circular Buffer (Stored on statProxy, not Entity)
+	statProxy.DamageHistory = statProxy.DamageHistory or {}
+	local savedRecord = SaveDamageInfo(dmginfo)
+	savedRecord.Timestamp = curTime
+	table.insert(statProxy.DamageHistory, 1, savedRecord)
+	if #statProxy.DamageHistory > 16 then
+		table.remove(statProxy.DamageHistory)
+	end
+
+	-- 3. Rolling Cumulative Damage Tracker (0.6s rolling window for chip fire)
+	statProxy.RollingDamageWindow = 0.6
+	statProxy.CumulativeDamage = 0
+	for _, entry in ipairs(statProxy.DamageHistory) do
+		if (curTime - (entry.Timestamp or 0)) <= statProxy.RollingDamageWindow then
+			statProxy.CumulativeDamage = statProxy.CumulativeDamage + (entry.Damage or 0)
+		end
+	end
+
+	-- 4. Check Current Entity States
+	local states = StellarBlade.GetEntityStates(target)
+	local isDownOrRecovering = states.Down or target["ESBActorState::ActorState_BlockingBehavior"]
+
+	-- 5. Prepare Standardized tableOptional
+	local tableOptional = {
+		Constructor = IsValid(attacker) and attacker or NULL,
+		DamageInfo = savedRecord,
+		Target = target
+	}
+	StellarBlade.CompleteTableOptional(target, tableOptional)
+
+	-- 6. Helper: Apply Non-Damaging Reaction Effect
+	local function ApplyReaction(efName, customDuration)
+		print("ApplyReaction:",efName,customDuration) 
+		if not efName or efName == "" or efName == "None" then return end
+		local args = {}
+		if customDuration and customDuration > 0 then
+			table.insert(args, "LifeTime")
+			table.insert(args, customDuration)
+		end
+		-- Neutralize re-damaging calculations on reaction effects to prevent double damage
+		table.insert(args, "CalculationValue")
+		table.insert(args, 0)
+		StellarBlade.AddEffect(target, efName, tableOptional, unpack(args))
+	end
+
+	-- 7. Internal Knockdown Cooldown (Prevents infinite stunlock loops)
+	statProxy.NextAllowedKnockdownTime = statProxy.NextAllowedKnockdownTime or 0
+	local canKnockdown = (curTime >= statProxy.NextAllowedKnockdownTime) and not isDownOrRecovering
+	local maybeMelee = dmginfo:IsDamageType(DMG_CLUB) or dmginfo:IsDamageType(DMG_SLASH)  
+
+	-- =========================================================================
+	-- CATEGORY A: STRIDER IMPALE / PINNING / HEAVY TENTACLES
+	-- =========================================================================
+	local isStriderImpale = IsValid(attacker) and (attacker:GetClass() == "npc_strider") and (maybeMelee or dmgAmt > 90)
+	local isTentacleAttack = IsValid(attacker) and string.find(attacker:GetClass(), "tentacle") ~= nil
+	local isHunterMelee = IsValid(attacker) and attacker:GetClass():find("hunter") and maybeMelee 
+	print("dmgType is:",dmgType) 
+
+	if (isStriderImpale or isTentacleAttack) and canKnockdown then
+		statProxy.NextAllowedKnockdownTime = curTime + 2.5
+		ApplyReaction("DownFaceDown")
+		ApplyReaction("DownFaceUp")
+		return
+	end
+	
+	-- ApplyReaction("HitImpactHeavy", 0.5) 
+	-- if true then return end 
+	
+	if isHunterMelee then 
+		ApplyReaction("HitStun", 0.3)
+		StellarBlade.SetShow(target,"Hit/Result_Hit_Stand_StrongAttack","ActiveTargetResult") 
+		return 
+	end 
+	-- print("past special characters") 
+
+	-- =========================================================================
+	-- CATEGORY B: AIRBORNE & AIR DAMAGE REACTIONS
+	-- =========================================================================
+	if states.Air or states.Airborne then
+		if dmgAmt > 15 or dmginfo:IsExplosionDamage() or dmgForce:LengthSqr() > 40000 then
+			ApplyReaction("HitAirForward_Eve", 1.2)
+			ApplyReaction("HitAirBackward_Eve", 1.2)
+		else
+			ApplyReaction("HitImpactLight")
+		end
+		return
+	end
+
+	-- =========================================================================
+	-- CATEGORY C: WATER / SWIMMING REACTIONS
+	-- =========================================================================
+	if states.Swimming then
+		ApplyReaction((dmgAmt > 30) and "M_Common_HitSwimStrong" or "M_Common_HitSwimLight")
+		return
+	end
+
+	-- =========================================================================
+	-- CATEGORY D: HEAVY EXPLOSIONS / COMBINE BALL / MASSIVE PHYSICS RAM
+	-- =========================================================================
+	local isExplosive = dmginfo:IsExplosionDamage() or (bit.band(dmgType, DMG_BLAST) ~= 0)
+	local isCombineBall = (bit.band(dmgType, DMG_DISSOLVE) ~= 0) 
+	local isCombineBall = IsValid(dmginfo:GetInflictor()) and dmginfo:GetInflictor():GetClass() == "prop_combine_ball" 
+	local isHeavyVehicle = (bit.band(dmgType, DMG_VEHICLE) ~= 0)
+	local isHighPropCrush = (bit.band(dmgType, DMG_CRUSH) ~= 0) and (dmgAmt >= 45 or dmgForce:Length() * 50000) 
+	if IsValid(dmginfo:GetInflictor()) and dmginfo:GetInflictor():GetPhysicsObject():IsValid() then 
+		if dmginfo:GetInflictor():GetPhysicsObject():GetMass() <= 50 then isHighPropCrush = false end 
+	end 
+	local isSniperOrMagnumHead = ammoType == 5 and (dmgAmt >= 45) or dmginfo:IsDamageType(DMG_SNIPER) 
+	if (isExplosive or isCombineBall or isHeavyVehicle or isHighPropCrush or isSniperOrMagnumHead) then
+		if canKnockdown then
+			statProxy.NextAllowedKnockdownTime = curTime + 2.0
+			ApplyReaction("HitImpactTiny_Explosion", 0.5)
+			StellarBlade.SetShow(target,"Hit/Result_Hit_Stand_StrongAttack","ActiveTargetResult") 
+			
+			if isCombineBall then 
+				ApplyReaction("CollisionHitToActorDamage_KnockBack400", 1.2) -- has Result_Hit_Slip_Backward 
+			elseif isHighPropCrush or isHeavyVehicle then 
+				ApplyReaction("KnockBackStrong", 1.2) -- has Result_Hit_KnockBack 
+			else -- sniper hits 
+				-- print(dmgAmt,dmginfo) 
+				ApplyReaction("HitImpactStrong")
+				ApplyReaction("HitStun")
+				-- ApplyReaction("KnockDownForward_Eve")
+			end
+			return
+		else -- already knocked down 
+			ApplyReaction("HitImpactHeavy", 0.5) -- has no anim, has sound, also a hard hit sound 
+			return
+		end
+	end
+
+	-- If currently in Down/Getup, clamp reactions to purely visual impacts past this point
+	if isDownOrRecovering then
+		ApplyReaction((dmgAmt > lowDamage) and "HitImpactSlash_Strong" or "HitImpactSlash_Light", 0.3)
+		return
+	end
+
+	-- =========================================================================
+	-- CATEGORY E: MODERATE IMPACTS (Magnum, Heavy Melee, Shotgun blast)
+	-- =========================================================================
+	local isHeavySlash = (bit.band(dmgType, DMG_SLASH) ~= 0) and (dmgAmt >= lowDamage)
+	local isHeavyClub = (bit.band(dmgType, DMG_CLUB) ~= 0) and (dmgAmt >= lowDamage)
+	local isBuckshotBurst = (bit.band(dmgType, DMG_BUCKSHOT) ~= 0) and (dmgAmt >= lowDamage)
+	local isStunAmmo = (ammoType == 2 or ammoType == 6 or ammoType == 8 or ammoType == 9 or ammoType == 11)
+	print("isHeavySlash:",isHeavySlash) 
+	print("isHeavyClub:",isHeavyClub) 
+	print("isStunAmmo:",isStunAmmo) 
+	print("isBuckshotBurst:",isBuckshotBurst) 
+
+	if isHeavySlash or isHeavyClub or isBuckshotBurst or isStunAmmo --[[or dmgAmt >= lowDamage*2--]] then
+		if isHeavySlash then
+			ApplyReaction("HitImpactStrong", 0.5) -- has no anim  
+		elseif isHeavyClub then
+			ApplyReaction("HitImpactStrong", 0.5)
+		else
+			ApplyReaction("HitImpactStrong", 0.5) -- has no anim 
+		end
+
+		-- Stun stagger: 0.4s brief hit stop
+		ApplyReaction("HitStun", 0.4)
+		StellarBlade.SetShow(target,"Hit/Result_Hit_Stand_StrongAttack_Opener","ActiveTargetResult") 
+		return
+	end
+
+	-- =========================================================================
+	-- CATEGORY F: ELEMENTAL & HAZARD DAMAGE
+	-- =========================================================================
+	if (bit.band(dmgType, bit.bor(DMG_POISON, DMG_ACID, DMG_NERVEGAS, DMG_PARALYZE)) ~= 0) then
+		ApplyReaction("HitImpactTiny_Poison", 0.5)
+		return
+	end
+	
+	if statProxy.CumulativeDamage < 10 then 
+		if (bit.band(dmgType, DMG_SHOCK) ~= 0) then
+			ApplyReaction("HitImpactStrong", 0.4)
+			return
+		end
+	end 
+
+	-- =========================================================================
+	-- CATEGORY G: LIGHT CHIP & BULLET DAMAGE (SMG1, Pistol, Glancing Shotgun)
+	-- =========================================================================
+	local isBulletOrChip = (bit.band(dmgType, bit.bor(DMG_BULLET, DMG_BUCKSHOT)) ~= 0) or (dmgAmt < lowDamage)
+
+	if isBulletOrChip then
+		-- Cumulative poise check: if cumulative damage in 0.6s >= 35, break poise
+		if statProxy.CumulativeDamage >= lowDamage*1.5 then
+			statProxy.CumulativeDamage = 0 -- Reset cumulative window
+			ApplyReaction("HitStun_ProjectileReflect_HDL2Under", 0.4) -- has Result_Hit_Projectile_LightAttack 
+			-- ApplyReaction("HitStun", 0.25)
+			-- StellarBlade.SetShow(target,"Hit/Result_Hit_Projectile_LightAttack","ActiveTargetResult") 
+			return
+		end
+
+		-- Robust React: If false, Raven will not flinch from light bullets
+		if not statProxy.bRobustReact then
+			return
+		else
+			ApplyReaction("HitImpactLight", 0.2) -- has no anim 
+			-- StellarBlade.SetShow(target,"Hit/Result_Hit_Projectile_LightAttack","ActiveTargetResult") 
+			return
+		end
+	end
+
+	-- Generic fallback based on damage severity
+	ApplyReaction((dmgAmt > lowDamage) and "HitImpactStrong" or "HitImpactLight", 0.3)
+end
+
+--==============================================================================
+-- ACTOR STATS & PROXY METATABLE HOOKS
+--==============================================================================
+
+function StellarBlade.ActorStats(self, forceReset)
+    if not IsValid(self) then
+        if isentity(self) and self ~= Entity(0) then
+            error("Tried to use NULL Entity!")
+        end
+    end
+
+    if self.ESBActorStatType and getmetatable(self.ESBActorStatType) == statProxyMT and not forceReset then
         return self.ESBActorStatType
     end
 
-    local proxy = {} 
-    proxy.Outer = self 
-    setmetatable(proxy, statProxyMT) 
+    local ESBActorStatType = {}
+    ESBActorStatType.Outer = self
 
-    if StellarBlade.IsRaven(self) then 
-        -- Initialize dynamic resource gauges to their respective Max values
-        proxy["ESBActorStatType::ActorStatType_Stamina"] = proxy["ESBActorStatType::ActorStatType_MaxStamina"] -- to Raven's 18 
-		if CurTime() > 10 then -- some time after player's initialization, those values are OP for player 
-			proxy["ESBActorStatType::ActorStatType_Shield"]  = proxy["ESBActorStatType::ActorStatType_MaxShield"] -- to Raven's 4805 
-			proxy["ESBActorStatType::ActorStatType_HP"]      = proxy["ESBActorStatType::ActorStatType_MaxHP"] -- to Raven's 248304 
-		end 
-    end 
+    -- Dynamic System Configuration
+    ESBActorStatType.bEnableDynamicHitReactions = true  -- Master Toggle
+    ESBActorStatType.bRobustReact              = false -- If false, ignores chip/light bullet flinches
+    ESBActorStatType.DamageHistory             = {}    -- 16-entry SaveDamageInfo ring buffer
+    ESBActorStatType.RollingDamageWindow       = 0.6   -- Poise accumulation window in seconds
+    ESBActorStatType.CumulativeDamage          = 0
+    ESBActorStatType.NextAllowedKnockdownTime  = 0
+	ESBActorStatType.ActiveAnimKey             = nil   -- Active SBShowAnimKey parameter store
 
-    self.ESBActorStatType = proxy 
-    return proxy 
+    ESBActorStatType.IsValid = function(pSelf)
+        return IsValid(pSelf.Outer)
+    end
+
+    function ESBActorStatType:Tick()
+        -- Pruning & maintenance if needed
+    end
+	
+	-- =========================================================================
+    -- SHARED THINK: AnimKey lifecycle, bStopAtMove, blending & layer clearing
+    -- =========================================================================
+    function ESBActorStatType:Think()
+        local ent = self.Outer
+        local animKey = self.ActiveAnimKey
+        if not animKey then return end
+
+        local curTime = CurTime()
+
+        if ent:IsPlayer() then
+            local slot = animKey.GestureSlot or GESTURE_SLOT_ATTACK_AND_RELOAD
+            local seqID = animKey.SequenceID
+
+            -- Check active gesture layer matching slot and sequence ID
+            local targetLayer = nil
+            if ent:IsValidLayer(slot) and ent:GetLayerSequence(slot) == seqID then
+                targetLayer = slot
+            else
+                -- Fallback scan across all layers in case engine mapped gesture to an allocated layer ID
+                for l = 0, 6 do
+                    if ent:IsValidLayer(l) and ent:GetLayerSequence(l) == seqID then
+                        targetLayer = l
+                        break
+                    end
+                end
+            end
+
+            -- If the layer is no longer valid or sequence doesn't match, clean up
+            if not targetLayer then
+                ent:AnimResetGestureSlot(slot)
+                self.ActiveAnimKey = nil
+                return
+            end
+
+            -- Check player movement inputs
+            local bHasMoveInput = ent:KeyDown(IN_FORWARD) or ent:KeyDown(IN_BACK)
+                or ent:KeyDown(IN_MOVELEFT) or ent:KeyDown(IN_MOVERIGHT)
+                or ent:KeyDown(IN_LEFT) or ent:KeyDown(IN_RIGHT)
+                or ent:KeyDown(IN_JUMP)
+			
+			if StellarBlade.IsGroggy(ent) or StellarBlade.IsDown(ent) or ent["ESBActorState::ActorState_BlockMove"] then bHasMoveInput = false end 
+
+            -- Check if animation should start fading out
+            if animKey.bStopAtMove and bHasMoveInput and not animKey.FadingOut then
+                animKey.FadingOut = true
+                animKey.FadeOutStartTime = curTime
+                animKey.FadeOutStartWeight = animKey.CurrentWeight or (ent:GetLayerWeight(targetLayer)) or 1.0
+            end
+
+            -- Check duration / PlayEndTime timeouts
+            local elapsed = curTime - animKey.StartTime
+            if not animKey.FadingOut then
+                if (animKey.PlayEndTime > 0 and elapsed >= animKey.PlayEndTime)
+                or (animKey.Duration > 0 and elapsed >= animKey.Duration) then
+                    animKey.FadingOut = true
+                    animKey.FadeOutStartTime = curTime
+                    animKey.FadeOutStartWeight = animKey.CurrentWeight or 1.0
+                end
+            end
+
+            -- Process BlendIn or BlendOut weight modulation
+            if animKey.FadingOut then
+                local fadeTime = animKey.BlendOutTime or 0.1
+                if fadeTime <= 0 then
+                    ent:SetLayerWeight(targetLayer, 0)
+                    ent:AnimResetGestureSlot(slot)
+                    self.ActiveAnimKey = nil
+                    return
+                else
+                    local frac = math.Clamp((curTime - animKey.FadeOutStartTime) / fadeTime, 0, 1)
+                    local w = Lerp(frac, animKey.FadeOutStartWeight or 1.0, 0.0)
+                    animKey.CurrentWeight = w
+                    ent:SetLayerWeight(targetLayer, w)
+
+                    if frac >= 1 or w <= 0 then
+                        ent:AnimResetGestureSlot(slot)
+                        self.ActiveAnimKey = nil
+                        return
+                    end
+                end
+            else
+                local blendIn = animKey.BlendInTime or 0
+                if blendIn > 0 and elapsed < blendIn then
+                    local frac = math.Clamp(elapsed / blendIn, 0, 1)
+                    local w = Lerp(frac, 0.0, 1.0)
+                    animKey.CurrentWeight = w
+                    ent:SetLayerWeight(targetLayer, w)
+                else
+                    animKey.CurrentWeight = 1.0
+                    ent:SetLayerWeight(targetLayer, 1.0)
+                end
+            end
+
+        elseif ent:IsNPC() then
+            -- NPC active anim handling: left empty for your custom implementation
+        end
+    end
+
+    -- =========================================================================
+    -- UPDATE ANIMATION: Sync and smooth layer weights during render frames
+    -- =========================================================================
+    function ESBActorStatType:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
+        if ply ~= self.Outer then return end
+        local animKey = self.ActiveAnimKey
+        if not animKey then return end
+
+        local slot = animKey.GestureSlot or GESTURE_SLOT_ATTACK_AND_RELOAD
+        local seqID = animKey.SequenceID
+        local targetLayer = nil
+
+        if ply:IsValidLayer(slot) and ply:GetLayerSequence(slot) == seqID then
+            targetLayer = slot
+        else
+            for l = 0, 15 do
+                if ply:IsValidLayer(l) and ply:GetLayerSequence(l) == seqID then
+                    targetLayer = l
+                    break
+                end
+            end
+        end
+
+        if targetLayer and animKey.CurrentWeight then
+            ply:SetLayerWeight(targetLayer, animKey.CurrentWeight)
+        end
+    end
+	
+
+    function ESBActorStatType:EntityTakeDamage(target, dmginfo)
+        -- Pre-damage evaluation (e.g. defense levels, shield calculation)
+    end
+
+    function ESBActorStatType:PostEntityTakeDamage(target, dmginfo, wasDamageTaken)
+        if target == self.Outer and (wasDamageTaken or dmginfo:GetDamage() > 0) then
+			-- print("calling EvaluateDynamicDamageReaction,",self) 
+            EvaluateDynamicDamageReaction(self, target, dmginfo)
+        end
+    end
+
+    setmetatable(ESBActorStatType, statProxyMT)
+
+    if StellarBlade.IsRaven(self) then
+        ESBActorStatType["ESBActorStatType::ActorStatType_Stamina"] = ESBActorStatType["ESBActorStatType::ActorStatType_MaxStamina"]
+        if CurTime() > 10 then
+            ESBActorStatType["ESBActorStatType::ActorStatType_Shield"] = ESBActorStatType["ESBActorStatType::ActorStatType_MaxShield"]
+            ESBActorStatType["ESBActorStatType::ActorStatType_HP"]     = ESBActorStatType["ESBActorStatType::ActorStatType_MaxHP"]
+        end
+    end
+
+    if self.ESBActorStatType then
+        hook.Remove("Tick", self.ESBActorStatType)
+        hook.Remove("Think", self.ESBActorStatType)
+        hook.Remove("EntityTakeDamage", self.ESBActorStatType)
+        hook.Remove("PostEntityTakeDamage", self.ESBActorStatType)
+        hook.Remove("UpdateAnimation", self.ESBActorStatType)
+    end
+
+    hook.Add("Tick", ESBActorStatType, ESBActorStatType.Tick)
+    hook.Add("Think", ESBActorStatType, ESBActorStatType.Think)
+    hook.Add("EntityTakeDamage", ESBActorStatType, ESBActorStatType.EntityTakeDamage) 
+    hook.Add("PostEntityTakeDamage", ESBActorStatType, ESBActorStatType.PostEntityTakeDamage) 
+	hook.Add("UpdateAnimation", ESBActorStatType, ESBActorStatType.UpdateAnimation)
+
+    self.ESBActorStatType = ESBActorStatType
+    return ESBActorStatType
 end
 
 StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional) 
@@ -2949,60 +3392,54 @@ StellarBlade.OnRemoveEffect = function(self,EffectTable,tableOptional)
 		hook.Run("SB_ActorStatChanged",self,StatType,attribute,StellarBlade.ActorStats(self)[StatType]) 
 	end 
 	
+	-- 1. CLEAN UP ACTOR STATES FIRST (Prevents state collision during chaining)
+	for idx = 1, 10 do 
+		local actorStateKey = EffectTable["ActorState" .. idx] 
+		if actorStateKey and actorStateKey != "ESBActorState::ActorState_None" and self[actorStateKey] then
+			local st = self[actorStateKey]
+			pcall(function() 
+				if st.Remove then 
+					st:Remove(EffectTable) 
+				end 
+			end) 
+		end
+	end 
+
+	if EffectTable.IsValid then 
+		hook.Remove("Think", EffectTable) 
+		hook.Remove("EntityTakeDamage", EffectTable) 
+		hook.Remove("PostEntityTakeDamage", EffectTable) 
+	end 
+
+	-- 2. TRIGGER TARGET / CHAIN EFFECTS AFTER STATES ARE CLEANED UP
 	local DeactiveTargetFilterAlias = EffectTable.DeactiveTargetFilterAlias 
 	local DeactiveTargetEffectAliasArray = EffectTable.DeactiveTargetEffectAliasArray 
-	local DeactiveTargetResultShowPath = EffectTable.DeactiveTargetEffectAliasArray 
-	if DeactiveTargetResultShowPath != "" or !table.IsEmpty(DeactiveTargetResultShowPath) then 
-		for k,Target in ipairs(StellarBlade.TargetFilter(self,DeactiveTargetFilterAlias)) do 
+	local DeactiveTargetResultShowPath = EffectTable.DeactiveTargetResultShowPath or ""
+	if DeactiveTargetResultShowPath != "" or !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
+		for _, Target in ipairs(StellarBlade.TargetFilter(self, DeactiveTargetFilterAlias)) do 
 			if DeactiveTargetResultShowPath != "" then 
-				StellarBlade.SetShow(Target,DeactiveTargetResultShowPath,"DeactiveTargetResult",tableOptional) 
+				StellarBlade.SetShow(Target, DeactiveTargetResultShowPath, "DeactiveTargetResult", tableOptional) 
 			end 
-			
 			if !table.IsEmpty(DeactiveTargetEffectAliasArray) then 
-				for k,v in ipairs(DeactiveTargetEffectAliasArray) do 
+				for _, v in ipairs(DeactiveTargetEffectAliasArray) do 
 					if !EffectTable.IsNetworkedOrigin then 
-						StellarBlade.AddEffect(Target,v,tableOptional) 
+						StellarBlade.AddEffect(Target, v, tableOptional) 
 					end 
 				end 
 			end 
-			
 		end 
 	end 
-	for k,EffectAlias in ipairs(EffectTable.ChainEffectAliasArray) do 
+
+	for _, EffectAlias in ipairs(EffectTable.ChainEffectAliasArray) do 
 		if !EffectTable.IsNetworkedOrigin then 
-			StellarBlade.AddEffect(self,EffectAlias,tableOptional) 
+			StellarBlade.AddEffect(self, EffectAlias, tableOptional) 
 		end 
 	end 
-	-- cleanup ActorState (1-5) 
-	for idx = 1, 10 do 
-		local ActorState = "ActorState"..idx 
-		local DelayActorState = "DelayActorState"..idx 
-		ActorState = EffectTable[ActorState] 
-		DelayActorState = EffectTable[DelayActorState] 
-		if self[ActorState] then
-			local st = self[ActorState]
-			local ok, res = pcall(function() 
-				if st.Remove then 
-					return st:Remove(EffectTable) 
-				else -- function type values aren't saverestored 
-					st = nil 
-				end 
-				
-			end) 
-			if !ok then
-				print("ActorState.Remove failed:", res,EffectTable.Name)
-			else
-				-- print("removal status:", ok, res)
-			end
-			-- print("post ActorState.Remove")
-		end
-	end 
-	hook.Remove("Think",EffectTable) 
-	hook.Remove("EntityTakeDamage",EffectTable) 
-	hook.Remove("PostEntityTakeDamage",EffectTable) 
-	
+
 	local DeactiveShowPath = EffectTable.DeactiveShowPath 
-	StellarBlade.SetShow(self,DeactiveShowPath,"DeactiveShow",tableOptional) 
+	if DeactiveShowPath and DeactiveShowPath != "" then
+		StellarBlade.SetShow(self, DeactiveShowPath, "DeactiveShow", tableOptional) 
+	end
 end 
 
 -- Updated AddEffectFromTable to accept the plain array table produced by ParseTableStrings
@@ -3088,6 +3525,7 @@ end
 StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTable) 
 	-- lookup whether the state is set in character's table 
 	if !StellarBlade.CanActorApplyState(self,ActorState) then return false end 
+	local LifeTime = EffectTable and EffectTable.LifeTime or math.huge 
 	if !self[ActorState] then 
 		self[ActorState] = {["Name"] = ActorState} 
 		local ActorState = self[ActorState] 
@@ -3139,7 +3577,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 			self:AddFlags(FL_NOTARGET) 
 		-- ActorState_Down                          = 6,
 		elseif ActorState.Name == "ESBActorState::ActorState_Down" then 
-			print(tostring(self).." is down") 
+			print(tostring(self).." is down", CurTime(), strRealm) 
 			-- for i = 0, self:GetBoneCount() do 
 				-- self:ManipulateBoneJiggle(i,1) 
 			-- end 
@@ -3173,6 +3611,7 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 		elseif ActorState.Name == "ESBActorState::ActorState_ImmuneKnockBack" then 
 		-- ActorState_BlockingBehavior              = 20,
 		elseif ActorState.Name == "ESBActorState::ActorState_BlockingBehavior" then 
+			print(tostring(self).." is in ActorState_BlockingBehavior", CurTime(), strRealm) 
 			if self:IsPlayer() then 
 				print("adding FL_FROZEN") 
 				self:Freeze(true) 
@@ -3181,9 +3620,10 @@ StellarBlade.ActorApplyState = function(self,ActorState,DelayActorState,EffectTa
 					if StellarBlade.IsRaven(self) then -- npc_sb_raven or baseclasses 
 						-- NPC_ShouldConductBehaviorTree already checks for ActorState_BlockingBehavior 
 					else 
-						self:SetSaveValue("m_flNextDecisionTime",10) 
+						-- self:SetSaveValue("m_flNextDecisionTime",10) 
 					end 
-				else 
+					self:SetSaveValue("m_flNextDecisionTime",LifeTime) 
+				else -- nextbot, prop_dynamic 
 				
 				end 
 			end 
@@ -3447,6 +3887,9 @@ StellarBlade.StartSkill = function(self,SkillName)
 	
 	local SkillTable = SB_SkillTable[1].Rows[SkillName] 
 	if StellarBlade.CanStartSkill(self,SkillName) then 
+		if self.SBAI_SkillTable then
+			StellarBlade.SBAI_SkillTable.Remove(self,false)
+		end
 		self.SBAI_SkillTable = table.Copy(SkillTable) 
 		local SBAI_SkillTable = self.SBAI_SkillTable 
 		SBAI_SkillTable.Outer = self 
@@ -3490,7 +3933,7 @@ StellarBlade.StartSkill = function(self,SkillName)
 		self.SBAI_SkillTimers[SkillName] = CurTime() + SkillTable.CoolTime 
 		self.SBAI_SkillUseCount[SkillName] = self.SBAI_SkillUseCount[SkillName] and self.SBAI_SkillUseCount[SkillName] + 1 or 1 
 		
-		StellarBlade.SBAI_SkillTable.Initialize(self.SBAI_SkillTable) 
+		StellarBlade.SBAI_SkillTable.Initialize(SBAI_SkillTable) 
 		
 		if IsValid(target) then 
 			target.SBAI_SkillTable = SBAI_SkillTable 
@@ -3504,7 +3947,6 @@ StellarBlade.StartSkill = function(self,SkillName)
 			SBAI_SkillStep.Data = table.Copy(SB_SkillActiveStepTable[1].Rows["P_Eve_ShieldBreakerCounterRaven1_Cast1"]) 
 			-- for k,v in pairs(SB_SkillActiveStepTable[1].Rows[FirstSkillActiveAlias]) do SBAI_SkillStep.Data[k] = v end 
 			-- print(SBAI_SkillStep,SBAI_SkillStep.Data) 
-			-- PrintTable(SBAI_SkillStep) 
 			SBAI_SkillStep.Time = CurTime() 
 			SBAI_SkillStep.Duration = CurTime() + 7 
 			SBAI_SkillStep.Outer = self 
@@ -3528,37 +3970,21 @@ end
 -- Helper: apply render state recursively (pulled out so we can use it on start & end)
 local function ApplyRenderState(ent, hide) 
 	if hide == nil then return end 
-
-	if hide then 
-		ent:SetRenderMode(RENDERMODE_NONE) 
-		ent:SetColor(Color(255, 255, 255, 0)) 
-	else 
-		ent:SetRenderMode(RENDERMODE_TRANSCOLOR) 
-		ent:SetColor(Color(255, 255, 255, 255)) 
+	
+	local tableofentitiestohide = { ent } 
+	for k,v in ipairs(ent:GetChildren()) do table.insert(tableofentitiestohide,v) end 
+	while IsValid(ent:GetParent()) do 
+		table.insert(tableofentitiestohide,ent:GetParent()) 
+		ent = ent:GetParent() 
 	end 
 
-	-- Include weapon and children
-	-- UNDO: GetActiveWeapon is already a children 
-	-- local wep = ent.GetActiveWeapon and ent:GetActiveWeapon()
-	-- if IsValid(wep) then
-		-- if hide then
-			-- wep:SetRenderMode(RENDERMODE_NONE)
-			-- wep:SetColor(Color(255, 255, 255, 0))
-		-- else
-			-- wep:SetRenderMode(RENDERMODE_TRANSCOLOR)
-			-- wep:SetColor(Color(255, 255, 255, 255))
-		-- end
-	-- end
-
-	for _, child in ipairs(ent:GetChildren()) do 
-		if IsValid(child) then 
-			if hide then 
-				child:SetRenderMode(RENDERMODE_NONE) 
-				child:SetColor(Color(255, 255, 255, 0)) 
-			else 
-				child:SetRenderMode(RENDERMODE_TRANSCOLOR) 
-				child:SetColor(Color(255, 255, 255, 255)) 
-			end 
+	for k, v in ipairs(tableofentitiestohide) do 
+		if hide then 
+			v:SetRenderMode(RENDERMODE_NONE) 
+			-- child:SetColor(Color(255, 255, 255, 0)) 
+		else 
+			v:SetRenderMode(RENDERMODE_TRANSCOLOR) 
+			-- child:SetColor(Color(255, 255, 255, 255)) 
 		end 
 	end 
 end 
@@ -3786,71 +4212,52 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 			local bCheckHitLevel = props.bCheckHitLevel 
 			local CustomAnim = props.CustomAnim 
 			local MeshSlot = props.MeshSlot 
-			local bStopAtMove = props.bStopAtMove 
-			if bStopAtMove and SERVER then 
-				-- if isnumber(SBAI_ActiveShow.TriggeredKeys[data.Name]) and SBAI_ActiveShow.TriggeredKeys[data.Name] < CurTime() then 
-					if self:IsPlayer() then 
-						if self:KeyDown(IN_FORWARD) or self:KeyDown(IN_BACK) or self:KeyDown(IN_LEFT) or self:KeyDown(IN_RIGHT) then 
-							self:SetAnimation(PLAYER_ATTACK1) 
-							SBAI_ActiveShow.TriggeredKeys[data.Name] = true 
-							continue 
-						end 
-					else 
-						if self.IsMoving and self:IsMoving() then 
-							scripted_ents.Get("cycler_actor2").NPC_StopScriptedActivity(self) 
-							SBAI_ActiveShow.TriggeredKeys[data.Name] = true 
-							continue 
-						end 
-					end 
-				-- end 
-				SBAI_ActiveShow.TriggeredKeys[data.Name] = SBAI_ActiveShow.TriggeredKeys[data.Name] or { ["Stopped"] = false, ["Time"] = CurTime() }   
+			local bStopAtMove = tobool(props.bStopAtMove) 
+			local PlayEndTime = tonumber(props.PlayEndTime) or 0 
+			local BlendInTime = tonumber(props.BlendInTime) or 0.2 
+			local BlendOutTime = tonumber(props.BlendOutTime) or 0.2 
+			local Duration = tonumber(props.Duration) or 0
+
+			-- Ignore wing/cosmetic mesh slots
+			if isstring(MeshSlot) then continue end 
+
+			-- Resolve Target entity
+			if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
+				Target = self 
+			elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
+				Target = tableOptional and IsValid(tableOptional.Target) and tableOptional.Target or StellarBlade.PickTarget(self) 
 			end 
-			
-			if istable(SBAI_ActiveShow.TriggeredKeys[data.Name]) then -- loop, do not restart activity 
-				if SBAI_ActiveShow.TriggeredKeys[data.Name].Time < CurTime() then continue end 
-			end 
-			if isstring(MeshSlot) then continue end -- if you see this key value pair, the anim is intended for wings. ignore wing anims in gmod.
-			
+
+			if not IsValid(Target) then continue end 
+
 			-- ==========================================
 			-- 1. HIT DIRECTION & ACTIVE ANGLE CALCULATION
 			-- ==========================================
 			local localYaw = 0
-			-- Fallback target acquisition to calculate the angle from the attacker
-			local attacker = Entity(1) 
-			if tableOptional then 
-				-- print("tableOptional is valid for:",SBAI_ActiveShow) 
-				attacker = tableOptional.Constructor 
-			else 
-				-- print("tableOptional is nil for:",SBAI_ActiveShow) 
-			end 
+			local attacker = tableOptional and tableOptional.Constructor or Entity(1)
 			if IsValid(attacker) then
-				local dir = (attacker:GetPos() - self:GetPos()):GetNormalized()
-				-- In Source Engine, +Yaw is Left, -Yaw is Right, 0 is Front, 180/-180 is Back
-				localYaw = self:WorldToLocalAngles(dir:Angle()).yaw 
+				local dir = (attacker:GetPos() - Target:GetPos()):GetNormalized()
+				localYaw = Target:WorldToLocalAngles(dir:Angle()).yaw 
 			end
 
-			-- Check if this specific AnimKey is allowed to play based on hit angle
 			local shouldPlay = true
 			if props.CheckActiveType == "ESBShowAnimCheckActiveType::SelfForwardVectorAndSelfToTargetAngle" then
 				local activeMin = props.ActiveMinAngle or -180
 				local activeMax = props.ActiveMaxAngle or 180
 				local inAngle = (localYaw >= activeMin and localYaw <= activeMax)
 				
-				-- Inverse logic for hits coming from OUTSIDE the frontal cone
 				if props.InverseCheckActiveResult then 
 					inAngle = not inAngle 
 				end
 				shouldPlay = inAngle
 			end
 
-			-- If this AnimKey shouldn't trigger from this angle, skip to the next JSON object
 			if not shouldPlay then continue end
 
 			-- ==========================================
 			-- 2. DYNAMIC RESOURCE PATH SELECTION
 			-- ==========================================
 			local rawAnimPath = props.AnimResourcePath
-			
 			if props.AnimSequencePlayType == "ESBShowAnimSequencePlayType::UseAreaDirectionCheck" or props.AnimSequencePlayType == "ESBShowAnimSequencePlayType::DirectionalAnimation" then
 				if localYaw >= -45 and localYaw <= 45 then
 					rawAnimPath = props.FrontAnimResourcePath
@@ -3863,86 +4270,140 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 				end
 			end
 			
-			-- Sanitize path (e.g., "Animation/Result_Hit_Stand_Light_Bw.Result_Hit_Stand_Light_Bw" -> "Result_Hit_Stand_Light_Bw")
 			local AnimResourcePath = nil
 			if rawAnimPath then
-				-- Get file name with extension, then strip the duplicate class extension often present in UE4 outputs
 				AnimResourcePath = string.StripExtension(string.GetFileFromFilename(rawAnimPath))
 			end
 
+			if not AnimResourcePath or AnimResourcePath == "" then continue end
+
 			-- ==========================================
-			-- 3. ANIMATION PLAYBACK LOGIC
+			-- 3. ANIMATION PLAYBACK & STATE RECORDING
 			-- ==========================================
 			local GESTURE_SLOT = GESTURE_SLOT_ATTACK_AND_RELOAD 
 			if CustomAnim and CustomAnim == "ESBCharacterCustomAnim::ESBCharacterCustomAnim_HitStandLight1Back" then 
 				GESTURE_SLOT = GESTURE_SLOT_VCD 
 			end 
 
-			if AnimResourcePath then 
-				-- print("cast type is:",Target) 
-				if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then -- use tableOptional.Constructor 
-					Target = self 
-					-- Target = tableOptional and IsValid(tableOptional.Constructor) and tableOptional.Constructor or self 
-				elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then -- use tableOptional.Target 
-					-- Target = StellarBlade.PickTarget(self) 
-					Target = tableOptional and IsValid(tableOptional.Target) and tableOptional.Target or StellarBlade.PickTarget(self) 
-				end 
-				-- print("actual target is:",Target) 
-				
-				if IsValid(Target) then 
-					if Target:IsPlayer() then 
-						Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT, Target:LookupSequence(AnimResourcePath), 0, true) 
-						if CustomAnim then 
-							Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD, 0, 0, true) 
-						end 
-						BroadcastLua("if IsValid(Entity("..Target:EntIndex()..")) then Entity("..Target:EntIndex().."):AddVCDSequenceToGestureSlot("..GESTURE_SLOT..","..Target:LookupSequence(AnimResourcePath)..",0,true) end") 
-						-- print("AnimResourcePath",AnimResourcePath,SBAI_ActiveShow) 
+			local seqID = Target:LookupSequence(AnimResourcePath)
+			if seqID and seqID ~= -1 and seqID ~= ACT_INVALID then
+				local statProxy = StellarBlade.ActorStats(Target)
+
+				if Target:IsPlayer() then
+					-- Record active animation parameter block on Player's ESBActorStatType table
+					statProxy.ActiveAnimKey = {
+						SequenceID       = seqID,
+						AnimResourcePath = AnimResourcePath,
+						GestureSlot      = GESTURE_SLOT,
+						bStopAtMove      = bStopAtMove,
+						PlayEndTime      = PlayEndTime,
+						BlendInTime      = BlendInTime,
+						BlendOutTime     = BlendOutTime,
+						Duration         = Duration,
+						StartTime        = CurTime(),
+						CurrentWeight    = (BlendInTime > 0) and 0.0 or 1.0,
+						FadingOut        = false,
+						FadeOutStartTime = 0,
+						FadeOutStartWeight = 1.0
+					}
+
+					-- Play gesture
+					Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT, seqID, 0, true)
+					if CustomAnim then
+						Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD, 0, 0, true)
+					end
+
+					-- Network to all clients to synchronize layer playback and Think/UpdateAnimation hooks
+					if SERVER then
+						local netLua = string.format([[
+							local ent = Entity(%d)
+							if IsValid(ent) then
+								local sp = StellarBlade.ActorStats(ent)
+								sp.ActiveAnimKey = {
+									SequenceID       = %d,
+									AnimResourcePath = %q,
+									GestureSlot      = %d,
+									bStopAtMove      = %s,
+									PlayEndTime      = %f,
+									BlendInTime      = %f,
+									BlendOutTime     = %f,
+									Duration         = %f,
+									StartTime        = %f,
+									CurrentWeight    = %f,
+									FadingOut        = false,
+									FadeOutStartTime = 0,
+									FadeOutStartWeight = 1.0
+								}
+								ent:AddVCDSequenceToGestureSlot(%d, %d, 0, true)
+							end
+						]],
+							Target:EntIndex(),
+							seqID,
+							AnimResourcePath,
+							GESTURE_SLOT,
+							tostring(bStopAtMove),
+							PlayEndTime,
+							BlendInTime,
+							BlendOutTime,
+							Duration,
+							CurTime(),
+							(BlendInTime > 0) and 0.0 or 1.0,
+							GESTURE_SLOT,
+							seqID
+						)
+						BroadcastLua(netLua)
+					end
+
+				elseif Target:IsNPC() then
+					-- Record state on NPC table
+					statProxy.ActiveAnimKey = {
+						SequenceID       = seqID,
+						AnimResourcePath = AnimResourcePath,
+						bStopAtMove      = bStopAtMove,
+						PlayEndTime      = PlayEndTime,
+						BlendInTime      = BlendInTime,
+						BlendOutTime     = BlendOutTime,
+						Duration         = Duration,
+						StartTime        = CurTime(),
+					}
+
+					if scripted_ents.Get("cycler_actor2").NPC_IsSequenceLayered(Target, seqID) then 
+						Target:SetLayerPlaybackRate(Target:AddGestureSequence(seqID, true), 0.5) 
 					else 
-						local animSequence = Target:LookupSequence(AnimResourcePath) 
-						-- print("AnimResourcePath",AnimResourcePath,SBAI_ActiveShow) 
-						if !animSequence then break end 
-						if animSequence != ACT_INVALID then 
-							if scripted_ents.Get("cycler_actor2").NPC_IsSequenceLayered(Target,animSequence) then 
-								Target:SetLayerPlaybackRate(Target:AddGestureSequence(animSequence,true),0.5) 
-							else 
-								scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(Target, AnimResourcePath, true) 
-							end 
-						end 
+						scripted_ents.Get("npc_sb_raven").NPC_StartScriptedActivity(Target, AnimResourcePath, true, PlayEndTime) 
 					end 
-				end 
-			end 
+				end
+			end
 
 			-- ==========================================
 			-- 4. LEGACY HL2 NPC FLINCH/REACTION SUPPORT
 			-- ==========================================
-			if bCheckHitLevel and SERVER then -- heuristic to distinguish "flinches" from active "attacks"
-				if self.SetCondition then 
-					self:SetCondition(COND.HEAR_DANGER) 
+			if bCheckHitLevel and SERVER then
+				if Target.SetCondition then 
+					Target:SetCondition(COND.HEAR_DANGER) 
 				end 
-				if self.SBAI_SkillStep and self.SBAI_SkillStep.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
-					-- force NextStepAliasWhenJustParry 
-				
-				-- custom parry result data 
-				-- for Stellar Blade Actor --> HL2 NPC Interaction 
-				elseif StellarBlade.IsRaven(self) then continue 
-				elseif self:GetClass() == "npc_antlion" then 
-					self:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
-				elseif self:GetClass() == "npc_antlionguard" then 
-					self:SetSaveValue("m_nFlinchActivity",util.GetActivityIDByName("ACT_ANTLIONGUARD_CHARGE_CRASH")) 
-					self:SetSchedule(ai.GetScheduleID("SCHED_ANTLIONGUARD_PHYSICS_DAMAGE_HEAVY")) 
-				elseif self:GetClass() == "npc_hunter" then 
-					self:SetCondition(self:ConditionID("COND_HUNTER_STAGGERED")) 
-				elseif isbool(self:GetInternalVariable("m_fIsTorso")) then 
-					self:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
-				elseif self.SetSchedule and (isnumber(self:SelectWeightedSequence(ACT_SMALL_FLINCH)) and (self:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or self:SelectWeightedSequence(ACT_BIG_FLINCH) > 1)) then 
-					-- self:SetSchedule(SCHED_BIG_FLINCH) 
-				elseif self.TaskFail then 
-					self:TaskFail(tostring(Target).. " parried attack") 
-					local thinkDelayed = self:SetSaveValue("m_flNextDecisionTime", 3) 
+				if Target.SBAI_SkillStep and Target.SBAI_SkillStep.Type == "ESBSkillActiveStepType::SkillActiveStepType_Hit" then 
+					-- Handled in SkillStep
+				elseif StellarBlade.IsRaven(Target) then 
+					-- she is never supposed to get here 
+				elseif Target:GetClass() == "npc_antlion" then 
+					Target:SetSchedule(ai.GetScheduleID("SCHED_ANTLION_FLIP")) 
+				elseif Target:GetClass() == "npc_antlionguard" then 
+					Target:SetSaveValue("m_nFlinchActivity", util.GetActivityIDByName("ACT_ANTLIONGUARD_CHARGE_CRASH")) 
+					Target:SetSchedule(ai.GetScheduleID("SCHED_ANTLIONGUARD_PHYSICS_DAMAGE_HEAVY")) 
+				elseif Target:GetClass() == "npc_hunter" then 
+					Target:SetCondition(Target:ConditionID("COND_HUNTER_STAGGERED")) 
+				elseif isbool(Target:GetInternalVariable("m_fIsTorso")) then 
+					Target:SetSchedule(ai.GetScheduleID("SCHED_FLINCH_PHYSICS")) 
+				elseif Target.SetSchedule and (isnumber(Target:SelectWeightedSequence(ACT_SMALL_FLINCH)) and (Target:SelectWeightedSequence(ACT_SMALL_FLINCH) > 1 or Target:SelectWeightedSequence(ACT_BIG_FLINCH) > 1)) then 
+					Target:SetSchedule(SCHED_BIG_FLINCH) 
+				elseif Target.TaskFail then 
+					Target:TaskFail(tostring(self) .. " parried attack") 
+					Target:SetSaveValue("m_flNextDecisionTime", 3) 
 				else 
-					local thinkDelayed = self:SetSaveValue("m_flNextAttack", 3) 
+					Target:SetSaveValue("m_flNextAttack", 3) 
 				end 
-			end 
+			end
 		elseif data.Type == "SBShowActorKey" then 
 			local bUseActorHidden = props.bUseActorHidden 
 			-- print(data,data.Name,SBAI_ActiveShow) 
@@ -4629,10 +5090,10 @@ end
 
 function StellarBlade.SBAI_SkillStep:EndSkillStep()
     local Outer = self.Outer
-    -- Do nothing if the character is invalid, not on an active skill, or not on an active skill step
-    if not IsValid(Outer) or not Outer.SBAI_SkillTable or not Outer.SBAI_SkillStep then
-        return
-    end
+	local SBAI_SkillStep = Outer.SBAI_SkillStep -- check for active step 
+	if !SBAI_SkillStep then return end 
+	-- local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable -- check skill table itself, cached in skillstep 
+	-- if !SBAI_SkillStep then return end 
 
     local currentStepData = self.Data
     if not currentStepData then return end
@@ -4678,7 +5139,7 @@ function StellarBlade.SBAI_SkillStep:EndSkillStep()
 
     -- Set the character's skill step to the resolved step
     if targetStep then
-        return StellarBlade.SetSkillStep(Outer, targetStep,self.SBAI_SkillTable) 
+        return StellarBlade.SetSkillStep(Outer, targetStep, SBAI_SkillTable) 
     end
 end
 
@@ -5000,6 +5461,16 @@ function StellarBlade:Raven_GrabVictim(target)
     end 
 end
 
+local function GetHierarchyRoot(ent)
+	local root = ent
+	local parent = root:GetParent()
+	while IsValid(parent) do
+		root = parent
+		parent = root:GetParent()
+	end
+	return root
+end
+
 StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck) 
 	local ID = SkillStepTable.ID 
 	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
@@ -5036,13 +5507,14 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 		if ent:GetModel() == "models/error.mdl" then return true end 
 		return false 
 	end 
+	local selfHierarchyRoot = GetHierarchyRoot(self) 
 	local tableofhittargets = { } 
 
 	-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
 	-- print("invoking TargetFilter with filtername:",SkillStepTable.OverrideTargetFilterAlias) 
 	local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
 	if !TargetFilterAlias or TargetFilterAlias == "None" then 
-		if self.SBAI_SkillTable then TargetFilterAlias = self.SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
+		if SBAI_SkillTable then TargetFilterAlias = SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
 	end 
 	
 	-- SkillHitDetectionType_None               = 0,
@@ -5169,7 +5641,7 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 		if v != self and (!v:IsFlagSet(FL_GODMODE) or IsValid(enemy) and enemy == v) then 
 			if hook.Run("StellarBlade_OnCheckSkillHit",self,v,SkillStepTable,dmginfo) then continue end -- return true to prevent being hit 
 			if IsValid(v:GetOwner()) and v:GetOwner() == self then continue end 
-			if IsValid(v:GetParent()) and v:GetParent() == self then continue end 
+			if GetHierarchyRoot(v) == selfHierarchyRoot then continue end
 			if v.GetObserverTarget and v:GetObserverTarget() == self then continue end -- is this entity spectating me? if so, it is always teleported to my origin 
 			local NearestPoint = NearestPoint2(v,GetShootPos) 
 			dmg = DamageInfo() 
@@ -5286,7 +5758,7 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 									for i = #targetList, 1, -1 do
 										local tgt = targetList[i]
 										if IsValid(tgt) then
-											print("better targets:", tgt) -- Preserves console diagnostic behavior
+											-- print("better targets:", tgt) -- Preserves console diagnostic behavior
 											if tgt:Alive() then
 												local score = 0
 												
@@ -6299,13 +6771,13 @@ function StellarBlade:GetEntityStates()
 	local physobj = self:GetPhysicsObject()
 	
 	-- 1. Calculate Moving
-	local bMoving = (self.IsMoving and self:IsMoving()) or (!self:GetVelocity():IsZero())
+	local bMoving = (self.IsMoving and self:IsMoving()) or (!self:GetVelocity():IsZero()) or scripted_ents.Get("cycler_actor2") and !scripted_ents.Get("cycler_actor2").NPC_GetEntityVelocity(self,self):IsZero() 
 	
 	-- 2. Calculate Air
 	local bAir = not self:IsOnGround()
 	if physobj and physobj:IsValid() then
 		-- Use friction snapshot for physics objects if applicable
-		if (self.GetMoveType and self:GetMoveType() == MOVETYPE_VPHYSICS) or !self.GetMoveType then
+		if (self:GetMoveType() == MOVETYPE_VPHYSICS) then
 			bAir = table.IsEmpty(physobj:GetFrictionSnapshot())
 		end
 	end
@@ -6320,8 +6792,8 @@ function StellarBlade:GetEntityStates()
 
 	-- Return state map matching JSON key segments
 	return {
-		Groggy = StellarBlade.IsGroggy(self), -- Logic for Groggy detection goes here if automated, currently passed via flags usually
-		Down = StellarBlade.IsDown(self),   -- Logic for Down detection goes here
+		Groggy = StellarBlade.IsGroggy(self) or false, 
+		Down = StellarBlade.IsDown(self) or false,   
 		Swimming = bSwimming,
 		Airborne = bAirborne,
 		Air = bAir,
@@ -6330,7 +6802,6 @@ function StellarBlade:GetEntityStates()
 	}
 end
 
--- Shared function to resolve keys and apply actions
 -- Shared function to resolve keys and apply actions
 local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget, HitLevel, tableOptional)
     -- Existing local boolean configuration for additive HitLevel results
@@ -6410,7 +6881,7 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
             if addKey and addKey != "" then
                 local addVal = SkillResult[addKey]
                 if addVal and addVal != "" and addVal != "None" then
-					print(addKey,addVal) 
+					-- print(addKey,addVal) 
                     table.insert(outTable, addVal)
                     added = true
                 end
@@ -6523,10 +6994,10 @@ local function ApplyCascadingActions(entity, SkillResult, activeStates, isTarget
             end
         end
     end
+	-- PrintTable(selectedActions) 
 end
 
 StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, bCritical, tableOptional) 
-	-- print("StartSkillSelfResult") 
 	local SkillResult = SB_SkillResultTable[1].Rows[SkillResultAlias] 
 	
 	-- 1. Additive: Critical (Always runs if true)
@@ -6562,9 +7033,7 @@ StellarBlade.StartSkillSelfResult = function(self, SkillResultAlias, HitLevel, b
 end 
 
 StellarBlade.StartSkillTargetResult = function(self, SkillResultAlias, HitLevel, bCritical, tableOptional) 
-	-- HitLevel = false 	
 	local SkillResult = SB_SkillResultTable[1].Rows[SkillResultAlias] 
-	-- print("bCritical:",bCritical) 
 	
 	-- 1. Additive: Critical
 	if bCritical then 
@@ -7047,7 +7516,7 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
     local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] 
     if !CharacterMoveTable then 
 		if strEffect != "None" then 
-			print("no move table", self, strEffect) 
+			-- print("no move table", self, strEffect) 
 		end 
         return false 
     end 
@@ -7153,7 +7622,6 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 			end 
 			
 			if CharacterMoveTable.bZeroGravity then 
-				-- print(strEffect,"will zero gravity") 
 				self.Outer:SetGravity(0) -- 0 makes normal calculation, no multiplication, according only to sv_gravity 
 			end 
 			
@@ -7176,46 +7644,10 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 	end 
 	
 	function SBAI_MoveTable:Think() -- npc and other things 
-		-- print(self,#self,self.Outer) 
-		
 		local ply = self.Outer 
 		self:Move(ply) 
-		
-		local movePosDelta = Vector(0,0,0) 
-		local finalPos, finalAng = ply:GetLocalPos() + self.movePosDelta, self.moveAngDelta 
+		StellarBlade.FinishMoveSteps(ply, self.BatchStep) -- batched (non-separate) steps 
 
-		if self.movePosDelta != vector_origin then 
-			local filter = { self.Outer } 
-			
-			for i,moveStep in ipairs(self) do 
-				-- local name = moveStep.MoveArrayName 
-				-- local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
-				if moveStep.CharacterMoveTable.bMoveIgnoreTargetCharacter and self.GetEnemy and IsValid(self:GetEnemy()) then table.insert(filter,self:GetEnemy()) end 
-			end 
-			
-			local moveResult = IterativeHybridMoveLimit(ply, ply:GetLocalPos(), finalPos, {filter = filter}) 
-			if ply:IsVehicle() then 
-				ply:SetPos(moveResult.vEndPosition,true) 
-			else 
-				ply:SetLocalPos(moveResult.vEndPosition) 
-			end 
-		end 
-		ply:SetAbsVelocity(self.movePosDelta / FrameTime() + ply:GetVelocity()) 
-		
-		--[[ 
-		ply:SetSaveValue("basevelocity",self.movePosDelta / FrameTime()) 
-		ply:AddFlags(FL_BASEVELOCITY) 
-		--]] 
-		
-		if finalAng != angle_zero then 
-			if ply.SetIdealYawAndUpdate then 
-				ply:SetIdealYawAndUpdate(finalAng.y, -1) 
-			else 
-				ply:SetAngles(Angle(ply:EyeAngles().p,finalAng.y,ply:EyeAngles().z)) 
-			end 
-		end 
-		
-		
 		for i,moveStep in ipairs(self) do 
 			local name = moveStep.MoveArrayName 
 			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
@@ -7245,129 +7677,53 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		if #self < 1 then self:Remove() end 
 	end 
 	
-	function SBAI_MoveTable:Move(ply,mv) -- player only 
+	function SBAI_MoveTable:Move(ply,mv) -- evaluates all steps; applies bExecuteSeparately ones immediately 
 		if self.Outer != ply then return end 
-		if IsValid(ply:GetParent()) then ply = ply:GetParent() end 
-		self.movePosDelta = vector_origin 
-		self.moveAngDelta = angle_zero 
-		local enemy = StellarBlade.PickTarget(ply) 
-		if #self > 0 then
-			for i = 1, #self do
-				local moveStep = self[i] 
-				local flInterval = CurTime() - moveStep.RunTime 
-				moveStep.RunTime = CurTime() 
-				if !moveStep:IsActive() then continue end 
-				local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(ply, moveStep, flInterval) 
-				moveStep.movePosDelta = movePosDelta 
-				moveStep.moveAngDelta = moveAngDelta 
-
-				if moveStep.bExecuteSeparately then 
-					-- Don't cache into the shared batch delta. Resolve this movestep's own 
-					-- collision-limited move immediately, independent of any other movestep 
-					-- running on the same entity this tick. 
-					if movePosDelta != vector_origin then 
-						local curOrigin = mv and mv:GetOrigin() or ply:GetLocalPos() 
-						local finalPos = curOrigin + movePosDelta 
-						-- Mirror FinishMove's bIgnoreCollision handling, but scoped to 
-						-- this movestep's own CharacterMoveTable rather than the batch. 
-						local bIgnoreCollision = moveStep.CharacterMoveTable.bIgnoreCollision 
-						local filter = { self } 
-						if moveStep.CharacterMoveTable.bMoveIgnoreTargetCharacter and IsValid(enemy) then table.insert(filter,enemy) end 
-						local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT 
-						local mask = nil 
-						if bIgnoreCollision then 
-							collisiongroup = COLLISION_GROUP_IN_VEHICLE 
-							mask = 0 
-						end 
-
-						local moveResult = IterativeHybridMoveLimit(ply, curOrigin, finalPos, { filter = filter, collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(ply) }) 
-
-						if mv then 
-							if strEffect == "some move step name" then 
-								-- put your mv:SetOrigin here 
-							else 
-								-- print("in mv:SetOrigin",moveResult.vEndPosition) 
-								mv:SetOrigin(moveResult.vEndPosition) 
-							end 
-						else 
-							-- print("in ply:SetLocalPos",moveResult.vEndPosition) 
-							ply:SetLocalPos(moveResult.vEndPosition) 
-						end 
-					end 
-
-					if moveAngDelta != angle_zero then 
-						if ply.SetIdealYawAndUpdate then 
-							ply:SetIdealYawAndUpdate(moveAngDelta.y, -1) 
-						else 
-							if bIgnoreCollision then 
-								ply:SetEyeAngles(moveAngDelta) 
-							else 
-								ply:SetEyeAngles(Angle(ply:EyeAngles().x,moveAngDelta.y,ply:EyeAngles().z)) 
-							end 
-						end 
-					end 
-				else 
-					self.movePosDelta = self.movePosDelta + movePosDelta 
-					self.moveAngDelta = self.moveAngDelta + moveAngDelta 
-				end 
+		local actor = ply 
+		ply = StellarBlade.GetMoveRoot(ply) -- evaluate against the root, same for every entity type 
+		
+		-- Pseudo-step that collects every non-separate step; applied once by FinishMoveSteps 
+		local batch = { CharacterMoveTable = {}, movePosDelta = vector_origin, moveAngDelta = angle_zero } 
+		self.BatchStep = batch 
+		
+		for i = 1, #self do 
+			local moveStep = self[i] 
+			local flInterval = CurTime() - moveStep.RunTime 
+			moveStep.RunTime = CurTime() 
+			if !moveStep:IsActive() then continue end 
+			local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(ply, moveStep, flInterval) 
+			movePosDelta = movePosDelta or vector_origin 
+			moveAngDelta = moveAngDelta or angle_zero 
+			moveStep.movePosDelta = movePosDelta 
+			moveStep.moveAngDelta = moveAngDelta 
+			
+			if moveStep.bExecuteSeparately then 
+				-- resolves its own collision-limited move immediately, independent of other steps this tick 
+				StellarBlade.FinishMoveSteps(actor, moveStep, mv) 
+			else 
+				batch.movePosDelta = batch.movePosDelta + movePosDelta 
+				batch.moveAngDelta = batch.moveAngDelta + moveAngDelta 
+				local cmt = moveStep.CharacterMoveTable 
+				if cmt.bIgnoreCollision then batch.CharacterMoveTable.bIgnoreCollision = true end 
+				if cmt.bMoveIgnoreTargetCharacter then batch.CharacterMoveTable.bMoveIgnoreTargetCharacter = true end 
 			end 
 		end 
+		
+		self.movePosDelta = batch.movePosDelta -- kept for compatibility 
+		self.moveAngDelta = batch.moveAngDelta 
 	end
-	
+
 	function SBAI_MoveTable:FinishMove(ply,mv) -- player only 
 		if self.Outer != ply then return end 
-		local plytemp = ply 
-		if IsValid(ply:GetParent()) then 
-			ply = ply:GetParent() 
+		local actualPlayer = ply 
+		
+		if actualPlayer:IsPlayer() and (actualPlayer:IsFlagSet(FL_FROZEN) or actualPlayer:InVehicle()) then -- Move doesn't call during ply:Freeze(true) 
+			self:Move(actualPlayer,mv) 
 		end 
 		
-		local bIgnoreCollision 
-		for i,moveStep in ipairs(self) do 
-			-- local name = moveStep.MoveArrayName 
-			-- local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
-			bIgnoreCollision = moveStep.CharacterMoveTable.bIgnoreCollision 
-		end 
+		StellarBlade.FinishMoveSteps(actualPlayer, self.BatchStep, mv) -- batched (non-separate) steps 
 		
-		if plytemp:IsPlayer() and (plytemp:IsFlagSet(FL_FROZEN) or plytemp:InVehicle()) then -- Move doesn't call during ply:Freeze(true) 
-			self:Move(plytemp,mv) 
-			-- print("ended self.Move",CurTime()) 
-		end 
-		
-		-- FIX: Determine the correct starting position based on what we are actually moving.
-		local currentOrigin = (ply == plytemp) and mv:GetOrigin() or ply:GetPos()
-		
-		local finalPos, finalAng = currentOrigin + self.movePosDelta, self.moveAngDelta
-		if self.movePosDelta != vector_origin then 
-			-- print("pre IterativeHybridMoveLimit:",SysTime()) 
-			local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT 
-			local mask = nil 
-			if bIgnoreCollision then 
-				collisiongroup = COLLISION_GROUP_IN_VEHICLE 
-				mask = 0 
-			end 
-			local moveResult = IterativeHybridMoveLimit(ply, currentOrigin, finalPos, { collisiongroup = collisiongroup, mask = mask, target = StellarBlade.PickTarget(plytemp)}) 
-			-- print("post IterativeHybridMoveLimit:",SysTime()) 
-			-- ply:SetLocalPos(moveResult.vEndPosition) 
-			if !ply:IsPlayer() then -- player's vehicle 
-				ply:SetPos(moveResult.vEndPosition) 
-			else -- actual player, not vehicle 
-				mv:SetOrigin(moveResult.vEndPosition) 
-			end 
-			-- ply:SetSaveValue("basevelocity",self.movePosDelta / (FrameTime())) 
-			-- ply:AddFlags(FL_BASEVELOCITY) 
-		end 
-		-- ply:SetSaveValue("basevelocity",self.movePosDelta / FrameTime() + mv:GetVelocity()) 
-		-- local newPosition2 = (newPosition/FrameTime()) - ENT:GetInternalVariable("basevelocity") 
-		-- self.LastVelocity = newPosition2 
-		
-		if finalAng != angle_zero then 
-			if bIgnoreCollision then 
-				ply:SetEyeAngles(self.moveAngDelta) 
-			else 
-				ply:SetEyeAngles(Angle(ply:EyeAngles().x,self.moveAngDelta.y,ply:EyeAngles().z)) 
-			end 
-		end 
-		
+		ply = StellarBlade.GetMoveRoot(ply) -- used by the step lifetime handling below 
 		for i,moveStep in ipairs(self) do 
 			local name = moveStep.MoveArrayName 
 			local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
@@ -7408,12 +7764,101 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 	end 
 	
 	if CharacterMoveTable.bZeroGravity then 
-		-- print(strEffect,"will zero gravity") 
 		self:SetGravity(0.0001) 
 	end 
 	
 	return table.insert(SBAI_MoveTable, newMoveStep) 
 end 
+
+-- Walks up the parent chain to the entity that actually gets moved.
+StellarBlade.GetMoveRoot = function(ent)
+	while IsValid(ent:GetParent()) do
+		ent = ent:GetParent()
+	end
+	return ent
+end
+
+-- Single place where evaluated move-step deltas become real movement.
+--   self          : the actor that owns the move step(s) (player, NPC, anything else)
+--   moveStep      : a movestep (bExecuteSeparately) or the batch pseudo-step (SBAI_MoveTable.BatchStep);
+--                   both carry .CharacterMoveTable (collision flags), .movePosDelta and .moveAngDelta
+--   mv            : CMoveData when called from Move/FinishMove for a player, nil otherwise
+--   movePosDelta, moveAngDelta : optional overrides for the deltas stored on moveStep
+StellarBlade.FinishMoveSteps = function(self, moveStep, mv, movePosDelta, moveAngDelta)
+	if !moveStep or !IsValid(self) then return end
+	movePosDelta = movePosDelta or moveStep.movePosDelta or vector_origin
+	moveAngDelta = moveAngDelta or moveStep.moveAngDelta or angle_zero
+
+	local CharacterMoveTable = moveStep.CharacterMoveTable or {}
+	local bIgnoreCollision = CharacterMoveTable.bIgnoreCollision
+
+	-- Everything is moved at the root of the parent chain, for players and NPCs alike.
+	local root = StellarBlade.GetMoveRoot(self)
+	local bRootIsPlayer = root:IsPlayer()
+	local target = StellarBlade.PickTarget(self)
+
+	if movePosDelta != vector_origin then
+		-- Start position: mv only describes the root when the root is the player itself.
+		local startPos = (bRootIsPlayer and mv) and mv:GetOrigin() or root:GetPos()
+
+		local filter = { root }
+		if CharacterMoveTable.bMoveIgnoreTargetCharacter and IsValid(target) then
+			table.insert(filter, target)
+		end
+
+		local collisiongroup = COLLISION_GROUP_PLAYER_MOVEMENT
+		local mask = nil
+		if bIgnoreCollision then
+			collisiongroup = COLLISION_GROUP_IN_VEHICLE
+			mask = 0
+		end
+
+		local moveResult = IterativeHybridMoveLimit(root, startPos, startPos + movePosDelta, {
+			filter = filter, collisiongroup = collisiongroup, mask = mask, target = target
+		})
+		local endPos = moveResult.vEndPosition
+
+		if bRootIsPlayer then
+			if moveStep.MoveArrayName == "some move step name" then
+				-- put your mv:SetOrigin override here
+			elseif mv then
+				mv:SetOrigin(endPos)
+			else
+				root:SetPos(endPos)
+			end
+			
+		elseif root:IsVehicle() then
+			root:SetPos(endPos, true)
+		elseif root:GetMoveType() == MOVETYPE_VPHYSICS then -- handled 7 lines below 
+		else 
+			root:SetLocalPos(endPos)
+		end
+		-- also move the actor's physics object to enable movement on physics objects
+			local physobj = root:GetPhysicsObject()
+			if IsValid(physobj) then
+				physobj:SetPos(endPos)
+			end
+
+		-- Non-player actors (NPCs etc.) have no mv to carry velocity, so push it onto the entity.
+		if !self:IsPlayer() then
+			self:SetAbsVelocity(movePosDelta / FrameTime() + self:GetVelocity())
+		end
+	end
+
+	if moveAngDelta != angle_zero then
+		if root.SetIdealYawAndUpdate then
+			root:SetIdealYawAndUpdate(moveAngDelta.y, -1)
+		else
+			local SetAng = root.SetEyeAngles or root.SetAngles
+			if bIgnoreCollision then
+				SetAng(root, moveAngDelta)
+			else
+				local cur = root:EyeAngles()
+				SetAng(root, Angle(cur.x, moveAngDelta.y, cur.z))
+			end
+		end
+	end
+end
 
 StellarBlade.ShouldCancelMoveTable = function(self,moveStep) 
     if !moveStep then return false end
@@ -7432,6 +7877,34 @@ StellarBlade.ShouldCancelMoveTable = function(self,moveStep)
 	if !self:Alive() then return true end 
     return false 
 end 
+
+-- Player move input (forward/side/up from the current CUserCmd) as a world direction, rotated by the
+-- command's view angles. Non-players use their forward vector. Returns vector_origin when there is no input.
+--   ent       : entity being moved (used for the non-player forward vector)
+--   inputPly  : entity whose input is read (the step's owner); only used when it is a player
+--   bWithoutZ : yaw-only view angles, no up input, never any Z in the result
+-- GetCurrentCommand is only valid inside the player's Move / FinishMove (command) hooks.
+StellarBlade.GetInputMoveDirection = function(ent, inputPly, bWithoutZ)
+	if IsValid(inputPly) and inputPly:IsPlayer() then
+		local cmd = inputPly:GetCurrentCommand()
+		if !cmd or !cmd.GetForwardMove then return vector_origin end
+		-- Source local axes: x = forward, y = left, z = up; side move is positive to the right
+		local localDir = Vector(cmd:GetForwardMove(), -cmd:GetSideMove(), bWithoutZ and 0 or cmd:GetUpMove())
+		if localDir:LengthSqr() <= 0 then return vector_origin end
+		localDir:Normalize()
+		local viewAng = cmd:GetViewAngles()
+		if bWithoutZ then viewAng = Angle(0, viewAng.y, 0) end
+		localDir:Rotate(viewAng)
+		return localDir
+	end
+	local dir = ent:GetForward()
+	if bWithoutZ then
+		dir.z = 0
+		if dir:LengthSqr() <= 0 then return vector_origin end
+		dir:Normalize()
+	end
+	return dir
+end
 
 -- EvaluateMoveStep (improved root-motion probe) 
 -- Accepts moveStep table OR MoveArrayName string. 
@@ -7482,6 +7955,9 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     local moveStartTimeCfg = CharacterMoveTable.MoveStartTime or 0
     local moveEndTimeCfg = CharacterMoveTable.MoveEndTime or Time
     local moveDuration = math.max(0, moveEndTimeCfg - moveStartTimeCfg)
+	local rotStartTimeCfg = CharacterMoveTable.RotationStartTime or 0
+    local rotEndTimeCfg = CharacterMoveTable.RotationEndTime or Time
+    local rotDuration = math.max(0, rotEndTimeCfg - rotStartTimeCfg)
 
     -- If caller provided explicit probeElapsed, set StartTime so sampler sees that elapsed
     if probeElapsed != nil and isTempStep then
@@ -7499,7 +7975,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
             moveStep.RunTime = CurTime()
         end
     end
-	elapsedTime = nil 
+	local elapsedTime = nil 
     -- If flInterval wasn't provided for live call, fall back to previous behaviour
     if flInterval == nil and type(moveStepOrName) == "table" and moveStep.RunTime then
         flInterval = CurTime() - (moveStep.RunTime or CurTime())
@@ -7507,14 +7983,26 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 
     -- Compute normalized times
     local normalizedTime, prevNormalizedTime = 0, 0
+    local rotationActive = false -- true while this tick overlaps [RotationStartTime, RotationEndTime]
+    local rotationFraction = 0 -- 0 at RotationStartTime .. 1 at RotationEndTime (linear)
     if flInterval and flInterval < 0 then
         normalizedTime = 1
         prevNormalizedTime = 0
+        rotationActive = rotDuration > 0 -- full-final probe: rotation counts as reached
+        rotationFraction = 1
     else
         if probeElapsed != nil then
             elapsedTime = probeElapsed
         else
             elapsedTime = CurTime() - (moveStep.StartTime or CurTime())
+        end
+
+        -- Rotation window (same idea as the move window, but rotation values are absolute targets,
+        -- so it is a gate: active once RotationStartTime is reached, until the tick that crosses RotationEndTime)
+        local rotInterval = flInterval or 0
+        rotationActive = rotDuration > 0 and elapsedTime >= rotStartTimeCfg and (elapsedTime - rotInterval) < rotEndTimeCfg
+        if rotDuration > 0 then
+            rotationFraction = math.Clamp((elapsedTime - rotStartTimeCfg) / rotDuration, 0, 1)
         end
 
         if moveDuration > 0 then
@@ -7547,6 +8035,8 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 	-- print("post StellarBlade.PickTarget:",SysTime()) 
 
     local directionAxis = CharacterMoveTable.PositionDirectionAxis 
+    -- owner of the step supplies the input; self may be a vehicle root when the owner is a player inside it
+    local inputPly = (IsValid(moveStep.Outer) and moveStep.Outer:IsPlayer()) and moveStep.Outer or self 
     local vecMoveDirection = Vector(1,0,0) 
     if self.GetAimVector then vecMoveDirection = self:GetAimVector() or vecMoveDirection 
     else vecMoveDirection = self:GetForward() end 
@@ -7556,13 +8046,20 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget" then
         if IsValid(enemy) then vecMoveDirection = (enemy:GetPos() - self:GetPos()):GetNormalized() end
     elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionWorld" then
-        vecMoveDirection = self:GetForward() 
+        -- despite the name this is the local input direction (used as such) 
+        vecMoveDirection = StellarBlade.GetInputMoveDirection(self, inputPly, false) 
+    elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_InputDirectionWorldWithoutZ" then
+        vecMoveDirection = StellarBlade.GetInputMoveDirection(self, inputPly, true) 
     elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_SelfToTarget2D" then
         if IsValid(enemy) then
             local epos = enemy:GetPos(); epos.z = 0
             local spos = self:GetPos(); spos.z = 0
             vecMoveDirection = (epos - spos):GetNormalized()
         end
+	elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Velocity" then 
+		vecMoveDirection = self:GetVelocity() 
+	elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Velocity2D" then 
+		vecMoveDirection = self:GetVelocity() 
     end
 
     local MoveType = CharacterMoveTable.MoveType 
@@ -7684,6 +8181,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
         local localDisplacementDelta = Vector(forwardMove, rightMove, upMove) -- this is the *total* local displacement
         local rightVec = vecMoveDirection:Cross(Vector(0,0,1))
         local upVec = vecMoveDirection:Cross(Vector(0,1,0))
+		-- print("rightVec:",rightVec) 
         local totalDisplacement = vecMoveDirection * localDisplacementDelta.x + rightVec * localDisplacementDelta.y + upVec * localDisplacementDelta.z
 
         if PositionType == "ESBMovePositionType::MovePositionType_Target" then
@@ -7737,7 +8235,9 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 	
 	local RotationType = CharacterMoveTable.RotationType 
 	
-	if RotationType == "ESBMoveRotationType::MoveRotationType_Target" then 
+	if !rotationActive then 
+		-- outside RotationStartTime..RotationEndTime: no rotation from RotationType 
+	elseif RotationType == "ESBMoveRotationType::MoveRotationType_Target" then 
 		if IsValid(enemy) then 
 			local dir = (enemy:GetPos() - self:GetPos()):GetNormalized() 
 			-- dir = self:GetForward() - dir 
@@ -7767,6 +8267,22 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
             -- Apply the cached angle
             moveAngDelta = moveAngDelta + moveStep.FirstTargetAngle
         end
+    elseif RotationType == "ESBMoveRotationType::MoveRotationType_Target_TimeBase" then 
+        -- Turn toward the target over RotationStartTime..RotationEndTime instead of snapping: 
+        -- start = facing cached on the first tick inside the window, end = target direction evaluated live. 
+        if IsValid(enemy) then 
+            if not moveStep.TimeBaseStartAngle then 
+                moveStep.TimeBaseStartAngle = self:EyeAngles() -- EyeAngles exists for all entities 
+            end 
+            local startAng = moveStep.TimeBaseStartAngle 
+            local targetAng = (enemy:GetPos() - self:GetPos()):GetNormalized():Angle() 
+            -- shortest-path lerp per component (handles the -180/180 wrap) 
+            moveAngDelta = moveAngDelta + Angle( 
+                startAng.p + math.AngleDifference(targetAng.p, startAng.p) * rotationFraction, 
+                startAng.y + math.AngleDifference(targetAng.y, startAng.y) * rotationFraction, 
+                startAng.r + math.AngleDifference(targetAng.r, startAng.r) * rotationFraction 
+            ) 
+        end 
 	end 
 	-- print("post Move Offset Calc:",SysTime()) 
 	
@@ -7776,112 +8292,7 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
     return true, movePosDelta, moveAngDelta 
 end 
 
-StellarBlade.MaintainMoveTable = function(self) 
-    if self.SBAI_MoveTable and #self.SBAI_MoveTable > 0 then
-        local currentAng = self:GetLocalAngles() 
-        local totalAngDelta = Angle(0, 0, 0) 
-		local enemy = StellarBlade.PickTarget(self) 
-		local enemyDir 
-
-        -- Iterate backwards for safe removal
-        for i = #self.SBAI_MoveTable, 1, -1 do
-			
-            local moveStep = self.SBAI_MoveTable[i]
-			
-			local flInterval = CurTime() - moveStep.RunTime 
-			moveStep.RunTime = CurTime() 
-			
-            if CurTime() < moveStep.StartTime then continue end
-			
-			local ok, movePosDelta, moveAngDelta = StellarBlade.EvaluateMoveStep(self, moveStep, flInterval)
-			local name = moveStep.MoveArrayName
-            local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[name] -- get precached movetable 
-			local Time = CharacterMoveTable.Time
-            local CurEndTime = moveStep.StartTime + Time
-			local velocity = movePosDelta
-			movePosDelta = movePosDelta * flRescale 
-
-            -- Apply this move's delta and check for collision failure
-            local collisionFailed = false 
-            if movePosDelta:LengthSqr() > 0.001 then 
-                local moveSuccess = true 
-                local targetPosForThisMove = self:GetPos() + movePosDelta 
-				local filter = { self } 
-				if CharacterMoveTable.bMoveIgnoreTargetCharacter and IsValid(enemy) then table.insert(filter,enemy) end 
-				
-
-                if CharacterMoveTable.bOnGround and self.MoveGroundStep then 
-					local MoveGroundStep = self:MoveGroundStep(targetPosForThisMove, enemy) 
-					if self.SetMoveVelocity then self:SetMoveVelocity(velocity / flInterval) end 
-					self:SetAbsVelocity(velocity / flInterval) 
-                    if MoveGroundStep == 0 then moveSuccess = false end 
-                else
-					local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), targetPosForThisMove, { filter = filter } ) 
-					self:SetLocalPos(moveResult.vEndPosition) 
-					
-					-- compute per-frame velocity required to reach targetPosForThisMove
-					local desiredDelta = velocity
-					local desiredVelocity = desiredDelta / flInterval
-
-					-- remove only the scripted velocity contribution from last frame
-					local currentAbsVel = self:GetVelocity()
-					local correctedVel = currentAbsVel - (moveStep.LastVelocity or Vector(0,0,0))
-
-					-- apply new scripted velocity on top of external forces
-					self:SetAbsVelocity(velocity / flInterval) 
-					if self.SetMoveVelocity then self:SetMoveVelocity(velocity / flInterval) end 
-					local phys = self:GetPhysicsObject() 
-					if phys:IsValid() then 
-						phys:SetVelocity(correctedVel + desiredVelocity) 
-					end 
-
-					if moveResult.fStatus ~= "OK" then
-						moveSuccess = false
-					end
-				end
-
-				moveStep.LastVelocity = desiredVelocity
-
-                if !moveSuccess and CharacterMoveTable.bStopWhenCollision then
-                    -- print("removing motion due to collision for", name) 
-                    table.remove(self.SBAI_MoveTable, i)
-                    collisionFailed = true
-                end
-            end
-			-- print("self:GetPos():",self:GetPos()) 
-
-            -- Only process expiration and add angle delta if the move wasn't removed for collision
-            if !collisionFailed then
-                totalAngDelta = totalAngDelta + moveAngDelta
-                
-                if CurTime() > CurEndTime or StellarBlade.ShouldCancelMoveTable(self,moveStep) then
-					if tobool(CharacterMoveTable.bZeroVelocityWhenEnd) then
-						-- remove only this step's contribution
-						local currentAbsVel = self:GetVelocity()
-						local correctedVel = currentAbsVel - (moveStep.LastVelocity or vector_origin)
-						-- self:SetLocalVelocity(vector_origin)
-						self:SetAbsVelocity(vector_origin) 
-
-						moveStep.LastVelocity = vector_origin
-					else 
-						if self:IsPlayer() then 
-							self:SetLocalVelocity(velocity / flInterval) 
-						else 
-							self:SetVelocity(velocity / flInterval) 
-						end 
-					end 
-					table.remove(self.SBAI_MoveTable, i)
-                end
-            end
-        end
-
-        -- Apply total accumulated angle delta at the end
-        local targetAng = currentAng + totalAngDelta
-        if targetAng != currentAng then
-            self:SetLocalAngles(targetAng)
-        end
-    end
-end 
+-- StellarBlade.MaintainMoveTable has been removed since it is unused 
 
 StellarBlade.BuildSoundScript = function(self,parsedjson) 
 	-- print("in BuildSoundScript",parsedjson) 
@@ -8215,11 +8626,11 @@ end
     @param fraction The linear progress, typically normalizedTime.
     @returns The eased progress.
 ]]-- 
-StellarBlade.GetEasedFraction = function(interpType, fraction)
-    if !interpType then return fraction end
-    local key = interpType:gsub("ESBInterpType::", "")
-    local easeFunc = EasingFunctions[key] or EasingFunctions["InterpType_Liner"]
-    return easeFunc(fraction)
+StellarBlade.GetEasedFraction = function(interpType, fraction) 
+    if !interpType then return fraction end 
+    local key = interpType:gsub("ESBInterpType::", "") 
+    local easeFunc = EasingFunctions[key] or EasingFunctions["InterpType_Liner"] 
+    return easeFunc(fraction) 
 end 
 
 --==============================================================================
@@ -8315,6 +8726,7 @@ function StellarBlade:ESBActorType(ESBActorType)
 	-- ActorType_BossMonster                    = 4,
 	-- ActorType_MAX                            = 5,
 	if self:IsPlayer() then return ESBActorType == "ESBActorType::ActorType_PC" 
+	elseif self.m_iClass == CLASS_PLAYER then return ESBActorType == "ESBActorType::ActorType_PC" -- bypass player check for NPCs 
 	elseif self:IsNPC() and self:Classify() <= CLASS_PLAYER_ALLY_VITAL and self:Classify() != CLASS_NONE then return ESBActorType == "ESBActorType::ActorType_NPC" 
 	elseif self:IsNPC() or self:IsNextBot() then return ESBActorType == "ESBActorType::ActorType_Monster" 
 	else return ESBActorType == "ESBActorType::ActorType_None" 
