@@ -1,72 +1,72 @@
 AddCSLuaFile() 
 
-function SB_ImportJSON(path) 
-    -- Helper function to process a single JSON file (unchanged). 
-    local function ProcessJSONFile(relativePath) 
-        local fileName = string.match(relativePath, "([^/]+)%.json$") 
-        if not fileName then 
-            MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n") 
-            return 
-        end 
-        local globalTableName = "SB_" .. fileName 
+-- function SB_ImportJSON(path) 
+    -- -- Helper function to process a single JSON file (unchanged). 
+    -- local function ProcessJSONFile(relativePath) 
+        -- local fileName = string.match(relativePath, "([^/]+)%.json$") 
+        -- if not fileName then 
+            -- MsgC(Color(255, 100, 100), "[SB Importer] Invalid file name or not a .json file: ", relativePath, "\n") 
+            -- return 
+        -- end 
+        -- local globalTableName = "SB_" .. fileName 
 
-        if _G[globalTableName] then
-            MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
-            return _G[globalTableName] 
-        end
+        -- if _G[globalTableName] then
+            -- MsgC(Color(100, 255, 100), "[SB Importer] Table '", globalTableName, "' already exists. Skipping file read.\n")
+            -- return _G[globalTableName] 
+        -- end
 
-        local jsonString = file.Read(relativePath, "GAME")
-        if not jsonString then
-            ErrorNoHalt(string.format("[SB Importer] Failed to read file for '%s'! Check path: %s\n", globalTableName, relativePath))
-            return
-        end
+        -- local jsonString = file.Read(relativePath, "GAME")
+        -- if not jsonString then
+            -- ErrorNoHalt(string.format("[SB Importer] Failed to read file for '%s'! Check path: %s\n", globalTableName, relativePath))
+            -- return
+        -- end
 
-        local tempTable = util.JSONToTable(jsonString,false)
-        if not tempTable then
-            ErrorNoHalt(string.format("[SB Importer] Failed to parse JSON for '%s'! File may be malformed: %s\n", globalTableName, relativePath))
-            return
-        end
+        -- local tempTable = util.JSONToTable(jsonString,false)
+        -- if not tempTable then
+            -- ErrorNoHalt(string.format("[SB Importer] Failed to parse JSON for '%s'! File may be malformed: %s\n", globalTableName, relativePath))
+            -- return
+        -- end
 
-        _G[globalTableName] = tempTable
-        MsgC(Color(100, 255, 100), "[SB Importer] Successfully loaded '", relativePath, "' into global table '", globalTableName, "'.\n")
-		return tempTable 
-    end
+        -- _G[globalTableName] = tempTable
+        -- MsgC(Color(100, 255, 100), "[SB Importer] Successfully loaded '", relativePath, "' into global table '", globalTableName, "'.\n")
+		-- return tempTable 
+    -- end
 
-    -- Main function logic starts here.
-    -- First, normalize the path separators from Windows-style '\' to '/'
-    local normalizedPath = string.gsub(path, "\\", "/")
-    local relativePath
+    -- -- Main function logic starts here.
+    -- -- First, normalize the path separators from Windows-style '\' to '/'
+    -- local normalizedPath = string.gsub(path, "\\", "/")
+    -- local relativePath
 
-    -- NEW, SMARTER PATH HANDLING:
-    -- Try to strip the path as if it's absolute.
-    local strippedPath = string.match(normalizedPath, "/garrysmod/(.+)")
-    if strippedPath then
-        -- If it succeeded, it was an absolute path. Use the stripped version.
-        relativePath = strippedPath
-    else
-        -- If it failed, it's already a relative path. Use it as-is.
-        relativePath = normalizedPath
-    end
+    -- -- NEW, SMARTER PATH HANDLING:
+    -- -- Try to strip the path as if it's absolute.
+    -- local strippedPath = string.match(normalizedPath, "/garrysmod/(.+)")
+    -- if strippedPath then
+        -- -- If it succeeded, it was an absolute path. Use the stripped version.
+        -- relativePath = strippedPath
+    -- else
+        -- -- If it failed, it's already a relative path. Use it as-is.
+        -- relativePath = normalizedPath
+    -- end
 
-    -- The rest of the function proceeds with the correctly determined relativePath.
-    if file.IsDir(relativePath, "GAME") then
-        local filesInDir = file.Find(relativePath .. "/*.json", "GAME")
-        MsgC(Color(255, 255, 100), "[SB Importer] Starting batch import for directory: ", relativePath, "\n")
+    -- -- The rest of the function proceeds with the correctly determined relativePath.
+    -- if file.IsDir(relativePath, "GAME") then
+        -- local filesInDir = file.Find(relativePath .. "/*.json", "GAME")
+        -- MsgC(Color(255, 255, 100), "[SB Importer] Starting batch import for directory: ", relativePath, "\n")
 
-        if #filesInDir == 0 then
-            MsgC(Color(255, 150, 0), "[SB Importer] No .json files found in ", relativePath, "\n")
-            return
-        end
+        -- if #filesInDir == 0 then
+            -- MsgC(Color(255, 150, 0), "[SB Importer] No .json files found in ", relativePath, "\n")
+            -- return
+        -- end
 
-        for _, fileName in ipairs(filesInDir) do
-            -- Make sure the path has a trailing slash before appending the filename
-            local dirPath = string.sub(relativePath, -1) == "/" and relativePath or (relativePath .. "/")
-            ProcessJSONFile(dirPath .. fileName)
-        end
-    else
-        return ProcessJSONFile(relativePath)
-    end
-end
+        -- for _, fileName in ipairs(filesInDir) do
+            -- -- Make sure the path has a trailing slash before appending the filename
+            -- local dirPath = string.sub(relativePath, -1) == "/" and relativePath or (relativePath .. "/")
+            -- ProcessJSONFile(dirPath .. fileName)
+        -- end
+    -- else
+        -- return ProcessJSONFile(relativePath)
+    -- end
+-- end
 
 -- include("entities/npc_sb_raven.lua") 
 
@@ -112,6 +112,7 @@ SWEP.Secondary.Delay			= 0		-- additive after sequenceduration
 SWEP.Secondary.Playback_Rate 	= 1 -- determine anim play speed 
 SWEP.Secondary.Sound			= Sound("M_Raven_SwordSwish_L_Cue") 
 SWEP.Melee_HitSound	=	Sound("M_Raven_Skill_Stab_Cue") 
+SWEP.matrix = Matrix() 
 
 function SWEP:SpecialDT() 
     self:NetworkVar("Int", "SelectedSkillIndex") 
@@ -128,13 +129,13 @@ function SWEP:Deploy()
 			BroadcastLua("if IsValid(Entity("..owner:EntIndex()..")) then Entity("..owner:EntIndex().."):AddVCDSequenceToGestureSlot(0,Entity("..owner:EntIndex().."):LookupSequence('layer_Eve_Weapon_Start_Anim'),0,true) end ") 
 		end 
 	end 
-	return weapons.Get("weapon_ugold_automag").Deploy(self) 
+	return weapons.GetStored("weapon_ugold_automag").Deploy(self) 
 end 
 function SWEP:ShouldDropOnDie() return true end 
 function SWEP:SpecialThink() 
 	if self:GetHolsterDelay() != 0 or self:GetActivity() == ACT_VM_HOLSTER then return false end 
-	local owner = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
-	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
+	local owner = weapons.GetStored("weapon_ugold_dispersionpistol").Unreali_GetOwner(self) 
+	local vm = weapons.GetStored("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	if SERVER then 
 		local StellarBlade_SelectedSkill = self.StellarBlade_SelectedSkill  
 		local CheckCooldown = owner.SBAI_SkillTimers and owner.SBAI_SkillTimers[StellarBlade_SelectedSkill] -- returns Time, ["M_Raven_SlashChain"] = 216 
@@ -166,11 +167,11 @@ function SWEP:SpecialThink()
 	if IsValid(vm) then 
 		if vm:GetCycle() > 0.15 and vm:GetCycle() < 0.35 and self:GetActivity() == ACT_VM_SECONDARYATTACK then 
 			if self:GetNextSecondaryFire() > CurTime() then 
-				local ents = scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,5) 
+				local ents = scripted_ents.GetStored("cycler_actor2").t.NPC_MeleeAttack(self,nil,nil,nil,nil,5) 
 			end 
 		end 
 	end 
-	return weapons.Get("weapon_ugold_asmd").SpecialThink(self) 
+	return weapons.GetStored("weapon_ugold_asmd").SpecialThink(self) 
 end 
 
 function SWEP:CycleSkill(direction)
@@ -241,11 +242,16 @@ function SWEP:BuildSkillList()
 	SR_M_Raven_ChaseChargeSlash_Hit1 = table.Merge(SR_M_Raven_ChaseChargeSlash_Hit1, SB_M_Raven_ChaseChargeSlash[40].Properties.SkillResultTableProperty) 
 	
 	M_Raven_ChaseChargeSlash_Move1.bIgnoreCollision = false 
-	M_Raven_ChaseChargeSlash_Move2.bIgnoreCollision = true 
+	M_Raven_ChaseChargeSlash_Move2.bIgnoreCollision = false 
 	M_Raven_ChaseChargeSlash_Move3.bIgnoreCollision = true 
-	M_Raven_ChaseChargeSlash_Move4.bIgnoreCollision = true 
+	M_Raven_ChaseChargeSlash_Move4.bIgnoreCollision = false 
 	
-	M_Raven_ChaseChargeSlash_Move2.bExecuteSeparately = true 
+	M_Raven_ChaseChargeSlash_Move1.ForwardValue = 0 
+	M_Raven_ChaseChargeSlash_Move2.ForwardValue = 0 
+	M_Raven_ChaseChargeSlash_Move3.ForwardValue = 0 
+	M_Raven_ChaseChargeSlash_Move4.ForwardValue = 0 
+	
+	M_Raven_ChaseChargeSlash_Move2.bExecuteSeparately = false 
 	M_Raven_ChaseChargeSlash_Move3.bExecuteSeparately = true 
 	M_Raven_ChaseChargeSlash_Move4.bExecuteSeparately = true 
 	
@@ -278,7 +284,7 @@ function SWEP:PrimaryAttack()
 	if !self:CanPrimaryAttack() then return false end 
     local owner = self:GetOwner() 
 	if owner:KeyDown(IN_WALK) then return end 
-	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
+	local vm = weapons.GetStored("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	local seq = vm:SelectWeightedSequence( self.Primary.Animation ) 
 	local Delay = vm:SequenceDuration(seq) 
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay + (Delay / self.Primary.Playback_Rate)) 
@@ -303,7 +309,7 @@ function SWEP:SecondaryAttack()
 	if !self:CanPrimaryAttack() then return false end 
 	local owner = self:GetOwner() 
 	if owner:KeyDown(IN_WALK) then return end 
-	local vm = weapons.Get("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
+	local vm = weapons.GetStored("weapon_ugold_dispersionpistol").Unreali_GetViewModel(self) 
 	-- PrintTable(scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,120)) 
 	local Animation = table.IsEmpty(scripted_ents.Get("cycler_actor2").NPC_MeleeAttack(self,nil,nil,nil,nil,120)) and ACT_VM_MISSCENTER or self.Secondary.Animation
 	local seq = vm:SelectWeightedSequence( Animation ) 
@@ -368,7 +374,7 @@ function SWEP:Holster(Other)
 end 
 
 function SWEP:OnRemove() 
-	weapons.Get("weapon_ut99_base").OnRemove(self) 
+	weapons.GetStored("weapon_ut99_base").OnRemove(self) 
 	if IsValid(self.GlowProjectedTexture) then
         self.GlowProjectedTexture:Remove()
     end 
@@ -389,7 +395,7 @@ end
 function SWEP:GetNPCBurstSettings() return 1, 1, 1 end 
 
 function SWEP:DrawHUD()
-    weapons.Get("weapon_ut99_base").DrawHUD(self)
+    weapons.GetStored("weapon_ut99_base").DrawHUD(self)
     
     if #self.CachedSkillList == 0 then 
         self:BuildSkillList() -- Try building again if empty
@@ -468,10 +474,20 @@ local lensObjLayers = {
 }
 
 function SWEP:ViewModelDrawn(vm)
-    weapons.Get("weapon_ut99_base").ViewModelDrawn(self, vm) 
+    weapons.GetStored("weapon_ut99_base").ViewModelDrawn(self, vm) 
 	self:Raven_Blade_Flare(vm,0.4,0.5,"v_weapon.Knife_Handle") 
 	self:Raven_Blade_Sparks(vm) 
 	self:Raven_Blade_Beam(vm) 
+end 
+
+function SWEP:DrawWorldModelTranslucent(flags) 
+	local base = weapons.GetStored("weapon_ut99_base") 
+	if base and base.DrawWorldModelTranslucent then 
+		base.DrawWorldModelTranslucent(self, flags) 
+	end 
+	self:Raven_Blade_Flare(self,1.3,1.5,"ValveBiped.Bip01_R_Hand") 
+	self:Raven_Blade_Sparks(IsValid(self:GetOwner()) and self:GetOwner() or self) 
+	self:Raven_Blade_Beam(self) 
 end 
 
 function SWEP:CustomAmmoDisplay() 
@@ -483,28 +499,21 @@ function SWEP:CustomAmmoDisplay()
 	return self.AmmoDisplay 
 end 
 
-function SWEP:DrawWorldModelTranslucent(flags) 
-	local base = weapons.Get("weapon_ut99_base") 
-	if base and base.DrawWorldModelTranslucent then 
-		base.DrawWorldModelTranslucent(self, flags) 
-	end 
-	self:Raven_Blade_Flare(self,1.3,1.5,"ValveBiped.Bip01_R_Hand") 
-	self:Raven_Blade_Sparks(IsValid(self:GetOwner()) and self:GetOwner() or self) 
-	self:Raven_Blade_Beam(self) 
-end 
-
 -- Cache materials and colors to prevent garbage collection stuttering
 local GLOW_MAT = Material("sprites/glow04_noz")
 local BEAM_MAT = Material("effects/laser1")
+local glowColor = Color(0, 210, 255, 255)
+local beamColor = Color(220, 250, 255, 255)
+
 function SWEP:Raven_Blade_Beam(ent) 
     local handBone = ent:LookupBone("v_weapon.Knife_Handle") -- following bone doesn't exist on worldmodel 
     if !handBone then handBone = ent:LookupBone("ValveBiped.Bip01_R_Hand") end -- exists on worldmodel 
     if !handBone then return end 
-    local matrix = ent:GetBoneMatrix(handBone) 
-    local pos = matrix:GetTranslation()
+    ent:CopyBoneMatrix(handBone,self.matrix) 
+    local pos = self.matrix:GetTranslation()
     local startPos, endPos = ent:GetPos(), ent:GetPos() 
     local startPos_beam, endPos_beam = ent:GetPos(), ent:GetPos() 
-    local ang = matrix:GetAngles() 
+    local ang = self.matrix:GetAngles() 
     if ent:GetClass() == "viewmodel" then -- drawing viewmodel 
         -- print(ViewModel) 
         -- ang:RotateAroundAxis(self:GetOwner():GetForward(),-1)  
@@ -542,21 +551,32 @@ function SWEP:Raven_Blade_Beam(ent)
 		-- debugoverlay.Cross(startPos,4,FrameTime()*2) 
 		-- debugoverlay.Cross(endPos,4,FrameTime()*2) 
     end 
-	
-    -- Set RGB Color (Cyan core glow)
-    local glowColor = Color(0, 210, 255, 255)
     
+
+	local distSqr = EyePos():DistToSqr(startPos) -- max: 26700 
+	-- print(math.Clamp(distSqr/26700,0,1)) 
+	glowColor:SetUnpacked(0, 210, 255, 255)
+	beamColor:SetUnpacked(220, 250, 255, 255)
+	if ent:GetClass() == "viewmodel" then -- drawing viewmodel 
+		glowColor:SetBrightness(math.Clamp(distSqr/5000,0,1)) 
+		beamColor:SetBrightness(math.Clamp(distSqr/5000,0,1)) 
+	else 
+		glowColor:SetBrightness(math.Clamp(distSqr/26700,0,1)) 
+		beamColor:SetBrightness(math.Clamp(distSqr/26700,0,1)) 
+	end 
+	
+	
     -- 1. Draw outer wide beam (Blade Aura)
     render.SetMaterial(GLOW_MAT)
     render.DrawBeam(startPos, endPos, 32, 0, 1, glowColor)
     -- 2. Draw inner bright core beam
-    render.DrawBeam(startPos, endPos, 6, 0, 1, Color(220, 250, 255, 255))
+    render.DrawBeam(startPos, endPos, 6, 0, 1, beamColor)
 	-- print((startPos - endPos):GetNormalized()) 
 	
 	render.SetMaterial(BEAM_MAT)
     render.DrawBeam(startPos_beam, endPos_beam, 6, 0, 1, glowColor)
     -- 2. Draw inner bright core beam
-    render.DrawBeam(startPos_beam, endPos_beam, 3, 0, 1, Color(220, 250, 255, 255))
+    render.DrawBeam(startPos_beam, endPos_beam, 3, 0, 1, beamColor)
 	--[[ 
 	if ent:GetClass() ~= "viewmodel" then
 		local delta = LocalPlayer():EyePos() - pos
@@ -577,11 +597,10 @@ function SWEP:Raven_Blade_Flare(ent,mins,maxs,bonename)
 	local handBone = ent:LookupBone(bonename)
 	if !handBone then return end
 
-	local matrix = ent:GetBoneMatrix(handBone)
-	if !matrix then return end
+	ent:CopyBoneMatrix(handBone,self.matrix)
 
-	local pos = matrix:GetTranslation()
-	local ang = matrix:GetAngles() 
+	local pos = self.matrix:GetTranslation()
+	local ang = self.matrix:GetAngles() 
 	if ent:GetClass() == "viewmodel" then 
 		local forward = ang:Up() * 7
 		pos = pos + forward
@@ -677,19 +696,17 @@ function SWEP:Raven_Blade_Sparks(ent)
 	self.Raven_Blade_Sparks_NextTime = CurTime() + 0.1 
 	local handBone = ent:LookupBone("ValveBiped.Bip01_R_Hand")
 	if !handBone then return end
+	ent:CopyBoneMatrix(handBone,self.matrix)
 
-	local matrix = ent:GetBoneMatrix(handBone)
-	if !matrix then return end
-
-	local pos = matrix:GetTranslation()
-	local ang = matrix:GetAngles() 
+	local pos = self.matrix:GetTranslation()
+	local ang = self.matrix:GetAngles() 
 	if ent:GetClass() == "viewmodel" then 
 		local forward = ang:Up() * -7
 		pos = pos + forward
 	else 
 		pos = pos - ang:Up() * 9 
 	end 
-	if !self.Emitter then self.Emitter = ParticleEmitter(pos) end 
+	if !IsValid(self.Emitter) then self.Emitter = ParticleEmitter(pos) end 
 	local p = self.Emitter:Add("effects/spark", pos) 
 
 	if p then

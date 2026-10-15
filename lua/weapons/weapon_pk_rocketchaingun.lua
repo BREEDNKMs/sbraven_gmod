@@ -33,6 +33,7 @@ SWEP.Secondary.Damage = 0
 SWEP.Secondary.Ammo = "SMG1"
 SWEP.Secondary.Sound	=	Sound("weapon/painkiller/rocketgatling/mgun-mp-loop.wav") 
 SWEP.Secondary.NumBullets = 2 
+SWEP.Secondary.Cone = Vector(0.03,0.02,0)
 SWEP.Secondary.Special1 = {
 	"weapon/painkiller/rocketgatling/mgun_shoot1.wav",
 	"weapon/painkiller/rocketgatling/mgun_shoot2.wav",
@@ -57,7 +58,7 @@ function SWEP:SpecialDT()
 end 
 
 function SWEP:SetupWeaponHoldTypeForAI(t) 
-	weapons.Get("weapon_ut99_base").SetupWeaponHoldTypeForAI(self,t) 
+	weapons.GetStored("weapon_base").SetupWeaponHoldTypeForAI(self,t) 
 	self.ActivityTranslateAI[ ACT_RANGE_ATTACK1 ]	= ACT_RANGE_ATTACK_SMG1
 	self.ActivityTranslateAI[ ACT_GESTURE_RANGE_ATTACK1 ]	= ACT_GESTURE_RANGE_ATTACK_SMG1
 	self.ActivityTranslateAI[ ACT_RANGE_ATTACK1_LOW ]		= ACT_RANGE_ATTACK_SMG1_LOW
@@ -69,26 +70,33 @@ function SWEP:Initialize()
 	self:SetSaveValue("m_fMinRange2",0) 
 	self:SetSaveValue("m_fMaxRange1",2500) 
 	self:SetSaveValue("m_fMaxRange2",16384) 
-	weapons.Get("weapon_ut99_base").Initialize(self) 
+	weapons.GetStored("weapon_ut99_base").Initialize(self) 
 end 
 
 local BobTime = 0 
 local BobTimeLast = RealTime() 
 local t = 1 
+local localOffset = Vector(15, -12, -12) 
+local offsetAng = Vector(0,180,0) 
+
+local startPosOffset, startAngOffset = Vector(-20,-5,-20), Angle(40,130,-20) 
 
 function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang) 
-	local targetPos = LocalToWorld(Vector(15, -12, -12), ang, pos, ang) 
+	if !IsValid(vm) then return pos,ang end 
+	if !IsValid(self:GetOwner()) then return pos,ang end 
+	local targetPos = LocalToWorld(localOffset, ang, pos, ang) 
     
     local targetAng = Angle(ang) -- Copy angle to avoid modifying original reference
-    local offsetAng = Vector(0, 180, 0) 
-    targetAng:RotateAroundAxis(targetAng:Right(), offsetAng.x) 
-    targetAng:RotateAroundAxis(targetAng:Up(), offsetAng.y) 
-    targetAng:RotateAroundAxis(targetAng:Forward(), offsetAng.z) 
+    local newoffsetAng = Vector() 
+	newoffsetAng:Set(offsetAng) 
+    targetAng:RotateAroundAxis(targetAng:Right(), newoffsetAng.x) 
+    targetAng:RotateAroundAxis(targetAng:Up(), newoffsetAng.y) 
+    targetAng:RotateAroundAxis(targetAng:Forward(), newoffsetAng.z) 
 
     -- 2. Handle deploy interpolation if currently deploying
 	-- print(self:GetIdleDelay()) 
     if self:GetIdleDelay() >= CurTime() and self:GetIdleDelay() ~= 0 then 
-        local startPosOffset, startAngOffset = Vector(-20, -5, -20), Angle(40, 130, -20) 
+        -- local startPosOffset, startAngOffset = Vector(-20, -5, -20), Angle(40, 130, -20) 
         
         -- Start position and angle based on world transform
         local startPos, startAng = LocalToWorld(startPosOffset, startAngOffset, pos, ang) 
@@ -107,8 +115,6 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
         ang = targetAng
     end
 	-- pos = LocalToWorld(Vector(10,0,0),ang,pos,ang) 
-	if !IsValid(vm) then return pos,ang end 
-	if !IsValid(self:GetOwner()) then return pos,ang end 
 	local reg = debug.getregistry() 
 	local GetVelocity = reg.Entity.GetVelocity 
 	local Length = reg.Vector.Length2D 
@@ -172,7 +178,7 @@ function SWEP:Deploy()
 	end 
 	-- self:SetNextAnimTime(CurTime()) 
 	self:SetSecAttack(false) 
-	local deploy = weapons.Get("weapon_ut99_base").Deploy(self) 
+	local deploy = weapons.GetStored("weapon_ut99_base").Deploy(self) 
 	-- self:PlayVMSequence("crl_idle") 
 	self:SetIdleDelay(CurTime()+1) 
 	return deploy 
@@ -227,7 +233,7 @@ function SWEP:SecondaryAttack()
 	self:EmitSound(self.Secondary.Special1[math.random(1, 3)],nil,nil,nil,CHAN_AUTO)
 	
 	-- Minigun State activation handled in SpecialThink, but we fire bullets here 
-	self:ShootBullet(self.Secondary.Damage,0,self.Secondary.NumBullets,Vector(0.03,0.02,0),self:GetShootPos(),self:GetOwner():GetAimVector()) 
+	self:ShootBullet(self.Secondary.Damage,0,self.Secondary.NumBullets,self.Secondary.Cone,self:GetShootPos(),self:GetOwner():GetAimVector()) 
 	self:Muzzleflash() 
 	self:MuzzleflashSprite() 
 	self:UTRecoil(0.1) 
@@ -243,7 +249,7 @@ function SWEP:ShootBullet(dmg, recoil, numbul, cone, shootPos, shootDir)
 	local bullet = {} 
 	bullet.Callback = function(attacker,tr,dmginfo) 
 		local ent = tr.Entity 
-		local str = [[local f = Entity(]]..self:EntIndex()..[[).Chaingun_Tracer or weapons.Get("]]..self:GetClass()..[[").Chaingun_Tracer f(Entity(]]..self:EntIndex()..[[),"]]..tostring(tr.StartPos)..[[","]]..tostring(tr.HitPos)..[[",]]..tr.MatType..[[) ]] 
+		local str = [[local f = Entity(]]..self:EntIndex()..[[).Chaingun_Tracer or weapons.GetStored("]]..self:GetClass()..[[").Chaingun_Tracer f(Entity(]]..self:EntIndex()..[[),"]]..tostring(tr.StartPos)..[[","]]..tostring(tr.HitPos)..[[",]]..tr.MatType..[[) ]] 
 		BroadcastLua(str) 
 		-- cast ents.FindAlongRay on this tr.StartPos and tr.HitPos 
 		-- if ray table contains rpg_missile or apc_missile, deal dmginfo to them 
@@ -303,9 +309,17 @@ function SWEP:ShootBullet(dmg, recoil, numbul, cone, shootPos, shootDir)
 	owner:SetAnimation(PLAYER_ATTACK1) 
 end 
 
+local muzzleflash1_hl1 = Material("sprites/muzzleflash1_hl1") 
+muzzleflash1_hl1:SetInt("$spriterendermode",5) 
+local muzzleflash2_hl1 = Material("sprites/muzzleflash2_hl1") 
+muzzleflash2_hl1:SetInt("$spriterendermode",5) 
+local muzzleflash3_hl1 = Material("sprites/muzzleflash3_hl1") 
+muzzleflash3_hl1:SetInt("$spriterendermode",5) 
+local particles = { "sprites/muzzleflash1_hl1", "sprites/muzzleflash2_hl1", "sprites/muzzleflash3_hl1" } 
+
 function SWEP:Chaingun_Tracer(startPos,hitPos,matType) 
-	startPos = Vector(startPos) 
-	hitPos = Vector(hitPos) 
+	startPos = Vector(startPos) -- it comes as string, this turns to Vector 
+	hitPos = Vector(hitPos) -- it comes as string, this turns to Vector 
 	if IsValid(self) and IsValid(self:GetOwner()) and self:GetOwner().GetViewModel then 
 		local vm = self:GetOwner():GetViewModel() 
 		if IsValid(vm) then 
@@ -313,9 +327,9 @@ function SWEP:Chaingun_Tracer(startPos,hitPos,matType)
 			-- print(joint1) 
 			-- local pos, ang = self:CalcViewModelView(vm,vm:GetPos(),vm:GetAngles(),vm:GetPos(),vm:GetAngles()) 
 			local ang = self:GetOwner():EyeAngles() 
-			startPos = startPos + (ang:Forward()*1)
-			startPos = startPos + (ang:Right()*7)
-			startPos = startPos + (ang:Up()*-10)
+			startPos:Add(ang:Forward()) 
+			startPos:Add(ang:Right()*7) 
+			startPos:Add(ang:Up()*-10) 
 			-- print(pos) 
 			-- startPos = startPos + pos 
 		end 
@@ -347,7 +361,6 @@ function SWEP:Chaingun_Tracer(startPos,hitPos,matType)
 		-- print(ent,ent:GetVelocity()) 
 	end) 
 	
-	
 	-- Remove the tracer when it should reach the destination.
     -- Add a small buffer to account for frame timing.
     local distance   = startPos:Distance(hitPos)
@@ -356,13 +369,6 @@ function SWEP:Chaingun_Tracer(startPos,hitPos,matType)
     SafeRemoveEntityDelayed(ent, travelTime) 
 	-- print(matType,matType == MAT_METAL or matType == MAT_COMPUTER or matType == MAT_VENT) 
 	if matType == MAT_METAL or matType == MAT_COMPUTER or matType == MAT_VENT then 
-		local muzzleflash1_hl1 = Material("sprites/muzzleflash1_hl1") 
-		muzzleflash1_hl1:SetInt("$spriterendermode",5) 
-		local muzzleflash2_hl1 = Material("sprites/muzzleflash2_hl1") 
-		muzzleflash2_hl1:SetInt("$spriterendermode",5) 
-		local muzzleflash3_hl1 = Material("sprites/muzzleflash3_hl1") 
-		muzzleflash3_hl1:SetInt("$spriterendermode",5) 
-		local particles = { "sprites/muzzleflash1_hl1", "sprites/muzzleflash2_hl1", "sprites/muzzleflash3_hl1" } 
 		local particle = particles[math.random(1,#particles)] 
 		local emitter = ParticleEmitter(hitPos) 
 		local particle = emitter:Add(particle,hitPos) 
@@ -466,12 +472,13 @@ function SWEP:Think()
 
     local holsterDelay = self:GetHolsterDelay()
     if holsterDelay > 0 and holsterDelay <= CurTime() then
-        if IsValid(self.Owner) and self.Owner:Alive() and self.Owner:GetActiveWeapon() == self and self:CanHolster() then
+		local Owner = self:GetOwner() 
+        if IsValid(Owner) and Owner:Alive() and Owner:GetActiveWeapon() == self and self:CanHolster() then
             local wep = self:GetNewWeapon()
             if IsValid(wep) then
                 self:SetBeingHolster(true)
                 if game.SinglePlayer() then
-                    self.Owner:SelectWeapon(wep:GetClass())
+                    Owner:SelectWeapon(wep:GetClass())
                 elseif CLIENT and IsFirstTimePredicted() then
                     input.SelectWeapon(wep)
                 end
@@ -675,7 +682,7 @@ function SWEP:ChaingunNPC_MaintainFire()
 		self:EmitSound(npc:GetActiveWeapon().Secondary.Special1[math.random(1, 3)])
 		
 		-- Use the original secondary attack bullet functionality
-		self:ShootBullet(self.Secondary.Damage, 0, self.Secondary.NumBullets, Vector(0.03, 0.02, 0), self:GetShootPos(), self.CurrentShootDirection)
+		self:ShootBullet(self.Secondary.Damage, 0, self.Secondary.NumBullets, self.Secondary.Cone, self:GetShootPos(), self.CurrentShootDirection)
 		self:Muzzleflash()
 		self:MuzzleflashSprite()
 		
