@@ -374,7 +374,7 @@ function ENT:AddPoint_NE_RibbonM(pos)
 end
 
 function ENT:Initialize() 
-	scripted_ents.Get("proj_unreali_skaarjprojectile").Initialize(self) 
+	scripted_ents.GetStored("proj_unreali_skaarjprojectile").t.Initialize(self) 
 	self.NE_RibbonM.Origin = self:GetPos() 
 	self.NE_RibbonM.Outer = self 
 
@@ -482,7 +482,7 @@ end
 
 if CLIENT then 
 	function ENT:Think() 
-		scripted_ents.Get("proj_unreali_skaarjprojectile").Think(self) 
+		scripted_ents.GetStored("proj_unreali_skaarjprojectile").t.Think(self) 
 		-- print(self:GetCreationTime(),self:GetAnimTimeInterval()) 
 		for k,v in ipairs(self.RavenProjectile_MeshesToManage) do 
 			local scaleInterval = math.Remap(math.Clamp(self.RavenProjectile_ScaleTime - CurTime(),0,0.2),0,0.2,1,0) 
@@ -744,7 +744,7 @@ function ENT:EmitSecondarySpark(pos)
 end 
 
 function ENT:DrawTranslucent(flags) 
-	scripted_ents.Get("proj_unreali_skaarjprojectile").Draw(self,flags) 
+	scripted_ents.GetStored("proj_unreali_skaarjprojectile").t.Draw(self,flags) 
 	self:NE_RibbonM_Draw(flags) 
 	self:NE_RibbonM001_Draw(flags) 
 end 
