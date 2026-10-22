@@ -349,7 +349,7 @@ end)
 
 hook_Add("EntityRemoved", "StellarBlade_CBaseCombatCharacter", function(ent)
     if StellarBlade.CBaseCombatCharacter then 
-		-- if ent.ESBActorStatType then CleanupHooksForTablePointer(ent.ESBActorStatType) end -- garbage producing? 
+		if ent.ESBActorStatType then CleanupHooksForTablePointer(ent.ESBActorStatType) end 
         StellarBlade.CBaseCombatCharacter[ent] = nil
     end
 end)
@@ -3354,7 +3354,7 @@ function StellarBlade.ActorStats(self, forceReset)
 	
 	ESBActorStatType.AllStances = {}
 
-    local charName = sTable.RefAppearance or sTable.Type or self:GetClass() 
+    local charName = --[[sTable.RefAppearance or sTable.Type or --]]self:GetClass() 
     if self:IsPlayer() and self:GetModel() == "models/alvaroports/sbravenpm.mdl" then charName = sb_playerclass end -- translate "Player" to "M_Raven" 
 
     local charTable = SB_CharacterTable[1].Rows[charName]
@@ -3512,11 +3512,15 @@ function StellarBlade.ActorStats(self, forceReset)
         if target == self.Outer and (wasDamageTaken) then
 			-- print("calling EvaluateDynamicDamageReaction,",self) 
 			
+			local killed = target:Health() < 1 and !target:Alive() 
 			local stance, stancetable = StellarBlade.GetActorStance(target) 
-			if stancetable.DeadSkillAlias != "None" then 
+			if killed and stance and stancetable.DeadSkillAlias != "None" then 
+				-- "DeadSkillPercentage": 50.0,
+				-- "DeadSkillSelfDeadType": "Custom4",
 				StellarBlade.StartSkillCommand(target,stancetable.DeadSkillAlias) 
+			else 
+				EvaluateDynamicDamageReaction(self, target, dmginfo) 
 			end 
-            EvaluateDynamicDamageReaction(self, target, dmginfo)
 			
 			-- if sTable.DeadSkillAlias
 			
@@ -3674,7 +3678,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 	end 
 	
 	if EffectTable.StanceAlias != "None" then 
-		table.insert(StellarBlade.ActorStats(self).AllStances,EffectTable.StanceAlias) 
+		self.insertedStancePos = table.insert(StellarBlade.ActorStats(self).AllStances,1,EffectTable.StanceAlias) 
 		print("added stance:",EffectTable.StanceAlias,self) 
 	end 
 	
@@ -4493,6 +4497,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 	if !tableOptional and SBAI_ActiveShow.tableOptional then tableOptional = SBAI_ActiveShow.tableOptional end 
 	if !SBAI_ActiveShow or SBAI_ActiveShow.Stopped then return end
 	if !SBAI_ActiveShow.Name then return end
+	local sTable = SBAI_ActiveShow.OuterTable or self:GetTable() 
 
 	local showname = "SB_" .. SBAI_ActiveShow.Name 
 	local showdata = _G[showname] 
@@ -5590,7 +5595,7 @@ function StellarBlade.SBAI_SkillStep:EndSkillStep()
     local Outer = self.Outer
 	local SBAI_SkillStep = Outer.SBAI_SkillStep -- check for active step 
 	if !SBAI_SkillStep then return end 
-	-- local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable -- check skill table itself, cached in skillstep 
+	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable -- check skill table itself, cached in skillstep 
 	-- if !SBAI_SkillStep then return end 
 
     local currentStepData = self.Data
@@ -5644,7 +5649,6 @@ end
 StellarBlade.ProcessActiveSkill = function(self,tbl,sTable) -- called every Tick 
 	local SBAI_SkillTable = tbl.SBAI_SkillTable 
 	sTable = sTable or self:GetTable() 
-	-- print("SBAI_SkillTable is:",SBAI_SkillTable) 
 	if !tbl then print(self,"ProcessActiveSkill was called without tbl, skill may have removed during execution") return debug.Trace() end 
 	if !tbl then return false end 
     local Name = tbl.Name 
@@ -6211,6 +6215,7 @@ end
 
 StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck,sTable) 
 	local ID = SkillStepTable.ID 
+	print("in CheckSkillHit:",self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck,sTable) 
 	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
 	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and call necessary effects 
 	-- moved damage event in ActorStat 
@@ -6251,8 +6256,10 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 	-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
 	-- print("invoking TargetFilter with filtername:",SkillStepTable.OverrideTargetFilterAlias) 
 	local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
+	print("TargetFilterAlias in SkillStepTable is:",TargetFilterAlias) 
 	if !TargetFilterAlias or TargetFilterAlias == "None" then 
 		if SBAI_SkillTable then TargetFilterAlias = SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
+		print("TargetFilterAlias in SBAI_SkillTable is:",TargetFilterAlias) 
 	end 
 	
 	-- SkillHitDetectionType_None               = 0,
@@ -6644,7 +6651,7 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 					if SkillStepTable.NextStepAliasWhenHit == "M_Raven_BetaGrabSuccess_Cast1" or SkillStepTable.NextStepAliasWhenHit == "M_Raven_BetaGrabChainSuccess_Cast1" or SkillStepTable.NextStepAliasWhenHit == "M_Raven_BetaCounterGrabSuccess_Cast1" then 
 						StellarBlade.Raven_GrabVictim(self,Enemy) 
 					end 
-					StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenHit,sTable) 
+					StellarBlade.SetSkillStep(self, SkillStepTable.NextStepAliasWhenHit, SBAI_SkillTable, sTable) 
 				end 
 			end 
 		end 
@@ -6657,9 +6664,9 @@ function StellarBlade:TargetFilter(filter, Cycle)
 	if CLIENT then return { } end 
 	local flRescale = 1 
 	local debugging = false 
-    local TargetFilterTable = _G["SB_TargetFilterTable"][1].Rows[filter] 
+    local TargetFilterTable = SB_TargetFilterTable[1].Rows[filter] 
 	if !IsValid(self) then error("Expected Entity, got NULL Entity!") return end 
-	if !filter then print("input a filter") end 
+	if !filter then print("input a filter") debug.Trace() print(self, filter, Cycle) end 
 	if filter == "None" then return {} end 
 	-- shortcuts to simple checks 
 	if filter == "Self" then return {self} end 
@@ -8029,7 +8036,7 @@ end
 -- self is the entity pointer, mostly a player or NPC 
 -- strSkill is a skill step name from FirstSkillActiveAlias table 
 -- SBAI_SkillTable sets the skill table that the skill steps derive from. it is used to provide some initial information about how skill starts, and additionally stores data such as hit counter 
-StellarBlade.SetSkillStep = function(self,strSkill,SBAI_SkillTable, sTable) 
+StellarBlade.SetSkillStep = function(self, strSkill, SBAI_SkillTable, sTable) 
 	local SkillStepTable = SB_SkillActiveStepTable[1].Rows[strSkill]
     if !SkillStepTable then
         if self.SBAI_SkillStep then self.SBAI_SkillStep:Remove() end 
@@ -10146,8 +10153,9 @@ end
 function StellarBlade:GetCharacterHitLevel(sTable) 
 	local retVal = 0 
 	local SBAI_SkillTable = sTable.SBAI_SkillTable or sTable.SBAI_SkillStep and sTable.SBAI_SkillStep.SBAI_SkillTable 
-	if SBAI_SkillTable then 
-		retVal = retVal + SBAI_SkillTable.HitLevel 
+	local HitLevel = SBAI_SkillTable and SBAI_SkillTable.HitLevel 
+	if HitLevel then 
+		retVal = retVal + HitLevel 
 	end 
 	local ActorStatType_AdditiveHitLevel = StellarBlade.ActorStats(self)["ESBActorStatType::ActorStatType_AdditiveHitLevel"] 
 	if ActorStatType_AdditiveHitLevel then 
