@@ -74,6 +74,8 @@ ENT.SBAI_bInBackgroundTask = false
 ENT.SB_EffectAlias = {} 
 ENT.SBAI_ActiveShow = {} 
 ENT.SBAI_SkillTimers = {} 
+ENT.bUseFuncTankBehavior = false 
+ENT.flScheduleStrategyType = 1 
 
 -- 4. Dynamic Asset Imports (Soundset & BehaviorTree)
 if charData.OverrideCharacterSoundSet and charData.OverrideCharacterSoundSet ~= "" then
@@ -262,6 +264,9 @@ function ENT:SBAI_EvaluateEdge(childEntry)
                 -- Check condition
                 local success = self[funcName](self, decoNode.Properties, decoID) 
 				-- print(decoID, "Decorator result is:", success) 
+				if decoNode.Properties.bInverseCondition then 
+					success = !success 
+				end 
 				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
                 if !success then return false end
             else 
@@ -635,7 +640,11 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	if self.enemyDist > 5000 then return false end 
 	-- vertical distance between 800 
 	local pos = self:WorldToLocal(self:GetEnemy():WorldSpaceCenter()) 
-	if pos.z < -800 or pos.z > 800 then return false end 
+	if pos.z < -800 or pos.z > 800 then 
+		if (CurTime() - self:GetLastTimeTookDamageFromEnemy(self:GetEnemy())) > 5 then 
+			return false 
+		end 
+	end 
 	-- has raven melee weapon 
 	-- FIX: Check if we possess the raven_blade in our inventory, rather than if it's currently active.
     -- This allows us to transition back to the blade when switching away from a secondary weapon.
@@ -650,7 +659,8 @@ function ENT:NPC_ShouldConductBehaviorTree()
 	-- definitely not a CBaseCombatCharacter in a vehicle, or a CBaseHelicopter 
 	if self:GetNPCState() == NPC_STATE_DEAD then return false end 
 	if self:NPC_HasCondition(COND.ENEMY_OCCLUDED) then return false end 
-	if self:GetEnemy().GetHullType and (self:GetEnemy():GetHullType() == HULL_SMALL_CENTERED or self:GetEnemy():GetHullType() == HULL_TINY or self:GetEnemy():GetHullType() == HULL_TINY_CENTERED) or self:GetEnemy():BoundingRadius() < 21 then return false end 
+	if self:NPC_HasCondition(COND.WEAPON_SIGHT_OCCLUDED) then return false end 
+	-- if self:GetEnemy().GetHullType and (self:GetEnemy():GetHullType() == HULL_SMALL_CENTERED or self:GetEnemy():GetHullType() == HULL_TINY or self:GetEnemy():GetHullType() == HULL_TINY_CENTERED) or self:GetEnemy():BoundingRadius() < 21 then return false end -- if raven lock on to a npc_cscanner, she only stares at scanner 
 	return true 
 end 
 
@@ -839,6 +849,7 @@ function ENT:OnStateChange(oldState, newState)
 end 
 
 function ENT:NPC_AllowGestureMelee() return !self:NPC_ShouldConductBehaviorTree() end 
+function ENT:NPC_EvaluateIncomingAttackRisk() return 0 end 
 
 -- conditions 
 function ENT:SbAggroLevel(tbl)
@@ -868,120 +879,279 @@ function ENT:SbAimMe(tbl) -- doesn't have any additional properties
 	return self:NPC_HasCondition(COND.ENEMY_FACING) and self:NPC_IsEnemyAttacking(self:GetEnemy()) 
 end 
 
-function ENT:SbBlackboard(tbl) 
-	-- 1. Default IntValue should be 0 
-    local testvalue = tbl.IntValue or 0 
-    local CompareOP = tbl.CompareOP or "ESBCompare::Equal" 
-    
-    -- 2. Retrieve value, treating nil as 0 (for integer checks)
-    local lookup = self.SBAI_BlackBoard[tbl.KeyName]
-    local val = lookup 
-    if val == nil then val = 0 end -- Treat uninitialized keys as 0
-    
-    -- If we are in "Task" mode (writing), this field bReturnSucceeded exists
-    if tbl.bReturnSucceeded != nil then 
-        -- Task: Write to Blackboard 
-        -- print("[SBAI] Writing BB:", tbl.KeyName, tbl.IntValue) 
-		-- Entity(1):ChatPrint("saving to SBAI_BlackBoard: "..tbl.KeyName..tostring(tbl.IntValue).." ") 
-        self.SBAI_BlackBoard[tbl.KeyName] = tbl.IntValue 
-        return tbl.bReturnSucceeded 
-    end 
-    
-    -- Decorator: Compare
-    -- print("Checking BB:", tbl.KeyName, "Val:", val, "Op:", CompareOP, "Target:", testvalue) 
-    return StellarBlade.ESBCompare(val,testvalue,CompareOP) 
-end 
+--[[---------------------------------------------------------------------------
+	SbBlackboard  (drop-in replacement for ENT:SbBlackboard in m_raven.lua)
+
+	Serves both USBBTDecorator_SbBlackboard and USBBTTask_SbBlackboard.
+
+	Properties actually present in the 118 BehaviorTree dumps (FModel omits defaults):
+	  Decorator : KeyName, CompareOP (default Equal), IntValue (default 0),
+	              SetValueType (None / Additive)
+	  Task      : KeyName, IntValue, bReturnSucceeded (default false), bAdditive
+
+	UNUSED in every dump (0 hits), so deliberately NOT implemented:
+	  VarType, FloatValue, VectorValue, BoolValue          -> the blackboard is Int-only
+	  SetIntValue, SetFloatValue, SetVectorValue, SetBoolValue
+	  bCheckContains, bCheckNoContains
+	  ActorType (its hits belong to other nodes; SbBlackboard always uses its own board)
+-----------------------------------------------------------------------------]]
+
+-- SetValueType = Additive never comes with a SetIntValue in the dumps, so the amount
+-- is not stored in the tree. Assumed to be +1 (an "add 0" decorator would do nothing).
+local SBBB_ADDITIVE_AMOUNT = 1
+
+-- Task vs Decorator, from the node ID the executor passes as the 2nd argument
+-- ("SBBTTask_SbBlackboard'M_Raven_AI:SBBTTask_SbBlackboard_0'"). bReturnSucceeded alone
+-- is not reliable: false is its default, so FModel omits it.
+local function SBBB_IsTask(tbl, nodeID)
+	if isstring(nodeID) then
+		if string.find(nodeID, "^SBBTTask_") then return true end
+		if string.find(nodeID, "^SBBTDecorator_") then return false end
+	end
+	return tbl.bReturnSucceeded ~= nil or tbl.bAdditive ~= nil -- fallback: Task-only fields
+end
+
+-- Decorator "SetValueType = Additive": KeyName += 1.
+-- Decorators are evaluated every tick, so the compare path never writes. Call this ONCE
+-- when the decorated branch is entered (see SBAI_ApplyDecoratorSets below).
+function ENT:SbBlackboard_ApplySet(tbl)
+	if tbl.KeyName == nil or tbl.SetValueType ~= "ESBDecoratorBlackboardSetValueType::Additive" then return end
+	self.SBAI_BlackBoard = self.SBAI_BlackBoard or {}
+	self.SBAI_BlackBoard[tbl.KeyName] = (self.SBAI_BlackBoard[tbl.KeyName] or 0) + SBBB_ADDITIVE_AMOUNT
+end
+
+function ENT:SbBlackboard(tbl, nodeID)
+	local key = tbl.KeyName
+	local intValue = tbl.IntValue or 0 -- omitted = 0
+	self.SBAI_BlackBoard = self.SBAI_BlackBoard or {}
+
+	-- TASK: write to the blackboard
+	if SBBB_IsTask(tbl, nodeID) then
+		if key ~= nil then
+			if tbl.bAdditive then
+				intValue = (self.SBAI_BlackBoard[key] or 0) + intValue
+			end
+			self.SBAI_BlackBoard[key] = intValue -- explicit 0 too, never nil
+		end
+		return tbl.bReturnSucceeded == true -- omitted = false
+	end
+
+	-- DECORATOR: compare (read-only). Uninitialized keys read as 0.
+	if key == nil then return false end
+	local val = self.SBAI_BlackBoard[key] or 0
+	return StellarBlade.ESBCompare(val, intValue, tbl.CompareOP or "ESBCompare::Equal") and true or false
+end
+
+--[[---------------------------------------------------------------------------
+	Executor hook (m_raven.lua, "6. Execute Child" in the behavior-tree runner).
+	Applies the Additive decorators of a child once, when that child is entered:
+
+	function ENT:SBAI_ApplyDecoratorSets(childEntry)
+		if !childEntry.Decorators then return end
+		for _, decoRef in ipairs(childEntry.Decorators) do
+			local decoNode = self.SBAI_NodeLookup[decoRef.ObjectName]
+			if decoNode and decoNode.Type == "SBBTDecorator_SbBlackboard" then
+				self:SbBlackboard_ApplySet(decoNode.Properties)
+			end
+		end
+	end
+
+	-- call site, composite children only:
+	if childEntry.ChildComposite then
+		local nextID = childEntry.ChildComposite.ObjectName
+		self:SBAI_ApplyDecoratorSets(childEntry)   -- <--- add
+		table.insert(self.SBAI_ExecutionStack, { NodeID = nextID, Index = 1 })
+		...
+
+	Not for ChildTask: a running task has its edge decorators re-evaluated every tick, so
+	an "Equal 0 + Additive" gate would close on itself and abort the task.
+-----------------------------------------------------------------------------]]
 
 function ENT:SbCheckActorEffect(tbl)
-    local ActorType = tbl.ActorType or "ESBAIActorType::Self"
-    local EffectAlias = tbl.EffectAlias
-    local OrCheckArray = tbl.OrCheck_EffectAliasArray or {}
-    local expectedActive = (tbl.bActive == true)
-    local bInverseCondition = tbl.bInverseCondition or false
-
-    local ent = self
-    if ActorType == "ESBAIActorType::Target" then
-        ent = self:GetEnemy()
-    elseif ActorType == "ESBAIActorType::Self" then
-        ent = self
-    elseif ActorType == "ESBAIActorType::Owner" then
-        ent = self:GetOwner()
-    elseif ActorType == "ESBAIActorType::SubTarget" then
-        for _, subent in pairs(self:GetKnownEnemies() or {}) do
-            if IsValid(subent) and subent ~= self:GetEnemy() then
-                ent = subent
-                break
-            end
-        end
-    end
-
-    if not IsValid(ent) then 
-        return bInverseCondition 
-    end
-
-    local effectsToCheck = {}
-    if EffectAlias and EffectAlias ~= "" and EffectAlias ~= "None" then
-        table.insert(effectsToCheck, EffectAlias)
-    end
-    for _, v in ipairs(OrCheckArray) do
-        if v and v ~= "" and v ~= "None" then
-            table.insert(effectsToCheck, v)
-        end
-    end
-
-    local hasEffect = false
-    for _, effectName in ipairs(effectsToCheck) do
-        if ent.SB_EffectAlias and ent.SB_EffectAlias[effectName] and not table.IsEmpty(ent.SB_EffectAlias[effectName]) then
-            hasEffect = true
-            break
-        end
-
-        local fn = self[effectName]
-        if type(fn) == "function" then
-            local ok, override = pcall(fn, self, ent)
-            if ok and override ~= nil then
-                hasEffect = override and true or false
-                if hasEffect then break end
-            end
-        end
-    end
-
-    local result = (hasEffect == expectedActive)
-    if bInverseCondition then
-        result = not result
-    end
-    return result
+	local expectedActive = (tbl.bActive == true)
+	local bInverseCondition = (tbl.bInverseCondition == true)
+ 
+	-- The behavior-tree JSON spells the enum "ESBAIActorType::Target", while
+	-- StellarBlade.ESBAIActorType expects "ESBAIActorType::ActorType_Target".
+	-- Normalize to the second spelling; None / omitted is treated as Self.
+	local ActorTail = string.match(tbl.ActorType or "Self", "([^:]+)$") or "Self"
+	ActorTail = string.gsub(ActorTail, "^ActorType_", "")
+	if ActorTail == "None" then ActorTail = "Self" end
+ 
+	local ent = StellarBlade.ESBAIActorType(self, "ESBAIActorType::ActorType_" .. ActorTail)
+ 
+	-- StellarBlade.ESBAIActorType has no SubTarget branch yet (returns nil), so resolve it here.
+	-- This block does nothing once that branch is filled in.
+	if ActorTail == "SubTarget" and !IsValid(ent) then
+		local enemy = self:GetEnemy()
+		for _, subent in pairs(self:GetKnownEnemies() or {}) do
+			if IsValid(subent) and subent != enemy then
+				ent = subent
+				break
+			end
+		end
+	end
+ 
+	if !IsValid(ent) then
+		return bInverseCondition
+	end
+ 
+	-- Collect the effect names to check, and the mode
+	local bOrMode = false
+	local names = {}
+	local source = tbl.AndCheck_EffectAliasArray
+	if istable(tbl.OrCheck_EffectAliasArray) and #tbl.OrCheck_EffectAliasArray > 0 then
+		bOrMode = true
+		source = tbl.OrCheck_EffectAliasArray
+	end
+ 
+	if isstring(tbl.EffectAlias) and tbl.EffectAlias != "" and tbl.EffectAlias != "None" then
+		names[#names + 1] = tbl.EffectAlias
+	end
+	for _, name in ipairs(source or {}) do
+		if isstring(name) and name != "" and name != "None" then
+			names[#names + 1] = name
+		end
+	end
+ 
+	-- AND: starts true, one missing effect makes it false. OR: starts false, one present makes it true.
+	local hasEffect = (!bOrMode and #names > 0)
+	for _, name in ipairs(names) do
+		local present = #StellarBlade.GetActorEffects(ent, name) > 0
+ 
+		if !present then -- an ENT:<EffectName>(ent) function may stand in for a real effect
+			local override = self[name]
+			if isfunction(override) then
+				local ok, result = pcall(override, self, ent)
+				present = (ok and result) and true or false
+			end
+		end
+ 
+		if bOrMode and present then
+			hasEffect = true
+			break
+		elseif !bOrMode and !present then
+			hasEffect = false
+			break
+		end
+	end
+ 
+	local result = (hasEffect == expectedActive)
+	if bInverseCondition then
+		result = !result
+	end
+	return result
 end
+
 
 function ENT:SbCheckActorStat(tbl) 
 	-- PrintTable(tbl) 
+	-- consider ActorType 
 	local CheckStat = tbl.CheckStat -- ActorStatType_AttackSpeed       ActorStatType_StaminaAttackPower        ActorStatType_CriticalPercentage        ActorStatType_HitDefenseLevel   ActorStatType_ShieldIgnorePercentage    ActorStatType_CriticalValueRate ActorStatType_ShieldRegenPerSecond      ActorStatType_AdditiveSkillDamageRate   ActorStatType_ShieldRegenPerSecondRate  ActorStatType_ShieldRegenPerSecondValue ActorStatType_ShieldRegenPerSecondWhenBattleValue       ActorStatType_ShieldRegenPerSecondWhenBattle    ActorStatType_StaminaRegenPerSecond     ActorStatType_ShieldRegenPerSecondWhenBattleRate        ActorStatType_HPRegenPerSecondValue     ActorStatType_HPRegenPerSecond  ActorStatType_SmallWeightTypeDamageAdditiveRate ActorStatType_HPRegenPerSecondRate      ActorStatType_RangeAttackDamageAdditiveRate     ActorStatType_LargeWeightTypeDamageAdditiveRate ActorStatType_RangeAttackDamageReductionRate    ActorStatType_MeleeAttackDamageReductionRate    ActorStatType_GroggyStateDamageAdditiveRate     ActorStatType_DownStateDamageAdditiveRate       ActorStatType_FireAttributeDamageReductionRate  ActorStatType_AirborneStateDamageAdditiveRate   ActorStatType_LightningAttributeDamageReductionRate     ActorStatType_IceAttributeDamageReductionRate   ActorStatType_BetaGaugeAdditiveRate     ActorStatType_PoisonAttributeDamageReductionRate        ActorStatType_LowHpDamageAdditiveRate   ActorStatType_AdditiveFixedDamage       ActorStatType_DOTDamageAdditiveRate     ActorStatType_HighHpDamageAdditiveRate  ActorStatType_TachyGaugeReduceConsumeRate       ActorStatType_TachyGaugeAdditiveGainRate        ActorStatType_FinalShieldDamageReduceRate       ActorStatType_FinalHPDamageReduceRate   ActorStatType_AdditiveSkillDamageGroup1 ActorStatType_Luck      ActorStatType_AdditiveSkillDamageGroup3 ActorStatType_AdditiveSkillDamageGroup2 ActorStatType_AdditiveSkillDamageGroup5 ActorStatType_AdditiveSkillDamageGroup4 ActorStatType_AdditiveSkillDamageGroup7 ActorStatType_AdditiveSkillDamageGroup6 ActorStatType_AdditiveSkillDamageGroup9 ActorStatType_AdditiveSkillDamageGroup8 ActorStatType_DrainHpByAttackPowerRate  ActorStatType_AdditiveSkillDamageGroup10        ActorStatType_SprintableStaminaValue    ActorStatType_DrainHpFixedValue ActorStatType_ItemStackBullet1  ActorStatType_ItemStackRecoveryPotion   ActorStatType_ItemStackBullet3  ActorStatType_ItemStackBullet2  ActorStatType_ItemStackBullet5  ActorStatType_ItemStackBullet4  ActorStatType_ItemStackConsumable1      ActorStatType_ItemStackBullet6  ActorStatType_ItemStackConsumable3      ActorStatType_ItemStackConsumable2      ActorStatType_ItemStackConsumable5      ActorStatType_ItemStackConsumable4      
 	local CheckValue = tbl.CheckValue -- 60.0, 
 	local CompareOP = tbl.CompareOP or "ESBCompare::Equal" -- Greater 
 	local bRateValue = tbl.bRateValue or false -- true 
 	local NodeName = tbl.NodeName -- SB_CheckActorStat(HP>60) 
+	CheckValue = CheckValue or 0 -- Scarlet checks for 0 shield 
 	-- handle only ActorStatType_HP for now, Raven only looks for this 
 	local testvalue, result 
-	if CheckStat == "ESBActorStatType::ActorStatType_HP" then 
+	if CheckStat == "ESBActorStatType::ActorStatType_HP" or CheckStat == "ESBActorStatType::ActorStatType_MaxHP" then 
 		testvalue = self:Health() 
-		testvalue = (testvalue / self:GetMaxHealth()) * 100 
-	else 
+		-- testvalue = (testvalue / self:GetMaxHealth()) * 100 
+		testvalue = (testvalue / StellarBlade.ActorStats(self)["ESBActorStatType::ActorStatType_MaxHP"]) * 100 
+	elseif CheckStat == "ESBActorStatType::ActorStatType_MaxShield" then 
+		testvalue = self.Armor and self:Armor() 
+		testvalue = testvalue and (testvalue / self:GetMaxArmor()) * 100 or 0 -- NPCs don't have Armor yet 
+	elseif CheckStat == "ESBActorStatType::ActorStatType_MaxStamina" then 
+		testvalue = StellarBlade.ActorStats(self)["ESBActorStatType::ActorStatType_Stamina"] 
+		testvalue = (testvalue / StellarBlade.ActorStats(self)[CheckStat]) * 100 
+	else -- other uses: ActorStatType_MaxHP
 		testvalue = 0 
+		Entity(1):ChatPrint(tostring(self).." CheckStat not implemented for:  "..CheckStat) 
 	end 
 	-- Entity(1):ChatPrint("CheckStat: "..CheckStat.." CheckValue: "..tostring(CheckValue).. "..CompareOP:"..CompareOP.." "..tostring(result)) 
 	-- print("ActorStat check", CheckStat, testvalue, CompareOP, CheckValue, "=>", result) 
 	return StellarBlade.ESBCompare(testvalue,CheckValue,CompareOP) 
 end 
 
+function ENT:SbCheckActorState(tbl)
+	Entity(1):ChatPrint(tostring(self).." in CheckActorState, may be bogus") 
+	local CheckState = tbl.CheckState
+	local bInverseCondition = (tbl.bInverseCondition == true)
+
+	-- The BT JSON spells the enum "ESBAIActorType::Target"; StellarBlade.ESBAIActorType expects
+	-- "ESBAIActorType::ActorType_Target". Normalize to the latter; omitted / None = Target.
+	-- (SubTarget returns nil from StellarBlade.ESBAIActorType until its branch is filled in.)
+	local ActorTail = string.match(tbl.ActorType or "Target", "([^:]+)$") or "Target"
+	ActorTail = string.gsub(ActorTail, "^ActorType_", "")
+	if ActorTail == "None" then ActorTail = "Target" end
+
+	local ent = StellarBlade.ESBAIActorType(self, "ESBAIActorType::ActorType_" .. ActorTail)
+
+	local bHasState = false
+	if IsValid(ent) and isstring(CheckState) and CheckState != "ESBActorState::ActorState_None" then
+		bHasState = (ent[CheckState] != nil)
+	end
+
+	if bInverseCondition then
+		return !bHasState
+	end
+	return bHasState
+end
+
 function ENT:SbCheckStance(tbl) -- M_Raven_Phase2, M_Raven_Default 
-    local targetStance = tbl.StanceName
+	local actor = tbl.ActorType 
+	if actor then 
+		actor = StellarBlade.ActorType(actor) 
+	end 
+	if IsValid(actor) then self = actor end 
+    local StanceName = tbl.StanceName
+	local StanceNameArray = tbl.StanceNameArray 
     local currentStance = self.CurrentStance
-    local matches = (currentStance == targetStance)
+    -- local matches = (currentStance == StanceName)
+	local matches = false 
+	if StanceNameArray then 
+		for k,v in ipairs(StanceNameArray) do if v == currentStance then matches = true end end 
+	else 
+		matches = (currentStance == StanceName)
+	end 
     if tbl.bInverseCondition then
-        matches = not matches
+        matches = !matches
     end
+	print("stance returning:",matches, "currentStance",currentStance, "checking stance:",tbl.StanceName) 
     return matches
 end
+
+function ENT:SbCheckTarget() return IsValid(self:GetEnemy()) end -- Antlion and Skulling. has only "TargetRelation": "ESBTribeRelation::TribeRelation_Enemy",
+function ENT:SbCheckActorTag() Entity(1):ChatPrint("possibly M_Opener_AI accessed SbCheckActorTag, returning true, it has only ActorTag:OnActor") return true end 
+
+function ENT:SbCheckLastAttackedTime(tbl) -- used by M_BotAttacker_AI, BotCommon, BotDefense 
+	local CheckTime = tbl.CheckTime 
+	local ActorType = tbl.ActorType -- unused 
+	local bLess = tbl.bLess -- unused 
+	local m_flNextAttack = self:GetInternalVariable("m_flNextAttack") 
+	return -m_flNextAttack < CheckTime -- double check the return 
+end 
+
+function ENT:SbCheckZoneEnvState() end -- unused 
+function ENT:SbIsFindPathWay() end -- unused 
+function ENT:SbIsFlying() end -- unused 
+
+function ENT:SbIsEmptyEquipment() 
+	print("in SbIsEmptyEquipment") 
+	print("only BotAttacker, BotCommon or BotDefense use this") 
+	print('they all check for "EquipmentType": "ESBEquipmentType::EquipmentType_SecondaryWeapon",') -- and this is the only property 
+	print("but whom?") 
+	return true 
+end 
+
+
+-- SbCheckSummonedCount users: Marionette and Roadblock 
+-- Probably checks how many children it has right now 
+
+-- SbCheckTargetAngleFromCamera has 0 users 
+-- SbDistanceToHome has 0 users 
+-- SbCheckAnimState has 0 users 
 
 function ENT:SbDetectResult(tbl) 
 	-- ESBAIDetectResultType::AIDetectResult_NotDetect ESBAIDetectResultType::AIDetectResult_Observe AIDetectResult_Doubt	AIDetectResult_Detect 
@@ -1007,12 +1177,25 @@ function ENT:SbDetectResult(tbl)
 end
 
 function ENT:SbDistanceToTarget(tbl) -- distance to enemy 
-	if !self.enemyDist then return false end 
+	if !self.enemyDist_2d then return false end 
 	local dist = tbl.Distance 
 	local operator = tbl.CompareOP -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
 	local FlowAbortMode = tbl.FlowAbortMode or "None" 
+	local bSubTarget = tbl.bSubTarget 
 	-- print("DistanceToTarget:",dist,operator,FlowAbortMode) 
-	return StellarBlade.ESBCompare(self.enemyDist,dist,operator) 
+	return StellarBlade.ESBCompare(self.enemyDist_2d,dist,operator) 
+end 
+
+function ENT:SbIsActiveSkill(tbl) 
+	local actor = tbl.ActorType 
+	if actor then 
+		actor = StellarBlade.ActorType(actor) 
+	end 
+	if IsValid(actor) then self = actor end 
+	local retVal = self.SBAI_SkillStep 
+	if StellarBlade.SBAI_SkillStep.IsActive(retVal) then retVal = true end 
+	if tbl.bInverseCondition then return !retVal end 
+	return retVal 
 end 
 
 function ENT:SbIsAlive(tbl) 
@@ -1048,6 +1231,13 @@ function ENT:SbIsAlive(tbl)
     end
 	
     return false
+end 
+
+function ENT:SbIsBattleMode(tbl) -- has no users, why here? 
+	local ActorType = tbl.ActorType 
+	ActorType = StellarBlade.ESBAIActorType(ActorType) 
+	if !IsValid(ActorType) then return false end 
+	return StellarBlade.IsBattle(ActorType) 
 end 
 
 function ENT:SbRandom(tbl) 
@@ -1572,14 +1762,23 @@ function ENT:SbMoveToHome(data, nodeID)
 	-- Still traveling to goal
 	return nil
 end
+--[[ 
+MoveState_None                           = 0,
+	MoveState_Walk                           = 1,
+	MoveState_Run                            = 2,
+	MoveState_Sprint                         = 3,
+	MoveState_Spider                         = 4,
+	MoveState_Fly                            = 5,
+	MoveState_Jog                            = 6,
+	MoveState_MAX                            = 7,
+--]] 
 
 function ENT:SbMoveToTarget(tbl) 
-	-- print("in SbMoveToTarget",self["ESBActorState::ActorState_BlockingBehavior"]) 
-	-- print("in SbMoveToTarget",self["ESBActorState::ActorState_BlockMove"]) 
+	-- parameters: MoveState, TargetType, DroneFollowLocationType, SystemTypeKey, LocationHoldingTime, bUseNavMesh, DistanceOfApproach, ExecutableDistanceToTarget, TeleportDistance, LocalRelativeLocation, LookAtRelativeLocation 
 	if self["ESBActorState::ActorState_BlockingBehavior"] or self["ESBActorState::ActorState_BlockMove"] then return end 
 	local MoveState = tbl.MoveState
 	local DistanceOfApproach = tbl.DistanceOfApproach or 250 -- i think this means walk until distancetoenemy < 250 
-	local enemyDist = self.enemyDist or 9999 
+	local enemyDist = self.enemyDist_2d or self.enemyDist or 9999 
 	if enemyDist < DistanceOfApproach then 
 		self:ClearGoal(true) 
 		return true 
@@ -1955,7 +2154,7 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
     if !tr.hide and t >= HIDE_START then
         tr.hide = true
         -- hide visually:
-		self:SetNoDraw(true)
+		-- self:SetNoDraw(true)
         -- capture fresh startpos in case the entity moved slightly after task start
         self.CurrentSchedule.blink.startpos = self:GetPos() 
 		if cvars.Bool("g_debug_cycler_actor2",false) then 
@@ -1998,11 +2197,7 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
     -- 6) unhide at UNHIDE_AT
     if tr.hide and not tr.unhide and t >= UNHIDE_AT then
         tr.unhide = true
-        if self.SetNoDraw then
-            self:SetNoDraw(false)
-        else
-            pcall(function() self:RemoveEffects(EF_NODRAW) end)
-        end
+		self:SetNoDraw(false)
 		if cvars.Bool("g_debug_cycler_actor2",false) then 
 			print("TASK_BLINK: unhidden at t=" .. tostring(t)) 
 		end 
@@ -2026,7 +2221,7 @@ function ENT:TASK_BLINK(data) -- 0: towards dynamic GetLastPosition, 1: towards 
     if not tr.finished and t >= TOTAL_DURATION then
         tr.finished = true
         -- final cleanup to be safe
-        if self.SetNoDraw then self:SetNoDraw(false) end 
+        self:SetNoDraw(false) 
 		if cvars.Bool("g_debug_cycler_actor2",false) then 
 			print("TASK_BLINK: finished at t=" .. tostring(t)) 
 		end 
