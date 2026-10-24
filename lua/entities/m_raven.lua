@@ -69,11 +69,6 @@ ENT.SB_EffectAlias = { }
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
 -- State & Behavior Registries
-ENT.SBAI_BlackBoard = {} 
-ENT.SBAI_bInBackgroundTask = false 
-ENT.SB_EffectAlias = {} 
-ENT.SBAI_ActiveShow = {} 
-ENT.SBAI_SkillTimers = {} 
 ENT.bUseFuncTankBehavior = false 
 ENT.flScheduleStrategyType = 1 
 
@@ -93,7 +88,7 @@ ENT.BehaviorTreeRes = BehaviorTreeRes
 SB_ImportJSON(BehaviorTreeRes) 
 
 function ENT:Initialize() 
-	scripted_ents.Get("npc_unreali_female").Initialize(self) 
+	scripted_ents.Get("cycler_actor2").Initialize(self) 
 	-- start effects in CharacterStanceTable 
 	StellarBlade.ActorStats(self) -- initialize stats if we haven't 
 	-- if SERVER and self.StartEffect then 
@@ -109,277 +104,339 @@ function ENT:SBAI_GetEffectTable(strEffect)
 	return EffectTable 
 end 
 
--- Tick the runtime tree: create/resume the coroutine that runs SBAI_SelectTask
-function ENT:SBAI_RunBehavior() 
-    -- Create coroutine if missing or dead
-    if !self._sbaico or coroutine.status(self._sbaico) == "dead" then 
-        -- Ensure tree is indexed and state is reset
-        if !self.SBAI_RuntimeState then self:SBAI_InitTree() end
+-- ============================================================================
+-- STELLAR BLADE AI: UNREAL ENGINE 4 BEHAVIOR TREE RUNTIME REPLICATION
+-- ============================================================================
 
-        -- Safety check for the Root ID
-        if !self.SBAI_TreeRootID then
-            print("[SBAI] Error: Cannot run behavior, TreeRootID is missing!") return 
+-- Tick the runtime tree: manages coroutine lifecycle and clean tree cycling
+function ENT:SBAI_RunBehavior()
+    -- 1. Create coroutine if missing or dead (restarts clean cycle from root)
+    if not self._sbaico or coroutine.status(self._sbaico) == "dead" then
+        self:SBAI_InitTree()
+
+        if not self.SBAI_TreeRootID then
+            ErrorNoHalt("[SBAI] Error: Cannot run behavior, TreeRootID is missing!\n")
+            return false
         end
 
-        -- print("constructing coroutine starting at:", self.SBAI_TreeRootID) 
         self._sbaico = coroutine.create(function()
-            -- CHANGED: Pass the Root ID string, not a table
             return self:SBAI_SelectTask(self.SBAI_TreeRootID)
         end)
     end
 
-    -- Resume coroutine safely
+    -- 2. Resume coroutine safely
     if coroutine.status(self._sbaico) == "suspended" then
-		self:SBAI_CheckObservers() 
+        -- Observer checks run every tick prior to resumption to evaluate FlowAbort modes
+        self:SBAI_CheckObservers()
+
         local ok, ret = coroutine.resume(self._sbaico)
-        if !ok then
-            print("[SBAI] behavior coroutine error:", ret)
+        if not ok then
+            ErrorNoHalt("[SBAI] Behavior coroutine error: " .. tostring(ret) .. "\n")
             self._sbaico = nil
-            self.SBAI_RuntimeState = {} -- Reset state on crash
+            self.SBAI_RuntimeState = {}
             self.SBAI_ExecutionStack = {}
             return false
         else
             if coroutine.status(self._sbaico) == "dead" then
                 self._sbaico = nil
-                -- print("[SBAI] Tree finished with result:", ret)
                 return ret
             else
-                return nil
+                return nil -- Latent task still in-progress
             end
         end
     end
+
     return false
 end
 
--- Phase 1: The One-Time Indexer
--- Call this in Initialize or OnEntityCreated, before trying to run the AI.
+-- Phase 1: Indexing behavior tree JSON structures
 function ENT:SBAI_IndexTree()
-    -- Ensure the global raw table exists (imported via "BehaviorTreeRes = SB_ImportJSON(...)")
-	local AITable = "SB_"..string.StripExtension(string.GetFileFromFilename(self.BehaviorTreeRes)) 
-    local rawTable = _G[AITable] 
-    if !rawTable then
+    local AITable = "SB_" .. string.StripExtension(string.GetFileFromFilename(self.BehaviorTreeRes))
+    local rawTable = _G[AITable]
+    if not rawTable then
         ErrorNoHalt("[SBAI] BehaviorTreeRes global table not found! Cannot index Behavior Tree.\n")
         return false
     end
 
-    -- 1. Create the Global Lookup Table
     self.SBAI_NodeLookup = {}
     self.SBAI_TreeRootID = nil
 
-    print("[SBAI] Indexing Behavior Tree Nodes...")
-
     for _, node in ipairs(rawTable) do
-        -- 2. Map Keys to Nodes
-        -- We must reconstruct the unique string ID that Unreal uses in its references.
-        -- Format: Type'Outer:Name'
-        -- Example: BTComposite_Selector'M_Raven_AI:BTComposite_Selector_38'
-        
         local t = node.Type
         local name = node.Name
         local outer = node.Outer
 
-        -- Only index nodes that are relevant parts of the tree (have an Outer package)
         if t and name and outer then
             local fullID = string.format("%s'%s:%s'", t, outer, name)
-            
-            -- Store reference to the raw node data
             self.SBAI_NodeLookup[fullID] = node
         end
 
-        -- 3. Find the Root
-        -- The entry with t "BehaviorTree" holds the pointer to the start of the logic.
         if t == "BehaviorTree" and node.Properties and node.Properties.RootNode then
             self.SBAI_TreeRootID = node.Properties.RootNode.ObjectName
-            print("[SBAI] Found Root Node ID:", self.SBAI_TreeRootID)
         end
     end
 
-    -- Validation
-    if !self.SBAI_TreeRootID then
-        ErrorNoHalt("[SBAI] Error: Could not find 'BehaviorTree' entry or RootNode property in JSON.\n")
+    if not self.SBAI_TreeRootID then
+        ErrorNoHalt("[SBAI] Error: Could not find 'BehaviorTree' entry or RootNode property.\n")
         return false
     end
-    
-    if table.Count(self.SBAI_NodeLookup) == 0 then
-         ErrorNoHalt("[SBAI] Error: Lookup table is empty. Check JSON format (Type/Name/Outer fields).\n")
-         return false
-    end
 
-    print("[SBAI] Successfully indexed " .. table.Count(self.SBAI_NodeLookup) .. " nodes.")
-    return true 
-end 
+    return true
+end
 
--- Phase 2: State Segregation
--- Call this to reset the AI state (e.g., on spawn or when the tree resets)
+-- Phase 2: State Initialization
 function ENT:SBAI_InitTree()
-    -- 1. Create the Runtime Registry
-    -- Key = NodeID (string), Value = Table { _running=bool, _result=var, _startTime=float, _currentChild=int }
     self.SBAI_RuntimeState = {}
-
-    -- 2. Reset the Execution Stack
-    -- This will replace the recursive coroutine stack. It holds the path of NodeIDs currently being traversed.
     self.SBAI_ExecutionStack = {}
-
-    -- 3. Standard Reset
     self.SBAI_bInBackgroundTask = false
     self.CurrentBranch = nil
     self._sbaico = nil
-    
-    -- Safety check: Ensure the static indexer has run
-    if !self.SBAI_NodeLookup then
+
+    if not self.SBAI_NodeLookup then
         self:SBAI_IndexTree()
     end
 end
 
--- Helper: safely set a state value for a node
+-- Helper: safely set a runtime state value for a node
 function ENT:SBAI_SetNodeState(nodeID, key, value)
-    if !self.SBAI_RuntimeState[nodeID] then
+    if not self.SBAI_RuntimeState[nodeID] then
         self.SBAI_RuntimeState[nodeID] = {}
     end
     self.SBAI_RuntimeState[nodeID][key] = value
 end
 
--- Helper: safely get a state value (returns nil if state doesn't exist)
+-- Helper: safely get a runtime state value
 function ENT:SBAI_GetNodeState(nodeID, key)
     local state = self.SBAI_RuntimeState[nodeID]
     if state then return state[key] end
     return nil
 end
 
--- Helper: Evaluate all decorators on a specific child link (Edge)
--- Returns: boolean (True = Allowed, False = Blocked)
+-- Evaluates a single decorator node (supporting built-in and composite decorators)
+function ENT:SBAI_EvaluateSingleDecorator(decoNode, decoID)
+    local rawName = decoNode.Type or decoNode.Name
+
+    -- Support for Composite Decorators (AND, OR, NOT graphs)
+    if rawName == "BTDecorator_Composite" or rawName == "SBBTDecorator_Composite" then
+        local props = decoNode.Properties or {}
+        local logicType = props.LogicType or "AND" -- "AND", "OR", "NOT"
+        local subDecorators = props.SubDecorators or {}
+
+        if logicType == "AND" then
+            for _, subRef in ipairs(subDecorators) do
+                local subNode = self.SBAI_NodeLookup[subRef.ObjectName]
+                if subNode and not self:SBAI_EvaluateSingleDecorator(subNode, subRef.ObjectName) then
+                    return false
+                end
+            end
+            return true
+        elseif logicType == "OR" then
+            for _, subRef in ipairs(subDecorators) do
+                local subNode = self.SBAI_NodeLookup[subRef.ObjectName]
+                if subNode and self:SBAI_EvaluateSingleDecorator(subNode, subRef.ObjectName) then
+                    return true
+                end
+            end
+            return false
+        elseif logicType == "NOT" then
+            if subDecorators[1] then
+                local subNode = self.SBAI_NodeLookup[subDecorators[1].ObjectName]
+                if subNode then
+                    return not self:SBAI_EvaluateSingleDecorator(subNode, subDecorators[1].ObjectName)
+                end
+            end
+            return true
+        end
+    end
+
+    -- Standard single decorator evaluation
+    local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
+    funcName = string.gsub(funcName, "^BTDecorator_", "")
+
+    if self[funcName] then
+        local success = self[funcName](self, decoNode.Properties or {}, decoID)
+        if decoNode.Properties and decoNode.Properties.bInverseCondition then
+            success = not success
+        end
+		-- print(self,decoID,"returned:",success,"bInverseCondition is:",decoNode.Properties.bInverseCondition,CurTime()) 
+        return success == true
+    else
+        ErrorNoHalt("[SBAI] Missing Decorator: " .. funcName .. " on " .. self:GetClass() .. "\n")
+        return false
+    end
+end
+
+-- Decorator evaluation for edge links
 function ENT:SBAI_EvaluateEdge(childEntry)
-    if !childEntry.Decorators then return true end
+    if not childEntry.Decorators then return true end
 
     for _, decoRef in ipairs(childEntry.Decorators) do
         local decoID = decoRef.ObjectName
         local decoNode = self.SBAI_NodeLookup[decoID]
 
         if decoNode then
-            local rawName = decoNode.Type or decoNode.Name
-            local funcName = string.gsub(rawName, "^SBBTDecorator_", "")
-			
-			-- print("Decorator is:",funcName) 
-            if self[funcName] then
-                -- Check condition
-                local success = self[funcName](self, decoNode.Properties, decoID) 
-				-- print(decoID, "Decorator result is:", success) 
-				if decoNode.Properties.bInverseCondition then 
-					success = !success 
-				end 
-				if success == nil then Entity(1):ChatPrint("Decorator returned nil: ".. funcName) end 
-                if !success then return false end
-            else 
-				error("Decorator '"..funcName.."' is missing from "..self:GetClass()..", go fill it!") 
-			end 
+            if not self:SBAI_EvaluateSingleDecorator(decoNode, decoID) then
+                return false
+            end
         end
     end
+
     return true
 end
 
--- Runs every tick to check for interrupts (Flow Abort)
--- Returns: Boolean (Did we abort something?)
+-- Applies Additive Blackboard decorators when entering a child composite branch
+function ENT:SBAI_ApplyDecoratorSets(childEntry)
+    if not childEntry.Decorators then return end
+    for _, decoRef in ipairs(childEntry.Decorators) do
+        local decoNode = self.SBAI_NodeLookup[decoRef.ObjectName]
+        if decoNode and (decoNode.Type == "SBBTDecorator_SbBlackboard" or decoNode.Name == "SBBTDecorator_SbBlackboard") then
+            if decoNode.Properties then
+                self:SbBlackboard_ApplySet(decoNode.Properties)
+            end
+        end
+    end
+end
+
+-- Aborts a node and cleans up active resources (animations, movement, timers)
+function ENT:SBAI_AbortNode(nodeID)
+    if not nodeID then return end
+    local nodeData = self.SBAI_NodeLookup[nodeID]
+    if not nodeData then return end
+
+    -- Clean up running tasks
+    if nodeData.Type and string.find(nodeData.Type, "Task") then
+        local rawName = nodeData.Type or nodeData.Name
+        local taskName = string.gsub(rawName, "^SBBTTask_", "")
+
+        -- 1. Skill cancellation
+        if taskName == "SbUseSkill" then
+            if self.SBAI_SkillStep then
+                StellarBlade.SBAI_SkillStep.Remove(self.SBAI_SkillStep) 
+            end
+            -- if self.StopSkill then pcall(self.StopSkill, self) end
+            if self.NPC_StopScriptedActivity then self:NPC_StopScriptedActivity() end
+            -- if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end
+
+        -- 2. Show cancellation
+        elseif taskName == "SbPlayShow" then
+            local showObj = self:SBAI_GetNodeState(nodeID, "hasStarted")
+            if istable(showObj) and showObj.Remove then
+                pcall(showObj.Remove, showObj)
+            end
+
+        -- 3. Navigation cancellation
+        elseif taskName == "SbCautionToTarget" or taskName == "SbMoveToTarget" or taskName == "SbMoveToHome" then
+            if self.StopMoving then self:StopMoving(true) end
+            if self.ClearGoal then self:ClearGoal() end
+            if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end
+        end
+
+        -- Wipe node memory completely
+        self.SBAI_RuntimeState[nodeID] = nil
+    end
+
+    -- Recursively abort composite children
+    if nodeData.Properties and nodeData.Properties.Children then
+        for _, childEntry in ipairs(nodeData.Properties.Children) do
+            local childID = childEntry.ChildComposite and childEntry.ChildComposite.ObjectName
+                         or childEntry.ChildTask and childEntry.ChildTask.ObjectName
+            if childID then
+                self:SBAI_AbortNode(childID)
+            end
+        end
+    end
+
+    self.SBAI_RuntimeState[nodeID] = nil
+end
+
+-- Observer tick check: Evaluates LowerPriority and Self flow aborts
 function ENT:SBAI_CheckObservers()
     if #self.SBAI_ExecutionStack == 0 then return false end
 
-    -- Iterate down the stack (from Root -> Current Leaf)
-    -- We use a numeric loop because we might modify the stack during the loop
     for stackIdx, frame in ipairs(self.SBAI_ExecutionStack) do
         local nodeID = frame.NodeID
         local nodeData = self.SBAI_NodeLookup[nodeID]
         local currentChildIdx = frame.Index
-        
+
         if not nodeData or not nodeData.Properties.Children then goto next_frame end
         local children = nodeData.Properties.Children
+        local isSelector = string.find(nodeData.Type, "Selector") ~= nil
 
-        -- === 1. Check "LowerPriority" & "Both" (Higher Priority Siblings) ===
-        -- Look at all siblings to the LEFT of the current running child
-        for i = 1, currentChildIdx - 1 do
-            local sibling = children[i]
-            local abortMode = nil
-            
-            -- Scan decorators for Abort Mode
-            if sibling.Decorators then
-                for _, d in ipairs(sibling.Decorators) do
+        -- === 1. LowerPriority: ONLY under a Selector ===
+        if isSelector then
+            for i = 1, currentChildIdx - 1 do
+                local sibling = children[i]
+                local abortMode = false
+
+                if sibling.Decorators then
+                    for _, d in ipairs(sibling.Decorators) do
+                        local dNode = self.SBAI_NodeLookup[d.ObjectName]
+                        if dNode and dNode.Properties and dNode.Properties.FlowAbortMode then
+                            local mode = dNode.Properties.FlowAbortMode
+                            if string.find(mode, "LowerPriority") or string.find(mode, "Both") then
+                                abortMode = true
+                                break
+                            end
+                        end
+                    end
+                end
+
+                if abortMode and self:SBAI_EvaluateEdge(sibling) then
+                    -- Abort currently executing lower-priority branch
+                    if currentChildIdx <= #children then
+                        local runningEntry = children[currentChildIdx]
+                        local runningID = runningEntry.ChildComposite and runningEntry.ChildComposite.ObjectName
+                                       or runningEntry.ChildTask and runningEntry.ChildTask.ObjectName
+                        if runningID then self:SBAI_AbortNode(runningID) end
+                    end
+
+                    -- Prune stack to this selector level
+                    while #self.SBAI_ExecutionStack > stackIdx do
+                        table.remove(self.SBAI_ExecutionStack)
+                    end
+
+                    -- Set execution pointer to the higher-priority sibling
+                    frame.Index = i
+                    return true
+                end
+            end
+        end
+
+        -- === 2. Self Abort: Active Branch Condition Failure ===
+        if currentChildIdx <= #children then
+            local currentEntry = children[currentChildIdx]
+            local checkSelf = false
+
+            if currentEntry.Decorators then
+                for _, d in ipairs(currentEntry.Decorators) do
                     local dNode = self.SBAI_NodeLookup[d.ObjectName]
-                    if dNode and dNode.Properties.FlowAbortMode then
+                    if dNode and dNode.Properties and dNode.Properties.FlowAbortMode then
                         local mode = dNode.Properties.FlowAbortMode
-                        if string.find(mode, "LowerPriority") or string.find(mode, "Both") then
-                            abortMode = true 
-                            break 
+                        if string.find(mode, "Self") or string.find(mode, "Both") then
+                            checkSelf = true
+                            break
                         end
                     end
                 end
             end
 
-            -- If this sibling is set to Abort Lower Priority, we check its condition
-            if abortMode then
-                if self:SBAI_EvaluateEdge(sibling) then
-                    -- CRITICAL INTERRUPT: A higher priority node is now valid!
-                    -- 1. Clear running state of the *previous* path (the one we are executing now)
-                    local runningChildEntry = children[currentChildIdx]
-                    local runningID = runningChildEntry.ChildComposite and runningChildEntry.ChildComposite.ObjectName or runningChildEntry.ChildTask and runningChildEntry.ChildTask.ObjectName
-                    if runningID then self:SBAI_ClearRunning(runningID) end
+            if checkSelf and not self:SBAI_EvaluateEdge(currentEntry) then
+                -- Abort this branch
+                local runningID = currentEntry.ChildComposite and currentEntry.ChildComposite.ObjectName
+                               or currentEntry.ChildTask and currentEntry.ChildTask.ObjectName
+                if runningID then self:SBAI_AbortNode(runningID) end
 
-                    -- 2. Prune the stack back to this level
-                    while #self.SBAI_ExecutionStack > stackIdx do
-                        table.remove(self.SBAI_ExecutionStack)
-                    end
-
-                    -- 3. Set the index to this sibling (Restart execution here)
-                    frame.Index = i
-                    
-                    -- print("[SBAI] Observer Abort: LowerPriority interrupt at index " .. i)
-                    return true -- We interrupted, stop checking
-                end
-            end
-        end
-
-        -- === 2. Check "Self" & "Both" (Current Active Branch) ===
-        -- Look at the CURRENT running child
-        local currentEntry = children[currentChildIdx]
-        local checkSelf = false
-
-        if currentEntry.Decorators then
-            for _, d in ipairs(currentEntry.Decorators) do
-                local dNode = self.SBAI_NodeLookup[d.ObjectName]
-                if dNode and dNode.Properties.FlowAbortMode then
-                    local mode = dNode.Properties.FlowAbortMode
-                    if string.find(mode, "Self") or string.find(mode, "Both") then
-                        checkSelf = true
-                        break
-                    end
-                end
-            end
-        end
-
-        if checkSelf then
-            -- Re-evaluate the current condition
-            if !self:SBAI_EvaluateEdge(currentEntry) then
-                -- CRITICAL FAILURE: The node we are inside is no longer allowed!
-                
-                -- 1. Clear running state of the subtree we are killing
-                local runningID = currentEntry.ChildComposite and currentEntry.ChildComposite.ObjectName or currentEntry.ChildTask and currentEntry.ChildTask.ObjectName
-                if runningID then self:SBAI_ClearRunning(runningID) end
-
-                -- 2. Prune stack back to this level
+                -- Prune stack back to this composite level
                 while #self.SBAI_ExecutionStack > stackIdx do
                     table.remove(self.SBAI_ExecutionStack)
                 end
 
-                -- 3. Handle Failure Logic
-                local isSelector = string.find(nodeData.Type, "Selector")
                 if isSelector then
-                    -- If Selector, try next sibling
-                    frame.Index = frame.Index + 1
+                    frame.Index = currentChildIdx + 1
                 else
-                    -- If Sequence, the whole sequence fails immediately
-                    -- We force the result to fail and pop this frame too
                     frame.ForceResult = false
-                    frame.Index = #children + 1 -- This ensures SelectTask pops it
+                    frame.Index = #children + 1
                 end
-
-                -- print("[SBAI] Observer Abort: Self condition failed")
                 return true
             end
         end
@@ -390,169 +447,87 @@ function ENT:SBAI_CheckObservers()
     return false
 end
 
--- Recursive State Clearer
--- 1. Looks up the STATIC structure to find children relationships.
--- 2. Deletes the DYNAMIC state in the registry for those children.
-function ENT:SBAI_ClearRunning(nodeID)
-    if !nodeID then return end
-
-    -- 1. Clear the runtime state for this specific node
-    if self.SBAI_RuntimeState[nodeID] then
-        -- We explicitly nil these out to reset the node completely
-        self.SBAI_RuntimeState[nodeID]._running = false
-        self.SBAI_RuntimeState[nodeID]._result = nil
-        self.SBAI_RuntimeState[nodeID]._startTime = nil
-        self.SBAI_RuntimeState[nodeID]._currentChild = nil
-        
-        -- Optional: Remove the entry entirely to save memory, 
-        -- though keeping the table can reduce garbage collection churn.
-        -- self.SBAI_RuntimeState[nodeID] = nil 
-    end
-
-    -- 2. Find children using the STATIC Lookup Table
-    local staticNode = self.SBAI_NodeLookup[nodeID]
-    
-    -- Use the static definition to find what *could* be running below this node
-    if staticNode and staticNode.Properties and staticNode.Properties.Children then
-        for _, childEntry in ipairs(staticNode.Properties.Children) do
-            local childID = nil
-            
-            -- Resolve child ID based on type
-            if childEntry.ChildComposite then
-                childID = childEntry.ChildComposite.ObjectName
-            elseif childEntry.ChildTask then
-                childID = childEntry.ChildTask.ObjectName
-            end
-
-            -- Recursively clear state for the child
-            if childID then
-                self:SBAI_ClearRunning(childID)
-            end
-        end
-    end
-
-    -- 3. Coroutine Safety
-    -- If we are clearing the root or the currently running branch, the existing coroutine 
-    -- is now invalid because its local variables refer to states we just wiped.
-    if self._sbaico and nodeID == self.SBAI_TreeRootID then
-        self._sbaico = nil
-    end
-end 
-
--- Phase 3: The Runner Logic (FIXED)
+-- Phase 3: The Runner Logic
 function ENT:SBAI_SelectTask(startNodeID)
-    -- Initialize stack if empty
     if #self.SBAI_ExecutionStack == 0 then
         table.insert(self.SBAI_ExecutionStack, { NodeID = startNodeID, Index = 1 })
     end
 
-    -- SAFETY: Prevent infinite loops if the tree resolves instantly
     local ops = 0
-    local max_ops = 500 
+    local max_ops = 500
 
     while #self.SBAI_ExecutionStack > 0 do
-		-- print("startNodeID:",startNodeID,"ops:",ops) 
-		local frame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
-		-- PrintTable(frame) 
         ops = ops + 1
         if ops > max_ops then
-            print("[SBAI] Infinite Loop Detected! Tree resolved too many nodes without yielding.")
-            return nil -- Force a yield/break
+            -- Yield to next tick instead of killing coroutine
+            coroutine.yield()
+            ops = 0
+            if self:IsFlagSet(FL_KILLME) then return false end
         end
 
-        -- 1. Get the current Stack Frame
         local frame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
         local nodeID = frame.NodeID
-        local nodeData = self.SBAI_NodeLookup[nodeID] 
-        
-        -- Safety Check
-        if !nodeData or !nodeData.Properties.Children then
+        local nodeData = self.SBAI_NodeLookup[nodeID]
+
+        if not nodeData or not nodeData.Properties.Children then
             table.remove(self.SBAI_ExecutionStack)
             goto continue_loop
         end
 
         local children = nodeData.Properties.Children
         local idx = frame.Index
-        
-        -- Helper to identify composite type
-        local isSelector = string.find(nodeData.Type, "Selector")
+        local isSelector = string.find(nodeData.Type, "Selector") ~= nil
 
-        -- 2. Check if we have processed all children (Pop Logic)
+        -- Composite Pop Logic (All children in this composite finished)
         if idx > #children then
             table.remove(self.SBAI_ExecutionStack)
-            
-            -- Default Results: Selector=False (Fail), Sequence=True (Success)
-            local compositeResult = !isSelector 
-            
-            -- OVERRIDE: Did we force a result? (Used when decorators fail in a sequence)
-            if frame.ForceResult != nil then
+            local compositeResult = not isSelector
+            if frame.ForceResult ~= nil then
                 compositeResult = frame.ForceResult
             end
-            
-            -- Propagate result to parent
+
             if #self.SBAI_ExecutionStack > 0 then
                 local parentFrame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
                 local parentNode = self.SBAI_NodeLookup[parentFrame.NodeID]
-                local parentIsSelector = string.find(parentNode.Type, "Selector")
-                
-                -- Standard Propagation:
-                -- Parent Selector + Child Success = Parent Success (Stop)
-                -- Parent Sequence + Child Fail    = Parent Fail (Stop)
-                if (parentIsSelector and compositeResult == true) or (!parentIsSelector and compositeResult == false) then
-                    -- Force Parent to finish early
+                local parentIsSelector = string.find(parentNode.Type, "Selector") ~= nil
+
+                if (parentIsSelector and compositeResult == true) or (not parentIsSelector and compositeResult == false) then
                     parentFrame.ForceResult = compositeResult
-                    parentFrame.Index = #parentNode.Properties.Children + 1 -- Move index to end to trigger pop next loop
+                    parentFrame.Index = #parentNode.Properties.Children + 1
                 else
-                    -- Parent continues to next sibling
                     parentFrame.Index = parentFrame.Index + 1
                 end
             end
-            
+
             if #self.SBAI_ExecutionStack == 0 then return compositeResult end
             goto continue_loop
         end
 
-        -- 3. Look at the Child
+        -- Check Edge Decorators
         local childEntry = children[idx]
-        local canExecute = true
+        local canExecute = self:SBAI_EvaluateEdge(childEntry)
 
-		
-		-- 4. Edge Decorators
-		-- We use the same helper, but here we check ALL decorators (blocking logic)
-		local canExecute = self:SBAI_EvaluateEdge(childEntry)
+        if not canExecute then
+            -- If this child was active/running, abort it cleanly!
+            local childID = childEntry.ChildComposite and childEntry.ChildComposite.ObjectName
+                         or childEntry.ChildTask and childEntry.ChildTask.ObjectName
+            if childID and self:SBAI_GetNodeState(childID, "_running") then
+                self:SBAI_AbortNode(childID)
+            end
 
-        -- 5. Decorator Handling (THE FIX)
-        if !canExecute then
-			if backgroundtask then 
-			-- [NEW] Safety Check: If we are aborting a node that was ALREADY running, we must clear its state!
-				local childID = nil
-				if childEntry.ChildComposite then 
-					childID = childEntry.ChildComposite.ObjectName
-				elseif childEntry.ChildTask then 
-					childID = childEntry.ChildTask.ObjectName 
-				end
-            
-				if childID and self:SBAI_GetNodeState(childID, "_running") then
-					 -- print("[SBAI] Aborting running node due to decorator failure:", childID)
-					 self:SBAI_ClearRunning(childID)
-				end
-			end 
-            -- [END NEW]
-		
             if isSelector then
-                -- Selector: Child blocked? Just try the next one.
                 frame.Index = frame.Index + 1
             else
-                -- Sequence: Child blocked? THE SEQUENCE FAILS.
                 frame.ForceResult = false
-                frame.Index = #children + 1 -- Force pop
+                frame.Index = #children + 1
             end
             goto continue_loop
         end
 
-        -- 6. Execute Child
+        -- Execute Child
         if childEntry.ChildComposite then
             local nextID = childEntry.ChildComposite.ObjectName
+            self:SBAI_ApplyDecoratorSets(childEntry) -- Apply Additive Blackboard modifiers
             table.insert(self.SBAI_ExecutionStack, { NodeID = nextID, Index = 1 })
             goto continue_loop
 
@@ -560,54 +535,52 @@ function ENT:SBAI_SelectTask(startNodeID)
             local taskID = childEntry.ChildTask.ObjectName
             local taskNode = self.SBAI_NodeLookup[taskID]
             local taskName = string.gsub(taskNode.Type, "^SBBTTask_", "")
-            
-            -- Manage Running State
+
             local isRunning = self:SBAI_GetNodeState(taskID, "_running")
-            if !isRunning then
+            if not isRunning then
                 self:SBAI_SetNodeState(taskID, "_running", true)
                 self:SBAI_SetNodeState(taskID, "_startTime", CurTime())
             end
 
-            -- Run Task
-            if self[taskName] then 
-				print("Task is:",taskName, taskID) 
-                local result = self[taskName](self, taskNode.Properties, taskID) 
-				print("Task",taskID," result is:",result) 
-                
+            if self[taskName] then
+                local result = self[taskName](self, taskNode.Properties or {}, taskID)
+				-- print(self,taskID,"returned:",result) 
+
                 if result == nil then
-                    coroutine.yield() -- Running
-					if self:IsFlagSet(FL_KILLME) then return false end -- called during OnRemove, closes variables 
+                    -- Latent execution: yield until finished or aborted
+                    coroutine.yield()
+                    if self:IsFlagSet(FL_KILLME) then return false end
                 else
-                    self:SBAI_SetNodeState(taskID, "_running", false)
-                    
-                    -- Handle Result
+                    -- Task completed: wipe node memory so future executions are fresh
+                    self.SBAI_RuntimeState[taskID] = nil
+
                     if isSelector then
                         if result == true then
                             frame.ForceResult = true
-                            frame.Index = #children + 1 -- Selector Succeeded, Stop
+                            frame.Index = #children + 1
                         else
-                            frame.Index = frame.Index + 1 -- Selector Failed, Try Next
+                            frame.Index = frame.Index + 1
                         end
                     else -- Sequence
                         if result == true then
-                            frame.Index = frame.Index + 1 -- Sequence Succeeded, Next
+                            frame.Index = frame.Index + 1
                         else
                             frame.ForceResult = false
-                            frame.Index = #children + 1 -- Sequence Failed, Stop
+                            frame.Index = #children + 1
                         end
                     end
                 end
             else
-                print("[SBAI] Missing Task: " .. taskName)
+                ErrorNoHalt("[SBAI] Missing Task: " .. taskName .. "\n")
                 frame.Index = frame.Index + 1
             end
         end
 
         ::continue_loop::
     end
-    
+
     return false
-end 
+end
 
 -- function ENT:NPC_GetWalkActivity( act ) 
 	-- act = act or ACT_MP_WALK_MELEE 
@@ -615,7 +588,7 @@ end
 -- end 
 
 function ENT:NPC_TranslateLuaSchedule(oldsched) 
-	local retVal = scripted_ents.Get("npc_unreali_female").NPC_TranslateLuaSchedule(self,oldsched) 
+	local retVal = scripted_ents.GetStored("cycler_actor2").t.NPC_TranslateLuaSchedule(self,oldsched) 
 	if retVal and retVal.DebugName == "LUASCHED_FLEE_FROM_BEST_SOUND" then 
 		return LUASCHED_RAVEN_RAPIDEVADE_FROM_BESTSOUND 
 	elseif retVal and retVal.DebugName == "LUASCHED_TAKE_COVER_FROM_BEST_SOUND" then 
@@ -668,7 +641,7 @@ ENT.ShotRegulator = { }
 -- auto update burst settings and rest times each time we attempt to conduct a shot 
 function ENT.ShotRegulator:UpdateRestTimes() 
 	local Outer = self.Outer 
-	scripted_ents.Get("cycler_actor2").ShotRegulator.UpdateRestTimes(self) 
+	scripted_ents.GetStored("cycler_actor2").t.ShotRegulator.UpdateRestTimes(self) 
 	Outer.ShotRegulator.flMinRestInterval = 0.1 
 	Outer.ShotRegulator.flMaxRestInterval = 0.1 
 end 
@@ -678,10 +651,10 @@ function ENT:NPC_ShouldBlockRunAI() -- whether to call lua schedules or not
 	-- when not blocked (false), it calls Engine schedules 
 	if self.CurrentSchedule and self.CurrentSchedule.DebugName == "LUASCHED_RAVEN_RAPIDEVADE" then return true end 
 	if self:NPC_ShouldConductBehaviorTree() then return true end 
-	return scripted_ents.Get("npc_unreali_female").NPC_ShouldBlockRunAI(self) 
+	return scripted_ents.GetStored("cycler_actor2").t.NPC_ShouldBlockRunAI(self) 
 end 
 
-function ENT:CustomRunAI() 
+function ENT:CustomRunAI(sTable) 
 	local enemy = self:GetEnemy()
     local NPC_ShouldConductBehaviorTree = self:NPC_ShouldConductBehaviorTree() 
     local skipBehaviorTree = false
@@ -761,7 +734,7 @@ function ENT:CustomRunAI()
 			-- self.CurrentSchedule = nil 
 		end 
 	end 
-	local retVal = scripted_ents.Get("npc_unreali_female").CustomRunAI(self) 
+	local retVal = scripted_ents.GetStored("cycler_actor2").t.CustomRunAI(self,sTable) 
 end 
 
 function ENT:OnKilled(dmginfo) 
@@ -770,7 +743,7 @@ function ENT:OnKilled(dmginfo)
 		local AttackerEffectWhenDead = StellarBlade.ParseTableStrings(self.AttackerEffectWhenDead) 
 		StellarBlade.AddEffectFromTable(attacker,AttackerEffectWhenDead) 
 	end 
-	return scripted_ents.Get("npc_unreali_female").OnKilled(self,dmginfo) -- baseclass 
+	return scripted_ents.GetStored("cycler_actor2").t.OnKilled(self,dmginfo) -- baseclass 
 end 
 
 function ENT:OnRemove(fullUpdate) 
@@ -778,7 +751,7 @@ function ENT:OnRemove(fullUpdate)
 		self:SBAI_CheckObservers() 
 		local ok, ret = coroutine.resume(self._sbaico)
 	end 
-	scripted_ents.Get("npc_unreali_female").OnRemove(self) 
+	scripted_ents.GetStored("cycler_actor2").t.OnRemove(self) 
 end 
 
 function ENT:OnStateChange(oldState, newState) 
@@ -851,28 +824,57 @@ end
 function ENT:NPC_AllowGestureMelee() return !self:NPC_ShouldConductBehaviorTree() end 
 function ENT:NPC_EvaluateIncomingAttackRisk() return 0 end 
 
--- conditions 
+ENT.SBAI_AggroLevel = "AIAggroLevel_Peaceful"
+
+-- Toggle this boolean to switch the default value of bEqual when omitted from JSON.
+-- In Unreal Engine C++, bool bEqual defaults to true.
+local DEFAULT_B_EQUAL = true
+
 function ENT:SbAggroLevel(tbl)
     local CompareAggroLevelArray = tbl.CompareAggroLevelArray
-    if !CompareAggroLevelArray then return false end
+    if not CompareAggroLevelArray then return false end
 
-    -- Defensive: ensure we can iterate
-    if type(CompareAggroLevelArray) != "table" then
+    if type(CompareAggroLevelArray) ~= "table" then
         CompareAggroLevelArray = { CompareAggroLevelArray }
     end
 
-    for _, level in ipairs(CompareAggroLevelArray) do
-
-        -- if level == "AIAggroLevel_Peaceful" and self:GetNPCState() < 2 then
-        if level == "AIAggroLevel_Peaceful" then
-            return true
-        elseif level == "AIAggroLevel_Battle" and self:GetNPCState() == NPC_STATE_COMBAT then
-            return true
-        end
-        -- add more elseif branches here if you support other aggro levels
+    -- 1. Determine bEqual: use property from JSON if present, otherwise use default
+    local bEqual = DEFAULT_B_EQUAL
+    if tbl.bEqual ~= nil then
+        bEqual = tobool(tbl.bEqual)
     end
 
-    return false
+    -- 2. Resolve current character aggro level:
+    -- In Stellar Blade, standard combat and attack trees across all monsters 
+    -- (Raven, Tachy, ExoSuit, Turrets) execute under "AIAggroLevel_Peaceful".
+    local currentLevel = self.SBAI_AggroLevel
+
+    if not currentLevel then
+        -- If the enemy died or was lost while deployed (BattleState >= 1),
+        -- enter AIAggroLevel_Battle so the AI can execute the BattleEnd sequence.
+        local hasLivingEnemy = IsValid(self:GetEnemy()) and self:GetEnemy():Alive()
+        local isDeployed = self.SBAI_BlackBoard and (self.SBAI_BlackBoard["BattleState"] or 0) >= 1
+
+        if isDeployed and not hasLivingEnemy then
+            currentLevel = "AIAggroLevel_Battle"
+        else
+            currentLevel = "AIAggroLevel_Peaceful"
+        end
+    end
+
+    -- 3. Check if currentLevel exists in CompareAggroLevelArray
+    local matches = false
+    for _, level in ipairs(CompareAggroLevelArray) do
+        if level == currentLevel then
+            matches = true
+            break
+        end
+    end
+
+    -- 4. Unreal C++ formula: (matches == bEqual)
+    local result = (matches == bEqual)
+
+    return result
 end
 
 function ENT:SbAimMe(tbl) -- doesn't have any additional properties 
@@ -969,7 +971,7 @@ end
 
 function ENT:SbCheckActorEffect(tbl)
 	local expectedActive = (tbl.bActive == true)
-	local bInverseCondition = (tbl.bInverseCondition == true)
+	-- local bInverseCondition = (tbl.bInverseCondition == true)
  
 	-- The behavior-tree JSON spells the enum "ESBAIActorType::Target", while
 	-- StellarBlade.ESBAIActorType expects "ESBAIActorType::ActorType_Target".
@@ -993,7 +995,7 @@ function ENT:SbCheckActorEffect(tbl)
 	end
  
 	if !IsValid(ent) then
-		return bInverseCondition
+		return false 
 	end
  
 	-- Collect the effect names to check, and the mode
@@ -1037,9 +1039,9 @@ function ENT:SbCheckActorEffect(tbl)
 	end
  
 	local result = (hasEffect == expectedActive)
-	if bInverseCondition then
-		result = !result
-	end
+	-- if bInverseCondition then
+		-- result = !result
+	-- end
 	return result
 end
 
@@ -1077,7 +1079,7 @@ end
 function ENT:SbCheckActorState(tbl)
 	Entity(1):ChatPrint(tostring(self).." in CheckActorState, may be bogus") 
 	local CheckState = tbl.CheckState
-	local bInverseCondition = (tbl.bInverseCondition == true)
+	-- local bInverseCondition = (tbl.bInverseCondition == true)
 
 	-- The BT JSON spells the enum "ESBAIActorType::Target"; StellarBlade.ESBAIActorType expects
 	-- "ESBAIActorType::ActorType_Target". Normalize to the latter; omitted / None = Target.
@@ -1093,9 +1095,9 @@ function ENT:SbCheckActorState(tbl)
 		bHasState = (ent[CheckState] != nil)
 	end
 
-	if bInverseCondition then
-		return !bHasState
-	end
+	-- if bInverseCondition then
+		-- return !bHasState
+	-- end
 	return bHasState
 end
 
@@ -1115,9 +1117,9 @@ function ENT:SbCheckStance(tbl) -- M_Raven_Phase2, M_Raven_Default
 	else 
 		matches = (currentStance == StanceName)
 	end 
-    if tbl.bInverseCondition then
-        matches = !matches
-    end
+    -- if tbl.bInverseCondition then
+        -- matches = !matches
+    -- end
 	print("stance returning:",matches, "currentStance",currentStance, "checking stance:",tbl.StanceName) 
     return matches
 end
@@ -1152,6 +1154,13 @@ end
 -- SbCheckTargetAngleFromCamera has 0 users 
 -- SbDistanceToHome has 0 users 
 -- SbCheckAnimState has 0 users 
+-- SbIsRunPathWay has 0 users 
+-- SbIsFindPathWay has 0 users 
+-- SbIsRunSpiderNav has 1 user, M_Antlion_AI, tbl.SpiderNavigationPlaceType 
+-- SbIsTPS has 0 users 
+-- SbLastSkillHitResult has 4 users, checks for ESBSkillHitResult::SkillHitResult - HitResult
+-- it consists of SkillHitResult_None, SkillHitResult_Hit, Parry, SkillHitResult_SuperParry, Guard, SkillHitResult_GuardBlock 
+
 
 function ENT:SbDetectResult(tbl) 
 	-- ESBAIDetectResultType::AIDetectResult_NotDetect ESBAIDetectResultType::AIDetectResult_Observe AIDetectResult_Doubt	AIDetectResult_Detect 
@@ -1176,15 +1185,28 @@ function ENT:SbDetectResult(tbl)
     return matches
 end
 
-function ENT:SbDistanceToTarget(tbl) -- distance to enemy 
-	if !self.enemyDist_2d then return false end 
-	local dist = tbl.Distance 
-	local operator = tbl.CompareOP -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
-	local FlowAbortMode = tbl.FlowAbortMode or "None" 
-	local bSubTarget = tbl.bSubTarget 
-	-- print("DistanceToTarget:",dist,operator,FlowAbortMode) 
-	return StellarBlade.ESBCompare(self.enemyDist_2d,dist,operator) 
-end 
+function ENT:SbDistanceToTarget(tbl)
+    local target = self:GetEnemy()
+    if tbl.bSubTarget and self.GetKnownEnemies then
+        for _, sub in pairs(self:GetKnownEnemies() or {}) do
+            if IsValid(sub) and sub ~= target then
+                target = sub
+                break
+            end
+        end
+    end
+
+    if not IsValid(target) then return false end
+
+    local dist = self.enemyDist_2d
+    if not dist then
+        dist = self:GetPos():Distance2D(target:GetPos())
+    end
+
+    local checkDist = tbl.Distance or 0
+    local op = tbl.CompareOP or "ESBCompare::LessOrEqual"
+    return StellarBlade.ESBCompare(dist, checkDist, op)
+end
 
 function ENT:SbIsActiveSkill(tbl) 
 	local actor = tbl.ActorType 
@@ -1194,7 +1216,7 @@ function ENT:SbIsActiveSkill(tbl)
 	if IsValid(actor) then self = actor end 
 	local retVal = self.SBAI_SkillStep 
 	if StellarBlade.SBAI_SkillStep.IsActive(retVal) then retVal = true end 
-	if tbl.bInverseCondition then return !retVal end 
+	-- if tbl.bInverseCondition then return !retVal end 
 	return retVal 
 end 
 
@@ -1240,12 +1262,21 @@ function ENT:SbIsBattleMode(tbl) -- has no users, why here?
 	return StellarBlade.IsBattle(ActorType) 
 end 
 
+function ENT:SbIsGroupAttacker(tbl) 
+	local ActorType = tbl.ActorType 
+	ActorType = StellarBlade.ESBAIActorType(ActorType) 
+	if !IsValid(ActorType) then return false end 
+	return ActorType.bGroupAttacker 
+end 
+
 function ENT:SbRandom(tbl) 
 	local RandomRange = math.random(0,tbl.RandomRange) 
 	local CheckValue = tbl.CheckValue 
 	local CompareOP = tbl.CompareOP or "ESBCompare::Equal" -- LessOrEqual, Greater, GreaterOrEqual, Equal, Less, NotEqual 
 	return StellarBlade.ESBCompare(RandomRange,CheckValue,CompareOP) 
 end 
+
+-- SbSpiderIsArrived is unused 
 
 function ENT:SbTimeLimit(tbl)
     if !self.SBAI_TimeLimit then
@@ -1291,6 +1322,18 @@ function ENT:SbTimeLimit(tbl)
     return true
 end
 
+function ENT:SbLockOnMe() 
+	local enemy = self.GetEnemy and self:GetEnemy() or self:GetEyeTrace().Entity 
+	if IsValid(enemy) then 
+		if enemy.GetEnemy then 
+			if IsValid(enemy:GetEnemy()) and enemy:GetEnemy() == self then 
+				return true 
+			end 
+			elseif IsValid(enemy.GetEyeTrace().Entity) and enemy.GetEyeTrace().Entity == self then return true end 
+		end 
+	return false 
+end 
+
 function ENT:SbUseableTime(tbl) 
     local KeyName = tbl.KeyName
     self.SBAI_Timers = self.SBAI_Timers or {}
@@ -1312,7 +1355,20 @@ end
 
 -- skills 
 
--- SbCautionToTarget: property-driven adaptation (no spawn hacks)
+-- SbFollowTarget: Used by Drone only 
+-- SbLookAtTarget: no users. has property YawRotationTime 
+-- SbMountingEquipment: has 2 users, botattacker and botcommon 
+-- SbMoveToFlyingPoint: no users 
+-- SBResetTimeLimit: no users 
+-- SbSpiderMoveStop: used by M_Antlion_AI. no properties, only used once 
+-- SbSpiderMoveToCeiling: no users 
+-- SbSpiderMoveToRandomLocation: no users 
+-- SbSpiderMoveToTarget: used by antlion 
+-- SbSpiderRunFall: no users 
+
+
+
+-- SbCautionToTarget: property-driven adaptation (no spawn hacks) 
 function ENT:SbCautionToTarget(tbl, nodeID) 
     -- small helpers
     local function SafeGet(key, def) return (tbl[key] ~= nil) and tbl[key] or def end
@@ -1557,25 +1613,27 @@ function ENT:SbIsGroupTarget(tbl)
     if not IsValid(target) then return false end
 
     local isGroup = (self.bGroupAttacker == true)
-    if tbl.bInverseCondition then
-        return not isGroup
-    end
+    -- if tbl.bInverseCondition then
+        -- return not isGroup
+    -- end
     return isGroup
 end
 
-function ENT:SbDetectTarget(tbl) 
-	local bEnemy, bComa = tbl.bEnemy, tbl.bComa 
-	local EffectAliasArray = tbl.EffectAliasArray 
-	-- right now just return true instead of searching for enemy 
-	-- print("in sbdetecttarget. this will directly return true") 
-	
-	-- "EffectAliasArray": [
-        -- "Check_AttackTachyNPC",
-        -- "Check_Detect"
-      -- ],
-	-- if tbl then return true end 
-	return !IsValid(self:GetEnemy()) 
-end 
+function ENT:SbDetectTarget(tbl, nodeID)
+    local enemy = self:GetEnemy()
+    if IsValid(enemy) and enemy:Alive() then
+        -- Enemy already acquired: fail so parent Selector can advance to combat subtrees
+        return false
+    end
+
+    local target = StellarBlade.PickTarget(self)
+    if IsValid(target) and target:Alive() then
+        if self.SetEnemy then self:SetEnemy(target) end
+        return true
+    end
+
+    return false
+end
 
 --==============================================================================
 -- TASK: SbMoveToHome (USBBTTask_SbMoveToHome)
@@ -1802,6 +1860,37 @@ function ENT:SbMoveToTarget(tbl)
 	end 
 end 
 
+-- SbPlayShow: Manages show playback and clean cleanup
+function ENT:SbPlayShow(tbl, nodeID)
+    local showPath = tbl.ShowPath
+    local bWait = (tbl.bWait ~= false)
+    local showObject = self:SBAI_GetNodeState(nodeID, "hasStarted")
+
+    if not showObject then
+        local cleanPath = string.StripExtension(showPath)
+        local show = StellarBlade.SetShow(self, cleanPath, "Show")
+        if not bWait then return true end
+        if not show then return false end
+
+        self:SBAI_SetNodeState(nodeID, "hasStarted", show)
+        return nil
+    else
+        local isFinished = true
+        if istable(showObject) and not showObject.Stopped and not showObject.IsMarkedForDeletion then
+            if self.SBAI_ActiveShows and table.HasValue(self.SBAI_ActiveShows, showObject) then
+                isFinished = false
+            end
+        end
+
+        if isFinished then
+            self.SBAI_RuntimeState[nodeID] = nil
+            return true
+        else
+            return nil
+        end
+    end
+end
+
 function ENT:SbUseEffect(tbl) -- add effect 
 	local bSelfActor = tbl.bSelfActor 
 	local EffectAlias = tbl.EffectAlias 
@@ -1825,57 +1914,47 @@ end
 -- FirstSkillActiveAlias contains dir to animation data in FirstSkillActiveAlias, "ShowPath": "CH_M_NA_53_Raven/Skill/M_Raven_ParryPreview" 
 -- inside anim metadata, actual animation exists in SBShowAnimKey's Properties["AnimResourcePath"] = "/Game/Art/Character/Monster/CH_M_NA_53/Animation/M_Raven_BurstAreaSlashEnd" 
 
-function ENT:SbUseSkill(tbl, nodeID) 
-    -- This function is now simplified, as setup logic has moved to SetSkillStep. 
-	-- PrintTable(tbl) 
-	if StellarBlade.IsGroggy(self) then return end 
-	if StellarBlade.IsDown(self) then return end 
-	local Started = self:SBAI_GetNodeState(nodeID, "hasStarted") 
-	-- print("Started:",nodeID,Started) 
-    if !Started then 
-        for k, v in RandomPairs(tbl.SkillName) do 
-            if isnumber(k) then -- do not accidentally start variables 
-				if tbl.bUseSkillCommand then 
-					if StellarBlade.StartSkillCommand(self,v) then 
-						self:SBAI_SetNodeState(nodeID, "hasStarted", true) 
-						break 
-					end  
-					-- return true 
-				else 
-					if StellarBlade.StartSkill(self,v) then 
-						self:SBAI_SetNodeState(nodeID, "hasStarted", true) 
-						break 
-					end 
-					-- return true 
-				end 
-			end 
-		end 
-	end 
-	Started = self:SBAI_GetNodeState(nodeID, "hasStarted") 
+-- SbUseSkill: Starts skill, yields during execution, returns true on completion
+function ENT:SbUseSkill(tbl, nodeID)
+    if StellarBlade.IsGroggy(self) then return false end
+    if StellarBlade.IsDown(self) then return false end
 
-    if Started then 
-        -- If the active skill was cleared (e.g., skill finished or target died), the task is complete 
-        if !self.SBAI_SkillStep or self.SBAI_SkillStep and !self.SBAI_SkillStep:IsActive() then 
-             -- Entity(1):ChatPrint("task complete") 
-             self:NPC_StopScriptedActivity() 
-			 self:ResetIdealActivity(ACT_IDLE) 
-			 -- self.SBAI_SkillTable = nil 
-			 self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
-             return true 
-        else 
-			return nil -- Task is still running 
-		end 
-    else 
-		if !self.SBAI_SkillTable then 
-			self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
-			return false 
-		end 
-		return false -- not started, maybe all tasks are in delay? 
-	end 
-	
-	self:SBAI_SetNodeState(nodeID, "hasStarted", false ) 
-    return false -- no task selected  
-end 
+    local started = self:SBAI_GetNodeState(nodeID, "hasStarted")
+    if not started then
+        local startedAny = false
+        for k, v in RandomPairs(tbl.SkillName) do
+            if isnumber(k) then
+                if tbl.bUseSkillCommand then
+                    if StellarBlade.StartSkillCommand(self, v) then
+                        self:SBAI_SetNodeState(nodeID, "hasStarted", true)
+                        startedAny = true
+                        break
+                    end
+                else
+                    if StellarBlade.StartSkill(self, v) then
+                        self:SBAI_SetNodeState(nodeID, "hasStarted", true)
+                        startedAny = true
+                        break
+                    end
+                end
+            end
+        end
+        if not startedAny then
+            self.SBAI_RuntimeState[nodeID] = nil
+            return false
+        end
+        return nil
+    end
+
+    if not self.SBAI_SkillStep or not self.SBAI_SkillStep:IsActive() then
+        if self.NPC_StopScriptedActivity then self:NPC_StopScriptedActivity() end
+        -- if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end
+        self.SBAI_RuntimeState[nodeID] = nil
+        return true
+    else
+        return nil
+    end
+end
 
 function ENT:SbUseableTimeReset(tbl)
     local KeyName = tbl.KeyName
@@ -1924,21 +2003,21 @@ function ENT:SbWait(tbl, nodeID)
     end
 end 
 
-function ENT:SbMetaAI(data) end -- base AI 
+function ENT:SbMetaAI(data) end -- idle AI 
 function ENT:SB_LookAtTarget(data) end 
 function ENT:SbWaitTimeRandom(data, nodeID) -- only in tachy ai 
-    local MinTime = data.MinTime or 0.1
-    local MaxTime = data.MaxTime or 0.3
+    local minTime = data.MinTime or 0.1
+    local maxTime = data.MaxTime or 0.3
     local bReturnSucceeded = (data.bReturnSucceeded ~= false)
 
     local expireTime = self:SBAI_GetNodeState(nodeID, "expireTime")
-    if not expireTime then
-        expireTime = CurTime() + math.Rand(MinTime, MaxTime)
+    if expireTime == nil then
+        expireTime = CurTime() + math.Rand(minTime, maxTime)
         self:SBAI_SetNodeState(nodeID, "expireTime", expireTime)
     end
 
     if CurTime() >= expireTime then
-        self:SBAI_SetNodeState(nodeID, "expireTime", nil)
+        self.SBAI_RuntimeState[nodeID] = nil
         return bReturnSucceeded
     else
         return nil
@@ -1957,10 +2036,10 @@ function ENT:Check_LinkSkillHit_Skill(ent) return true end
 function ENT:ON_LIGHT_DAMAGE() 
 	-- get current skill step if available and see whether NextStepAliasWhenAttacked is set 
 	local SkillStepTable = self.SBAI_SkillStep 
-	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
-	if !SkillStepTable.Name then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
+	if !SkillStepTable then return scripted_ents.GetStored("cycler_actor2").t.ON_LIGHT_DAMAGE(self) end 
+	if !SkillStepTable.Name then return scripted_ents.GetStored("cycler_actor2").t.ON_LIGHT_DAMAGE(self) end 
 	SkillStepTable = SB_SkillActiveStepTable[1].Rows[SkillStepTable] 
-	if !SkillStepTable then return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) end 
+	if !SkillStepTable then return scripted_ents.GetStored("cycler_actor2").t.ON_LIGHT_DAMAGE(self) end 
 	if SkillStepTable.NextStepAliasWhenAttacked and SkillStepTable.NextStepAliasWhenAttacked != "None" then 
 		StellarBlade.SetSkillStep(self,SkillStepTable.NextStepAliasWhenAttacked) 
 	elseif SkillStepTable.NextStepAliasWhenPerfectParry != "None" then 
@@ -1972,7 +2051,7 @@ function ENT:ON_LIGHT_DAMAGE()
 			end 
 		end 
 	end 
-	return scripted_ents.Get("npc_unreali_female").ON_LIGHT_DAMAGE(self) 
+	return scripted_ents.GetStored("cycler_actor2").t.ON_LIGHT_DAMAGE(self) 
 end 
 
 -- Master blink task: single-task orchestration for whole 1.4s blink timeline
@@ -2246,9 +2325,10 @@ if SERVER then
 end 
 
 local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
+local color_cyan = Color(0,255,255) 
 
 function ENT:Draw(flags) 
-	scripted_ents.Get("npc_unreali_female").Draw(self,flags) 
+	scripted_ents.GetStored("cycler_actor2").t.Draw(self,flags) 
 	local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
 	for attachmentname, scale in pairs(attachment) do 
 		local attachmentid = self:LookupAttachment(attachmentname) 
@@ -2256,7 +2336,7 @@ function ENT:Draw(flags)
 			local Pos = self:GetAttachment(attachmentid).Pos -- Pos will be used 
 			render.SetMaterial(t_a_shineflare_02) 
 			for i = 1,math.random(1,3) do 
-				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
+				render.DrawSprite(Pos,scale,scale,color_cyan) 
 			end 
 		end 
 	end 

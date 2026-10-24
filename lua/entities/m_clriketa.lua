@@ -62,7 +62,7 @@ if charData.OverrideCharacterSoundSet and charData.OverrideCharacterSoundSet ~= 
 	local css = string.match(charData.OverrideCharacterSoundSet, "'(.-)'") or charData.OverrideCharacterSoundSet
 	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".json"
 else
-	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_03_ClriketA.json"
 end
 SB_ImportJSON(ENT.CharacterSoundSetPath) 
 
@@ -71,7 +71,7 @@ ENT.BehaviorTreeRes = BehaviorTreeRes
 SB_ImportJSON(BehaviorTreeRes) 
 
 function ENT:Draw(flags) 
-	scripted_ents.Get("npc_unreali_female").Draw(self,flags) 
+	scripted_ents.GetStored("base_ai").t.Draw(self,flags) 
 end 
 
 function ENT:NPC_ShouldConductBehaviorTree() 
