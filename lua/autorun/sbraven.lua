@@ -525,7 +525,7 @@ end
 
 hook_Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo) 
     local attacker = dmginfo:GetAttacker() 
-	if attacker.SBAI_SkillStep and attacker.SBAI_SkillStep.IsActive and attacker.SBAI_SkillStep:IsActive() then return end -- handled in JustParryAnticipation 
+	if attacker.SBAI_SkillStep and StellarBlade.SBAI_SkillStep.IsActive(attacker.SBAI_SkillStep) then return end -- handled in JustParryAnticipation 
     local inflictor = dmginfo:GetInflictor() 
     
     if target.SBAI_SkillStep and target.SBAI_SkillStep.Name then 
@@ -3514,10 +3514,15 @@ function StellarBlade.ActorStats(self, forceReset)
 			
 			local killed = target:Health() < 1 and !target:Alive() 
 			local stance, stancetable = StellarBlade.GetActorStance(target) 
-			if killed and stance and stancetable.DeadSkillAlias != "None" then 
+			if killed and stance and stancetable.DeadSkillAlias != "None" and !self.CastOnKilledSkill then 
+				local DeadSkillPercentage = ( math.random() * 100 ) <= stancetable.DeadSkillPercentage 
+				if DeadSkillPercentage then 
 				-- "DeadSkillPercentage": 50.0,
-				-- "DeadSkillSelfDeadType": "Custom4",
-				StellarBlade.StartSkillCommand(target,stancetable.DeadSkillAlias) 
+				-- "DeadSkillSelfDeadType": "Custom4", this animset will be played when skill executes 
+				-- "DeadSkillRewardDelayTime": 1000, -- goody drops will delay until after this many miliseconds 
+					StellarBlade.StartSkillCommand(target,stancetable.DeadSkillAlias) 
+				end 
+				self.CastOnKilledSkill = true 
 			else 
 				EvaluateDynamicDamageReaction(self, target, dmginfo) 
 			end 
@@ -4482,14 +4487,8 @@ StellarBlade.SetShow = function(self,showpath,slot,tableOptional)
 		end 
 	end 
 
-	-- local props = showEntry.Properties
-	-- local endTime = props.EndTime or 0 
-	
-	showname = "SB_"..showname 
-	-- self:SBAI_MaintainShow() 
-	-- scripted_ents.GetStored("m_raven").SBAI_MaintainShow(self) 
 	StellarBlade.MaintainShow(self,SBAI_ActiveShow,tableOptional) 
-	return showname -- return true on animation play, false on not play 
+	return SBAI_ActiveShow -- returns you the table 
 end 
 
 StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional) 
@@ -4643,7 +4642,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 		end
 		
 		-- === Handle key types ===
-		if data.Type == "SBShowAnimKey" then 
+				if data.Type == "SBShowAnimKey" then 
 			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor" 
 			local bCheckHitLevel = props.bCheckHitLevel 
 			local CustomAnim = props.CustomAnim 
@@ -4653,44 +4652,91 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 			local BlendInTime = tonumber(props.BlendInTime) or 0.2 
 			local BlendOutTime = tonumber(props.BlendOutTime) or 0.2 
 			local Duration = tonumber(props.Duration) or 0
-			-- Entity(1):ChatPrint(tostring(self).." in SBShowAnimKey: "..tostring(SBAI_ActiveShow))
+			Entity(1):ChatPrint(tostring(self).." in SBShowAnimKey: "..tostring(SBAI_ActiveShow))
 			-- PrintTable(props) 
-
+ 
 			-- Ignore wing/cosmetic mesh slots
 			if isstring(MeshSlot) then continue end 
-
+ 
 			-- Resolve Target entity
 			if Target == "ESBShowActorTarget::ShowActorTarget_MainActor" then 
 				Target = self 
 			elseif Target == "ESBShowActorTarget::ShowActorTarget_OtherActor" then 
 				Target = tableOptional and IsValid(tableOptional.Target) and tableOptional.Target or StellarBlade.PickTarget(self) 
 			end 
-
+ 
 			if not IsValid(Target) then continue end 
-
+ 
 			-- ==========================================
-			-- 1. HIT DIRECTION & ACTIVE ANGLE CALCULATION
+			-- 1. DIRECTION & ACTIVE ANGLE CALCULATION
 			-- ==========================================
-			-- Resolve the reference entity (attacker if Target is victim, opponent if Target is attacker)
-			local refEnt = nil
-			if tableOptional and IsValid(tableOptional.Constructor) and tableOptional.Constructor ~= Target then
-				refEnt = tableOptional.Constructor
-			elseif tableOptional and IsValid(tableOptional.Target) and tableOptional.Target ~= Target then
-				refEnt = tableOptional.Target
-			elseif Target.GetEnemy and IsValid(Target:GetEnemy()) then
-				refEnt = Target:GetEnemy()
-			elseif StellarBlade.PickTarget then
-				refEnt = StellarBlade.PickTarget(Target)
+			-- Where does the direction of this key come from?
+			--   * hit calculation: yaw towards the attacker / opponent (HitDirection, InverseHitDirection, UseAreaDirectionCheck, plain hits)
+			--   * input vector: tableOptional.InputDirection, else the key's DefaultDirection. Used for SkillAttackDirection (and any other
+			--     non-hit type), and for DirectionalAnimation keys that have no direction type but carry a DefaultDirection (lock-on evades).
+			-- InputDirection: normalized Vector in WORLD space (set by StartSkill's SetShow, not implemented yet). A table {X=forward, Y=right}
+			-- in the target's local space is accepted too. DefaultDirection is such a table (FVector2D), e.g. (-1, 0) = behind, (0, -1) = left.
+			local DirectionType = isstring(props.DirectionalAnimationType) and props.DirectionalAnimationType or nil
+			local InputDirection = tableOptional and tableOptional.InputDirection
+			local DefaultDirection = istable(props.DefaultDirection) and props.DefaultDirection or nil
+ 
+			local bVectorDirection = false
+			if DirectionType then
+				bVectorDirection = (string.find(DirectionType, "HitDirection", 1, true) == nil) -- HitDirection / InverseHitDirection are hit based
+			elseif props.AnimSequencePlayType == "ESBShowAnimSequencePlayType::DirectionalAnimation" or props.AnimSequencePlayType == "DirectionalAnimation" then
+				bVectorDirection = (DefaultDirection ~= nil or InputDirection ~= nil)
 			end
-
-			local localYaw = 0
-			if IsValid(refEnt) then
-				local dir = (refEnt:GetPos() - Target:GetPos()):GetNormalized()
-				if not dir:IsZero() then
-					localYaw = math.NormalizeAngle(Target:WorldToLocalAngles(dir:Angle()).yaw)
+ 
+			-- localYaw: direction relative to the target's facing, Source convention (0 = front, +90 = left, +-180 = behind)
+			local localYaw = nil
+ 
+			if bVectorDirection then
+				local Vec2D = nil -- {X = forward, Y = right}, UE axes
+				if isvector(InputDirection) then
+					if not InputDirection:IsZero() then
+						localYaw = math.NormalizeAngle(Target:WorldToLocalAngles(InputDirection:Angle()).yaw)
+					end
+				elseif istable(InputDirection) then
+					Vec2D = InputDirection
+				else
+					Vec2D = DefaultDirection
+				end
+				if Vec2D and ((tonumber(Vec2D.X) or 0) ~= 0 or (tonumber(Vec2D.Y) or 0) ~= 0) then
+					-- UE +Y is right, Source +yaw is left
+					localYaw = math.deg(math.atan2(-(tonumber(Vec2D.Y) or 0), tonumber(Vec2D.X) or 0))
 				end
 			end
-
+ 
+			if localYaw == nil then
+				-- Hit calculation. Resolve the reference entity (attacker if Target is victim, opponent if Target is attacker)
+				local refEnt = nil
+				if tableOptional and IsValid(tableOptional.Constructor) and tableOptional.Constructor ~= Target then
+					refEnt = tableOptional.Constructor
+				elseif tableOptional and IsValid(tableOptional.Target) and tableOptional.Target ~= Target then
+					refEnt = tableOptional.Target
+				elseif Target.GetEnemy and IsValid(Target:GetEnemy()) then
+					refEnt = Target:GetEnemy()
+				elseif StellarBlade.PickTarget then
+					refEnt = StellarBlade.PickTarget(Target)
+				end
+ 
+				if IsValid(refEnt) then
+					local dir = (refEnt:GetPos() - Target:GetPos()):GetNormalized()
+					if not dir:IsZero() then
+						localYaw = math.NormalizeAngle(Target:WorldToLocalAngles(dir:Angle()).yaw)
+					end
+				end
+			end
+ 
+			if localYaw == nil then
+				-- nothing to measure against: the key's DefaultDirection, else straight ahead
+				if DefaultDirection and ((tonumber(DefaultDirection.X) or 0) ~= 0 or (tonumber(DefaultDirection.Y) or 0) ~= 0) then
+					localYaw = math.deg(math.atan2(-(tonumber(DefaultDirection.Y) or 0), tonumber(DefaultDirection.X) or 0))
+				else
+					localYaw = 0
+				end
+			end
+ 
 			local shouldPlay = true
 			if props.CheckActiveType == "ESBShowAnimCheckActiveType::SelfForwardVectorAndSelfToTargetAngle" then
 				local activeMin = props.ActiveMinAngle or -180
@@ -4702,20 +4748,21 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 				end
 				shouldPlay = inAngle
 			end
-
+ 
 			if not shouldPlay then continue end
-
-
+ 
+ 
 			-- ==========================================
 			-- 2. DYNAMIC RESOURCE PATH SELECTION
 			-- ==========================================
-			local rawAnimPath = props.AnimResourcePath
 			local bUseAreaCheck = (props.AnimSequencePlayType == "ESBShowAnimSequencePlayType::UseAreaDirectionCheck")
 				or (props.AnimSequencePlayType == "ESBShowAnimSequencePlayType::DirectionalAnimation")
 				or (props.AnimSequencePlayType == "UseAreaDirectionCheck")
 				or (props.AnimSequencePlayType == "DirectionalAnimation")
 				or tobool(props.bUseAreaDirectionCheck)
-
+			-- 2a. Direction slot (Front / Left / Right / Back) from localYaw. nil = not a directional key.
+			local DirSlot = nil
+			local bFrontFallback = true -- a missing Left / Right / Back entry falls back to the Front one
 			if bUseAreaCheck then
 				local checkType = props.AreaDirectionCheckType
 				local isTwoSideRL = (checkType == 1) 
@@ -4724,73 +4771,119 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 				local isTwoSideFB = (checkType == 2) 
 					or (checkType == "TwoSideFB") 
 					or (isstring(checkType) and string.find(checkType, "TwoSideFB") ~= nil)
-
+ 
 				if isTwoSideRL then
-					-- ==========================================
-					-- TwoSideRL: Split into Left vs Right
-					-- Left:  [0, 180]
-					-- Right: [-180, 0)
-					-- ==========================================
-					if localYaw >= 0 then
-						rawAnimPath = props.LeftAnimResourcePath or props.FrontAnimResourcePath or rawAnimPath
-					else
-						rawAnimPath = props.RightAnimResourcePath or props.FrontAnimResourcePath or rawAnimPath
-					end
-
+					-- TwoSideRL: Left [0, 180], Right [-180, 0)
+					DirSlot = (localYaw >= 0) and "Left" or "Right"
 				elseif isTwoSideFB then
-					-- ==========================================
-					-- TwoSideFB: Split into Front vs Back
-					-- Front: [-90, 90]
-					-- Back:  > 90 or < -90
-					-- ==========================================
-					if localYaw >= -90 and localYaw <= 90 then
-						rawAnimPath = props.FrontAnimResourcePath or rawAnimPath
-					else
-						rawAnimPath = props.BackAnimResourcePath or rawAnimPath
-					end
-
+					-- TwoSideFB: Front [-90, 90], Back > 90 or < -90 (no Front fallback for Back)
+					DirSlot = (localYaw >= -90 and localYaw <= 90) and "Front" or "Back"
+					bFrontFallback = false
+				elseif localYaw >= -45 and localYaw <= 45 then
+					-- FourSide (default): Front [-45, 45], Left (45, 135], Right [-135, -45), Back otherwise
+					DirSlot = "Front"
+				elseif localYaw > 45 and localYaw <= 135 then
+					DirSlot = "Left"
+				elseif localYaw >= -135 and localYaw < -45 then
+					DirSlot = "Right"
 				else
-					-- ==========================================
-					-- FourSide (0 / Default): 4 Quadrants
-					-- Front: [-45, 45]
-					-- Left:  (45, 135]
-					-- Right: [-135, -45)
-					-- Back:  > 135 or < -135
-					-- ==========================================
-					if localYaw >= -45 and localYaw <= 45 then
-						rawAnimPath = props.FrontAnimResourcePath or rawAnimPath
-					elseif localYaw > 45 and localYaw <= 135 then
-						rawAnimPath = props.LeftAnimResourcePath or props.FrontAnimResourcePath or rawAnimPath
-					elseif localYaw >= -135 and localYaw < -45 then
-						rawAnimPath = props.RightAnimResourcePath or props.FrontAnimResourcePath or rawAnimPath
+					DirSlot = "Back"
+				end
+			end
+ 
+			-- 2b. bUseCharacterCustomAnim: pick the ESBCharacterCustomAnim for this direction. "..._Num" means
+			-- "none"; a none entry falls back to Front (like the paths do), then to the plain CustomAnim.
+			-- When nothing valid is left the *AnimResourcePath fields are used instead (Result_Hit_Back).
+			local ResolvedCustomAnim = nil
+			if tobool(props.bUseCharacterCustomAnim) then
+				for i = 1, 3 do
+					local candidate = nil
+					if i == 1 then
+						candidate = DirSlot and props[DirSlot .. "CustomAnim"]
+					elseif i == 2 then
+						candidate = (DirSlot and bFrontFallback) and props.FrontCustomAnim
 					else
-						rawAnimPath = props.BackAnimResourcePath or props.FrontAnimResourcePath or rawAnimPath
+						candidate = CustomAnim
+					end
+					if isstring(candidate) and !string.EndsWith(candidate, "_Num") then
+						ResolvedCustomAnim = candidate
+						break
 					end
 				end
 			end
-			
+ 
+			-- 2c. bUseOptionalAnimationByDirectionalAngle: OptionalAnimationByAngleArray = { AnimResourcePath, MinAngle, MaxAngle }.
+			-- Angles are UE style: 0 = front, 90 = right, 180 = behind, 270 = left; Min > Max wraps through 0 (345 -> 15).
+			-- The flag can be set without the array being filled in; then it is ignored. First matching entry wins.
+			local OptionalPath = nil
+			local OptionalArray = props.OptionalAnimationByAngleArray
+			if tobool(props.bUseOptionalAnimationByDirectionalAngle) and istable(OptionalArray) and #OptionalArray > 0 then
+				local ueAngle = (-localYaw) % 360
+				for _, entry in ipairs(OptionalArray) do
+					local MinAngle = tonumber(entry.MinAngle) or 0
+					local MaxAngle = tonumber(entry.MaxAngle) or 0
+					local bInRange = false
+					if MinAngle <= MaxAngle then
+						bInRange = (ueAngle >= MinAngle and ueAngle <= MaxAngle)
+					else
+						bInRange = (ueAngle >= MinAngle or ueAngle <= MaxAngle)
+					end
+					if bInRange and isstring(entry.AnimResourcePath) and entry.AnimResourcePath != "" then
+						OptionalPath = entry.AnimResourcePath
+						break
+					end
+				end
+			end
+ 
+			local rawAnimPath = nil
+			if ResolvedCustomAnim then
+				-- "ESBCharacterCustomAnim::ESBCharacterCustomAnim_KnockDown_Start_Front" -> "Custom_KnockDown_Start_Front",
+				-- a key of CharacterAnimSetTable. The actor's current stance decides which set it is read from
+				-- (Groggy / Down / Airborne / Battle / Peaceful). nil / "" = this character has no such animation,
+				-- and a valid custom anim that comes back empty is NOT replaced by a path.
+				local AnimSetKey = string.gsub(ResolvedCustomAnim, "^ESBCharacterCustomAnim::ESBCharacter", "")
+				local CustomNum = string.match(AnimSetKey, "^CustomAnim_Custom(%d+)$")
+				if CustomNum then
+					AnimSetKey = "Custom_Anim" .. CustomNum -- "...Custom20" -> "Custom_Anim20", not "Custom_Custom20"
+				else
+					AnimSetKey = string.gsub(AnimSetKey, "Anim", "", 1)
+				end
+				rawAnimPath = StellarBlade.GetActorStanceAnimSet(Target, AnimSetKey)
+			else
+				rawAnimPath = props.AnimResourcePath
+				if OptionalPath then
+					rawAnimPath = OptionalPath
+				elseif DirSlot then
+					rawAnimPath = props[DirSlot .. "AnimResourcePath"] or (bFrontFallback and props.FrontAnimResourcePath) or rawAnimPath
+				end
+			end
+ 
 			local AnimResourcePath = nil
-			if rawAnimPath then
+			if isstring(rawAnimPath) and rawAnimPath != "" then
 				AnimResourcePath = string.StripExtension(string.GetFileFromFilename(rawAnimPath))
 			end
-
-			if not AnimResourcePath or AnimResourcePath == "" then continue end
-
+ 
 			-- ==========================================
 			-- 3. ANIMATION PLAYBACK & STATE RECORDING
 			-- ==========================================
+			-- No path (empty / nil custom anim, e.g. Raven's Groggy set has no hit flinches) or a sequence the model
+			-- does not have: nothing is played. This no longer skips section 4, so actors that are not Stellar Blade
+			-- characters (npc_hunter, npc_antlion...) still get their legacy flinch.
+			local seqID = -1
+			if AnimResourcePath and AnimResourcePath != "" then
+				seqID = Target:LookupSequence(AnimResourcePath)
+			end
+ 
 			local GESTURE_SLOT = GESTURE_SLOT_ATTACK_AND_RELOAD 
-			if CustomAnim and CustomAnim == "ESBCharacterCustomAnim::ESBCharacterCustomAnim_HitStandLight1Back" then 
+			if ResolvedCustomAnim == "ESBCharacterCustomAnim::ESBCharacterCustomAnim_HitStandLight1Back" then 
 				-- GESTURE_SLOT_FLINCH
 				-- change _VCD to _FLINCH when we make sure no other hook is going to use flinch slot 
 				-- noclip uses GESTURE_SLOT_CUSTOM 
 				GESTURE_SLOT = GESTURE_SLOT_VCD 
-			end 
-
-			local seqID = Target:LookupSequence(AnimResourcePath)
+			end
 			if seqID and seqID ~= -1 and seqID ~= ACT_INVALID then
 				local statProxy = StellarBlade.ActorStats(Target)
-
+ 
 				if Target:IsPlayer() then
 					-- Record active animation parameter block on Player's ESBActorStatType table
 					statProxy.ActiveAnimKey = {
@@ -4808,13 +4901,13 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 						FadeOutStartTime = 0,
 						FadeOutStartWeight = 1.0
 					}
-
+ 
 					-- Play gesture
 					Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT, seqID, 0, true)
-					if CustomAnim then -- stop attack animation on flinches 
+					if ResolvedCustomAnim and GESTURE_SLOT ~= GESTURE_SLOT_ATTACK_AND_RELOAD then -- stop attack animation on flinches (never clear the slot we just played in)
 						Target:AddVCDSequenceToGestureSlot(GESTURE_SLOT_ATTACK_AND_RELOAD, 0, 0, true)
 					end
-
+ 
 					-- Network to all clients to synchronize layer playback and Think/UpdateAnimation hooks
 					if SERVER then
 						local netLua = string.format([[
@@ -4855,7 +4948,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 						)
 						BroadcastLua(netLua)
 					end
-
+ 
 				elseif Target:IsNPC() then
 					-- Record state on NPC table
 					statProxy.ActiveAnimKey = {
@@ -4868,7 +4961,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 						Duration         = Duration,
 						StartTime        = CurTime(),
 					}
-
+ 
 					if scripted_ents.GetStored("cycler_actor2").t.NPC_IsSequenceLayered(Target, seqID) then 
 						Target:SetLayerPlaybackRate(Target:AddGestureSequence(seqID, true), 0.5) 
 					else 
@@ -4877,7 +4970,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					end 
 				end
 			end
-
+ 
 			-- ==========================================
 			-- 4. LEGACY HL2 NPC FLINCH/REACTION SUPPORT
 			-- ==========================================
@@ -4907,6 +5000,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					Target:SetSaveValue("m_flNextAttack", 3) 
 				end 
 			end
+
 		elseif data.Type == "SBShowActorKey" then 
 			local bUseActorHidden = props.bUseActorHidden 
 			-- print(data,data.Name,SBAI_ActiveShow) 
@@ -6215,7 +6309,6 @@ end
 
 StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck,sTable) 
 	local ID = SkillStepTable.ID 
-	print("in CheckSkillHit:",self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck,sTable) 
 	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
 	-- trace attack from weapon / radius / sphere / whatever is AttackDirection and call necessary effects 
 	-- moved damage event in ActorStat 
@@ -6256,10 +6349,8 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 	-- tableofhittargets = self:NPC_MeleeAttack(event,etime,cycle,types,options) 
 	-- print("invoking TargetFilter with filtername:",SkillStepTable.OverrideTargetFilterAlias) 
 	local TargetFilterAlias = SkillStepTable.OverrideTargetFilterAlias 
-	print("TargetFilterAlias in SkillStepTable is:",TargetFilterAlias) 
 	if !TargetFilterAlias or TargetFilterAlias == "None" then 
 		if SBAI_SkillTable then TargetFilterAlias = SBAI_SkillTable.TargetFilterAlias end -- default to SkillTable 
-		print("TargetFilterAlias in SBAI_SkillTable is:",TargetFilterAlias) 
 	end 
 	
 	-- SkillHitDetectionType_None               = 0,
@@ -6917,7 +7008,7 @@ function StellarBlade:TargetFilter(filter, Cycle)
 			local p = scripted_ents.GetStored("cycler_actor2").t.NearestPoint2(cand,offsetOrigin)  -- or cand:GetPos(); NearestPoint is safer for big objects
             local dir3 = p - offsetOrigin
             local dist = dir3:Length()
-            if dist < near or dist > far then print("distance rejected:",cand) goto cont3 end
+            if dist < near or dist > far then goto cont3 end
 
             -- center-radius enforcement only if centerRadius is within [near, far]
             local enforceRing = false
@@ -8194,7 +8285,7 @@ StellarBlade.SetSkillStep = function(self, strSkill, SBAI_SkillTable, sTable)
 		for i = 1,#SkillStepTable.UsableTargetProjectileAliasArray do 
 			local event,etime,cycle,types,options 
 			if self.NPC_RangedAttack then 
-				self.NPC_RangedProjectile = "raven_projectile" 
+				if !self.NPC_RangedProjectile then self.NPC_RangedProjectile = "raven_projectile" end 
 				self:NPC_RangedAttack(event,etime,cycle,types,options) 
 			elseif self:IsNPC() then 
 				self.NPC_RangedProjectile = "raven_projectile" 
@@ -8956,7 +9047,11 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 	elseif directionAxis == "ESBMoveDirectionAxis::MoveDirectionAxis_Velocity2D" then 
 		vecMoveDirection = self:GetVelocity() 
     end
-
+	-- MoveDirectionAxis_InputDirectionLocal doesn't have any users 
+	
+	local DefaultInputDirection = CharacterMoveTable.DefaultInputDirection 
+	if DefaultInputDirection == "ESBMoveDefaultInputDirection::MoveDefaultInputDirection_SelfBack" then vecMoveDirection:Mul(-1) end -- default is SelfForward, no other 
+	
     local MoveType = CharacterMoveTable.MoveType 
 	-- print("pre Move Offset Calc:",SysTime()) 
 
@@ -9596,8 +9691,34 @@ StellarBlade.GetRootMotionTransform = function(rootMotionTable, startTime)
     return interpolatedPos, interpolatedAngle
 end 
 
+function StellarBlade:GetActorEffects(EffectAlias)
+	local result = {}
+	local entTable = istable(self) and self or (IsValid(self) and self:GetTable()) or nil
+	local container = entTable and entTable.SB_EffectAlias
+	if !istable(container) then return result end
+ 
+	local function Collect(list) -- list = SB_EffectAlias[alias], an array of instances
+		if !istable(list) then return end
+		for _, inst in ipairs(list) do -- inst.Name is the actual EffectName
+			if istable(inst) and !inst.IsMarkedForDeletion then
+				result[#result + 1] = inst
+			end
+		end
+	end
+ 
+	if EffectAlias != nil and EffectAlias != "" then
+		Collect(container[EffectAlias])
+	else
+		for _, list in pairs(container) do -- key = EffectAlias
+			Collect(list)
+		end
+	end
+	return result
+end
+
+
 -- returns all show key tags a character has been attributed via effects 
-StellarBlade.ShowKeyTagMap = function(self) 
+function StellarBlade:ShowKeyTagMap() 
 	local ShowKeyTag, _ShowKeyTag = { }, { } 
 	if self.SB_EffectAlias then 
 		for k,v in pairs(self.SB_EffectAlias) do 
@@ -9614,7 +9735,7 @@ StellarBlade.ShowKeyTagMap = function(self)
 	return ShowKeyTag 
 end 
 
-function StellarBlade:ESBActorType(ESBActorType) 
+function StellarBlade:ESBActorType(ESBActorType) -- boolean operator to compare whether input matches requested type 
 	-- ActorType_None                           = 0,
 	-- ActorType_PC                             = 1,
 	-- ActorType_NPC                            = 2,
@@ -9622,7 +9743,7 @@ function StellarBlade:ESBActorType(ESBActorType)
 	-- ActorType_BossMonster                    = 4,
 	-- ActorType_MAX                            = 5,
 	if self:IsPlayer() then return ESBActorType == "ESBActorType::ActorType_PC" 
-	elseif self.m_iClass == CLASS_PLAYER then return ESBActorType == "ESBActorType::ActorType_PC" -- bypass player check for NPCs 
+	elseif self.m_iClass == CLASS_PLAYER then return ESBActorType == "ESBActorType::ActorType_PC" -- bypass player check for such NPCs. this is for *_Eve effects 
 	elseif self:IsNPC() and self:Classify() <= CLASS_PLAYER_ALLY_VITAL and self:Classify() != CLASS_NONE then return ESBActorType == "ESBActorType::ActorType_NPC" 
 	elseif self:IsNPC() or self:IsNextBot() then return ESBActorType == "ESBActorType::ActorType_Monster" 
 	else return ESBActorType == "ESBActorType::ActorType_None" 
@@ -9630,12 +9751,38 @@ function StellarBlade:ESBActorType(ESBActorType)
 end 
 
 StellarBlade.ESBAIActorType = function(self,ESBAIActorType) 
+	if ESBAIActorType:find("None") then return 
+	elseif ESBAIActorType:find("Self") then return self 
+	elseif ESBAIActorType:find("SubTarget") then 
+		if self:IsNPC() then return self:GetKnownEnemies()[1] 
+		else 
+			return self.SB_AllTargets[1] 
+		end 
+	elseif ESBAIActorType:find("Owner") then return self:GetOwner() 
+	elseif ESBAIActorType:find("Target") then return self:GetEnemy() 
+	end 
+
 	if ESBAIActorType == "ESBAIActorType::ActorType_None" then return 
 	elseif ESBAIActorType == "ESBAIActorType::ActorType_Self" then return self 
 	elseif ESBAIActorType == "ESBAIActorType::ActorType_Target" then return self:GetEnemy() 
 	elseif ESBAIActorType == "ESBAIActorType::ActorType_Owner" then return self:GetOwner() 
 	elseif ESBAIActorType == "ESBAIActorType::ActorType_SubTarget" then 
+		if self:IsNPC() then return self:GetKnownEnemies()[1] 
+		else 
+			return self.SB_AllTargets[1] 
+		end 
 	end 
+	
+	-- if ActorTail == "SubTarget" and !IsValid(ent) then
+		-- local enemy = self:GetEnemy()
+		-- for _, subent in pairs(self:GetKnownEnemies() or {}) do
+			-- if IsValid(subent) and subent != enemy then
+				-- ent = subent
+				-- break
+			-- end
+		-- end
+	-- end
+	print("investigate unhandled result") 
 end 
 
 StellarBlade.ESBCompare = function(val1,val2,operator) 
@@ -9795,6 +9942,74 @@ end
 	-- return retVal
 -- end
 
+function StellarBlade:GetActorStanceAnimSet(AnimSet)
+	if !isentity(self) or !IsValid(self) or !isstring(AnimSet) then return nil end
+	local sTable = self:GetTable()
+
+	-- CurrentStance lives on the entity table (server); clients only have the networked string
+	local CurrentStance = sTable.CurrentStance
+	if !isstring(CurrentStance) or CurrentStance == "" then
+		CurrentStance = self:GetNWString("CurrentStance")
+	end
+	if CurrentStance == "" then return nil end
+
+	local StanceRows = SB_CharacterStanceTable[1].Rows
+	local AnimSetRows = SB_CharacterAnimSetTable[1].Rows
+	if !StanceRows or !AnimSetRows then return nil end
+
+	local StanceRow = StanceRows[CurrentStance]
+	if !StanceRow then return nil end
+
+	local bAirborne = sTable["ESBActorState::ActorState_Airborne"] != nil
+	local bGroggy = sTable["ESBActorState::ActorState_Groggy"] != nil
+	local bDown = sTable["ESBActorState::ActorState_Down"] != nil
+	local bDead = sTable["ESBActorState::ActorState_Dead"] != nil or !self:Alive()
+
+	-- queue: 1 Dead, 2 Airborne, 3 Groggy, 4 Down, 5 Battle, 6 Peaceful (always active, last resort)
+	local i = 0
+	repeat
+		i = i + 1
+
+		local bActive = false
+		local FieldName = ""
+		if i == 1 then
+			bActive = bDead
+			FieldName = "AnimSet_Dead_UpperBody"
+		elseif i == 2 then
+			bActive = bAirborne
+			FieldName = "AnimSet_Airborne_UpperBody"
+		elseif i == 3 then
+			bActive = bGroggy
+			FieldName = "AnimSet_Groggy_UpperBody"
+		elseif i == 4 then
+			bActive = bDown
+			FieldName = "AnimSet_Down_UpperBody"
+		elseif i == 5 then
+			bActive = StellarBlade.IsBattle(self, sTable) -- only evaluated if nothing above matched
+			FieldName = "AnimSet_Battle_UpperBody"
+		else
+			bActive = true
+			FieldName = "AnimSet_Peaceful_UpperBody"
+		end
+
+		if bActive then
+			local AnimSetName = StanceRow[FieldName]
+			if isstring(AnimSetName) and AnimSetName != "" and AnimSetName != "None" then
+				local AnimSetRow = AnimSetRows[AnimSetName]
+				if istable(AnimSetRow) then
+					local Anim = AnimSetRow[AnimSet]
+					if isstring(Anim) and Anim != "" and Anim != "None" then
+						return Anim
+					end
+					return nil -- this state owns the set but has nothing for AnimSet: no fall-through
+				end
+			end
+		end
+	until i >= 6
+
+	return nil
+end
+
 function StellarBlade:GetActorStances(CharacterName, sTable) 
     local ent = isentity(self) and self or (isentity(CharacterName) and CharacterName or nil) 
     if not IsValid(ent) then return end 
@@ -9947,14 +10162,30 @@ function StellarBlade:UpdateActorStance(CharacterName,sTable)
 		local oldStanceTable = sTable.CurrentStance and SB_CharacterStanceTable[1].Rows[sTable.CurrentStance]
 
 		-- 1. End Old Stance & Purge Stance-Dependent Effects 
+		--[[ 
+		P_Eve_GunBlockSword	[{"Alias":"P_Eve_DroneEquip_CoolTime", "Time":0.1}, {"Alias":"BlockJump", "Time":0.2}]
+		P_Eve_GunTutorial	[{"Alias":"P_Eve_DroneEquip_CoolTime", "Time":0.6}, {"Alias":"BlockJump", "Time":0.2}]
+		P_Eve_Tachy	[{"Alias":"P_Eve_DroneEquip_CoolTime", "Time":1}]
+		P_Eve_GunNikke	[{"Alias":"P_Eve_GunNikke_Block", "Time":0.2}]
+		M_RavenBeast_FlyPhase2	[{"Alias":"M_Common_ImmuneAbnormal_StanceDispel"}]
+		M_ElderPhase2_FlyPhase3	[{"Alias":"M_Common_ImmuneAbnormal_StanceDispel"}]
+		M_ElderPhase2_FlyPhase2	[{"Alias":"M_Common_ImmuneAbnormal_StanceDispel"}]
+		P_Eve_Gun	[{"Alias":"P_Eve_DroneEquip_CoolTime", "Time":0.6}, {"Alias":"BlockJump", "Time":0.2}]
+		M_RavenBeast_FlyPhase3	[{"Alias":"M_Common_ImmuneAbnormal_StanceDispel"}]
+		--]] 
 		if oldStanceTable then
 			if oldStanceTable.EndEffect and oldStanceTable.EndEffect ~= "" then
 				if SERVER then 
 					StellarBlade.AddEffectFromTable(ent, StellarBlade.ParseTableStrings(oldStanceTable.EndEffect)) 
 				end 
 			end
+			--[[ 
+			P_Eve_GunBlockSword	CH_P_EVE_01/Skill/P_Eve_Gun_E_Peaceful
+			P_Eve_GunTutorial	CH_P_EVE_01/Skill/P_Eve_Gun_E
+			P_Eve_Gun	CH_P_EVE_01/Skill/P_Eve_Gun_E
+			--]] 
 			local endShow = StellarBlade.IsBattle(ent,sTable) and oldStanceTable.EndShowPathWhenBattle or oldStanceTable.EndShowPathWhenPeaceful
-			if endShow and endShow ~= "" then
+			if endShow and endShow != "" then
 				StellarBlade.SetShow(ent, endShow, "StanceTransition")
 			end
 		end
@@ -9965,9 +10196,9 @@ function StellarBlade:UpdateActorStance(CharacterName,sTable)
 		-- 2. Apply New Stance Properties
 		sTable.CurrentStance = newStanceName
 		sTable.StanceName = newStanceName
-		local oldType = sTable.Type -- type is used by lua --> c++ api to determine metatable pointer, but also for some other purpose in uengine. do not let it be overridden 
-		table.Merge(ent:GetTable(), newStanceTable)
-		sTable.Type = oldType 
+		-- local oldType = sTable.Type -- type is used by lua --> c++ api to determine metatable pointer, but also for some other purpose in uengine. do not let it be overridden 
+		-- table.Merge(ent:GetTable(), newStanceTable)
+		-- sTable.Type = oldType 
 
 		if ent.SetMaxYawSpeed and newStanceTable.RotateAnglePerSecond then
 			ent:SetMaxYawSpeed(newStanceTable.RotateAnglePerSecond)
@@ -9988,6 +10219,77 @@ function StellarBlade:UpdateActorStance(CharacterName,sTable)
 	return sTable.CurrentStance, newStanceTable
 end
 
+local TRIBE_REL_ENEMY = "ESBTribeRelation::TribeRelation_Enemy"
+local TRIBE_REL_ALLY  = "ESBTribeRelation::TribeRelation_Ally"
+local TRIBE_REL_NONE  = "ESBTribeRelation::TribeRelation_None"
+
+--[[-------------------------------------------------------------------------
+    StellarBlade.GetTribeRelation(ent1, ent2)
+    
+    1. Checks ent1's Tribe. Returns nil if missing.
+    2. Looks up ent1's tribe row in SB_CharacterTribeTable[1].Rows.
+    3. Matches against ent2's tribe.
+    4. Returns "ESBTribeRelation::TribeRelation_Enemy" or "ESBTribeRelation::TribeRelation_Ally".
+    5. Returns "ESBTribeRelation::TribeRelation_None" if no match is found.
+---------------------------------------------------------------------------]]
+function StellarBlade.GetTribeRelation(ent1, ent2)
+	-- ent1 must have a valid Tribe attribute
+	if not ent1 or not ent1.Tribe or ent1.Tribe == "" or ent1.Tribe == "None" then
+		return nil
+	end
+
+	-- Retrieve tribe data table
+	local tribeTable = SB_CharacterTribeTable[1].Rows
+
+	local row = tribeTable[ent1.Tribe]
+	if !row then return nil end
+
+	-- Resolve ent2's tribe (supports entity, table, or direct tribe name string)
+	local tribe2 = nil
+	if type(ent2) == "string" then
+		tribe2 = ent2
+	elseif (isentity(ent2) or type(ent2) == "table") and ent2.Tribe then
+		tribe2 = ent2.Tribe
+	end
+
+	if not tribe2 or tribe2 == "" or tribe2 == "None" then
+		return TRIBE_REL_NONE
+	end
+
+	-- Check slots 1 to 10 for matching tribe
+	for i = 1, 10 do
+		local targetTribe = row["TargetTribe" .. i]
+		if targetTribe == tribe2 then
+			local relation = row["TargetRelation" .. i]
+			if relation == TRIBE_REL_ENEMY or relation == TRIBE_REL_ALLY then
+				return relation
+			end
+		end
+	end
+
+	return TRIBE_REL_NONE
+end
+
+--[[-------------------------------------------------------------------------
+    StellarBlade.GetTribeDisposition(ent1, ent2)
+    
+    Calls StellarBlade.GetTribeRelation:
+    - Returns D_HT on Enemy.
+    - Returns D_LI on Ally.
+    - Returns nil on None or missing relation.
+---------------------------------------------------------------------------]]
+function StellarBlade.GetTribeDisposition(ent1, ent2) -- you can safely do function ENT:GetRelationship(ent) return StellarBlade.GetTribeRelation(self,ent) or scripted_ents.GetStored("cycler_actor2").t.GetRelationship(self,ent) end 
+	local relation = StellarBlade.GetTribeRelation(ent1, ent2)
+
+	if relation == TRIBE_REL_ENEMY then
+		return D_HT
+	elseif relation == TRIBE_REL_ALLY then
+		return D_LI
+	end
+
+	return nil
+end
+
 local tableofpassiveweapons = {
     ["weapon_physgun"] = true, 
     ["gmod_camera"] = true, 
@@ -10002,6 +10304,7 @@ function StellarBlade:IsBattle(sTable)
         return sTable._SB_IsBattle
     end
     sTable._SB_LastBattleCheck = curTime
+	if sTable["ESBActorState::ActorState_BattleMode"] then return true end 
 
     if self:IsPlayer() then 
         local wep = self:GetActiveWeapon()
