@@ -1,200 +1,177 @@
--- P_D_RavenHuman_AnimTrail_Loop_01 
-EFFECT.Mat = Material("trails/t_c_animtrail_02") 
-EFFECT.SegmentLifetime = 0.4 
+-- P_D_RavenHuman_AnimTrail_Loop_01 (Stellar Blade - Raven Human AnimTrail)
+EFFECT.Mat = Material("sprites/mi_d_ravenhuman_animtraildefault_02")
+EFFECT.SegmentLifetime = 0.4
+EFFECT.Padding = Vector(32, 32, 32)
+
+-- File-level reusable structures to eliminate GC garbage
+local tempMatrix = Matrix()
+local tempMins   = Vector()
+local tempMaxs   = Vector()
+local tempPos1   = Vector()
+local tempPos2   = Vector()
+local tempMid    = Vector()
+local tempDir    = Vector()
+
 function EFFECT:Init(data)
     self.Entity = data:GetEntity()
-	self.Scale = data:GetScale() -- LifeTime, update to GetMagnitude 
-	-- print("scale:",self.Scale) 
-	self.Attachment = data:GetAttachment() -- hand attachment 
-	self.DieTime = CurTime() + self.Scale 
-	if !self.Attachment or self.Attachment == 0 then self.Attachment = 1 end 
-	-- Unreal SBShowTrailKey Duration
-    -- self.DieTime = CurTime() + self.DieTime -- append dietime 
-	if data:GetScale() <= 0 then self.DieTime = -1 end -- infinite 
-	self.CumulativeLengths = {}      -- optional: cumulative length at each insertion
-	-- print(CurTime(),self.DieTime) 
+    self.Scale = data:GetScale() -- Lifetime duration from SBShowTrailKey
+    self.DieTime = (self.Scale > 0) and (CurTime() + self.Scale) or -1
 
     self.TrailPoints = {}
-    if !IsValid(self.Entity) then return end
+    if not IsValid(self.Entity) then return end
 
-    -- print("raven trail created", self, self.Entity)
-	self:SetPos(self.Entity:GetPos()) 
-    self:SetParent(self.Entity) 
-    -- self:SetModel(self.Entity:GetModel()) -- to enable rendering. don't touch 
-	-- PrintTable(self:GetTable()) 
+    self:SetPos(self.Entity:GetPos())
+    self:SetParent(self.Entity)
 
-    -- self.Attachment1 = self.Entity:LookupAttachment("ValveBiped.Bip01_L_Hand")
-    -- self.Attachment2 = self.Entity:LookupAttachment("ValveBiped.Bip01_R_Hand")
-    -- if self.Attachment1 == 0 or self.Attachment2 == 0 then return end
-	self.Attachment1 = 70 -- forward distance, grip of the sword 
-	self.Attachment2 = 9 -- forward distance, tip of the sword 
+    -- Sword attachment offsets (grip vs tip)
+    self.Attachment1 = 70 -- Grip offset along bone -Up
+    self.Attachment2 = 9  -- Tip offset along bone -Up
+
+    self.LastPos1 = Vector()
+    self.LastPos2 = Vector()
 
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
-    if not pos1 or not pos2 then return end
+    if pos1 and pos2 then
+        self.LastPos1:Set(pos1)
+        self.LastPos2:Set(pos2)
+        self:AddSegment(pos1, pos2)
+    end
 
-    self.LastPos1, self.LastPos2 = pos1, pos2
-    self:AddSegment(pos1, pos2)
     self:SetRenderBounds(Vector(-256, -256, -256), Vector(256, 256, 256))
-	-- print("render bounds set") 
-	-- print(self:GetPos()) 
-end 
+end
 
-function EFFECT:GetRenderEntity() 
-	if !IsValid(GetViewEntity():GetActiveWeapon()) then return self.Entity end 
-	if self.Entity == GetViewEntity():GetActiveWeapon() then 
-		if GetViewEntity():IsPlayer() and !GetViewEntity():ShouldDrawLocalPlayer() then 
-			return GetViewEntity():GetViewModel() 
-		end 
-	end 
-	return self.Entity 
-end 
+function EFFECT:GetRenderEntity()
+    local viewEnt = GetViewEntity()
+    if not IsValid(viewEnt) or not viewEnt:IsPlayer() then 
+        return self.Entity 
+    end
 
--- Prefer real attachments if the model has them. Fallback to bone + offset.
+    local activeWep = viewEnt:GetActiveWeapon()
+    if not IsValid(activeWep) then 
+        return self.Entity 
+    end
+
+    -- If locally held weapon in first-person, target viewmodel
+    if self.Entity == activeWep and not viewEnt:ShouldDrawLocalPlayer() then 
+        local vm = viewEnt:GetViewModel()
+        if IsValid(vm) then
+            return vm
+        end
+    end
+
+    return self.Entity
+end
+
 function EFFECT:GetAttachmentPos(id)
-	local GetRenderEntity = self:GetRenderEntity() 
-    if !IsValid(GetRenderEntity) then return end
+    local renderEnt = self:GetRenderEntity()
+    if not IsValid(renderEnt) then return end
 
-    -- try GetAttachment (works when model has named attachments)
-    -- if self.Entity.GetAttachment then
-        -- local ok, att = pcall(self.Entity.GetAttachment, self.Entity, id)
-        -- if ok and att and att.Pos then
-            -- return att.Pos
-        -- end
-    -- end
-
-    -- fallback: lookup a reasonable bone and offset by forward/up depending on id meaning
-    local handBone = GetRenderEntity:LookupBone("ValveBiped.Bip01_R_Hand")
-    if !handBone then
-        -- try any bone idx 0
+    local handBone = renderEnt:LookupBone("ValveBiped.Bip01_R_Hand") or 0
+    if not handBone or handBone < 0 then
         handBone = 0
     end
 
-    local matrix = GetRenderEntity:GetBoneMatrix(handBone)
-    if !matrix then return end
+    -- Copy bone transform into temp matrix without heap allocations
+    renderEnt:CopyBoneMatrix(handBone, tempMatrix)
 
-    local pos = matrix:GetTranslation()
-    local ang = matrix:GetAngles()
-    pos = pos - ang:Up() * id
+    local pos = tempMatrix:GetTranslation()
+    local up = tempMatrix:GetUp()
+    up:Mul(id)
+    pos:Sub(up)
 
     return pos
 end
 
 function EFFECT:AddSegment(pos1, pos2)
-    local now = CurTime()
-    local segLen = pos1:Distance(pos2)
-    -- maintain cumulative length for UV calculation
-    self.TotalLength = (self.TotalLength or 0) + segLen
-
     table.insert(self.TrailPoints, 1, {
         pos1 = pos1,
         pos2 = pos2,
-        timestamp = now,
-        segLen = segLen,
-        cumulative = self.TotalLength
+        timestamp = CurTime()
     })
 end
 
 function EFFECT:PruneSegments()
     local t = CurTime()
-    local removedLen = 0
+    local lifetime = self.SegmentLifetime
     for i = #self.TrailPoints, 1, -1 do
-        if (t - self.TrailPoints[i].timestamp) > self.SegmentLifetime then
-            removedLen = removedLen + (self.TrailPoints[i].segLen or 0)
+        if (t - self.TrailPoints[i].timestamp) > lifetime then
             table.remove(self.TrailPoints, i)
         end
     end
-    -- subtract removed length from total so cumulative stays consistent
-    self.TotalLength = math.max(0, (self.TotalLength or 0) - removedLen)
-end 
+end
 
 function EFFECT:UpdateRenderBounds()
-    -- Don't try to calculate bounds if there are no points
-    if not self.TrailPoints or #self.TrailPoints == 0 then return end
+    local count = #self.TrailPoints
+    if count == 0 then return end
 
-    -- Initialize mins and maxs with the first point of the first segment
-    -- We must :Copy() to avoid modifying the vector in the table
-    local mins = Vector(self.TrailPoints[1].pos1)
-    local maxs = Vector(self.TrailPoints[1].pos1)
+    local p1 = self.TrailPoints[1].pos1
+    local minX, minY, minZ = p1.x, p1.y, p1.z
+    local maxX, maxY, maxZ = p1.x, p1.y, p1.z
 
-    -- Iterate through all segments to expand the bounds
-    for i = 1, #self.TrailPoints do
+    for i = 1, count do
         local seg = self.TrailPoints[i]
+        local s1 = seg.pos1
+        local s2 = seg.pos2
 
-		--- Expand the AABB to include this segment's pos1 ---
-        -- Compare and set minimums
-        mins.x = math.min(mins.x, seg.pos1.x)
-        mins.y = math.min(mins.y, seg.pos1.y)
-        mins.z = math.min(mins.z, seg.pos1.z)
+        if s1.x < minX then minX = s1.x end
+        if s1.y < minY then minY = s1.y end
+        if s1.z < minZ then minZ = s1.z end
+        if s1.x > maxX then maxX = s1.x end
+        if s1.y > maxY then maxY = s1.y end
+        if s1.z > maxZ then maxZ = s1.z end
 
-        -- Compare and set maximums
-        maxs.x = math.max(maxs.x, seg.pos1.x)
-        maxs.y = math.max(maxs.y, seg.pos1.y)
-        maxs.z = math.max(maxs.z, seg.pos1.z)
-
-        -- --- Expand the AABB to include this segment's pos2 ---
-        -- Compare and set minimums
-        mins.x = math.min(mins.x, seg.pos2.x)
-        mins.y = math.min(mins.y, seg.pos2.y)
-        mins.z = math.min(mins.z, seg.pos2.z)
-
-        -- Compare and set maximums
-        maxs.x = math.max(maxs.x, seg.pos2.x)
-        maxs.y = math.max(maxs.y, seg.pos2.y)
-        maxs.z = math.max(maxs.z, seg.pos2.z)
+        if s2.x < minX then minX = s2.x end
+        if s2.y < minY then minY = s2.y end
+        if s2.z < minZ then minZ = s2.z end
+        if s2.x > maxX then maxX = s2.x end
+        if s2.y > maxY then maxY = s2.y end
+        if s2.z > maxZ then maxZ = s2.z end
     end
 
-    -- Add a small amount of padding (e.g., 16 units)
-    -- This helps prevent the trail from being culled if it's
-    -- right at the edge of the screen or view.
-    local padding = Vector(16, 16, 16)
+    tempMins:SetUnpacked(minX, minY, minZ)
+    tempMaxs:SetUnpacked(maxX, maxY, maxZ)
 
-    -- Set the world-space render bounds as requested
-    -- self:SetRenderBoundsWS( mins, maxs, add )
-    self:SetRenderBoundsWS(mins, maxs, padding)
+    self:SetRenderBoundsWS(tempMins, tempMaxs, self.Padding)
 end
 
 function EFFECT:Think()
-	local GetRenderEntity = self:GetRenderEntity() 
-	if !IsValid(GetRenderEntity) then return false end 
-	self:SetLocalPos(GetRenderEntity:GetLocalPos()) 
-	if self.DieTime > 0 then 
-		if CurTime() > self.DieTime then return false end 
-	end 
-	if GetRenderEntity:GetNoDraw() then -- may enable rendering afterwards, don't update stats but keep effect entity 
-		return true 
-	end 
+    local renderEnt = self:GetRenderEntity()
+    if not IsValid(renderEnt) then return false end
+    -- self:SetLocalPos(renderEnt:GetLocalPos())
+
+    if self.DieTime > 0 and CurTime() > self.DieTime then
+        return false
+    end
 
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
-	-- debugoverlay.Cross(pos1,32,1) 
-	-- debugoverlay.Cross(pos2,32,1) 
-    if !pos1 or !pos2 then return false end
+    if not pos1 or not pos2 then return false end
 
-    -- Only add a new segment when positions moved a small epsilon to avoid duplicates
-    if !pos1:IsEqualTol(self.LastPos1 or vector_origin,0.1) or !pos2:IsEqualTol(self.LastPos2 or vector_origin,0.1) then
-        self:AddSegment(pos1, pos2)
-        self.LastPos1, self.LastPos2 = pos1, pos2
+    if renderEnt:GetNoDraw() then
+        self.LastPos1:Set(pos1)
+        self.LastPos2:Set(pos2)
+        return true
     end
 
-    self:PruneSegments() 
-	self:UpdateRenderBounds()
+    -- Add segment when blade moves
+    if not pos1:IsEqualTol(self.LastPos1, 0.1) or not pos2:IsEqualTol(self.LastPos2, 0.1) then
+        self:AddSegment(pos1, pos2)
+        self.LastPos1:Set(pos1)
+        self.LastPos2:Set(pos2)
+    end
+
+    self:PruneSegments()
+    self:UpdateRenderBounds()
     return true
 end
 
--- tuning
--- EFFECT.BaseWidth = 32.0         -- manual width in world units (raise to make thicker)
-EFFECT.WidthMultiplier = 1.0    -- global scale
-EFFECT.WidthMin = 10.0           -- never thinner than this
-EFFECT.WidthMax = 50.0          -- never wider than this
--- EFFECT.ScaleByAttachmentDistance = false -- set true to use distance(pos1,pos2) as base width
-
--- optional width-over-life curve: lifeFrac in [0..1] => multiplier
--- example: start full, slightly grow, then shrink to zero
+-- Ribbon width tuning
+EFFECT.WidthMultiplier = 1.0
 EFFECT.WidthCurve = {
     {0.0, 1.0},
-    {0.2, 1.2},
-    {0.7, 0.6},
+    {0.2, 1.1},
+    {0.7, 0.7},
     {1.0, 0.0}
 }
 
@@ -206,61 +183,87 @@ local function SampleCurve(tbl, t)
         local bT, bV = tbl[i][1], tbl[i][2]
         if t <= bT then
             local range = bT - aT
-            -- Prevent division by zero if time values are identical
             if range == 0 then return aV end
-            local frac = (t - aT) / range
-            return Lerp(frac, aV, bV)
+            return Lerp((t - aT) / range, aV, bV)
         end
     end
     return tbl[#tbl][2]
 end
 
--- modify Render's width calculation to use these params
 function EFFECT:Render()
-    if !self.TrailPoints or #self.TrailPoints < 2 then return end
+	local sTable = self:GetTable() 
+    local count = #sTable.TrailPoints
+    if count < 2 then return end
 
-    render.SetMaterial(self.Mat)
-    mesh.Begin(MATERIAL_TRIANGLE_STRIP, #self.TrailPoints * 2)
+    render.SetMaterial(sTable.Mat)
+    mesh.Begin(MATERIAL_TRIANGLE_STRIP, count * 2)
 
-    for i = #self.TrailPoints, 1, -1 do
-        local seg = self.TrailPoints[i]
-        local lifeFrac = math.Clamp((CurTime() - seg.timestamp) / self.SegmentLifetime, 0, 1)
+    local now = CurTime()
+    local lifetime = sTable.SegmentLifetime
+    local widthMult = sTable.WidthMultiplier
 
-        -- --- Appearance Calculation ---
-        local alpha = math.sin(math.pi * (1 - lifeFrac)) * 255
-        local intensity = Lerp(lifeFrac, 1.5, 0.0)
-        local trailColor = Color(0, 1800 * intensity, 2550 * intensity, alpha)
+    -- Render from oldest segment (tail) to newest (blade edge)
+    for i = count, 1, -1 do
+        local seg = sTable.TrailPoints[i]
+        local lifeFrac = math.Clamp((now - seg.timestamp) / lifetime, 0, 1)
 
-        -- --- Vertex Position & Width Calculation ---
-        local pos1 = seg.pos1
-        local pos2 = seg.pos2
-        local lifeMultiplier = SampleCurve(self.WidthCurve, lifeFrac)
+        -- 1. ColorScaleOverLife & AlphaScaleOverLife matching Stellar Blade JSON:
+        -- Birth (0.0): White-hot 5x bloom core (R: 220, G: 255, B: 255)
+        -- Mid-life: Radiant Cyan (R: 0, G: 178, B: 255)
+        -- Dissolving: Deep Electric Blue (R: 0, G: 68, B: 255)
+        local coreBoost = math.max(0, 1.0 - lifeFrac * 5.0) -- First 20% of life
+        local r = math.min(255, coreBoost * 220)
+        local g = math.min(255, Lerp(lifeFrac, 178, 68) + coreBoost * 77)
+        local b = 255
 
-        if self.WidthMultiplier != 1.0 or lifeMultiplier != 1.0 then
-            local midPoint = (pos1 + pos2) * 0.5
-            local direction = pos2 - pos1
-            if direction:LengthSqr() > 0.01 then
-                direction:Normalize()
-                local width = pos1:Distance(pos2) * self.WidthMultiplier * lifeMultiplier
-                pos1 = midPoint - direction * (width * 0.5)
-                pos2 = midPoint + direction * (width * 0.5)
+        -- AlphaScaleOverLife: Solid opacity at blade, decaying smoothly to tail
+        local alphaFrac = math.Clamp(1.0 - math.max(0, lifeFrac - 0.2) * 1.25, 0, 1)
+        local a = alphaFrac * 255
+
+        -- 2. Vertex calculations without heap allocations:
+        tempPos1:Set(seg.pos1)
+        tempPos2:Set(seg.pos2)
+
+        local lifeMultiplier = SampleCurve(sTable.WidthCurve, lifeFrac)
+        if widthMult ~= 1.0 or lifeMultiplier ~= 1.0 then
+            -- tempDir = pos2 - pos1
+            tempDir:Set(tempPos2)
+            tempDir:Sub(tempPos1)
+
+            local lenSqr = tempDir:LengthSqr()
+            if lenSqr > 0.01 then
+                local currentDist = math.sqrt(lenSqr)
+                tempDir:Div(currentDist) -- Normalized direction
+
+                -- tempMid = (pos1 + pos2) * 0.5
+                tempMid:Set(tempPos1)
+                tempMid:Add(tempPos2)
+                tempMid:Mul(0.5)
+
+                local halfWidth = currentDist * widthMult * lifeMultiplier * 0.5
+                tempDir:Mul(halfWidth)
+
+                tempPos1:Set(tempMid)
+                tempPos1:Sub(tempDir)
+
+                tempPos2:Set(tempMid)
+                tempPos2:Add(tempDir)
             end
         end
 
-        -- --- UV Mapping ---
-        local vCoord = 1 - (i / #self.TrailPoints)
+        -- 3. UV Mapping for T_C_AnimTrail_02:
+        -- U: 0 at fresh blade edge -> 1 at faded tail
+        -- V: 0 at sword grip (Pos1) -> 1 at sword tip (Pos2)
+        local uCoord = lifeFrac
 
-        -- --- Build the Mesh ---
-        -- Add the first vertex (Grip Side)
-        mesh.Position(pos1)
-        mesh.TexCoord(0, 0, vCoord)
-        mesh.Color(trailColor.r, trailColor.g, trailColor.b, trailColor.a)
+        mesh.Position(tempPos1)
+        mesh.TexCoord(0, uCoord, 0)
+        mesh.Color(r, g, b, a)
         mesh.AdvanceVertex()
 
-        -- Add the second vertex (Tip Side)
-        mesh.Position(pos2)
-        mesh.TexCoord(0, 1, vCoord)
-        mesh.Color(trailColor.r, trailColor.g, trailColor.b, trailColor.a)
+        mesh.Position(tempPos2)
+        mesh.TexCoord(0, uCoord, 1)
+        mesh.Color(r, g, b, a)
         mesh.AdvanceVertex()
     end
 
