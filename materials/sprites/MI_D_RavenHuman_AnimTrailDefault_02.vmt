@@ -1,0 +1,36 @@
+"UnlitGeneric"
+{
+    // --- Base Texture (T_C_AnimTrail_02 - Image 1) ---
+    // The core slash silhouette and horizontal motion falloff
+    "$basetexture"            "sprites/t_c_animtrail_02"
+
+    // --- Blending & Geometry (Matches UE4 Material Instance Overrides) ---
+    "$additive"               "1"       // EBlendMode::BLEND_Additive
+    "$nocull"                 "1"       // TwoSided: true
+    "$translucent"            "1"
+
+    // --- Vertex Pipeline for GMod Lua EFFECT / Particle Control ---
+    // Allows Lua (or particles) to inject the cyan color and life fade
+    "$vertexcolor"            "1"       // Multiplies trail vertex color (Cyan / HDR glow)
+    "$vertexalpha"            "1"       // Controls opacity fade over the 0.4s lifetime
+
+    // --- Detail / Noise Layer (T_A_StreakNoise_07 - Image 3) ---
+    // Simulates the plasma turbulence and "Hardness" / "UvNoise" parameter
+    "$detail"                 "sprites/t_a_streaknoise_07"
+    "$detailscale"            "[ 2.0 1.0 ]"
+    "$detailblendfactor"      "1.35"    // BaseTrailHardness = 1.35
+    "$detailblendmode"        "1"       // Multiply: carves sharp energetic filaments into the base sweep
+	"$model" "1"
+
+    // --- Material Proxies (Dynamic Animation) ---
+    "Proxies"
+    {
+        // Scrolls the streak/noise texture along the trail to simulate "UvNoise"
+        "TextureScroll"
+        {
+            "textureScrollVar"    "$detailtexturetransform"
+            "textureScrollRate"   "1.2"     // Matches the UvNoise max scale (0.7 -> 1.2)
+            "textureScrollAngle"  "180"       // Scrolls horizontally along the slash direction
+        }
+    }
+}
