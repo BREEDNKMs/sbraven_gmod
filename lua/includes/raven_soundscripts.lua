@@ -1,5 +1,15 @@
 sound.Add( 
 { 
+    name = "Weapon_StunStick.Deactive", 
+    channel = CHAN_WEAPON, 
+    volume = 0.7, 
+    soundlevel = SNDLVL_NORM, 
+	pitch = {98,102}, 
+    sound = {")weapons/stunstick/spark1.wav",")weapons/stunstick/spark2.wav",")weapons/stunstick/spark3.wav"} 
+}) 
+
+sound.Add( 
+{ 
     name = "NPC_Raven.PainSound", -- Light Damage 
     channel = CHAN_VOICE, 
     volume = 1, 
@@ -1012,3 +1022,638 @@ sound.Add(
     soundlevel = 100, 
     sound = {"Character/Cloth_new/PC/PC_Cloth_Hard_M_1.wav","Character/Cloth_new/PC/PC_Cloth_Hard_M_2.wav","Character/Cloth_new/PC/PC_Cloth_Hard_M_3.wav","Character/Cloth_new/PC/PC_Cloth_Hard_M_4.wav"}
 }) 
+sound.Add( 
+{ 
+    name = "EVE_SE_ClothShort", 
+    channel = CHAN_AUTO, 
+    volume = 1, 
+    soundlevel = 100, 
+    sound = {"Character/Cloth_new/PC/PC_Cloth_S_1.wav","Character/Cloth_new/PC/PC_Cloth_S_2.wav","Character/Cloth_new/PC/PC_Cloth_S_3.wav","Character/Cloth_new/PC/PC_Cloth_S_4.wav"}
+}) 
+sound.Add( 
+{ 
+    name = "EVE_SE_ClothMid", 
+    channel = CHAN_AUTO, 
+    volume = 1, 
+    soundlevel = 100, 
+    sound = {"Character/Cloth_new/PC/PC_Cloth_M_5.wav","Character/Cloth_new/PC/PC_Cloth_M_6.wav","Character/Cloth_new/PC/PC_Cloth_M_1.wav","Character/Cloth_new/PC/PC_Cloth_M_2.wav","Character/Cloth_new/PC/PC_Cloth_M_3.wav","Character/Cloth_new/PC/PC_Cloth_M_4.wav"}
+}) 
+sound.Add( 
+{ 
+    name = "M_GorillaB_Skill_Impact", 
+    channel = CHAN_AUTO, 
+    volume = 1, 
+    soundlevel = 100, 
+    sound = {"Skill/Monster/WeaponMaster/M_WeaponMaster_Skill_Impact.wav","Character/Hit/PCHitSound/Barnacle/CSS_Hit_Barnacle_Strong_2.wav","Effect/SE_Rock_Break_01.wav"}
+}) 
+
+sound.Add( 
+{ 
+    name = "eve_vo_dmg2_Cue", 
+    channel = CHAN_VOICE, 
+    volume = 1, 
+    soundlevel = 100, 
+    sound = {"dialogue/actionvoice/eve/vo_eve_dmg_m1_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m2_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m3_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m4_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m5_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m6_vo.wav","dialogue/actionvoice/eve/vo_eve_dmg_m7_vo.wav"}
+}) 
+sound.Add( 
+{ 
+    name = "PC_Evade_M_Cue", 
+    channel = CHAN_AUTO, 
+    volume = 1, 
+    soundlevel = 100, 
+    sound = {"Skill/PC/Evade/PC_Evade_M_1.wav","Skill/PC/Evade/PC_Evade_M_2.wav","Skill/PC/Evade/PC_Evade_M_3.wav"}
+}) 
+
+-- ============================================================================
+-- Generated Source Soundscripts (sound.Add) for ch_m_na_03
+-- ============================================================================
+
+sound.Add({
+    name = "Mon_texture_mutate_1_cue",
+    channel = CHAN_AUTO,
+    volume = 0.07,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mutate/mon_texture_mutate_1_03.wav",
+        "motion/monster/texture/mutate/mon_texture_mutate_1_01.wav",
+        "motion/monster/texture/mutate/mon_texture_mutate_1_02.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_bodyfall_s_mud_cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "footsteps/monster/bodyfall/mon_bodyfall_s_mud_02.wav",
+        "footsteps/monster/bodyfall/mon_bodyfall_s_mud_01.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_dmg_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_dmg_04.wav",
+        "voice/monster/clriket/mon_clriket_vo_dmg_03.wav",
+        "voice/monster/clriket/mon_clriket_vo_dmg_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_dmg_01.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_growl_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.05,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "mon/clriket/eve_mon_clriket_skill1.wav",
+        "mon/clriket/eve_mon_clriket_skill2.wav",
+        "mon/clriket/eve_mon_clriket_skill3.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_texture_mutate_2_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.3,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mutate/mon_texture_mutate_2_02.wav",
+        "motion/monster/texture/mutate/mon_texture_mutate_2_01.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_sharp_s_cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = { 90, 110 },
+    sound = "character/skill/eve_se_swishshort1.wav"
+})
+
+sound.Add({
+    name = "MON_Clriket_vo_idle_cue",
+    channel = CHAN_AUTO,
+    volume = 0.3,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_idle_05.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_06.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_03.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_04.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_growl_short_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_growl_short_03.wav",
+        "voice/monster/clriket/mon_clriket_vo_growl_short_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_growl_short_02.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_l1_cue",
+    channel = CHAN_AUTO,
+    volume = 0.65,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "motion/monster/swish/mon_swish_l1_02.wav",
+        "motion/monster/swish/mon_swish_l1_01.wav",
+        "character/skill/eve_se_swishlong4.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Bodyfall_M_Default_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.6,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "footsteps/monster/mon_bodyfall_m_default_1.wav",
+        "footsteps/monster/mon_bodyfall_m_default_2.wav",
+        "footsteps/monster/mon_bodyfall_m_default_3.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_m_scratch_cue",
+    channel = CHAN_AUTO,
+    volume = 0.56,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "character/skill/swing_sword_short_07.wav",
+        "motion/monster/swish/sfx_scratch_1.wav",
+        "motion/monster/swish/sfx_scratch_2.wav",
+        "motion/monster/swish/sfx_scratch_3.wav",
+        "character/skill/swing_sword_short_06.wav",
+        "motion/monster/swish/mon_swish_l1_02.wav",
+        "character/skill/swing_sword_short_08.wav",
+        "character/skill/swing_sword_short_09.wav",
+        "motion/monster/swish/mon_swish_l1_01.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_atk_l_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_atk_l_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_l_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_l_04.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_texture_wet_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.11,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/wet/mon_texture_wet_01.wav",
+        "motion/monster/texture/wet/mon_texture_wet_02.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_atk_s_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_atk_s_04.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_s_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_s_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_s_03.wav"
+    }
+})
+
+sound.Add({
+    name = "NPCSpawn_DED01_ClriketAttack01_Clriket_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = "levelseq/clriket/npcspawn_ded01_clriketattack01_clriket.wav"
+})
+
+sound.Add({
+    name = "M_Clirket_Swish_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.8,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "motion/monster/swish/sfx_scratch_1.wav",
+        "motion/monster/swish/sfx_scratch_2.wav",
+        "motion/monster/swish/sfx_scratch_3.wav",
+        "motion/monster/swish/mon_swish_l1_02.wav",
+        "motion/monster/swish/mon_swish_l1_01.wav",
+        "character/skill/eve_se_swishlong4.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clirket_Swish_M_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "character/skill/swing_sword_short_07.wav",
+        "motion/monster/swish/sfx_scratch_1.wav",
+        "motion/monster/swish/sfx_scratch_2.wav",
+        "motion/monster/swish/sfx_scratch_3.wav",
+        "character/skill/swing_sword_short_06.wav",
+        "motion/monster/swish/mon_swish_l1_02.wav",
+        "character/skill/swing_sword_short_08.wav",
+        "character/skill/swing_sword_short_09.wav",
+        "motion/monster/swish/mon_swish_l1_01.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_texture_mutate_4_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.5,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mutate/mon_texture_mutate_4_1.wav",
+        "motion/monster/texture/mutate/mon_texture_mutate_4_2.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_foot_insect_s_short_cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "footsteps/monster/mon_foot_insect_s_short_02.wav",
+        "footsteps/monster/mon_foot_insect_s_short_01.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Skill_Impact_GRAB_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = 100,
+    sound = {
+        "character/hit/pchitsound/barnacle/css_hit_barnacle_strong_2.wav",
+        "skill/monster/weaponmaster/m_weaponmaster_skill_impact.wav",
+        "effect/se_rock_break_01.wav",
+        "effect/se_rock_break_03.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Skill_Stab_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.3,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "character/hit/pchitsound/result_hit_impactprojectile_2.wav",
+        "character/hit/pchitsound/result_hit_impactpierce_strong05.wav",
+        "character/hit/pchitsound/css_hit_spear_light_1.wav",
+        "character/hit/pchitsound/css_hit_spear_light_2.wav",
+        "character/hit/pchitsound/css_hit_spear_light_3.wav",
+        "character/hit/pchitsound/css_hit_spear_light_4.wav",
+        "character/hit/pchitsound/result_hit_impactpierce_strong08.wav",
+        "character/hit/pchitsound/result_hit_impactprojectile_3.wav",
+        "character/hit/pchitsound/result_hit_impactpierce_strong06.wav",
+        "character/hit/pchitsound/result_hit_impactpierce_strong07.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_low_cue",
+    channel = CHAN_AUTO,
+    volume = 1.82,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "motion/monster/swish/mon_swish_l1_02.wav",
+        "motion/monster/swish/mon_swish_l1_01.wav",
+        "character/skill/swing_sword_short_09.wav",
+        "motion/monster/swish/mon_whoosh_body_1.wav",
+        "motion/monster/swish/mon_whoosh_body_2.wav",
+        "motion/monster/swish/mon_whoosh_body_3.wav",
+        "motion/common/sfx_bass_drop.wav",
+        "character/skill/eve_se_swishlong4.wav",
+        "character/skill/swing_sword_short_08.wav"
+    }
+})
+
+sound.Add({
+    name = "CSS_HIT_Slash_Light_Common_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.2,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "character/hit/pchitsound/css_hit_spear_light_2.wav",
+        "character/hit/pchitsound/css_hit_spear_light_3.wav",
+        "character/hit/pchitsound/css_hit_low_impact_02_1.wav",
+        "character/hit/pchitsound/css_hit_low_impact_02_2.wav",
+        "character/hit/pchitsound/css_hit_low_impact_02_3.wav",
+        "character/hit/pchitsound/css_hit_low_impact_02_4.wav",
+        "character/hit/pchitsound/css_hit_spear_light_4.wav",
+        "character/hit/pchitsound/css_hit_spear_light_1.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Nikke_whoosh_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "mon/clriket/m_clriketbchain_hard_whoosh_4.wav",
+        "mon/clriket/m_clriketbchain_hard_whoosh_3.wav",
+        "mon/clriket/m_clriketbchain_hard_whoosh_2.wav",
+        "mon/clriket/m_clriketbchain_hard_whoosh_1.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Nikke_vo_atk_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_atk_l_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_l_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_atk_l_04.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Nikke_Bodyfall_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "skill/monster/sawshark/m_sawshark_rock_break_2.wav",
+        "mon/skulljuggernaut/m_skulljuggernaut_hammerimpact.wav",
+        "skill/monster/sawshark/m_sawshark_rock_break_3.wav",
+        "skill/monster/sawshark/m_sawshark_rock_break_1.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Nikke_texture2_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mutate/mon_texture_mutate_3_1.wav",
+        "motion/monster/texture/mutate/mon_texture_mutate_3_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Nikke_vo_Idle_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.3,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_idle_05.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_06.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_03.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_04.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_s2_cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "character/skill/swing_sword_short_06.wav",
+        "character/skill/swing_sword_short_08.wav",
+        "character/skill/swing_sword_short_09.wav"
+    }
+})
+
+sound.Add({
+    name = "mon_swish_m3_cue",
+    channel = CHAN_AUTO,
+    volume = 0.65,
+    soundlevel = 85,
+    pitch = { 90, 100 },
+    sound = {
+        "motion/monster/swish/mon_swish_m3_01.wav",
+        "motion/monster/swish/mon_swish_m3_02.wav",
+        "motion/monster/swish/mon_swish_m3_03.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_skill_spitdrop_cue",
+    channel = CHAN_AUTO,
+    volume = 0.8,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "skill/monster/mon_skill_spitdrop_03.wav",
+        "skill/monster/mon_skill_spitdrop_01.wav",
+        "skill/monster/mon_skill_spitdrop_02.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_vo_dead_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_dead_04.wav",
+        "voice/monster/clriket/mon_clriket_vo_dead_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_dead_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_dead_03.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_Clriket_Idle_Random_cue",
+    channel = CHAN_AUTO,
+    volume = 0.3,
+    soundlevel = 75,
+    pitch = 100,
+    sound = {
+        "voice/monster/clriket/mon_clriket_vo_idle_05.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_06.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_01.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_02.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_03.wav",
+        "voice/monster/clriket/mon_clriket_vo_idle_04.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_skill_spit_cue",
+    channel = CHAN_AUTO,
+    volume = 0.5,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "skill/monster/mon_skill_spit_03.wav",
+        "skill/monster/mon_skill_spit_01.wav",
+        "skill/monster/mon_skill_spit_02.wav"
+    }
+})
+
+sound.Add({
+    name = "Mon_texture_wet_spit_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/wet/mon_texture_wet_spit_s_1.wav",
+        "motion/monster/texture/wet/mon_texture_wet_spit_s_2.wav",
+        "motion/monster/texture/wet/mon_texture_wet_spit_s_3.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Clriket_Growl_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.7,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "mon/clriket/m_clriket_growl_3.wav",
+        "mon/clriket/m_clriket_growl_4.wav",
+        "mon/clriket/m_clriket_growl_5.wav"
+    }
+})
+
+-- ============================================================================
+-- Generated Source Soundscripts (sound.Add) for ch_m_na_27
+-- ============================================================================
+
+sound.Add({
+    name = "M_TurretLaser_Body_End_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 105,
+    pitch = 100,
+    sound = "motion/monster/texture/mach/droidturret/m_turretlaser_body_end.wav"
+})
+
+sound.Add({
+    name = "M_Mach_Body_Lock_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.68,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mach/droidturret/m_mach_body_lock_1.wav",
+        "motion/monster/texture/mach/droidturret/m_mach_body_lock_2.wav",
+        "motion/monster/texture/mach/droidturret/m_mach_body_lock_3.wav",
+        "motion/monster/texture/mach/droidturret/m_mach_body_lock_4.wav"
+    }
+})
+
+sound.Add({
+    name = "EVE_M_TurretLaser_BattleStart_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 130,
+    pitch = 100,
+    sound = "mon/turretlaser/eve_m_turretlaser_battlestart.wav"
+})
+
+sound.Add({
+    name = "M_TurretLaser_Nikke_Spawn_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "footsteps/monster/botrange/m_botrange_bodyfall_2.wav",
+        "footsteps/monster/botrange/m_botrange_bodyfall_1.wav",
+        "character/hit/machine/hit_monster_machine_metal_heavy_05.wav",
+        "character/hit/machine/hit_monster_machine_metal_heavy_06.wav",
+        "character/hit/machine/hit_monster_machine_metal_heavy_07.wav",
+        "character/hit/machine/hit_monster_machine_metal_heavy_08.wav"
+    }
+})
+
+sound.Add({
+    name = "M_TurretLaser_Nikke_move_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mach/droidturret/m_mach_shake_2.wav",
+        "motion/monster/texture/mach/droidturret/m_mach_shake_1.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Mach_Shake_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mach/droidturret/m_mach_shake_2.wav",
+        "motion/monster/texture/mach/droidturret/m_mach_shake_1.wav"
+    }
+})
+
+sound.Add({
+    name = "M_TurretLaser_Power_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.42,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "motion/monster/texture/mach/droidturret/m_turretlaser_power_2.wav",
+        "motion/monster/texture/mach/droidturret/m_turretlaser_power_1.wav"
+    }
+})
