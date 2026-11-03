@@ -59,6 +59,9 @@ UAsset.Defaults = {
 	nullValue       = nil,    -- what a null object reference becomes (nil => key omitted)
 	scriptModules   = nil,    -- extra "/Script/<Module>" names used to resolve script classes
 	importResolver  = nil,    -- function(info) -> { ObjectName=, ObjectPath= } | nil for other-package refs
+	resolveImports  = true,   -- resolve references to other packages by hashing the files under UAsset.Content.root
+	warnUnresolved  = false,   -- ErrorNoHalt() once per reference that matches no file (so you can extract it); false = silent
+	niagaraValues   = true,   -- add Value.Decoded (float/bool/vector...) next to the raw Bytes of Niagara parameter overrides
 	cache           = true,   -- ParseFile only: reuse results per file path (false = always re-parse, "copy" = cached but deep-copied)
 	-- exports of these classes are NOT decoded (header only, Skipped=true): render/engine payloads that
 	-- are useless outside the engine. Set to {} / false to decode everything.
@@ -467,6 +470,16 @@ local function scriptObjectIndex(path)
 end
 UAsset.ScriptObjectIndex = scriptObjectIndex
 
+-- "/Game/Sound/Foo/Bar/Bar" -> FPackageObjectIndex(PackageImport) as 16 hex digits.
+-- This is how the 4.26 package store names "object Bar inside package /Game/Sound/Foo/Bar".
+local function packageImportKey(path)
+	local s = lower(path):gsub(".", "%0\0")
+	local hi, lo = city64(s)
+	hi = U(bor(band(hi, 0x3FFFFFFF), 0x80000000))
+	return hex64(hi, lo)
+end
+UAsset.PackageImportKey = packageImportKey
+
 --------------------------------------------------------------------------------
 -- .usmap
 --------------------------------------------------------------------------------
@@ -608,6 +621,42 @@ local function ensureScriptModules(map, modules)
 end
 
 --------------------------------------------------------------------------------
+-- issue tracking: remembers WHERE parsing could not decode something (feeds the undecoded-field report)
+--------------------------------------------------------------------------------
+local function pathString(ctx)
+	local t, n = {}, 0
+	for i = 1, ctx.depth or 0 do
+		local part = ctx.parts[i]
+		n = n + 1
+		if sub(part, 1, 1) == "[" or n == 1 then t[n] = part else t[n] = "." .. part end
+	end
+	return concat(t)
+end
+
+local function addIssue(ctx, rec)
+	local list = ctx.issues
+	if not list then return end
+	if #list < 500 then list[#list + 1] = rec end         -- cap per asset so one bad table cannot flood memory
+end
+
+-- turn an error message into (cause, what) for grouping
+local function classifyError(msg)
+	local what = msg:match("native struct '([^']+)'")
+	if what then return "native struct not implemented", what end
+	what = msg:match("property type '([^']+)'")
+	if what then return "property type not supported", what end
+	what = msg:match("Missing prop mappings for type (%S+)")
+	if what then return "struct missing from usmap", what end
+	what = msg:match("class '([^']+)' has no entry")
+	if what then return "class missing from usmap", what end
+	what = msg:match("([%w_]+): unknown property with schema index")
+	if what then return "struct layout mismatch (natively serialized struct, or usmap from another build)", what end
+	what = msg:match("FText history type (%-?%d+)")
+	if what then return "FText history not implemented", what end
+	return "other error", (msg:gsub("^UAsset: ", ""):sub(1, 100))
+end
+
+--------------------------------------------------------------------------------
 -- Zen package header  (UE4.26 / 4.27 "Initial" container layout)
 --------------------------------------------------------------------------------
 local function mappedNameText(names, idx, extra)
@@ -617,7 +666,8 @@ local function mappedNameText(names, idx, extra)
 	return n
 end
 
-local function parseHeader(data, map, opts)
+local parseHeader
+function parseHeader(data, map, opts, headerOnly)
 	if #data < 64 then fail("file too small to be a package") end
 	local r = newReader(data)
 	if r:u32() == 0x9E2A83C1 then
@@ -716,7 +766,7 @@ local function parseHeader(data, map, opts)
 			end
 		end
 	end
-	if cur > #data then fail("export data runs past the end of the file (%d > %d)", cur, #data) end
+	if not headerOnly and cur > #data then fail("export data runs past the end of the file (%d > %d)", cur, #data) end
 
 	-- imported package ids (graph data)
 	pkg.importedPackages = {}
@@ -773,6 +823,7 @@ end
 local function objIndexType(hi) return floor(hi / 1073741824) end   -- 0 export, 1 script, 2 package import, 3 null
 
 -- descriptor: { name=, outer=<desc|nil>, className=, exportIndex=, kind= }
+local resolveImportFile, warnUnresolved      -- defined with the import-resolution code below
 local resolveObjectIndex
 
 local function packageDesc(pkg)
@@ -790,7 +841,13 @@ local function exportDesc(pkg, i)                                     -- i is 0-
 	pkg._descCache[i] = d
 	d.outer = resolveObjectIndex(pkg, e.outerHi, e.outerLo) or packageDesc(pkg)
 	local c = resolveObjectIndex(pkg, e.classHi, e.classLo)
+	d.classDesc = c
 	d.className = c and c.name or nil
+	if c and c.kind == "unresolved" and c.import and pkg._opts and pkg._opts.resolveImports ~= false
+	   and c.import.hi >= 2147483648 and c.import.hi < 3221225472 then
+		local r = resolveImportFile(pkg._map, pkg._opts, c.import.hi, c.import.lo)   -- class is a Blueprint in another file
+		if r then d.className = r.name; d.classImport = r end
+	end
 	return d
 end
 
@@ -842,20 +899,395 @@ local function fullName(d)
 	return (d.className or "") .. "'" .. pathName(d, false) .. "'"
 end
 
-local function descToJson(pkg, d, opts)
+local function descToJson(pkg, d, opts, ctx)
 	if d == nil then return opts.nullValue end
 	if d.kind == "unresolved" and d.import then
+		local imp = d.import
 		if opts.importResolver then
-			local r = opts.importResolver(d.import)
+			local r = opts.importResolver(imp)
 			if r then return r end
 		end
-		return { ObjectName = "Unresolved'0x" .. d.import.key .. "'", ObjectPath = "0x" .. d.import.key, Unresolved = true }
+		if opts.resolveImports ~= false and imp.hi >= 2147483648 and imp.hi < 3221225472 then   -- PackageImport
+			local r = resolveImportFile(pkg._map, opts, imp.hi, imp.lo)
+			if r then
+				local oname = r.className and (r.className .. "'" .. r.name .. "'") or r.name
+				return { ObjectName = oname, ObjectPath = r.path .. "." .. r.exportIndex, File = r.file }
+			end
+		end
+		if ctx then addIssue(ctx, { kind = "unresolved", hash = imp.key, export = ctx.exportName, path = pathString(ctx) }) end
+		if opts.warnUnresolved then warnUnresolved(ctx or { pkg = pkg }, imp.key) end
+		return { ObjectName = "Unresolved'0x" .. imp.key .. "'", ObjectPath = "0x" .. imp.key, Unresolved = true }
 	end
 	local top = d
 	while top.outer do top = top.outer end
 	local path = top.name
 	if d.exportIndex then path = path .. "." .. d.exportIndex end
 	return { ObjectName = fullName(d), ObjectPath = path }
+end
+
+--------------------------------------------------------------------------------
+-- resolving references to OTHER packages
+--
+-- A reference to another package is stored as a 62-bit hash of "/Game/<folders>/<Name>/<Name>" - the
+-- name itself is not in the file and a hash cannot be reversed. So we do the opposite: hash every
+-- package we know about (the .uasset files below UAsset.Content.root) and look the reference up.
+-- A hit gives the exact ObjectPath; the class (SoundCue, Texture2D...) and export index come from the
+-- target file's header, which is cheap to read.
+--------------------------------------------------------------------------------
+UAsset.Content = {
+	root     = "data_static/SB/Content",   -- where "/Game/..." lives on disk
+	where    = "GAME",                      -- GMod search path
+}
+
+local pkgIndex                 -- key -> { pkg = "/Game/..", name = "Bar", file = "Foo/Bar/Bar.uasset" }
+local importCache = {}         -- key -> resolved entry | false
+local warnedKeys = {}
+local forceScan = false        -- true: next ensureIndex() must rescan the disk instead of reading the cache file
+local scanning                 -- state of a running async scan
+
+-- Persistent hash cache. Path is relative to garrysmod/data (the "DATA" search path):
+--   garrysmod/data/stellarblade/folderhashmap.json
+UAsset.HashCacheFile = "stellarblade/folderhashmap.json"
+UAsset.HashCacheVersion = 2
+UAsset.Verbose = true          -- one console line per index load/scan
+
+local function log(msg)
+	if not UAsset.Verbose then return end
+	if MsgN then MsgN(msg) else print(msg) end
+end
+local function countKeys(t) local n = 0 for _ in pairs(t) do n = n + 1 end return n end
+
+local INDEX_SUFFIXES = { "", "_C" }
+
+--- engine packages that are referenced a lot but are not in Content (extend as you like)
+UAsset.BuiltinPackages = {
+	"/Engine/Animation/DefaultAnimBoneCompressionSettings",
+	"/Engine/Animation/DefaultAnimCurveCompressionSettings",
+}
+
+local function indexAdd(idx, rel, name, base)       -- rel = "Sound/Foo" ("" for root), name = "Bar"
+	base = base or "/Game/"
+	local dir = rel ~= "" and (rel .. "/") or ""
+	local fpath = base == "/Game/" and (dir .. name .. ".uasset") or nil     -- engine content is not on disk
+	local pkgPath = base .. dir .. name
+	-- A package normally holds one asset named like the package ("X/X"); a Blueprint holds its class as "X_C".
+	local plain = dir:match("^L10N/[^/]+/(.*)$")
+	for _, suffix in ipairs(base == "/Game/" and INDEX_SUFFIXES or { "" }) do      -- no "_C" guessing for engine content
+		local oname = name .. suffix
+		local key = packageImportKey(pkgPath .. "/" .. oname)
+		if not idx[key] then idx[key] = { pkg = pkgPath, name = oname, file = fpath } end
+		-- Localized assets: other packages reference the plain path ("/Game/Sound/Voice/X"); the engine (and
+		-- FModel) swap in "/Game/L10N/<culture>/..." afterwards. So a file stored under L10N/<culture>/ must
+		-- also answer to the plain path.
+		if plain then
+			local k = packageImportKey(base .. plain .. name .. "/" .. oname)
+			if not idx[k] then idx[k] = { pkg = pkgPath, name = oname, file = fpath } end
+		end
+	end
+end
+
+-- directory scanner: a queue of folders, processed in slices so it can run without freezing the game
+local function newScan() return { queue = { "" }, qn = 1, index = {}, dirs = 0 } end
+
+local function scanSlice(st, budget)                 -- returns true when finished
+	local C = UAsset.Content
+	local clock = SysTime or os.clock
+	local t0 = clock()
+	while st.qn > 0 do
+		local rel = st.queue[st.qn]
+		st.queue[st.qn] = nil
+		st.qn = st.qn - 1
+		local files, dirs = file.Find(C.root .. (rel ~= "" and ("/" .. rel) or "") .. "/*", C.where or "GAME")
+		st.dirs = st.dirs + 1
+		for _, f in ipairs(files or {}) do
+			if lower(sub(f, -7)) == ".uasset" then indexAdd(st.index, rel, sub(f, 1, -8)) end
+		end
+		for _, d in ipairs(dirs or {}) do
+			st.qn = st.qn + 1
+			st.queue[st.qn] = rel ~= "" and (rel .. "/" .. d) or d
+		end
+		if budget and clock() - t0 >= budget then break end
+	end
+	return st.qn == 0
+end
+
+local function addBuiltins(idx)
+	for _, p in ipairs(UAsset.BuiltinPackages or {}) do
+		local base = p:match("^/Engine/") and "/Engine/" or "/Game/"
+		local q = p:gsub("^/Engine/", ""):gsub("^/Game/", "")
+		local rel, name = q:match("^(.*)/([^/]+)$")
+		if not name then rel, name = "", q end
+		local key = packageImportKey(base .. (rel ~= "" and rel .. "/" or "") .. name .. "/" .. name)
+		if not idx[key] then indexAdd(idx, rel, name, base) end
+	end
+end
+
+local function installIndex(idx, keepParseCache)
+	addBuiltins(idx)
+	pkgIndex = idx
+	importCache = {}
+	warnedKeys = {}
+	if not keepParseCache and UAsset.ClearCache then UAsset.ClearCache() end
+end
+
+--- Load the index from UAsset.HashCacheFile. Returns true, count  |  false, reason.
+function UAsset.LoadHashCache(silent, keepParseCache)
+	if not (file and file.Exists and file.Read and util and util.JSONToTable) then return false, "no file/util library" end
+	local path = UAsset.HashCacheFile
+	if not file.Exists(path, "DATA") then return false, "no cache file data/" .. path end
+	local raw = file.Read(path, "DATA")
+	local t = raw and util.JSONToTable(raw, true, true)
+	if type(t) ~= "table" or (t.version ~= 1 and t.version ~= 2) or type(t.entries) ~= "table" then
+		return false, "cache file is unreadable or from another version"
+	end
+	if t.root ~= UAsset.Content.root then
+		return false, "cache was built for '" .. tostring(t.root) .. "', not '" .. tostring(UAsset.Content.root) .. "'"
+	end
+	local idx, n = {}, 0
+	if t.version == 1 then
+		-- old format (no Blueprint "_C" hashes): rebuild every hash from the stored file names. No disk scan needed.
+		local seen = {}
+		for key, v in pairs(t.entries) do
+			if type(key) ~= "string" or type(v) ~= "string" then return false, "cache file has damaged keys" end
+			if not seen[v] then
+				seen[v] = true
+				if sub(v, 1, 1) == "/" then
+					local q = v:gsub("^/Engine/", "")
+					local rel, name = q:match("^(.*)/([^/]+)$")
+					indexAdd(idx, rel or "", name or q, "/Engine/")
+				else
+					local q = v:gsub("%.uasset$", "")
+					local rel, name = q:match("^(.*)/([^/]+)$")
+					indexAdd(idx, rel or "", name or q)
+				end
+			end
+		end
+		n = countKeys(idx)
+		if not silent then log("[UAsset] hash cache is the old format - upgraded in memory; run uasset_savehashcache to store the new one") end
+	else
+		local files = t.files
+		if type(files) ~= "table" then return false, "cache file has no file list" end
+		for key, v in pairs(t.entries) do
+			if type(key) ~= "string" then return false, "cache file has damaged keys" end
+			local e
+			if type(v) == "number" then
+				local bp = v < 0
+				local f = files[bp and -v or v]
+				if type(f) ~= "string" then return false, "cache file has a bad file index" end
+				local pkgPath = "/Game/" .. sub(f, 1, -8)
+				local stem = pkgPath:match("[^/]+$")
+				e = { file = f, pkg = pkgPath, name = bp and (stem .. "_C") or stem }
+			elseif type(v) == "string" then                          -- engine entry: value is the package path
+				e = { pkg = v, name = v:match("[^/]+$") }
+			else
+				return false, "cache file has damaged entries"
+			end
+			idx[key] = e
+			n = n + 1
+		end
+	end
+	installIndex(idx, keepParseCache)
+	if not silent then log(fmt("[UAsset] loaded %d package hashes from data/%s", n, path)) end
+	return true, n
+end
+
+--- Write the current index to UAsset.HashCacheFile. Returns true, count, bytes  |  false, reason.
+function UAsset.SaveHashCache(silent)
+	if not (file and file.Write and util and util.TableToJSON) then return false, "no file/util library" end
+	if not pkgIndex then return false, "no index in memory yet" end
+	-- compact form: one list of file names + hash -> file number (negative = the Blueprint "_C" object of that file)
+	local files, fileNo, entries, n = {}, {}, {}, 0
+	for key, e in pairs(pkgIndex) do
+		if e.file then
+			local i = fileNo[e.file]
+			if not i then i = #files + 1; files[i] = e.file; fileNo[e.file] = i end
+			local stem = e.file:match("([^/]+)%.uasset$")
+			entries[key] = (e.name ~= stem) and -i or i
+		else
+			entries[key] = e.pkg                      -- engine entry
+		end
+		n = n + 1
+	end
+	local json = util.TableToJSON({ version = UAsset.HashCacheVersion, root = UAsset.Content.root, count = n, files = files, entries = entries })
+	if not json then return false, "util.TableToJSON failed" end
+	local path = UAsset.HashCacheFile
+	local dir = path:match("^(.*)/[^/]+$")
+	if dir and file.CreateDir then file.CreateDir(dir) end
+	file.Write(path, json)
+	if file.Size and file.Size(path, "DATA") ~= #json then return false, "file.Write did not store the whole file" end
+	if not silent then log(fmt("[UAsset] saved %d package hashes (%d KB) to data/%s", n, floor(#json / 1024), path)) end
+	return true, n, #json
+end
+
+local function ensureIndex()
+	if pkgIndex then return pkgIndex end
+	if scanning then return {} end                    -- async rescan running: answer "unknown" until it is installed
+	if not forceScan and UAsset.LoadHashCache(true, true) then
+		log(fmt("[UAsset] package hash cache loaded (%d entries)", countKeys(pkgIndex)))
+		return pkgIndex
+	end
+	forceScan = false
+	local st = newScan()
+	if file and file.Find then
+		log("[UAsset] no usable hash cache - scanning " .. tostring(UAsset.Content.root) .. " (slow; run uasset_savehashcache to store the result)")
+		scanSlice(st, nil)
+		log(fmt("[UAsset] scanned %d folders, %d package hashes", st.dirs, countKeys(st.index)))
+	end
+	addBuiltins(st.index)
+	pkgIndex = st.index
+	return pkgIndex
+end
+
+--- Rescan the disk WITHOUT blocking the game (a slice of folders per Think tick).
+--- onDone(ok, count) is called when the new index has replaced the old one.
+function UAsset.RefreshPackageIndexAsync(onDone)
+	if scanning then return false, "a scan is already running" end
+	if not (file and file.Find) then return false, "file.Find is not available" end
+	local st = newScan()
+	st.count = 0
+	scanning = st
+	local clock = SysTime or os.clock
+	local t0, lastLog = clock(), clock()
+	local function finish()
+		scanning = nil
+		installIndex(st.index)
+		local n = countKeys(st.index)
+		log(fmt("[UAsset] rescan finished: %d folders, %d package hashes, %.1fs", st.dirs, n, clock() - t0))
+		if onDone then onDone(true, n) end
+	end
+	local function failed(err)
+		scanning = nil
+		log("[UAsset] rescan failed: " .. tostring(err))
+		if onDone then onDone(false, err) end
+	end
+	if hook and hook.Add then
+		hook.Add("Think", "UAsset_PackageIndexScan", function()
+			local ok, done = pcall(scanSlice, st, 0.01)
+			if not ok then hook.Remove("Think", "UAsset_PackageIndexScan"); return failed(done) end
+			if done then hook.Remove("Think", "UAsset_PackageIndexScan"); return finish() end
+			if clock() - lastLog > 10 then
+				lastLog = clock()
+				log(fmt("[UAsset] rescanning... %d folders done, %d queued", st.dirs, st.qn))
+			end
+		end)
+	else
+		local ok, err = pcall(scanSlice, st, nil)
+		if ok then finish() else failed(err) end
+	end
+	return true
+end
+
+function UAsset.IsScanning() return scanning ~= nil end
+
+--- The index (key -> { file=, pkg=, name= }). Loads the cache file, or scans, on first use.
+function UAsset.PackageIndex() return ensureIndex() end
+
+-- raw state, for debugging in the console (these never trigger a load/scan; pkgIndex() is nil until first use)
+function UAsset.pkgIndex() return pkgIndex end
+function UAsset.importCache() return importCache end
+function UAsset.warnedKeys() return warnedKeys end
+
+--- Register packages you know exist but have not extracted (or when file.Find is unavailable).
+--- Accepts a table or a newline separated string of paths such as "Sound/Voice/X/Y.uasset",
+--- "Content/Sound/Voice/X/Y" or "/Game/Sound/Voice/X/Y".
+function UAsset.AddPackages(list)
+	local idx = ensureIndex()
+	if type(list) == "string" then
+		local t = {}
+		for line in list:gmatch("[^\r\n]+") do t[#t + 1] = line end
+		list = t
+	end
+	for _, p in ipairs(list) do
+		p = p:gsub("\\", "/"):gsub("^%s+", ""):gsub("%s+$", ""):gsub("%.uasset$", ""):gsub("%.uexp$", ""):gsub("%.[%w_]+$", "")
+		local base = "/Game/"
+		if p:find("^/?Engine/") then base = "/Engine/"; p = p:gsub("^/?Engine/", "") end
+		p = p:gsub("^/?Game/", ""):gsub("^/?Content/", ""):gsub("^/", "")
+		local rel, name = p:match("^(.*)/([^/]+)$")
+		if not name then rel, name = "", p end
+		if name ~= "" then indexAdd(idx, rel, name, base) end
+	end
+	for k in pairs(importCache) do importCache[k] = nil end
+end
+
+--- Forget the index and rescan the DISK on next use (blocking). Prefer RefreshPackageIndexAsync().
+function UAsset.RefreshPackageIndex()
+	pkgIndex = nil
+	forceScan = true
+	importCache = {}
+	warnedKeys = {}
+	if UAsset.ClearCache then UAsset.ClearCache() end
+end
+
+function UAsset.PackageIndexCount()
+	return countKeys(ensureIndex())
+end
+
+local function readHeaderBytes(path, where)
+	if file and file.Open then
+		local f = file.Open(path, "rb", where or "GAME")
+		if f then
+			local head = f:Read(64)
+			if head and #head == 64 then
+				local r = newReader(head, 0x34)
+				local total = r:u32() + r:u32()
+				f:Seek(0)
+				local data = f:Read(total)
+				f:Close()
+				if data and #data == total then return data end
+			else
+				f:Close()
+			end
+		end
+	end
+	local ok, d = pcall(readFileRaw, path, where)
+	return ok and d or nil
+end
+
+function resolveImportFile(map, opts, hi, lo)
+	local key = hex64(hi, lo)
+	local cached = importCache[key]
+	if cached ~= nil then return cached or nil end
+	local ent = ensureIndex()[key]
+	if not ent then importCache[key] = false; return nil end
+	local C = UAsset.Content
+	local res = { name = ent.name, className = nil, path = ent.pkg, exportIndex = 0,
+	              file = ent.file and (C.root .. "/" .. ent.file) or nil }
+	local data = res.file and readHeaderBytes(res.file, C.where)
+	if data then
+		local ok, p2 = pcall(parseHeader, data, map, opts, true)
+		if ok then
+			p2._map = map
+			p2._opts = opts
+			local pick
+			for i, e in ipairs(p2.exports) do
+				if e.globalHi == hi and e.globalLo == lo then pick = i; break end
+			end
+			if not pick then
+				for i, e in ipairs(p2.exports) do
+					if e.name == ent.name and objIndexType(e.outerHi) == 3 then pick = i; break end
+				end
+			end
+			if pick then
+				res.exportIndex = pick - 1
+				local e = p2.exports[pick]
+				local c = resolveObjectIndex(p2, e.classHi, e.classLo)
+				if c and c.kind == "script" then res.className = c.name end
+				if res.className and res.className:find("GeneratedClass$") then res.hdr = p2 end   -- needed to follow Blueprint parent classes
+			end
+		end
+	end
+	importCache[key] = res
+	return res
+end
+
+function warnUnresolved(ctx, key)
+	if warnedKeys[key] then return end
+	warnedKeys[key] = true
+	local C = UAsset.Content
+	local msg = fmt("[UAsset] unresolved reference 0x%s  (package %s, export %s, property %s): no .uasset under '%s' hashes to it. "
+		.. "Extract the missing file, then call UAsset.RefreshPackageIndex().\n",
+		key, tostring(ctx and ctx.pkg and ctx.pkg.name), tostring(ctx and ctx.exportName), tostring(ctx and ctx.propName), tostring(C.root))
+	if ErrorNoHalt then ErrorNoHalt(msg) else io.stderr:write(msg) end
 end
 
 --------------------------------------------------------------------------------
@@ -882,11 +1314,11 @@ local function packageIndexJson(ctx, idx)
 	if idx == 0 then return ctx.opts.nullValue end
 	local pkg = ctx.pkg
 	if idx > 0 then
-		return descToJson(pkg, exportDesc(pkg, idx - 1), ctx.opts)
+		return descToJson(pkg, exportDesc(pkg, idx - 1), ctx.opts, ctx)
 	end
 	local imp = pkg.imports[-idx]
 	if not imp then fail("import index %d out of range", idx) end
-	return descToJson(pkg, resolveObjectIndex(pkg, imp.hi, imp.lo), ctx.opts)
+	return descToJson(pkg, resolveObjectIndex(pkg, imp.hi, imp.lo), ctx.opts, ctx)
 end
 
 local function enumName(ctx, ename, index)
@@ -986,7 +1418,15 @@ H.ArrayProperty = function(ctx, pt, mode)
 	if n < 0 or n > #r.s - r.p then fail("array element count %d is implausible at offset %d", n, r.p - 4) end
 	local inner = pt.inner
 	if not inner then fail("array without inner type") end
-	for i = 1, n do out[i] = readValue(ctx, inner, ARRAY) end
+	local it = inner.t
+	if it == "StructProperty" or it == "MapProperty" or it == "ArrayProperty" or it == "SetProperty" then
+		local d = ctx.depth + 1
+		ctx.depth = d
+		for i = 1, n do ctx.parts[d] = "[" .. i .. "]"; out[i] = readValue(ctx, inner, ARRAY) end
+		ctx.depth = d - 1
+	else
+		for i = 1, n do out[i] = readValue(ctx, inner, ARRAY) end
+	end
 	return out
 end
 
@@ -1019,9 +1459,17 @@ H.MapProperty = function(ctx, pt, mode)
 	local kt, vt = pt.inner, pt.value
 	if not kt or not vt then fail("map without key/value type") end
 	for _ = 1, r:i32() do readValue(ctx, kt, MAP) end           -- keys to remove
+	local niagara = ctx.opts.niagaraValues ~= false and kt.struct and kt.struct:find("^NiagaraVariable") and vt.struct == "NiagaraVariant"
 	for i = 1, r:i32() do
+		local d = ctx.depth + 1
+		ctx.parts[d] = "[" .. i .. "]"
+		ctx.parts[d + 1] = "Key"
+		ctx.depth = d + 1
 		local k = readValue(ctx, kt, MAP)
+		ctx.parts[d + 1] = "Value"
 		local v = readValue(ctx, vt, MAP)
+		ctx.depth = d - 1
+		if niagara then UAsset.AttachNiagaraValue(ctx, k, v) end
 		if kt.t ~= "StructProperty" then k = mapKeyString(kt, k) end
 		out[i] = { Key = k, Value = v }
 	end
@@ -1123,14 +1571,105 @@ NATIVE.LinearColor = function(ctx, mode)
 	return { R = R, G = G, B = B, A = A, Hex = hex }
 end
 
+-- Niagara parameter variables: FName + the ordinary usmap struct "NiagaraTypeDefinition"
+-- (+ VarData bytes / Offset for the NiagaraVariable / NiagaraVariableWithOffset flavours)
+local function niagaraVariable(ctx, mode, withVarData, withOffset)
+	local out = {}
+	if mode == ZERO then
+		out.Name = "None"; out.TypeDef = {}
+		if withVarData then out.VarData = {} end
+		if withOffset then out.Offset = 0 end
+		return out
+	end
+	local r = ctx.r
+	out.Name = readFName(ctx)
+	local st = getStruct(ctx.map, "NiagaraTypeDefinition")
+	if not st then fail("Missing prop mappings for type NiagaraTypeDefinition") end
+	out.TypeDef = readStructFields(ctx, st)
+	if withVarData then
+		local n = r:i32()
+		if n < 0 or n > #r.s - r.p then fail("NiagaraVariable.VarData length %d is implausible", n) end
+		local a = {}
+		for i = 1, n do a[i] = r:u8() end
+		out.VarData = a
+	end
+	if withOffset then out.Offset = r:i32() end
+	return out
+end
+NATIVE.NiagaraVariableBase = function(ctx, mode) return niagaraVariable(ctx, mode) end
+NATIVE.NiagaraDataChannelVariable = NATIVE.NiagaraVariableBase
+NATIVE.NiagaraVariable = function(ctx, mode) return niagaraVariable(ctx, mode, true) end
+NATIVE.NiagaraVariableWithOffset = function(ctx, mode) return niagaraVariable(ctx, mode, false, true) end
+
+-- Niagara stores a parameter override's value as raw bytes; the TypeDef says how to read them.
+local NIAGARA_LAYOUT = {            -- type name -> field list (f = float32, i = int32, b = bool)
+	NiagaraFloat = { "f" }, NiagaraInt32 = { "i" }, NiagaraBool = { "b" },
+	Vector2D = { "f", "X", "Y" }, Vector = { "f", "X", "Y", "Z" }, Vector4 = { "f", "X", "Y", "Z", "W" },
+	Quat = { "f", "X", "Y", "Z", "W" }, LinearColor = { "f", "R", "G", "B", "A" },
+}
+NIAGARA_LAYOUT.NiagaraPosition = NIAGARA_LAYOUT.Vector
+NIAGARA_LAYOUT.Vector3f = NIAGARA_LAYOUT.Vector
+
+--- Decode Value.Bytes of a NiagaraVariant using its key's TypeDef. Returns value | nil, typeName.
+function UAsset.NiagaraValue(key, variant, shortFloats)
+	local cs = key and key.TypeDef and key.TypeDef.ClassStructOrEnum
+	local tname = cs and cs.ObjectName and cs.ObjectName:match("'(.-)'") or "?"
+	local bytes = variant and variant.Bytes
+	if type(bytes) ~= "table" or #bytes == 0 then return nil, tname end
+	local lay = NIAGARA_LAYOUT[tname]
+	if not lay then return nil, tname end
+	local chars = {}
+	for i = 1, #bytes do chars[i] = char(bytes[i]) end
+	local r = newReader(concat(chars), 0)
+	r.shortFloats = shortFloats ~= false
+	local kind = lay[1]
+	if kind == "b" then return r:i32() ~= 0, tname end
+	if kind == "i" then return r:i32(), tname end
+	if #lay == 1 then return r:f32(), tname end                    -- single float
+	if #bytes < (#lay - 1) * 4 then return nil, tname end
+	local out = {}
+	for i = 2, #lay do out[lay[i]] = r:f32() end
+	return out, tname
+end
+
+function UAsset.AttachNiagaraValue(ctx, key, variant)
+	if type(variant) ~= "table" or type(key) ~= "table" then return end
+	if variant.CurrentMode ~= "ENiagaraVariantMode::Bytes" then return end
+	local val, tname = UAsset.NiagaraValue(key, variant, ctx.opts.shortFloats)
+	if val ~= nil then
+		variant.Decoded = val
+	else
+		addIssue(ctx, { kind = "niagara_value", what = tname, export = ctx.exportName, path = pathString(ctx) })
+	end
+end
+
+local INTERP = { [0] = "RCIM_Linear", "RCIM_Constant", "RCIM_Cubic", "RCIM_None" }
+local TANGENT = { [0] = "RCTM_Auto", "RCTM_User", "RCTM_Break", "RCTM_None" }
+local TWEIGHT = { [0] = "RCTWM_WeightedNone", "RCTWM_WeightedArrive", "RCTWM_WeightedLeave", "RCTWM_WeightedBoth" }
+NATIVE.RichCurveKey = function(ctx, mode)
+	if mode == ZERO then
+		return { InterpMode = INTERP[0], TangentMode = TANGENT[0], TangentWeightMode = TWEIGHT[0], Time = 0, Value = 0,
+		         ArriveTangent = 0, ArriveTangentWeight = 0, LeaveTangent = 0, LeaveTangentWeight = 0 }
+	end
+	local r = ctx.r
+	local im, tm, tw = r:u8(), r:u8(), r:u8()
+	return { InterpMode = INTERP[im] or tostring(im), TangentMode = TANGENT[tm] or tostring(tm),
+	         TangentWeightMode = TWEIGHT[tw] or tostring(tw), Time = r:f32(), Value = r:f32(),
+	         ArriveTangent = r:f32(), ArriveTangentWeight = r:f32(), LeaveTangent = r:f32(), LeaveTangentWeight = r:f32() }
+end
+NATIVE.SimpleCurveKey = function(ctx, mode)
+	if mode == ZERO then return { Time = 0, Value = 0 } end
+	return { Time = ctx.r:f32(), Value = ctx.r:f32() }
+end
+
 -- natively serialized in the engine => must not be read through the usmap schema
 local UNSUPPORTED_NATIVE = {}
 for n in ([[Matrix Matrix44f Plane Plane4f Plane4d Sphere Sphere3f Sphere3d CapsuleShape Box2D Box2f Box3f
- RichCurveKey SimpleCurveKey NameCurveKey StringCurveKey SmartName PerPlatformBool PerPlatformFloat PerPlatformInt
+ NameCurveKey StringCurveKey SmartName PerPlatformBool PerPlatformFloat PerPlatformInt
  PerPlatformFrameRate PerPlatformFString PerQualityLevelInt PerQualityLevelFloat FontData FontCharacter
  InstancedStruct InstancedStructContainer InstancedPropertyBag Transform3f TwoVectors Spline UniqueNetIdRepl
  MovieSceneFloatChannel MovieSceneDoubleChannel MovieSceneFloatValue MovieSceneDoubleValue MovieSceneFrameRange
- MovieSceneSegment MovieSceneEvaluationKey NiagaraVariable NiagaraVariableBase ExpressionInput ColorMaterialInput
+ MovieSceneSegment MovieSceneEvaluationKey ExpressionInput ColorMaterialInput
  ScalarMaterialInput VectorMaterialInput Vector2MaterialInput MaterialAttributesInput]]):gmatch("%S+") do
 	UNSUPPORTED_NATIVE[n] = true
 end
@@ -1174,8 +1713,13 @@ function readStructFields(ctx, st, out)
 			local p = getProp(map, st, schemaIdx)
 			if nonZero then
 				if not p then fail("%s: unknown property with schema index %d (usmap does not match this game version?)", st.name, schemaIdx) end
-				local v = readValue(ctx, p.type, NORMAL)
-				out[p.arrayIndex > 0 and (p.name .. "[" .. p.arrayIndex .. "]") or p.name] = v
+				local key = p.arrayIndex > 0 and (p.name .. "[" .. p.arrayIndex .. "]") or p.name
+				local d = ctx.depth + 1
+				ctx.depth = d
+				ctx.parts[d] = key
+				ctx.propName = p.name
+				out[key] = readValue(ctx, p.type, NORMAL)
+				ctx.depth = d - 1
 			elseif p then
 				local v = readValue(ctx, p.type, ZERO)
 				out[p.arrayIndex > 0 and (p.name .. "[" .. p.arrayIndex .. "]") or p.name] = v
@@ -1225,6 +1769,31 @@ local function isDataTable(chain)
 	return false
 end
 
+-- usmap schema for an export: its class, or (Blueprint classes) the nearest native parent class
+local function schemaFor(pkg, map, desc)
+	local st = desc.className and getStruct(map, desc.className)
+	if st then return st end
+	local curPkg, cd = pkg, desc.classDesc
+	for _ = 1, 24 do
+		if not cd then return nil end
+		if cd.kind == "script" then return getStruct(map, cd.name) end
+		if cd.kind == "export" then
+			local s2 = getStruct(map, cd.name)
+			if s2 then return s2 end
+			local ce = curPkg.exports[cd.exportIndex + 1]
+			cd = resolveObjectIndex(curPkg, ce.superHi, ce.superLo)
+		elseif cd.kind == "unresolved" and cd.import then          -- parent Blueprint lives in another file
+			local r = resolveImportFile(curPkg._map, curPkg._opts, cd.import.hi, cd.import.lo)
+			if not (r and r.hdr) then return nil end
+			curPkg = r.hdr
+			cd = exportDesc(curPkg, r.exportIndex)
+		else
+			return nil
+		end
+	end
+	return nil
+end
+
 local function readExport(ctx, pkg, e, i, warnings, unread)
 	local desc = exportDesc(pkg, i - 1)
 	local out = {
@@ -1232,8 +1801,17 @@ local function readExport(ctx, pkg, e, i, warnings, unread)
 		Name = e.name,
 		Flags = flagString(bor(e.flags, 0x80000, 0x200000)),
 	}
-	local cdesc = resolveObjectIndex(pkg, e.classHi, e.classLo)
-	if cdesc then out.Class = "UScriptClass'" .. cdesc.name .. "'" end
+	local cdesc = desc.classDesc
+	if cdesc then
+		if cdesc.kind == "export" then            -- instance of a Blueprint class defined in this package
+			out.Class = (cdesc.className or "Class") .. "'" .. pathName(cdesc, true) .. "'"
+		elseif desc.classImport then              -- instance of a Blueprint class defined in another package
+			local ci = desc.classImport
+			out.Class = (ci.className or "Class") .. "'" .. ci.path .. "." .. ci.name .. "'"
+		else
+			out.Class = "UScriptClass'" .. cdesc.name .. "'"
+		end
+	end
 	if desc.outer and desc.outer.kind ~= "package" then
 		out.Outer = descToJson(pkg, desc.outer, ctx.opts)
 	else
@@ -1244,23 +1822,46 @@ local function readExport(ctx, pkg, e, i, warnings, unread)
 	local tdesc = resolveObjectIndex(pkg, e.templateHi, e.templateLo)
 	if tdesc and tdesc.kind == "export" then out.Template = descToJson(pkg, tdesc, ctx.opts) end
 
+	-- a Blueprint class itself: UClass payload (functions, bytecode) is not decoded, only the useful links
+	if desc.className and desc.className:find("GeneratedClass$") and not desc.classImport and desc.classDesc and desc.classDesc.kind == "script" then
+		out.SuperStruct = descToJson(pkg, resolveObjectIndex(pkg, e.superHi, e.superLo), ctx.opts, ctx)
+		for j, e2 in ipairs(pkg.exports) do
+			if band(e2.flags, 0x10) ~= 0 and objIndexType(e2.classHi) == 0 and e2.classLo == i - 1 then
+				out.ClassDefaultObject = descToJson(pkg, exportDesc(pkg, j - 1), ctx.opts, ctx)
+				break
+			end
+		end
+		return out
+	end
+
 	local skip = ctx.opts.skipTypes
 	local cn = desc.className
-	if cn and ((skip and skip[cn]) or false) then out.Skipped = true; return out end
+	if cn and ((skip and skip[cn]) or false) then
+		out.Skipped = true
+		addIssue(ctx, { kind = "skipped", export = e.name, class = cn, bytes = e.serialSize })
+		return out
+	end
 	local pre = ctx.opts.skipPrefixes
 	if cn and pre then
 		for _, pf in ipairs(pre) do
-			if sub(cn, 1, #pf) == pf then out.Skipped = true; return out end
+			if sub(cn, 1, #pf) == pf then
+				out.Skipped = true
+				addIssue(ctx, { kind = "skipped", export = e.name, class = cn, bytes = e.serialSize })
+				return out
+			end
 		end
 	end
 
 	local r = ctx.r
 	r.p = e.pos
+	ctx.exportName = e.name
 	local map = ctx.map
 	local isDT = false
 
+	ctx.depth = 0
+
 	local function body()
-		local st = desc.className and getStruct(map, desc.className)
+		local st = schemaFor(pkg, map, desc)
 		if not st then
 			fail("class '%s' has no entry in the usmap (Blueprint class, or usmap from another game version?)",
 				tostring(desc.className))
@@ -1283,7 +1884,11 @@ local function readExport(ctx, pkg, e, i, warnings, unread)
 			out.Rows = rows
 			for _ = 1, r:i32() do
 				local key = readFName(ctx)
+				ctx.parts[1] = "Rows"
+				ctx.parts[2] = "[" .. key .. "]"
+				ctx.depth = 2
 				rows[key] = readStructFields(ctx, rowSt)
+				ctx.depth = 0
 			end
 		end
 	end
@@ -1294,6 +1899,11 @@ local function readExport(ctx, pkg, e, i, warnings, unread)
 		if ctx.opts.strict then error(err, 0) end
 		-- keep whatever was read before the failure; the rest of this export is lost
 		out._Error = tostring(err)
+		local cause, what = classifyError(tostring(err))
+		local decoded = 0
+		if out.Properties then for _ in pairs(out.Properties) do decoded = decoded + 1 end end
+		addIssue(ctx, { kind = "error", export = e.name, class = desc.className, path = pathString(ctx), cause = cause, what = what,
+		                message = tostring(err), decoded = decoded })
 		warnings[#warnings + 1] = fmt("export %d (%s): %s", i - 1, e.name, tostring(err))
 		return out
 	end
@@ -1304,6 +1914,7 @@ local function readExport(ctx, pkg, e, i, warnings, unread)
 		elseif used < e.serialSize then
 			-- normal for meshes, textures, sounds, animations...: engine-native payload we do not decode
 			unread[e.name] = e.serialSize - used
+			addIssue(ctx, { kind = "unread", export = e.name, class = desc.className, bytes = e.serialSize - used })
 		end
 	end
 	return out
@@ -1319,7 +1930,8 @@ function UAsset.Parse(data, map, opts)
 	local o = setmetatable(opts or {}, { __index = UAsset.Defaults })
 	local pkg = parseHeader(data, map, o)
 	pkg._map = map
-	local ctx = { pkg = pkg, map = map, opts = o, names = pkg.names, r = newReader(data) }
+	pkg._opts = o
+	local ctx = { pkg = pkg, map = map, opts = o, names = pkg.names, r = newReader(data), depth = 0, parts = {}, issues = {} }
 	ctx.r.shortFloats = o.shortFloats and true or false
 
 	local exports, warnings, unread = {}, {}, {}
@@ -1337,6 +1949,7 @@ function UAsset.Parse(data, map, opts)
 		PackageName = pkg.name, PackageFlags = pkg.packageFlags, Names = pkg.names,
 		ImportedPackageIds = pkg.importedPackages, Warnings = warnings,
 		UnreadBytes = unread,       -- export name -> bytes of native payload (mesh/audio/anim data) that was skipped
+		Issues = ctx.issues,        -- everything that could not be decoded (see UAsset.BuildReport)
 	}
 end
 
@@ -1347,6 +1960,7 @@ end
 --   usmap table. Entries are dropped automatically when file.Time() reports a newer file (GMod).
 --------------------------------------------------------------------------------
 local cache = setmetatable({}, { __mode = "k" })        -- [mappingsTable] = { [key] = entry }
+local reportAssets = {}                                  -- normalised path -> issues of the last parse of that file
 
 local function normPath(path)
 	path = tostring(path):gsub("\\", "/"):gsub("/+", "/"):gsub("^%./", ""):gsub("^/", "")
@@ -1375,7 +1989,11 @@ UAsset.DeepCopy = deepCopy
 --- The returned table is SHARED with the cache - treat it as read-only, or pass opts.cache = "copy".
 function UAsset.ParseFile(path, map, opts, where)
 	local o = setmetatable(opts or {}, { __index = UAsset.Defaults })
-	if o.cache == false then return UAsset.Parse(readFileRaw(path, where), map, o) end
+	if o.cache == false then
+		local ex, inf = UAsset.Parse(readFileRaw(path, where), map, o)
+		reportAssets[normPath(path)] = inf.Issues
+		return ex, inf
+	end
 	local key = cacheKey(path, where, o)
 	local bucket = cache[map]
 	if not bucket then bucket = {}; cache[map] = bucket end
@@ -1386,6 +2004,7 @@ function UAsset.ParseFile(path, map, opts, where)
 		return entry.exports, entry.info
 	end
 	local exports, info = UAsset.Parse(readFileRaw(path, where), map, o)
+	reportAssets[normPath(path)] = info.Issues
 	bucket[key] = { exports = exports, info = info, mtime = mtime }
 	if o.cache == "copy" then return deepCopy(exports), deepCopy(info) end
 	return exports, info
@@ -1413,6 +2032,222 @@ function UAsset.CacheCount(map)
 	local n = 0
 	for _ in pairs(cache[map] or {}) do n = n + 1 end
 	return n
+end
+
+--------------------------------------------------------------------------------
+-- undecoded-field report
+--   Every ParseFile() remembers what it could not decode: failed exports (with the property path where
+--   reading stopped), Niagara values of unknown type, references to missing files, and - optionally -
+--   skipped exports and native payload that was left unread.
+--   UAsset.BuildReport([includeInfo]) -> text      UAsset.DumpReport([includeInfo]) -> writes UAsset.ReportFile
+--------------------------------------------------------------------------------
+UAsset.ReportFile = "stellarblade/uasset_undecoded.txt"        -- inside garrysmod/data
+
+function UAsset.UndecodedReport() return reportAssets end
+function UAsset.ClearReport() reportAssets = {} end
+
+local function causeOf(rec)
+	if rec.kind == "error" then return rec.cause .. ": " .. tostring(rec.what) end
+	if rec.kind == "niagara_value" then return "niagara value type not decoded: " .. tostring(rec.what) end
+end
+
+function UAsset.BuildReport(includeInfo)
+	local paths = {}
+	for path in pairs(reportAssets) do paths[#paths + 1] = path end
+	table.sort(paths)
+
+	local causes, unresolved, nAssets, nBad = {}, {}, #paths, 0
+	local skipped, unreadTotal, unreadAssets = {}, 0, 0
+	local detail = {}
+	for _, path in ipairs(paths) do
+		local lines, bad = {}, false
+		local seen = {}                                   -- identical findings in one asset are printed once with a count
+		for _, rec in ipairs(reportAssets[path]) do
+			local ck = causeOf(rec)
+			if ck then
+				bad = true
+				local c = causes[ck]
+				if not c then c = { count = 0, assets = {}, nAssets = 0, example = { path, rec.export, rec.path } }; causes[ck] = c end
+				c.count = c.count + 1
+				if not c.assets[path] then c.assets[path] = true; c.nAssets = c.nAssets + 1 end
+				local sig = rec.kind .. "|" .. tostring(rec.export) .. "|" .. tostring(rec.path) .. "|" .. ck
+				if seen[sig] then
+					seen[sig].n = seen[sig].n + 1
+				elseif rec.kind == "error" then
+					local entry = { n = 1, text = fmt("  ERROR  export '%s' (%s)  stopped at: %s\n         %s\n         -> %d top-level properties were decoded before it; everything after this field in that export is missing",
+						tostring(rec.export), tostring(rec.class), rec.path ~= "" and rec.path or "(start)", ck, rec.decoded or 0) }
+					seen[sig] = entry
+					lines[#lines + 1] = entry
+				else
+					local entry = { n = 1, text = fmt("  VALUE  export '%s'  %s  (%s) - raw Bytes kept, no Decoded field", tostring(rec.export), tostring(rec.path), ck) }
+					seen[sig] = entry
+					lines[#lines + 1] = entry
+				end
+			elseif rec.kind == "unresolved" then
+				bad = true
+				local u = unresolved[rec.hash]
+				if not u then u = { count = 0, assets = {}, nAssets = 0, example = { path, rec.export, rec.path } }; unresolved[rec.hash] = u end
+				u.count = u.count + 1
+				if not u.assets[path] then u.assets[path] = true; u.nAssets = u.nAssets + 1 end
+				lines[#lines + 1] = fmt("  REF    export '%s'  %s  -> 0x%s (no file under the content root hashes to it)", tostring(rec.export), tostring(rec.path), rec.hash)
+			elseif rec.kind == "skipped" then
+				skipped[rec.class or "?"] = (skipped[rec.class or "?"] or 0) + 1
+				if includeInfo then
+					local sig = "skip|" .. tostring(rec.class)
+					if seen[sig] then
+						seen[sig].n = seen[sig].n + 1
+						seen[sig].bytes = seen[sig].bytes + (rec.bytes or 0)
+					else
+						local entry = { n = 1, bytes = rec.bytes or 0, cls = tostring(rec.class) }
+						seen[sig] = entry
+						lines[#lines + 1] = entry
+					end
+				end
+			elseif rec.kind == "unread" then
+				unreadTotal = unreadTotal + (rec.bytes or 0)
+				if includeInfo then lines[#lines + 1] = fmt("  UNREAD export '%s' (%s): %d bytes of native payload after the properties were not decoded", tostring(rec.export), tostring(rec.class), rec.bytes or 0) end
+			end
+		end
+		if bad then nBad = nBad + 1 end
+		if #lines > 0 then
+			local texts = {}
+			for k, l in ipairs(lines) do
+				if type(l) == "table" and l.cls then
+					texts[k] = fmt("  SKIP   %d x %s not decoded by choice (opts.skipTypes / skipPrefixes), %d bytes", l.n, l.cls, l.bytes)
+				elseif type(l) == "table" then
+					texts[k] = l.text .. (l.n > 1 and ("   (x" .. l.n .. ")") or "")
+				else
+					texts[k] = l
+				end
+			end
+			detail[#detail + 1] = path .. "\n" .. concat(texts, "\n")
+		end
+	end
+
+	local out = {}
+	local function add(line) out[#out + 1] = line end
+	add("UAsset undecoded-field report" .. (os and os.date and os.date("  (%Y-%m-%d %H:%M:%S)") or ""))
+	add(fmt("assets parsed this session: %d   with undecoded data or missing references: %d", nAssets, nBad))
+	add("")
+	add("== UNDECODED, GROUPED BY CAUSE (most common first) ==")
+	local ordered = {}
+	for ck, c in pairs(causes) do ordered[#ordered + 1] = ck end
+	table.sort(ordered, function(a, b) if causes[a].count ~= causes[b].count then return causes[a].count > causes[b].count end return a < b end)
+	if #ordered == 0 then add("  (nothing)") end
+	for _, ck in ipairs(ordered) do
+		local c = causes[ck]
+		add(fmt("  %5d x  %s   [%d asset%s]", c.count, ck, c.nAssets, c.nAssets == 1 and "" or "s"))
+		add(fmt("           e.g. %s  export '%s'  %s", c.example[1], tostring(c.example[2]), tostring(c.example[3] or "")))
+	end
+	add("")
+	add("== REFERENCES TO FILES THAT ARE NOT UNDER THE CONTENT ROOT ==")
+	local uh = {}
+	for h in pairs(unresolved) do uh[#uh + 1] = h end
+	table.sort(uh, function(a, b) if unresolved[a].count ~= unresolved[b].count then return unresolved[a].count > unresolved[b].count end return a < b end)
+	if #uh == 0 then add("  (none)") end
+	for _, h in ipairs(uh) do
+		local u = unresolved[h]
+		add(fmt("  0x%s  %d reference%s in %d asset%s   first: %s  export '%s'  %s", h, u.count, u.count == 1 and "" or "s", u.nAssets, u.nAssets == 1 and "" or "s",
+			u.example[1], tostring(u.example[2]), tostring(u.example[3] or "")))
+	end
+	add("")
+	add("== INFO (not errors) ==")
+	local sk = {}
+	for cls, n in pairs(skipped) do sk[#sk + 1] = fmt("%s x%d", cls, n) end
+	table.sort(sk)
+	add("  exports skipped by choice: " .. (#sk > 0 and concat(sk, ", ") or "none"))
+	add(fmt("  native payload left unread: %d KB in total (meshes, audio, animation...)   run 'uasset_dumpundecoded all' to list it per export", floor(unreadTotal / 1024)))
+	add("")
+	add("== DETAILS PER ASSET ==")
+	if #detail == 0 then add("  (nothing)") end
+	for _, d in ipairs(detail) do add(d) end
+	return concat(out, "\n") .. "\n", { causes = causes, ordered = ordered, unresolved = unresolved, assets = nAssets, bad = nBad }
+end
+
+--- Write the report to data/<UAsset.ReportFile>. Returns true, path | false, reason.
+function UAsset.DumpReport(includeInfo)
+	if not (file and file.Write) then return false, "no file library" end
+	local text, summary = UAsset.BuildReport(includeInfo)
+	local dir = UAsset.ReportFile:match("^(.*)/[^/]+$")
+	if dir and file.CreateDir then file.CreateDir(dir) end
+	file.Write(UAsset.ReportFile, text)
+	return true, UAsset.ReportFile, summary
+end
+
+--------------------------------------------------------------------------------
+-- console commands (server console / listen-server host / superadmins)
+--   uasset_savehashcache         write the package index to garrysmod/data/stellarblade/folderhashmap.json
+--   uasset_loadhashcache         reload the index from that file; recreate (rescan + save) if it is missing/unusable
+--   uasset_refreshpackageindex   rescan data_static/SB/Content from disk without freezing the game
+--   uasset_dumpundecoded [all]   write every field/export that could not be decoded to data/stellarblade/uasset_undecoded.txt
+--   uasset_clearundecoded        forget the collected report
+--------------------------------------------------------------------------------
+if concommand and concommand.Add then
+	local function say(ply, msg)
+		if IsValid and IsValid(ply) then ply:PrintMessage(HUD_PRINTCONSOLE, msg .. "\n") else MsgN(msg) end
+	end
+	local function allowed(ply)
+		if IsValid and IsValid(ply) and not ply:IsSuperAdmin() then say(ply, "[UAsset] superadmin only"); return false end
+		return true
+	end
+	local function saveAndReport(ply)
+		local ok, a, b = UAsset.SaveHashCache(true)
+		if ok then say(ply, fmt("[UAsset] saved %d package hashes (%d KB) to data/%s", a, floor(b / 1024), UAsset.HashCacheFile))
+		else say(ply, "[UAsset] could not save hash cache: " .. tostring(a)) end
+	end
+
+	concommand.Add("uasset_savehashcache", function(ply)
+		if not allowed(ply) then return end
+		if UAsset.IsScanning() then return say(ply, "[UAsset] a rescan is running; try again when it has finished") end
+		if not pkgIndex then
+			say(ply, "[UAsset] no index in memory yet - scanning first, then saving")
+			local ok, err = UAsset.RefreshPackageIndexAsync(function(done) if done then saveAndReport(ply) end end)
+			if not ok then say(ply, "[UAsset] " .. tostring(err)) end
+			return
+		end
+		saveAndReport(ply)
+	end)
+
+	concommand.Add("uasset_dumpundecoded", function(ply, cmd, args)
+		if not allowed(ply) then return end
+		local all = args and args[1] == "all"
+		local ok, path, summary = UAsset.DumpReport(all)
+		if not ok then return say(ply, "[UAsset] could not write the report: " .. tostring(path)) end
+		say(ply, fmt("[UAsset] %d assets parsed, %d with undecoded data or missing references. Written to data/%s%s",
+			summary.assets, summary.bad, path, all and " (with info lines)" or ""))
+		for i = 1, math.min(#summary.ordered, 12) do
+			local ck = summary.ordered[i]
+			say(ply, fmt("  %5d x %s  [%d assets]", summary.causes[ck].count, ck, summary.causes[ck].nAssets))
+		end
+		local nu = 0
+		for _ in pairs(summary.unresolved) do nu = nu + 1 end
+		if nu > 0 then say(ply, fmt("  %d distinct unresolved file references (listed in the report)", nu)) end
+	end)
+
+	concommand.Add("uasset_clearundecoded", function(ply)
+		if not allowed(ply) then return end
+		UAsset.ClearReport()
+		say(ply, "[UAsset] undecoded-field report cleared (it fills again as assets are parsed; cached assets are not re-parsed, run UAsset.ClearCache() to re-collect)")
+	end)
+
+	concommand.Add("uasset_refreshpackageindex", function(ply)
+		if not allowed(ply) then return end
+		local ok, err = UAsset.RefreshPackageIndexAsync(function(done, n)
+			if done then say(ply, fmt("[UAsset] package index rebuilt: %d hashes. Run uasset_savehashcache to store it.", n))
+			else say(ply, "[UAsset] rescan failed: " .. tostring(n)) end
+		end)
+		say(ply, ok and "[UAsset] rescanning in the background..." or ("[UAsset] " .. tostring(err)))
+	end)
+
+	concommand.Add("uasset_loadhashcache", function(ply)
+		if not allowed(ply) then return end
+		if UAsset.IsScanning() then return say(ply, "[UAsset] a rescan is running; try again when it has finished") end
+		local ok, a = UAsset.LoadHashCache(true)
+		if ok then return say(ply, fmt("[UAsset] loaded %d package hashes from data/%s", a, UAsset.HashCacheFile)) end
+		say(ply, "[UAsset] " .. tostring(a) .. " - recreating it from disk...")
+		local started, err = UAsset.RefreshPackageIndexAsync(function(done) if done then saveAndReport(ply) end end)
+		if not started then say(ply, "[UAsset] " .. tostring(err)) end
+	end)
 end
 
 return UAsset
