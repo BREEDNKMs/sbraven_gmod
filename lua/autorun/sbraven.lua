@@ -3,6 +3,12 @@
 local strRealm = SERVER and "SERVER" or "CLIENT" 
 local sb_playerclass = "M_Raven" -- or M_Raven 
 
+UAsset = UAsset or include("includes/uasset.lua") -- add local behind to get it local 
+-- UAsset.RefreshPackageIndex() 
+print(UAsset.CacheCount() )
+StellarBlade_1_1_0 = StellarBlade_1_1_0 or UAsset.LoadUsmapFile("data_static/SB/StellarBlade_1_1_0.raw.usmap") 
+print("pointer of StellarBlade_1_1_0:",StellarBlade_1_1_0,strRealm) 
+SB_ImportUAsset = function(dir) return UAsset.ParseFile(dir, StellarBlade_1_1_0) end 
 
 local math_Clamp = math.Clamp
 local math_floor = math.floor
@@ -17,6 +23,14 @@ local string_lower = string.lower
 local ents_FindInPVS = ents.FindInPVS 
 local hook_Add = hook.Add
 local ents_Iterator = ents.Iterator
+local tempMatrix = Matrix() 
+
+-- === SBShowParticleKey caches ===
+-- Every cache is keyed by short static strings coming from the show / translation data, so each one is bounded in size and never grows at runtime.
+local NiagaraAssetNameCache = {} -- NiagaraSystemPath.AssetPathName -> GLua Effect file name. Saves a pattern match + a string per fire
+local CharacterSoundCuePathCache = {} -- "Game/Sound/.." content path of a CharacterParticleSet sound -> "data_static/SB/.../X.uasset" path. false = known broken, never retried
+local SocketBoneCache = {} -- [model][SocketName] -> bone ID, or false when the model has none. Replaces util.GetModelInfo, which rebuilds a big table on every call
+local ParticleEffectData -- ONE shared CEffectData for every particle key (created on first use). Every field we use is overwritten before each dispatch, so nothing stale leaks, and no EffectData() garbage per key
 
 StellarBlade = StellarBlade or {} 
 
@@ -103,26 +117,47 @@ end
 -- Usage: Load the entire directory at once
 -- SB_ImportJSON("data_static/SB/Content/Local/Data") 
 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAnimSetTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAppearanceTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterDetectAITable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterMoveTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterStanceTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTribeTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/EffectTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/EquipmentTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/EventMetaAITable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/MetaAIBehaviorTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/MetaAITable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/PassiveSkillFunctionTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/ProjectileTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/SkillActiveStepTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/SkillCommandTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/SkillPriorityTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/SkillResultTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/SkillTable.json") 
-SB_ImportJSON("data_static/SB/Content/Local/Data/TargetFilterTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAnimSetTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterAppearanceTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterDetectAITable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterMoveTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterStanceTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/CharacterTribeTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/EffectTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/EquipmentTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/EventMetaAITable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/MetaAIBehaviorTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/MetaAITable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/PassiveSkillFunctionTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/ProjectileTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/SkillActiveStepTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/SkillCommandTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/SkillPriorityTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/SkillResultTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/SkillTable.json") 
+-- SB_ImportJSON("data_static/SB/Content/Local/Data/TargetFilterTable.json") 
+
+SB_CharacterAnimSetTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterAnimSetTable.uasset") 
+SB_CharacterAppearanceTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterAppearanceTable.uasset") 
+SB_CharacterDetectAITable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterDetectAITable.uasset") 
+SB_CharacterMoveTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterMoveTable.uasset") 
+SB_CharacterStanceTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterStanceTable.uasset") 
+SB_CharacterTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterTable.uasset") 
+SB_CharacterTribeTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/CharacterTribeTable.uasset") 
+SB_EffectTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/EffectTable.uasset") 
+SB_EquipmentTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/EquipmentTable.uasset") 
+SB_EventMetaAITable = SB_ImportUAsset("data_static/SB/Content/Local/Data/EventMetaAITable.uasset") 
+SB_MetaAIBehaviorTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/MetaAIBehaviorTable.uasset") 
+SB_MetaAITable = SB_ImportUAsset("data_static/SB/Content/Local/Data/MetaAITable.uasset") 
+SB_PassiveSkillFunctionTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/PassiveSkillFunctionTable.uasset") 
+SB_ProjectileTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/ProjectileTable.uasset") 
+SB_SkillActiveStepTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/SkillActiveStepTable.uasset") 
+SB_SkillCommandTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/SkillCommandTable.uasset") 
+SB_SkillPriorityTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/SkillPriorityTable.uasset") 
+SB_SkillResultTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/SkillResultTable.uasset") 
+SB_SkillTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/SkillTable.uasset") 
+SB_TargetFilterTable = SB_ImportUAsset("data_static/SB/Content/Local/Data/TargetFilterTable.uasset") 
 
 -- Build lowercase lookup table from original keys
 local lowerCharacterRows = {}
@@ -201,10 +236,11 @@ local flRescale = 0.42
 local flRescale = 1 
 
 local t_a_shineflare_02 = Material("sprites/t_a_shineflare_02") 
-hook_Add("PostPlayerDraw","sbravenpm_coreglow",function(ply) 
+local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
+local color_cyan = Color(0,255,255) 
+hook_Add("PostPlayerDraw","sbravenpm_coreglow",function(ply) -- 21576 | addons/sbraven/lua/autorun/sbraven.lua:204 garbage creation 
 	if !IsValid(ply) then return end 
 	if !ply:Alive() then return end 
-	local attachment = { ["FX_Core_01"] = 8, ["FX_Core_02"] = 4, ["FX_Core_03"] = 2, ["FX_Core_04"] = 2} 
 	for attachmentname, scale in pairs(attachment) do 
 		local attachmentid = ply:LookupAttachment(attachmentname) 
 		if attachmentid > 0 then 
@@ -212,7 +248,7 @@ hook_Add("PostPlayerDraw","sbravenpm_coreglow",function(ply)
 			local Pos = ply:GetAttachment(attachmentid).Pos -- Pos will be used 
 			render.SetMaterial(t_a_shineflare_02) 
 			for i = 1,math.random(1,3) do 
-				render.DrawSprite(Pos,scale,scale,Color(0,255,255)) 
+				render.DrawSprite(Pos,scale,scale,color_cyan) 
 			end 
 		end 
 	end 
@@ -355,76 +391,7 @@ hook_Add("EntityRemoved", "StellarBlade_CBaseCombatCharacter", function(ent)
 end)
 
 hook_Add("Think", "StellarBlade_GestureAutoMovement", function() 
-    local bEnable = true 
-    if !bEnable then return end 
-
-    if SERVER then 
-        if !StellarBlade.CBaseCombatCharacter then -- table may not have been initialized 
-            StellarBlade.CBaseCombatCharacter = {} -- initialize it for first run 
-            for _, ent in ents_Iterator() do
-                if ent.GetActiveWeapon then
-                    StellarBlade.CBaseCombatCharacter[ent] = true
-                end
-            end
-        end
-
-        for ent in pairs(StellarBlade.CBaseCombatCharacter) do 
-            if !IsValid(ent) then -- remove invalid entries 
-                StellarBlade.CBaseCombatCharacter[ent] = nil 
-                continue 
-            end 
-			
-			local sTable = ent:GetTable() 
-			
-			if sTable._bCannotGestureMove then continue end 
-			if ent:GetMoveType() == MOVETYPE_NONE then continue end 
-            local model = ent:GetModel()
-            if !model then sTable._bCannotGestureMove = true continue end 
-            if #model < 1 then sTable._bCannotGestureMove = true continue end 
-            if !util.IsValidModel(model) then sTable._bCannotGestureMove = true continue end 
-			if ent:GetSequenceCount() <= 1 then sTable._bCannotGestureMove = true continue end 
-			if IsValid(ent:GetParent()) then continue end 
-            
-            -- also apply root movement on gestures as well 
-			local maxLayers = ent:IsPlayer() and 6 or 15 
-			
-			local layer_walk_injured = sTable.layer_walk_injured or ent:LookupSequence("layer_walk_injured") 
-			local layer_run_injured = layer_walk_injured > 0 and layer_walk_injured + 2 or layer_walk_injured 
-			-- cache the layer ID on NPCs 
-			-- Players possess the chance to dynamically change the model 
-			-- NPCs too but less likely 
-			if layer_walk_injured > 0 and !sTable.layer_walk_injured and !ent:IsPlayer() then sTable.layer_walk_injured = layer_walk_injured end 
-			
-            for layerID = 0, maxLayers do 
-                if ent:IsValidLayer(layerID) then 
-                    if sTable.SBAI_MoveTable then 
-                        for _, MoveStep in ipairs(sTable.SBAI_MoveTable) do -- accesses MoveStep 
-                            -- ignore root movement on animating model when we have root motion MoveTable active 
-                            if MoveStep.IsActive and MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then 
-                                -- print(string.format("[Bench] StellarBlade_RunSkills (Early Exit): %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
-                                return 
-                            end 
-                        end 
-                    end 
-                    
-                    if layer_walk_injured > 0 and ent:GetLayerSequence(layerID) == layer_walk_injured then continue end 
-                    if layer_run_injured > 0 and ent:GetLayerSequence(layerID) == layer_run_injured then continue end 
-
-                    local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(ent,FrameTime(),layerID) 
-                    if bMoved then 
-                        local moveResult = IterativeHybridMoveLimit(ent, ent:GetPos(), newPosition) 
-                        ent:SetLocalPos(moveResult.vEndPosition) 
-                        local angles = ent:GetLocalAngles() 
-						angles:SetUnpacked(angles.x,newAngles.y,angles.z) 
-                        ent:SetLocalAngles(angles) 
-                        break 
-                    end 
-                end 
-            end 
-        end 
-    end 
-
-    -- print(string.format("[Bench] StellarBlade_RunSkills: %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
+    
 end)
 
 --==============================================================================
@@ -521,7 +488,193 @@ local function FInViewCone(ent, vecSpot)
 
 	local dot = facingDir:Dot(los)
 	return dot > fov
+end 
+
+-- CPS_Monster_Flesh
+-- Niagara entries use asset names, matching the existing translation format.
+-- Sound and vibration entries use Unreal content paths without the leading slash
+-- and without the trailing ".0" object subpath.
+
+local TranslateCharacterParticleSet = {
+	["LightHit_01"] = {"NS_Hit_Flesh_Light_01", "NS_Hit_Flesh_Scrach_01"},
+	["StrongHit_01"] = {"NS_Hit_Flesh_Strong_01", "NS_Hit_Flesh_Scrach_01"},
+	["Critical_01"] = {"NS_Hit_Flesh_Critical_01", "NS_Hit_Critical_01"},
+	["HitDecal"] = {"NS_Hit_Flesh_projectionHitDecal_01"},
+	["LightFloor_01"] = {"NS_Hit_Flesh_Decal_Light_01"},
+	["StrongFloor_01"] = {"NS_Hit_Flesh_Decal_Strong_01"},
+	["Dead_01"] = {},
+	["OnSword_01"] = {"NS_Hit_Flesh_OnSword_01"},
+	["BulletHit"] = {"NS_Hit_Flesh_Shot_01"},
+	["PhyHit_01"] = {},
+	["LinkHit_01"] = {},
+	["TachyModeHit_01"] = {"NS_Hit_Flesh_Strong_01"},
+	["BulletParry"] = {},
+	["BackStabAnimal_1"] = {},
+	["BackStabAnimal_2"] = {},
+	["Quadruped_Stab2"] = {},
+	["Quadruped_Stab1"] = {},
+	["Quadruped_Stab4"] = {},
+	["HumanoidHeavy2_Stab1"] = {},
+	["Kick1"] = {},
+	["Kick2"] = {},
+	["Humanoid_Stab3"] = {},
+	["Humanoid2_Stab2"] = {},
+	["Kick0"] = {},
+	["MoveBackAttack_Kick"] = {},
+	["FlashBehind"] = {},
+	["Humanoid2_Stab2_2"] = {},
+	["BulletHit_NIKKE"] = {"NS_Hit_Flesh_Shot_01"}
+}
+
+local TranslateCharacterParticleSound = {
+	["LightHit_01"] = {
+		"Game/Sound/Character/Hit/CPS_Monster_CRK_Cue",
+		"Game/Sound/Character/Hit/CPS_Monster_CRK_Blood_Cue"
+	},
+	["StrongHit_01"] = {
+		"Game/Sound/Character/Hit/CPS_Monster_CRK_Hard_Cue"
+	},
+	["Critical_01"] = {
+		"Game/Sound/Character/Hit/CPS_Monster_CRK_Critical_Cue",
+		"Game/Sound/Character/Hit/CPS_Hit_Critical_FX_Small_Cue"
+	},
+	["HitDecal"] = {},
+	["LightFloor_01"] = {},
+	["StrongFloor_01"] = {},
+	["Dead_01"] = {},
+	["OnSword_01"] = {},
+	["BulletHit"] = {
+		"Game/Sound/Character/Hit/CPS_Monster_Bullet_01_Cue"
+	},
+	["PhyHit_01"] = {
+		"Game/Sound/Character/Hit/CPS_hit_Punch_01_Cue",
+		"Game/Sound/Character/Hit/PCHitSound/Result_Stand_Hit"
+	},
+	["LinkHit_01"] = {
+		"Game/Sound/Character/Hit/hit_Linkskill_Blood_01_Cue"
+	},
+	["TachyModeHit_01"] = {
+		"Game/Sound/Character/Hit/CPS_TachyMode_Hit_default_Cue"
+	},
+	["BulletParry"] = {
+		"Game/Sound/Character/Hit/Result_Parry_Projectile_Default_Cue"
+	},
+	["BackStabAnimal_1"] = {
+		"Game/Sound/Skill/PC/BackStab/PC_Skill_BackStab_Animal_Stab1_Flash_Cue"
+	},
+	["BackStabAnimal_2"] = {
+		"Game/Sound/Skill/PC/BackStab/PC_Skill_BackStab_Animal_Stab2_Flash_Cue"
+	},
+	["Quadruped_Stab2"] = {
+		"Game/Sound/Character/Skill/Link/Quadruped/PC_LinkAttack_Quadruped_Stab2_Cue"
+	},
+	["Quadruped_Stab1"] = {
+		"Game/Sound/Character/Skill/Link/Quadruped/PC_LinkAttack_Quadruped_Stab1_Cue"
+	},
+	["Quadruped_Stab4"] = {
+		"Game/Sound/Character/Skill/Link/Quadruped/PC_LinkAttack_Quadruped_Stab4_Cue"
+	},
+	["HumanoidHeavy2_Stab1"] = {
+		"Game/Sound/Character/Skill/Link/HumanoidHeavy/PC_LinkAttack_HumanoidHeavy2_Stab1_Cue"
+	},
+	["Kick1"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid1_Kick1_Cue"
+	},
+	["Kick2"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid1_Kick2_Cue"
+	},
+	["Humanoid_Stab3"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid2_Stab3_Cue"
+	},
+	["Humanoid2_Stab2"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid2_Stab2_Cue"
+	},
+	["Kick0"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid1_Kick0_Cue"
+	},
+	["MoveBackAttack_Kick"] = {
+		"Game/Sound/Skill/PC/MoveBackAttack/PC_Skill_MoveBackAttack_E_Cue"
+	},
+	["FlashBehind"] = {
+		"Game/Sound/Skill/PC/Sword/PC_Skill_FlashBehindAttack_E_impact_Cue"
+	},
+	["Humanoid2_Stab2_2"] = {
+		"Game/Sound/Character/Skill/Link/Humanoid/PC_LinkAttack_Humanoid2_Stab2_2_Cue"
+	},
+	["BulletHit_NIKKE"] = {
+		"Game/DLC_2/Sound/SFX_D2/Monster/HIT/CPS_NIKKE_Monster_Bullet_01_Cue"
+	}
+}
+
+local TranslateCharacterVibrationSet = {
+	["LightHit_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"
+	},
+	["StrongHit_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"
+	},
+	["Critical_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh",
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Critical"
+	},
+	["HitDecal"] = {},
+	["LightFloor_01"] = {},
+	["StrongFloor_01"] = {},
+	["Dead_01"] = {},
+	["OnSword_01"] = {},
+	["BulletHit"] = {},
+	["PhyHit_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"
+	},
+	["LinkHit_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"
+	},
+	["TachyModeHit_01"] = {
+		"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"
+	},
+	["BulletParry"] = {},
+	["BackStabAnimal_1"] = {
+		"Game/Sound/Haptic/VibrationSet/PC/Skill/PC_Skill_BackStab_Animal_Stab_1"
+	},
+	["BackStabAnimal_2"] = {
+		"Game/Sound/Haptic/VibrationSet/PC/Skill/PC_Skill_BackStab_Animal_Stab_2"
+	},
+	["Quadruped_Stab2"] = {},
+	["Quadruped_Stab1"] = {},
+	["Quadruped_Stab4"] = {},
+	["HumanoidHeavy2_Stab1"] = {},
+	["Kick1"] = {},
+	["Kick2"] = {},
+	["Humanoid_Stab3"] = {},
+	["Humanoid2_Stab2"] = {},
+	["Kick0"] = {},
+	["MoveBackAttack_Kick"] = {},
+	["FlashBehind"] = {},
+	["Humanoid2_Stab2_2"] = {},
+	["BulletHit_NIKKE"] = {}
+}
+
+-- Returns the three per-key translation arrays in this order:
+-- 1. Niagara system names, 2. sound content paths, 3. haptic vibration-set paths.
+function StellarBlade:TranslateCharacterParticleSet(ParticleKey)
+	local ParticleSet = TranslateCharacterParticleSet[ParticleKey]
+	local ParticleSound = TranslateCharacterParticleSound[ParticleKey]
+	local VibrationSet = TranslateCharacterVibrationSet[ParticleKey]
+
+	-- Character-specific values take precedence when supplied.
+	if self.USBCharacterParticleSet then
+		ParticleSet = self.USBCharacterParticleSet[ParticleKey]
+	end
+	if self.USBCharacterParticleSound then
+		ParticleSound = self.USBCharacterParticleSound[ParticleKey]
+	end
+	if self.USBCharacterVibrationSet then
+		VibrationSet = self.USBCharacterVibrationSet[ParticleKey]
+	end
+
+	return ParticleSet, ParticleSound, VibrationSet
 end
+
 
 hook_Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmginfo) 
     local attacker = dmginfo:GetAttacker() 
@@ -689,10 +842,10 @@ hook_Add("EntityTakeDamage", "StellarBlade_DamageEffects", function(target, dmgi
     end 
 end)
 
-game.AddParticles( "particles/raven.pcf" ) 
-PrecacheParticleSystem("ravencoreglow_2") 
-PrecacheParticleSystem("ravencoreglow_4") 
-PrecacheParticleSystem("ravencoreglow_8") 
+game.AddParticles( "particles/raven.pcf" ) -- not used anymore 
+PrecacheParticleSystem("ravencoreglow_2") -- not used anymore 
+PrecacheParticleSystem("ravencoreglow_4") -- not used anymore 
+PrecacheParticleSystem("ravencoreglow_8") -- not used anymore 
 
 --==============================================================================
 -- HELPER: Quaternion to Angle Conversion
@@ -2727,16 +2880,16 @@ ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_HealMa
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_CurrentTachyGaugeRate"] = function(ent,CalculationValue,StatValue) return 0 end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_SetStatValue"] = function(ent,CalculationValue,StatValue) return CalculationValue end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_MaxStaminaRate"] = function(ent,CalculationValue,StatValue) 
-	local maxStamina = 0 
+	local maxStamina = 1 
     
     -- Check Entity Var -> Proxy Getter -> Default 
     if ent.MaxStamina then 
         maxStamina = ent.MaxStamina 
     else 
-        maxStamina = 100 -- Default fallback 
+        maxStamina = StellarBlade.IsSBActor(ent) and scripted_ents.GetStored("m_raven").t.MaxStamina or 1 -- Default fallback 
     end 
 
-    local rate = CalcValue / 100.0 
+    local rate = CalculationValue / 100.0 
     return maxStamina * rate 
 end 
 ESBEffectCalculationType["ESBEffectCalculationType::EffectCalculationType_HealMaxHPRateByTumbler"] = function(ent,CalculationValue,StatValue) return 0 end 
@@ -3010,31 +3163,51 @@ statProxyMT.__index = function(self, key)
     if g then
         return g(self)
     end
-
+	-- print("key is:",self,key) 
     -- 2. Dynamic string concatenation/stripping for ESBActorStatType
     if isstring(key) and string.sub(key, 1, STAT_PREFIX_LEN) == STAT_PREFIX then
         local rawStat = string.sub(key, STAT_PREFIX_LEN + 1)
         local ent = self.Outer
+		local sTable = self.Outer:GetTable() 
 
         if IsValid(ent) and StellarBlade.IsSBActor(ent) then
             local kvName = StatAliasMap[rawStat] or rawStat
 
             -- Check character's own table
-            if ent[kvName] != nil then
-                return ent[kvName]
+            if sTable[kvName] != nil then
+                return sTable[kvName]
             end
 
             -- Fallback to m_raven's class table
-            local ravenBase = ent:IsPlayer() and scripted_ents.GetStored("m_raven") or scripted_ents.GetStored(ent:GetClass()) -- player will possess only raven for now 
-            if ravenBase and ravenBase.t[kvName] != nil then
-                return ravenBase.t[kvName]
-            end
+            local SBActor = ent:IsPlayer() and scripted_ents.GetStored("m_raven") or scripted_ents.GetStored(ent:GetClass()) -- player will possess only raven for now 
+			if ent:IsPlayer() and !SBActor then SBActor = SB_CharacterTable[1].Rows["Player"] end 
+            if SBActor and (SBActor.t[kvName] != nil or SBActor[kvName] != nil) then 
+                return SBActor.t[kvName]
+            else 
+				-- return sTable[kvName] 
+			end 
         end
     end
 
-    -- 3. Stored internal proxy value
+    -- 3. Value in sTable["ESBActorStatType"] 
     return rawget(self, key)
 end
+
+--[[ 
+key is:	table: 0x80880a6ecabb4f72	ESBActorStatType::ActorStatType_MaxStamina
+key is:	table: 0x80880a6ecabb4f72	ESBActorStatType::ActorStatType_MaxStamina
+key is:	table: 0x80880a6ecabb4f72	ESBActorStatType::ActorStatType_MaxShield
+key is:	table: 0x80880a6ecabb4f72	bDrainHpByAttack
+Loading: models/scientist.mdl
+Loading models/scientist.mdl
+Late precache of models/scientist.mdl, need to rebuild modelsounds.cache
+[Shared Resources] Cached 135 animation data entries for models/scientist.mdl
+[Shared Resources] Cached 135 animation data entries for models/scientist.mdl
+SERVER[SB Importer] Table 'SB_M_Raven_Slash' already exists. Skipping file read.
+SERVER[SB Importer] Table 'SB_M_Raven_Slash_RM' already exists. Skipping file read.
+key is:	table: 0x80880a6ee1998b62	DrainHpByAttackDamageType
+
+--]] 
 
 -- __newindex: when someone does proxy[key] = value
 -- resolve special setters, or dynamically write to both entity key and proxy
@@ -3047,14 +3220,14 @@ statProxyMT.__newindex = function(self, key, value)
             local rawStat = string.sub(key, STAT_PREFIX_LEN + 1)
             local ent = self.Outer
 			
-			-- for StellarBlade actors, it will save to main method 
+			-- for StellarBlade actors, it will save to self table 
             if IsValid(ent) and StellarBlade.IsSBActor(ent) then
                 local kvName = StatAliasMap[rawStat] or rawStat
                 ent[kvName] = value
             end
         end
 
-        rawset(self, key, value) -- for combine or rebel things, it will be metamethod 
+        rawset(self, key, value) -- for combine or rebel things, it will only be metamethod 
     end
 end
 
@@ -3352,10 +3525,11 @@ function StellarBlade.ActorStats(self, forceReset)
     ESBActorStatType.NextAllowedKnockdownTime  = 0
 	ESBActorStatType.ActiveAnimKey             = nil   -- Active SBShowAnimKey parameter store
 	
-	ESBActorStatType.AllStances = {}
+	ESBActorStatType.AllStances = {} 
 
     local charName = --[[sTable.RefAppearance or sTable.Type or --]]self:GetClass() 
     if self:IsPlayer() and self:GetModel() == "models/alvaroports/sbravenpm.mdl" then charName = sb_playerclass end -- translate "Player" to "M_Raven" 
+	-- if Player isn't on Raven model, Player will be possessing Eve's CharacterTable 
 
     local charTable = SB_CharacterTable[1].Rows[charName]
     if charTable then
@@ -3380,8 +3554,9 @@ function StellarBlade.ActorStats(self, forceReset)
         local ent = self.Outer
 		
 		StellarBlade.UpdateActorStance(ent, ent:GetClass(), sTable) 
+		if StellarBlade.IsSBActor(ent) then StellarBlade.Gesture_AutoMovement(ent) end 
 		
-        local animKey = self.ActiveAnimKey
+        local animKey = sTable.ActiveAnimKey
         if not animKey then return end
 
         local curTime = CurTime()
@@ -3480,7 +3655,7 @@ function StellarBlade.ActorStats(self, forceReset)
     -- =========================================================================
     function ESBActorStatType:UpdateAnimation(ply, vel, maxSeqGroundSpeed)
         if ply ~= self.Outer then return end
-        local animKey = self.ActiveAnimKey
+        local animKey = sTable.ActiveAnimKey
         if not animKey then return end
 
         local slot = animKey.GestureSlot or GESTURE_SLOT_ATTACK_AND_RELOAD
@@ -3514,6 +3689,14 @@ function StellarBlade.ActorStats(self, forceReset)
 			
 			local killed = target:Health() < 1 and !target:Alive() 
 			local stance, stancetable = StellarBlade.GetActorStance(target) 
+			
+			if killed then 
+				local AttackerEffectWhenDead = sTable.AttackerEffectWhenDead 
+				if AttackerEffectWhenDead and AttackerEffectWhenDead != "" then 
+					StellarBlade.AddEffectFromTable(target, StellarBlade.ParseTableStrings(AttackerEffectWhenDead)) 
+				end 
+			end 
+			
 			if killed and stance and stancetable.DeadSkillAlias != "None" and !self.CastOnKilledSkill then 
 				local DeadSkillPercentage = ( math.random() * 100 ) <= stancetable.DeadSkillPercentage 
 				if DeadSkillPercentage then 
@@ -3587,7 +3770,7 @@ StellarBlade.OnAddEffect = function(self,EffectTable,tableOptional)
 		ActorStats.TraceResult = tableOptional.TraceResult 
 	end 
 	-- print("StatType is:",StatType) 
-	-- print(strRealm, CurTime(), "attribute is:",attribute) 
+	-- print(strRealm, CurTime(), "attribute is:",attribute, self) 
 	if attribute then 
 		StellarBlade.ActorApplyStat(self,StatType,StatCalculationType,CalculationMultipleValue,CalculationValue) 
 		attribute = attribute * CalculationMultipleValue 
@@ -4336,7 +4519,6 @@ StellarBlade.StartSkill = function(self,SkillName)
 end 
 
 StellarBlade.StartSkillCommand = function(self,SkillName) 
-	print("self is:",self,"SkillName is:",SkillName) 
 	local SkillCommandTable = SB_SkillCommandTable[1].Rows[SkillName] 
 	local SkillAlias = SkillCommandTable.SkillAlias 
 	local AICommandActivationRate = SkillCommandTable.AICommandActivationRate 
@@ -4400,50 +4582,72 @@ local function ApplyRenderState(ent, hide)
 	end 
 end 
 
-StellarBlade.IsSBActor = function(self,sTable) 
-	sTable = sTable or self:GetTable() 
-	if !self.GetModel then return false end 
-	if sTable.IsSBActor and sTable.IsSBActor == true then return true end 
-	if sTable.IsSBActor and sTable.IsSBActor == false then return false end 
-	local getModel = self:GetModel() 
-	if !getModel then sTable.IsSBActor = false return false end 
-	if getModel == "" then sTable.IsSBActor = false return false end 
-	if #getModel < 1 then sTable.IsSBActor = false return false end 
-	if getModel == "models/alvaroports/sbravenpm.mdl" then 
-		return true 
-	end 
-	if !self:IsPlayer() and (scripted_ents.IsBasedOn(self:GetClass(),"m_raven") or self:GetClass() == "m_raven") then 
-		sTable.IsSBActor = true 
-		return true 
-	end 
-	
-	local info = util.GetModelInfo(getModel)
-    if info and info.ModelKeyValues then
-        local kv = util.KeyValuesToTablePreserveOrder(info.ModelKeyValues)
-        for _, v in ipairs(kv) do
-            if v.Key == "stellarblade" and v.Value then
-                for _, sub in ipairs(v.Value) do
-                    if sub.Key == "ischaracter" and tonumber(sub.Value) == 1 then
-						sTable.IsSBActor = true 
-                        return true
+StellarBlade.IsSBActor = function(self, sTable) 
+    sTable = sTable or self:GetTable() 
+    if !self.GetModel then return false end 
+    if sTable.IsSBActor != nil then return sTable.IsSBActor end 
+
+    local getModel = self:GetModel() 
+    if !getModel or getModel == "" or #getModel < 1 then 
+        sTable.IsSBActor = false 
+        return false 
+    end 
+
+    if getModel == "models/alvaroports/sbravenpm.mdl" then 
+        sTable.IsSBActor = true 
+        return true 
+    end 
+
+    if !self:IsPlayer() and (scripted_ents.IsBasedOn(self:GetClass(), "m_raven") or self:GetClass() == "m_raven") then 
+        sTable.IsSBActor = true 
+        return true 
+    end 
+    
+    -- Retrieve the model cache via cycler_actor2's NPC_GetModelCache submethod
+    local cycler = scripted_ents.GetStored("cycler_actor2")
+    local mc = cycler and cycler.t.NPC_GetModelCache(self)
+    
+    if mc then
+        -- Return cached IsSBActor status if already evaluated for this model
+        if mc.IsSBActor != nil then
+            if !self:IsPlayer() then sTable.IsSBActor = mc.IsSBActor end 
+            return mc.IsSBActor
+        end
+
+        if mc.Info and mc.Info.ModelKeyValues then
+            local kv = util.KeyValuesToTablePreserveOrder(mc.Info.ModelKeyValues)
+            for _, v in ipairs(kv) do
+                if v.Key == "stellarblade" and v.Value then
+                    for _, sub in ipairs(v.Value) do
+                        if sub.Key == "ischaracter" and tonumber(sub.Value) == 1 then
+                            mc.IsSBActor = true
+                            if !self:IsPlayer() then sTable.IsSBActor = true end 
+                            return true
+                        end
                     end
                 end
             end
         end
+        
+        -- Cache negative result on the model cache table
+        mc.IsSBActor = false
     end
-	if !self:IsPlayer() then -- player may change model dynamically 
-		sTable.IsSBActor = false 
-	end 
-	return false 
-end 
+
+    if !self:IsPlayer() then -- player may change model dynamically 
+        sTable.IsSBActor = false 
+    end 
+    return false 
+end
 
 StellarBlade.SetShow = function(self,showpath,slot,tableOptional) 
 	if !showpath then return false end 
 	if #showpath == 0 then return false end 
 	if !string.find(showpath,"data_static") then -- append correct path if setshow has been directly called 
-		showpath = "data_static/SB/Content/Art/Show/"..showpath..".json" 
+		-- showpath = "data_static/SB/Content/Art/Show/"..showpath..".json" 
+		showpath = "data_static/SB/Content/Art/Show/"..showpath..".uasset" 
 	end 
-	SB_ImportJSON(showpath) 
+	-- SB_ImportJSON(showpath) 
+	local showdata = SB_ImportUAsset(showpath) 
 	local sTable = self:GetTable() 
 	if !sTable.SBAI_ActiveShows then 
 		sTable.SBAI_ActiveShows = {} 
@@ -4472,8 +4676,9 @@ StellarBlade.SetShow = function(self,showpath,slot,tableOptional)
 	SBAI_ActiveShow.Slot = slot or "" 
 	SBAI_ActiveShow.SBAI_ActiveShows = sTable.SBAI_ActiveShows 
 	SBAI_ActiveShow.tableOptional = tableOptional 
-	local showname = "SB_" .. SBAI_ActiveShow.Name 
-	local showdata = _G[showname] 
+	SBAI_ActiveShow.Data = showdata 
+	-- local showname = "SB_" .. SBAI_ActiveShow.Name 
+	-- local showdata = _G[showname] 
 	StellarBlade.SBAI_ActiveShow.Initialize(SBAI_ActiveShow) 
 	-- if !showdata then return end 
 	-- hook.Add("Tick",SBAI_ActiveShow,SBAI_ActiveShow.Tick) 
@@ -4499,8 +4704,8 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 	local sTable = SBAI_ActiveShow.OuterTable or self:GetTable() 
 
 	local showname = "SB_" .. SBAI_ActiveShow.Name 
-	local showdata = _G[showname] 
-	if !showdata then return end 
+	local showdata = SBAI_ActiveShow.Data 
+	if !showdata then return end -- remove self table 
 
 	-- Find SBShowData entry
 	showEntry = SBAI_ActiveShow.SBShowData 
@@ -4642,7 +4847,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 		end
 		
 		-- === Handle key types ===
-				if data.Type == "SBShowAnimKey" then 
+			if data.Type == "SBShowAnimKey" then 
 			local Target = props.Target or "ESBShowActorTarget::ShowActorTarget_MainActor" 
 			local bCheckHitLevel = props.bCheckHitLevel 
 			local CustomAnim = props.CustomAnim 
@@ -4652,7 +4857,6 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 			local BlendInTime = tonumber(props.BlendInTime) or 0.2 
 			local BlendOutTime = tonumber(props.BlendOutTime) or 0.2 
 			local Duration = tonumber(props.Duration) or 0
-			Entity(1):ChatPrint(tostring(self).." in SBShowAnimKey: "..tostring(SBAI_ActiveShow))
 			-- PrintTable(props) 
  
 			-- Ignore wing/cosmetic mesh slots
@@ -5061,7 +5265,6 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					end 
 					local key = props.CharacterReactKey or props.CharacterVoiceKey or props.CharacterHitKey 
 					if key then 
-						-- print("in ",key) 
 						local lookup = StellarBlade.LookupCharacterSound(self,key) 
 						CuePath = lookup and lookup.ObjectPath 
 					else 
@@ -5074,7 +5277,6 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					end
 				else
 					CuePath = props.SoundSoftObject and props.SoundSoftObject.AssetPathName
-					-- print("AssetPathName is:",CuePath) 
 					if !CuePath and props.Sound then
 						CuePath = props.Sound.ObjectPath
 					end
@@ -5084,7 +5286,7 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 					-- print("CuePath is:", CuePath) 
 					CuePath = string.sub(CuePath, 6)
 					CuePath = "data_static/SB/Content" .. CuePath
-					CuePath = string.StripExtension(CuePath) .. ".json"
+					CuePath = string.StripExtension(CuePath) .. ".uasset"
 
 					local SoundScript = StellarBlade.BuildSoundScript(self,CuePath) 
 					if SoundScript then 
@@ -5288,164 +5490,290 @@ StellarBlade.MaintainShow = function(self,SBAI_ActiveShow,tableOptional)
 		elseif data.Type == "SBShowMeshVertexShakeKey" then -- used by Eve 
 		elseif data.Type == "SBShowNiagaraKey" then -- directly spawn niagara system, only 3 examples 
 		elseif data.Type == "SBShowNotifyEventKey" then -- call given event 
-		elseif data.Type == "SBShowParticleKey" then -- creates niagara system with properties, the most difficult and advanced system 
-			local AssetName 
-			if data.Properties and data.Properties.NiagaraSystem and data.Properties.NiagaraSystem.NiagaraSystemPath then 
-				AssetName = string.GetExtensionFromFilename(data.Properties.NiagaraSystem.NiagaraSystemPath.AssetPathName) 
-			end 
-			if AssetName then 
-				local CustomTimeDilation = data.Properties.CustomTimeDilation 
-				local SocketName = data.Properties.SocketName -- attachment 
-				local bAttach = data.Properties.bAttach -- parent status, add flags 1 
-				local ParticleScale = data.Properties.ParticleScale 
-				local bUseTargetEquipment = data.Properties.bUseTargetEquipment 
-				local RelativeLocation = data.Properties.RelativeLocation 
-				local RelativeRotation = data.Properties.RelativeRotation 
-				local bPosOnly = data.Properties.bPosOnly 
-				
-				ParticleScale = ParticleScale and ParticleScale * 10 or 10 
-				if RelativeLocation then -- convert to proper Vector table 
-					RelativeLocation = Vector(RelativeLocation.X,RelativeLocation.Y,RelativeLocation.Z) * flRescale 
+		elseif data.Type == "SBShowParticleKey" then -- creates niagara system(s) with properties, plays the sounds of a CharacterParticleSet, the most difficult and advanced system 
+			local cachedState = SBAI_ActiveShow.TriggeredKeys[data.Name] 
+			print("in "..data.Type,CurTime()) 
+			if istable(cachedState) and cachedState.PendingSounds then 
+				-- SECOND+ PASS: the particles of this key were already emitted on the first pass, only delayed character sounds are still waiting for their TriggerTime. 
+				-- Nothing is built here: just a numeric loop over the SoundScripts cached on the first pass. 
+				local PendingSounds = cachedState.PendingSounds 
+				local SoundOwner = cachedState.Target 
+				local Remaining = cachedState.Remaining 
+				for i = 1, #PendingSounds do 
+					local SoundScript = PendingSounds[i] -- false = already emitted 
+					if SoundScript and SBAI_ActiveShow.Elapsed >= SoundScript.TriggerTime then 
+						PendingSounds[i] = false 
+						Remaining = Remaining - 1 
+						if IsValid(SoundOwner) then 
+						SoundOwner:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume) 
+						end 
+					end 
 				end 
-				local relAng = angle_zero
-				if RelativeRotation then -- convert to proper Angle table 
-					relAng = Angle(RelativeRotation.Pitch or 0, RelativeRotation.Yaw or 0, RelativeRotation.Roll or 0)
+				cachedState.Remaining = Remaining 
+				if Remaining <= 0 then 
+				SBAI_ActiveShow.TriggeredKeys[data.Name] = true -- fully complete (boolean true), the main loop skips this key from now on 
 				end 
-				if bPosOnly then 
-					-- relAng = Angle(relAng.x,relAng.y-90,relAng.z) 
-				end 
-				
-				local ef = EffectData() 
-				local EffectEntity = bUseTargetEquipment and self.GetActiveWeapon and IsValid(self:GetActiveWeapon()) and self:GetActiveWeapon() or self 
-				
-				local worldPos = EffectEntity:GetPos() 
-				local worldAng = EffectEntity:GetLocalAngles() -- use world-space angles, not GetLocalAngles()
-				local foundAttachmentIndex = nil
-				local foundBoneID = nil
-
-				if SocketName and EffectEntity:LookupAttachment(SocketName) and EffectEntity:LookupAttachment(SocketName) != 0 then
-					local attachmentIndex = EffectEntity:LookupAttachment(SocketName)
-					foundAttachmentIndex = attachmentIndex
-					
-					local att = EffectEntity:GetAttachment(EffectEntity:LookupAttachment(SocketName))
-					if att and att.Pos and att.Ang then
-						worldPos = att.Pos
-						worldAng = att.Ang
-						-- Let effect know we used an attachment index (so engine can parent)
-						ef:SetAttachment(EffectEntity:LookupAttachment(SocketName))
-					end
-					
-					-- Try to find the Bone ID for that attachment via model info
-					local model = EffectEntity:GetModel() or nil
-					if model then
-						local mInfo = util.GetModelInfo(model) 
-						if istable(mInfo) and istable(mInfo.Attachments) then
-							-- find an attachment entry with matching name (some models index attachments numerically)
-							for k, v in ipairs(mInfo.Attachments) do
-								if istable(v) and v.Name and v.Name == SocketName then
-									foundBoneID = v.Bone
-									break
-								end
-							end
-							-- fallback: sometimes the numeric index matches attachmentIndex
-							if !foundBoneID and mInfo.Attachments[attachmentIndex] and mInfo.Attachments[attachmentIndex].Bone then
-								foundBoneID = mInfo.Attachments[attachmentIndex].Bone
-							end
-						end
-					end
-
-					-- store boneID into effect data using SetHitBox (we're repurposing hitbox field)
-					if foundBoneID then
-						ef:SetHitBox(foundBoneID)
-					end
-				end
-				
-				if !foundBoneID or foundBoneID == 0 then
-					local fallbackBoneName = "RootSocket"
-					local boneID, boneEntity = nil, nil
-
-					-- try the effect entity (weapon) first
-					if EffectEntity.LookupBone then
-						local bid = EffectEntity:LookupBone(fallbackBoneName)
-						if bid and bid != -1 then
-							boneID = bid
-							boneEntity = EffectEntity
-						end
-					end
-
-					-- then try the actor/player (self)
-					if (not boneID or boneID == -1) and IsValid(self) and self.LookupBone then
-						local bid = self:LookupBone(fallbackBoneName)
-						if bid and bid != -1 then
-							boneID = bid
-							boneEntity = self
-						end
-					end
-
-					-- If we found a bone, use its world matrix as our origin/angles and save boneID in ef
-					if boneID and boneID != -1 and boneEntity and boneEntity.GetBoneMatrix then
-						local mat = boneEntity:GetBoneMatrix(boneID)
-						if mat then
-							local matPos = mat:GetTranslation()
-							local matAng = mat:GetAngles()
-							if matPos and matAng then
-								worldPos = matPos
-								worldAng = matAng
-								foundBoneID = boneID
-								ef:SetHitBox(foundBoneID) 
-							end
-						end
-					end
-				end
-				
-
-				-- If requested, prefer bone matrix world transform (works well on server where weapon may be parented to root)
-				if bUseTargetEquipment and foundBoneID and EffectEntity.GetBoneMatrix then
-					local mat = EffectEntity:GetBoneMatrix(foundBoneID)
-					if mat then
-						-- GetTranslation / GetAngles give world-space translation & rotation for that bone
-						local matPos = mat:GetTranslation()
-						local matAng = mat:GetAngles()
-						if matPos and matAng then
-							worldPos = matPos
-							worldAng = matAng
-							-- ensure bone saved into effect data (if not already)
-							ef:SetHitBox(foundBoneID) 
-						end
-					end
-				end 
-				if !foundBoneID or foundBoneID <= 0 then ef:SetHitBox(0) end 
-				-- print("found bone ID:",foundBoneID,SocketName,EffectEntity) 
-					
-				if RelativeLocation then 
-					-- LocalToWorld(localPos, localAng, originPos, originAng) 
-					local finalPos, finalAng = LocalToWorld(RelativeLocation, angle_zero, worldPos, worldAng) 
-					worldPos, worldAng = finalPos, finalAng 
-				end 
-				ef:SetAngles(relAng) 
-				ef:SetEntity(EffectEntity) 
-				ef:SetMagnitude(data.Properties.Duration or 0) -- use as effect timer 
-				ef:SetOrigin(worldPos) -- contains finalized position 
-				ef:SetScale(ParticleScale) -- scale 
-				ef:SetStart(RelativeLocation and RelativeLocation or vector_origin) 
-				util.Effect(AssetName,ef) 
-				-- Entity(1):ChatPrint(SBAI_ActiveShow.Name.. " "..AssetName.. " elapsed: "..SBAI_ActiveShow.Elapsed.." "..tostring(relAng).." mag:"..tostring(ef:GetMagnitude())) 
-				-- debugoverlay.Cross(worldPos,10,2) 
-				-- debugoverlay.Cross(Pos,10,5) 
-			elseif data.Properties.bUsePhysParticle then 
-				local PhysParticleSet = data.Properties.PhysParticleSet 
-				local bPlayPhysParticleOnHitLocation = data.Properties.bPlayPhysParticleOnHitLocation 
-				PhysParticleSet = PhysParticleSet.ObjectName 
 			else 
-				print("AssetName not found for "..data.Type) 
-			end 
+				-- FIRST PASS 
+				local NiagaraSystem = props.NiagaraSystem 
+				local bUseCharacterParticleSet = props.bUseCharacterParticleSet 
+				local CharacterParticleSetKey = props.CharacterParticleSetKey 
+				local bUsePhysParticle = props.bUsePhysParticle 
+
+				local ParticleName -- ONE effect file name (NiagaraSystem / PhysParticle sources). A plain string, so the common case allocates no table 
+				local ParticleSet -- ARRAY of effect file names, one per Niagara system (CharacterParticleSetKey source) 
+				local ParticleSound -- ARRAY of sound cue content paths (CharacterParticleSetKey source) 
+				local VibrationSet -- ARRAY of haptic VibrationSet content paths (CharacterParticleSetKey source), OPEN HANDLE, see below 
+
+				-- Source selection, first match wins (same precedence as before: NiagaraSystem > CharacterParticleSet > PhysParticle) 
+				local NiagaraSystemPath = NiagaraSystem and NiagaraSystem.NiagaraSystemPath 
+				local AssetPathName = NiagaraSystemPath and NiagaraSystemPath.AssetPathName 
+				if AssetPathName then 
+				-- 1. NiagaraSystem: the literal file name of the Niagara asset is the GLua Effect, i.e. "/Game/Art/FX/NS_X.NS_X" -> "NS_X". The NiagaraScript itself is never parsed. 
+				-- (A NiagaraSystem without an AssetPathName falls through to the sources below instead of erroring.) 
+				ParticleName = NiagaraAssetNameCache[AssetPathName] 
+				if !ParticleName then 
+					ParticleName = string.GetExtensionFromFilename(AssetPathName) 
+					NiagaraAssetNameCache[AssetPathName] = ParticleName 
+				end 
+				elseif bUseCharacterParticleSet and CharacterParticleSetKey then 
+					-- 2. CharacterParticleSet: ONE key can provide several Niagara systems + several sound cues + several vibration sets. 
+					-- Each of the three can be nil (key unknown for this character) or {} (key known, nothing to play for that part). 
+					ParticleSet, ParticleSound, VibrationSet = StellarBlade.TranslateCharacterParticleSet(self, CharacterParticleSetKey) 
+				elseif bUsePhysParticle then 
+					-- 3. PhysParticle: DEFINED BUT UNHANDLED, kept exactly like before. There is no PhysParticleSet translation yet, 
+					-- bPlayPhysParticleOnHitLocation is read but unused, and ObjectName is only passed through as an effect name placeholder. 
+					local PhysParticleSet = props.PhysParticleSet 
+					local bPlayPhysParticleOnHitLocation = props.bPlayPhysParticleOnHitLocation 
+					ParticleName = PhysParticleSet and PhysParticleSet.ObjectName 
+				end 
+
+				-- === PARTICLES: transform is resolved ONCE per key, then every effect of the key is dispatched with the same EffectData === 
+				local ParticleCount = ParticleSet and #ParticleSet or 0 
+				if ParticleName or ParticleCount > 0 then 
+					print("particle name is:",ParticleName,ParticleCount) 
+					local CustomTimeDilation = props.CustomTimeDilation -- unused for now 
+					local SocketName = props.SocketName -- attachment 
+					local bAttach = props.bAttach -- unused for now, parent status, add flags 1 
+					local ParticleScale = props.ParticleScale 
+					local bUseTargetEquipment = props.bUseTargetEquipment 
+					local RelativeLocation = props.RelativeLocation 
+					local RelativeRotation = props.RelativeRotation 
+					local bPosOnly = props.bPosOnly 
+
+					ParticleScale = ParticleScale and ParticleScale * 10 or 10 
+					if RelativeLocation then -- convert to proper Vector (rescaled while converting, one allocation instead of two) 
+						RelativeLocation = Vector((RelativeLocation.X or 0) * flRescale, (RelativeLocation.Y or 0) * flRescale, (RelativeLocation.Z or 0) * flRescale) 
+					end 
+					local relAng = angle_zero -- shared constant, no allocation unless the key has a rotation 
+					if RelativeRotation then -- convert to proper Angle table 
+						relAng = Angle(RelativeRotation.Pitch or 0, RelativeRotation.Yaw or 0, RelativeRotation.Roll or 0) 
+					end 
+					if bPosOnly then 
+						-- relAng = Angle(relAng.x,relAng.y-90,relAng.z) 
+					end 
+
+					local ef = ParticleEffectData 
+					if !ef then 
+						ef = EffectData() 
+						ParticleEffectData = ef 
+					end 
+
+					-- bUseTargetEquipment: the effect belongs to the active weapon instead of the actor. Fallback: the actor itself 
+					local EffectEntity = self 
+					if bUseTargetEquipment and self.GetActiveWeapon then 
+						local Weapon = self:GetActiveWeapon() 
+						if IsValid(Weapon) then EffectEntity = Weapon end 
+					end 
+
+					local worldPos = EffectEntity:GetPos() -- fallback origin when there is no attachment and no bone 
+					local worldAng -- only built when RelativeLocation needs it (saves an Angle per key) 
+					local AttachmentIndex = 0 -- 0 = effect is not parented to an attachment 
+					local foundBoneID = nil 
+					local bBoneMatrixFromEffectEntity = false -- avoids copying the same bone matrix twice 
+
+					if SocketName then 
+						local attachmentIndex = EffectEntity:LookupAttachment(SocketName) -- looked up once 
+						if attachmentIndex and attachmentIndex != 0 then 
+							local att = EffectEntity:GetAttachment(attachmentIndex) 
+							if att and att.Pos and att.Ang then 
+								worldPos = att.Pos 
+								worldAng = att.Ang 
+								AttachmentIndex = attachmentIndex -- let effect know we used an attachment index (so engine can parent) 
+							end 
+
+							-- Try to find the Bone ID for that attachment via model info. Cached per model + socket (false = no bone), so util.GetModelInfo only ever runs once per pair 
+							local Model = EffectEntity:GetModel() 
+							if Model then 
+								local ModelSockets = SocketBoneCache[Model] 
+								if !ModelSockets then 
+									ModelSockets = {} 
+									SocketBoneCache[Model] = ModelSockets 
+								end 
+								local CachedBoneID = ModelSockets[SocketName] -- nil = never looked up 
+								if CachedBoneID == nil then 
+									local mInfo = util.GetModelInfo(Model) 
+									if istable(mInfo) and istable(mInfo.Attachments) then 
+										-- find an attachment entry with matching name (some models index attachments numerically) 
+										for k, v in ipairs(mInfo.Attachments) do 
+										if istable(v) and v.Name and v.Name == SocketName then 
+											CachedBoneID = v.Bone 
+											break 
+										end 
+										end 
+										-- fallback: sometimes the numeric index matches attachmentIndex 
+										if !CachedBoneID and mInfo.Attachments[attachmentIndex] and mInfo.Attachments[attachmentIndex].Bone then 
+										CachedBoneID = mInfo.Attachments[attachmentIndex].Bone 
+										end 
+									end 
+									CachedBoneID = CachedBoneID or false 
+									ModelSockets[SocketName] = CachedBoneID 
+								end 
+								foundBoneID = CachedBoneID or nil 
+							end 
+						end 
+					end 
+
+					-- Fallback: no usable bone from the attachment -> use the "RootSocket" bone, first on the effect entity (weapon), then on the actor 
+					if !foundBoneID or foundBoneID == 0 then 
+						local fallbackBoneName = "RootSocket" 
+						local boneID, boneEntity = nil, nil 
+
+						if EffectEntity.LookupBone then 
+							local bid = EffectEntity:LookupBone(fallbackBoneName) 
+							if bid and bid != -1 then 
+								boneID = bid 
+								boneEntity = EffectEntity 
+							end 
+						end 
+
+						-- (skipped when EffectEntity is the actor already, it would be the very same lookup) 
+						if (!boneID or boneID == -1) and EffectEntity != self and IsValid(self) and self.LookupBone then 
+							local bid = self:LookupBone(fallbackBoneName) 
+							if bid and bid != -1 then 
+								boneID = bid 
+								boneEntity = self 
+							end 
+						end 
+
+						-- If we found a bone, use its world matrix as our origin and remember the boneID 
+						if boneID and boneID != -1 and boneEntity and boneEntity.GetBoneMatrix then 
+							boneEntity:CopyBoneMatrix(boneID, tempMatrix) 
+							worldPos = tempMatrix:GetTranslation() 
+							if RelativeLocation then worldAng = tempMatrix:GetAngles() end 
+							foundBoneID = boneID 
+							bBoneMatrixFromEffectEntity = boneEntity == EffectEntity 
+						end 
+					end 
+	
+					-- If requested, prefer bone matrix world transform (works well on server where weapon may be parented to root) 
+					if bUseTargetEquipment and foundBoneID and !bBoneMatrixFromEffectEntity and EffectEntity.GetBoneMatrix then 
+						EffectEntity:CopyBoneMatrix(foundBoneID, tempMatrix) 
+						worldPos = tempMatrix:GetTranslation() 
+						if RelativeLocation then worldAng = tempMatrix:GetAngles() end 
+					end 
+
+					-- we repurpose the hitbox field as the bone ID. The shared EffectData must be reset every time, so 0 when there is no bone 
+					ef:SetHitBox((foundBoneID and foundBoneID > 0) and foundBoneID or 0) 
+					ef:SetAttachment(AttachmentIndex) 
+
+					if RelativeLocation then 
+					-- LocalToWorld(localPos, localAng, originPos, originAng). Only the position is used afterwards 
+						worldAng = worldAng or (EffectEntity.GetRenderAngles and EffectEntity:GetRenderAngles() or EffectEntity:GetLocalAngles()) -- use world-space angles, not 	GetLocalAngles() 
+						worldPos = LocalToWorld(RelativeLocation, angle_zero, worldPos, worldAng) 
+					end 
+					ef:SetAngles(relAng) 
+					ef:SetEntity(EffectEntity) 
+					ef:SetMagnitude(props.Duration or 0) -- use as effect timer 
+					ef:SetOrigin(worldPos) -- contains finalized position 
+					ef:SetScale(ParticleScale) -- scale 
+					ef:SetStart(RelativeLocation or vector_origin) 
+
+					-- Dispatch: one effect for NiagaraSystem / PhysParticle, one per Niagara system of the CharacterParticleSet. Same EffectData for all 
+					if ParticleName then 
+						util.Effect(ParticleName, ef) 
+					end 
+					for i = 1, ParticleCount do 
+						print("iterating:",ParticleSet[i]) 
+						util.Effect(ParticleSet[i], ef) 
+					end 
+				end 
+
+				-- === SOUNDS: sound cues of the CharacterParticleSet, built like SBShowSoundKey === 
+				local SoundCount = ParticleSound and #ParticleSound or 0 
+				if SoundCount > 0 then 
+					-- TargetForSoundOwner: OtherActor -> enemy, then PickTarget, then self (same chain as SBShowSoundKey). MainActor / missing -> self 
+					local SoundOwner = self 
+					if props.TargetForSoundOwner == "ESBShowSoundOwnerTarget::OtherActor" then 
+					
+						local Enemy = tableOptional and tableOptional.Constructor or self.GetEnemy and self:GetEnemy() 
+						if IsValid(Enemy) then 
+							SoundOwner = Enemy 
+						elseif IsValid(self.PickTarget) then 
+							SoundOwner = self.PickTarget 
+						end 
+					end 
+
+					local PendingSounds, PendingCount = nil, 0 -- only allocated if a cue actually has a Delay 
+					for i = 1, SoundCount do 
+						local CuePath = ParticleSound[i] 
+						local SoundAssetPath = CharacterSoundCuePathCache[CuePath] 
+						if SoundAssetPath == nil then -- first time this cue is seen: "Game/Sound/X" -> "data_static/SB/Content/Sound/X.uasset" 
+							SoundAssetPath = "data_static/SB/Content" .. string.sub(CuePath, 5) -- drop the "Game" prefix 
+							SoundAssetPath = string.StripExtension(SoundAssetPath) .. ".uasset" 
+							CharacterSoundCuePathCache[CuePath] = SoundAssetPath 
+						end 
+
+						if SoundAssetPath then -- false = this cue already failed once, skip it silently 
+							-- pcall without a closure: a missing / broken cue must not abort the whole show loop 
+							local bSuccess, SoundScript = pcall(StellarBlade.BuildSoundScript, self, SoundAssetPath) 
+							if bSuccess and SoundScript and SoundScript.SoundPath != "" then 
+								local Delay = SoundScript.Delay or 0 
+								local TriggerTime = StartTime + Delay 
+
+								-- Logic: If there is a delay and we haven't reached it, CACHE the SoundScript. Otherwise emit now. 
+								if Delay > 0 and SBAI_ActiveShow.Elapsed < TriggerTime then 
+									SoundScript.TriggerTime = TriggerTime -- stored inside the SoundScript itself, no extra table 
+									PendingSounds = PendingSounds or {} 
+									PendingCount = PendingCount + 1 
+									PendingSounds[PendingCount] = SoundScript 
+								else 
+									SoundOwner:EmitSound(SoundScript.SoundPath, 100, SoundScript.Pitch, SoundScript.Volume) -- channel left default, same as SBShowSoundKey 
+								end 
+							else 
+								CharacterSoundCuePathCache[CuePath] = false -- never retry a broken cue 
+								print("a sound not found for:", SoundAssetPath, self) 
+							end 
+						end 
+					end 
+
+					if PendingSounds then 
+						-- Note: we leave TriggeredKeys as a TABLE. The main loop keeps a table state, so the key is processed again next frame (pending sound pass above). 
+						SBAI_ActiveShow.TriggeredKeys[data.Name] = { 
+						PendingSounds = PendingSounds, -- array of cached SoundScripts (false once emitted) 
+						Remaining = PendingCount, -- how many are still waiting 
+						Target = SoundOwner -- cache the owner 
+						} 
+					end 
+				end 
+
+				-- === VIBRATION: OPEN HANDLE, intentionally NOT integrated === 
+				-- VibrationSet is the array of haptic content paths of this CharacterParticleSetKey, i.e. {"Game/Sound/Haptic/VibrationSet/Haptic_Hit_Flesh"}. 
+				-- Hook the controller vibration / haptic system in here later (iterate it like ParticleSound). 
+
+				-- Nothing resolved at all (no source matched / unknown CharacterParticleSetKey), print for debugging. A KNOWN key with empty arrays stays silent on purpose. 
+				if !ParticleName and !ParticleSet and !ParticleSound and !VibrationSet then 
+					print("AssetName not found for "..data.Type) 
+					PrintTable(data) 
+				end 
+			end
 		elseif data.Type == "SBShowPlayShowKey" then -- play show at given path 
 			local ObjectPath = data.Properties and data.Properties.ShowData and data.Properties.ShowData.ObjectPath 
 			if ObjectPath then 
 				ObjectPath = string.StripExtension(ObjectPath) 
 				-- print("object path is:",ObjectPath) 
 				ObjectPath = string.sub(ObjectPath,7) 
-				ObjectPath = "data_static/SB/Content/"..ObjectPath..".json" 
+				ObjectPath = "data_static/SB/Content/"..ObjectPath..".uasset" 
 				-- print("updated object path is:",ObjectPath) 
 				StellarBlade.SetShow(self,ObjectPath,"Show",tableOptional) 
 			end 
@@ -6523,7 +6851,7 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 			-- print("ShowPath is:",SkillStepTable.TargetShowPath) 
 			if SkillStepTable.TargetShowPath != "None" then 
 				local showpath = "adata_static/SB/Content/Art/Show/" 
-				showpath = showpath..SkillStepTable.TargetShowPath..".json" 
+				showpath = showpath..SkillStepTable.TargetShowPath..".uasset" 
 				StellarBlade.SetShow(v,showpath,"SkillStep",tableOptional) 
 			end 
 			
@@ -7609,8 +7937,8 @@ end
 
 -- Helper function to determine active states for an entity
 -- Returns a table where keys are state names and values are booleans
-function StellarBlade:GetEntityStates() 
-	local sTable = self:GetTable() -- accessing from Table is relatively faster than indexing self 
+function StellarBlade:GetEntityStates(sTable) 
+	sTable = sTable or self:GetTable() -- accessing from Table is relatively faster than indexing self 
 	local physobj = self:GetPhysicsObject()
 	
 	-- 1. Calculate Moving
@@ -8248,7 +8576,7 @@ StellarBlade.SetSkillStep = function(self, strSkill, SBAI_SkillTable, sTable)
 	local ShowPath = SkillStepTable.ShowPath 
 	if ShowPath != "None" then 
 		local showpath = "data_static/SB/Content/Art/Show/" 
-		showpath = showpath..ShowPath..".json" 
+		showpath = showpath..ShowPath..".uasset" 
 		StellarBlade.SetShow(self,showpath, "SkillStep", tableOptional) 
 	end 
 
@@ -8480,23 +8808,6 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 	
 	local SBAI_MoveTable = self.SBAI_MoveTable 
 	local CharacterMoveTable = SB_CharacterMoveTable[1].Rows[strEffect] -- get precached movetable 
-	if CharacterMoveTable.RootMotionDataPath and CharacterMoveTable.RootMotionDataPath != "None" then 
-		local RootMotionDataPath = string.sub(CharacterMoveTable.RootMotionDataPath, 6) 
-		RootMotionDataPath = "data_static/SB/Content" .. RootMotionDataPath .. ".json" 
-		SB_ImportJSON(RootMotionDataPath) 
-	end 
-	if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath != "None" then
-		StellarBlade.LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
-	end
-	if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then
-		StellarBlade.LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
-	end
-	if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath != "None" then
-		StellarBlade.LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
-	end
-	if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath != "None" then
-		StellarBlade.LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
-	end
 
 	local newMoveStep = { 
 		["CharacterMoveTable"] = CharacterMoveTable, 
@@ -8510,6 +8821,25 @@ StellarBlade.AddMoveStep = function(self, strEffect, tableOptional)
 		-- ["InitialPos"] = self:GetPos(), 
 		["bExecuteSeparately"] = CharacterMoveTable.bExecuteSeparately or false
 	} 
+	
+	if CharacterMoveTable.RootMotionDataPath and CharacterMoveTable.RootMotionDataPath != "None" then 
+		local RootMotionDataPath = string.sub(CharacterMoveTable.RootMotionDataPath, 6) 
+		RootMotionDataPath = "data_static/SB/Content" .. RootMotionDataPath .. ".uasset" 
+		-- SB_ImportJSON(RootMotionDataPath) 
+		newMoveStep.RootMotionCache = SB_ImportUAsset(RootMotionDataPath) 
+	end 
+	if CharacterMoveTable.PositionInterpCurveDataPath and CharacterMoveTable.PositionInterpCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.PositionInterpCurveDataPath)
+	end
+	if CharacterMoveTable.StaticMoveZVAlueCurveDataPath and CharacterMoveTable.StaticMoveZVAlueCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.StaticMoveZVAlueCurveDataPath)
+	end
+	if CharacterMoveTable.MoveOffsetCurveDataPath and CharacterMoveTable.MoveOffsetCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.MoveOffsetCurveDataPath)
+	end
+	if CharacterMoveTable.RotationInterpCurveDataPath and CharacterMoveTable.RotationInterpCurveDataPath != "None" then
+		StellarBlade.LoadCurveData(CharacterMoveTable.RotationInterpCurveDataPath)
+	end
 	
 	-- print(strEffect,CurTime(),CharacterMoveTable.StartDelayTime) 
 	
@@ -9057,8 +9387,9 @@ StellarBlade.EvaluateMoveStep = function(self, moveStepOrName, flInterval, probe
 
     -- Root motion: now uses moveStep.StartTime (which we adjusted above in probe mode)
     if MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then
-        local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath or ""))
-        local RootMotion = _G["SB_" .. RootMotionDataPath]
+        -- local RootMotionDataPath = string.StripExtension(string.GetFileFromFilename(CharacterMoveTable.RootMotionDataPath or ""))
+        -- local RootMotion = _G["SB_" .. RootMotionDataPath]
+		local RootMotion = moveStep.RootMotionCache 
         if RootMotion then
 			-- print("pre GetRootMotionTransform:",SysTime(),RootMotion) 
             local posOffset, angOffset = StellarBlade.GetRootMotionTransform(RootMotion, moveStep.StartTime) 
@@ -9285,10 +9616,10 @@ end
 -- StellarBlade.MaintainMoveTable has been removed since it is unused 
 
 StellarBlade.BuildSoundScript = function(self,parsedjson) 
-	print("in BuildSoundScript",parsedjson) 
 	local pathName = parsedjson 
 	if !istable(parsedjson) then
-		parsedjson = SB_ImportJSON(parsedjson)
+		-- parsedjson = SB_ImportJSON(parsedjson) 
+		parsedjson = SB_ImportUAsset(parsedjson) 
 	end
 	if !parsedjson then error("JSON Import failed! Go find the JSON!: "..parsedjson) end 
 
@@ -9636,6 +9967,61 @@ end
     @param startTime The CurTime() when the animation started.
     @returns Vector positionOffset, Angle angleOffset, or nil if data is invalid.
 ]]-- 
+
+function StellarBlade:Gesture_AutoMovement() 
+	local bEnable = true 
+    if !bEnable then return end 
+	local sTable = self:GetTable() 
+	
+	if sTable._bCannotGestureMove then return end 
+	if self:GetMoveType() == MOVETYPE_NONE then return end 
+	local model = self:GetModel()
+	if !model then sTable._bCannotGestureMove = true return end 
+	if #model < 1 then sTable._bCannotGestureMove = true return end 
+	if !util.IsValidModel(model) then sTable._bCannotGestureMove = true return end 
+	if self:GetSequenceCount() <= 1 then sTable._bCannotGestureMove = true return end 
+	if IsValid(self:GetParent()) then return end 
+	
+	-- also apply root movement on gestures as well 
+	local maxLayers = self:IsPlayer() and 6 or 15 
+	
+	local layer_walk_injured = sTable.layer_walk_injured or self:LookupSequence("layer_walk_injured") 
+	local layer_run_injured = layer_walk_injured > 0 and layer_walk_injured + 2 or layer_walk_injured 
+	-- cache the layer ID on NPCs 
+	-- Players possess the chance to dynamically change the model 
+	-- NPCs too but less likely 
+	if layer_walk_injured > 0 and !sTable.layer_walk_injured and !self:IsPlayer() then sTable.layer_walk_injured = layer_walk_injured end 
+	
+	for layerID = 0, maxLayers do 
+		if self:IsValidLayer(layerID) then 
+			if sTable.SBAI_MoveTable then 
+				for _, MoveStep in ipairs(sTable.SBAI_MoveTable) do -- accesses MoveStep 
+					-- ignore root movement on animating model when we have root motion MoveTable active 
+					if MoveStep.IsActive and MoveStep:IsActive() and MoveStep.CharacterMoveTable.MoveType == "ESBMoveTransformType::MoveTransformType_RootMotion" then 
+						-- print(string.format("[Bench] StellarBlade_RunSkills (Early Exit): %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
+						return 
+					end 
+				end 
+			end 
+			
+			if layer_walk_injured > 0 and self:GetLayerSequence(layerID) == layer_walk_injured then return end 
+			if layer_run_injured > 0 and self:GetLayerSequence(layerID) == layer_run_injured then return end 
+
+			local bMoved, newPosition, newAngles, bMoveSeqFinished = GetIntervalMovement(self,FrameTime(),layerID) 
+			if bMoved then 
+				local moveResult = IterativeHybridMoveLimit(self, self:GetPos(), newPosition) 
+				self:SetLocalPos(moveResult.vEndPosition) 
+				local angles = self:GetLocalAngles() 
+				angles:SetUnpacked(angles.x,newAngles.y,angles.z) 
+				self:SetLocalAngles(angles) 
+				break 
+			end 
+		end 
+	end 
+
+    -- print(string.format("[Bench] StellarBlade_RunSkills: %.6f seconds", SysTime() - tStart),"CurTime:",CurTime(),"Realm:",(SERVER and "SERVER" or "CLIENT"))
+end 
+
 StellarBlade.GetRootMotionTransform = function(rootMotionTable, startTime)
     -- Ensure the root motion table is valid.
     if not rootMotionTable or not rootMotionTable[1] or not rootMotionTable[1].Properties then
@@ -9697,9 +10083,9 @@ function StellarBlade:GetActorEffects(EffectAlias)
 	local container = entTable and entTable.SB_EffectAlias
 	if !istable(container) then return result end
  
-	local function Collect(list) -- list = SB_EffectAlias[alias], an array of instances
-		if !istable(list) then return end
-		for _, inst in ipairs(list) do -- inst.Name is the actual EffectName
+	local function Collect(effectlist) -- effectlist = SB_EffectAlias[alias], an array of instances
+		if !istable(effectlist) then return end
+		for _, inst in ipairs(effectlist) do -- inst.Name is the actual EffectName
 			if istable(inst) and !inst.IsMarkedForDeletion then
 				result[#result + 1] = inst
 			end
@@ -9709,8 +10095,8 @@ function StellarBlade:GetActorEffects(EffectAlias)
 	if EffectAlias != nil and EffectAlias != "" then
 		Collect(container[EffectAlias])
 	else
-		for _, list in pairs(container) do -- key = EffectAlias
-			Collect(list)
+		for _, effectlist in pairs(container) do -- key = EffectAlias
+			Collect(effectlist)
 		end
 	end
 	return result
@@ -10147,6 +10533,7 @@ function StellarBlade:GetActorStance(CharacterName, sTable)
 end
 
 function StellarBlade:UpdateActorStance(CharacterName,sTable)
+	if engine.ActiveGamemode() == "base" then return end 
 	local ent = isentity(self) and self or CharacterName
 	local sTable = sTable or ent:GetTable() 
 	-- print("UpdateActorStance called for:",self,CurTime()) 
