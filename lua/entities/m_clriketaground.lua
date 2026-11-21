@@ -2,8 +2,6 @@ AddCSLuaFile()
 
 local className = string.GetFileFromFilename(ENT.Folder)
 local charData = SB_CharacterTable[1].Rows[className]
-print(className) 
-PrintTable(charData) 
 
 local NPC = { 
 	Name = "Cricket Ground (Friend)", 
@@ -45,7 +43,7 @@ ENT.NPC_GroupIdleSound 	= ""
 ENT.NPC_MeleeHitSound = "Unreali_Nali.MeleeHit" 
 ENT.NPC_PainSound 	= "" 
 
-ENT.bHasInnateMelee1 = true 
+ENT.bHasInnateMelee1 = false 
 ENT.m_fMaxYawSpeed = 360 -- "RotateAnglePerSecond": 360.0, 
 ENT.SBAI_BlackBoard = { } 
 ENT.SBAI_bInBackgroundTask = false 
@@ -53,24 +51,22 @@ ENT.SB_EffectAlias = { }
 ENT.SBAI_ActiveShow = { } 
 ENT.SBAI_SkillTimers = { } 
 -- State & Behavior Registries
-ENT.SBAI_BlackBoard = {} 
-ENT.SBAI_bInBackgroundTask = false 
-ENT.SB_EffectAlias = {} 
-ENT.SBAI_ActiveShow = {} 
-ENT.SBAI_SkillTimers = {} 
 
 -- 4. Dynamic Asset Imports (Soundset & BehaviorTree)
 if charData.OverrideCharacterSoundSet and charData.OverrideCharacterSoundSet ~= "" then
 	local css = string.match(charData.OverrideCharacterSoundSet, "'(.-)'") or charData.OverrideCharacterSoundSet
-	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".uasset"
 else
-	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_03_ClriketA.json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_03_ClriketA.uasset"
 end
-SB_ImportJSON(ENT.CharacterSoundSetPath) 
+SB_CSS_MON_03_ClriketA = SB_ImportUAsset(ENT.CharacterSoundSetPath) 
 
-local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".json"
+local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".uasset"
+local BehaviorTreePointer = string.GetFileFromFilename(charData.BehaviorTreeRes) -- M_Raven_AI
+local BehaviorTreePointer = "SB_"..BehaviorTreePointer -- SB_M_Raven_AI
 ENT.BehaviorTreeRes = BehaviorTreeRes
-SB_ImportJSON(BehaviorTreeRes) 
+local BehaviorTree = SB_ImportUAsset(BehaviorTreeRes) 
+_G[BehaviorTreePointer] = BehaviorTree 
 
 function ENT:Draw(flags) 
 	scripted_ents.GetStored("base_ai").t.Draw(self,flags) 

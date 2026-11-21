@@ -1657,3 +1657,248 @@ sound.Add({
         "motion/monster/texture/mach/droidturret/m_turretlaser_power_1.wav"
     }
 })
+-- ============================================================================
+-- Generated Source Soundscripts (sound.Add) for ch_m_na_42
+-- ============================================================================
+
+sound.Add({
+    name = "M_Raven_Bodyfall_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.35,
+    soundlevel = 130,
+    pitch = 85,
+    sound = {
+        "footsteps/monster/mon_elite_bodyfall_default_1.wav",
+        "footsteps/monster/mon_elite_bodyfall_default_2.wav",
+        "footsteps/monster/bodybag/m_bodybag_bodyfall_metal_3.wav",
+        "mon/skulljuggernaut/m_skulljuggernaut_hammerimpact.wav",
+        "footsteps/monster/mon_elite_bodyfall_default_3.wav",
+        "skill/monster/ravenbeast/m_raven_bodyfall_1.wav",
+        "skill/monster/ravenbeast/m_raven_bodyfall_2.wav",
+        "skill/monster/ravenbeast/m_raven_bodyfall_3.wav",
+        "skill/monster/ravenbeast/m_raven_bodyfall_4.wav",
+        "skill/monster/ravenbeast/m_raven_bodyfall_5.wav",
+        "footsteps/monster/bodybag/m_bodybag_bodyfall_metal_1.wav",
+        "footsteps/monster/bodybag/m_bodybag_bodyfall_metal_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_RavenBeast_Texture_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/m_ravenbeast_texture_s_1.wav",
+        "skill/monster/ravenbeast/m_ravenbeast_texture_s_2.wav",
+        "skill/monster/ravenbeast/m_ravenbeast_texture_s_3.wav"
+    }
+})
+
+sound.Add({
+    name = "M_RavenBeast_Texture_M_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/m_ravenbeast_texture_m_1.wav",
+        "skill/monster/ravenbeast/m_ravenbeast_texture_m_2.wav",
+        "skill/monster/ravenbeast/m_ravenbeast_texture_m_3.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_WeaponSwish_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.15,
+    soundlevel = 130,
+    pitch = { 100, 120 },
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_4.wav"
+    }
+})
+
+sound.Add({
+    name = "M_RavenBeast_vo_Laugh_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 2.5,
+    soundlevel = 105,
+    pitch = { 100, 110 },
+    sound = {
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_skill_02_vo.wav",
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_skill_03_vo.wav",
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_skill_04_vo.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_FlapSwish_M_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_m_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_m_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_WeaponSwish_M_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_l_3.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_WeaponSwish_XL_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = { 100, 115 },
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_4.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_WeaponSwish_XL_LR_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = { 100, 115 },
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_4.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_3.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_xl_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_RavenBeast_vo_Cast_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 2.5,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_cast_l1_vo.wav",
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_cast_l2_vo.wav",
+        "dialogue/actionvoice/ravenbeast/vo_ravenbeast_cast_l3_vo.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_FlapSwish_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_l_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_l_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_FlapSwish_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.65,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_s_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_flapswish_s_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_Skill_GroundAttack_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.75,
+    soundlevel = 85,
+    pitch = 100,
+    sound = {
+        "effect/se_rock_break_01.wav",
+        "skill/monster/weaponmaster/m_weaponmaster_skill_impact.wav",
+        "character/hit/pchitsound/barnacle/css_hit_barnacle_strong_2.wav",
+        "mon/skulljuggernaut/m_skulljuggernaut_hammerimpact.wav",
+        "footsteps/monster/mon_foot_elite1_default_2.wav",
+        "footsteps/monster/mon_foot_elite1_default_3.wav",
+        "footsteps/monster/mon_foot_elite1_default_4.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_Skill_DashSky_L_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.84,
+    soundlevel = 130,
+    pitch = { 90, 110 },
+    sound = {
+        "skill/monster/ravenbeast/m_raven_skill_voicefx_m_1_mono.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_skill_dashsky2_l_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_skill_dashsky2_l_2.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_weaponswish_fx3_2.wav",
+        "skill/monster/ravenbeast/m_raven_skill_voicefx_m_2_mono.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_Skill_WingFlapping_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.42,
+    soundlevel = 105,
+    pitch = 100,
+    sound = {
+        "skill/monster/ravenbeast/m_raven_skill_wingflapping_s_1.wav",
+        "skill/monster/ravenbeast/m_raven_skill_wingflapping_s_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_Skill_DashSky_S_Cue",
+    channel = CHAN_AUTO,
+    volume = 0.56,
+    soundlevel = 85,
+    pitch = { 115, 125 },
+    sound = {
+        "skill/monster/ravenbeast/m_raven_skill_voicefx_m_1_mono.wav",
+        "skill/monster/ravenbeast/m_raven_skill_voicefx_m_2_mono.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_skill_dashsky2_m_1.wav",
+        "skill/monster/ravenbeast/whoosh/m_raven_skill_dashsky2_m_2.wav"
+    }
+})
+
+sound.Add({
+    name = "M_Raven_FlapSwish_XL_Cue",
+    channel = CHAN_AUTO,
+    volume = 1.0,
+    soundlevel = 130,
+    pitch = 100,
+    sound = "skill/monster/ravenbeast/whoosh/m_raven_flapswish_xl_1.wav"
+})

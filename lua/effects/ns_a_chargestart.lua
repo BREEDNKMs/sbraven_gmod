@@ -381,7 +381,8 @@ function EFFECT:NE_SpriteM_Init(data)
 end 
 
 function EFFECT:Think() 
-	local now = CurTime()
+	local now = CurTime() 
+	local ownerowner = IsValid(self:GetOwner()) and (IsValid(self:GetOwner():GetOwner()) and self:GetOwner():GetOwner() or self:GetOwner()) or self 
     local elapsed = now - self.CreationTime
 
     -- End effect when global lifetime passed AND all ribbons finished
@@ -453,7 +454,7 @@ function EFFECT:Think()
 		dlight.b = 0 
 		dlight.nomodel = true 
 		dlight.pos = self:GetRenderPos() 
-		dlight.dir = -self:GetOwner():GetOwner():GetUp() 
+		dlight.dir = -ownerowner:GetUp() 
 		if allDone then 
 			return false 
 		end 
@@ -475,7 +476,7 @@ function EFFECT:Think()
 	dlight.innerangle = 0 
 	dlight.outerangle = 100 
 	dlight.style = 0
-	dlight.dir = -self:GetOwner():GetOwner():GetUp() 
+	dlight.dir = -ownerowner:GetUp() 
 	self:SetNextClientThink(CurTime()+FrameTime()) 
 	return true 
 end 

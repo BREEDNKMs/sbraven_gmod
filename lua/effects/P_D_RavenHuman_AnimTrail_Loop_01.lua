@@ -14,7 +14,7 @@ local tempDir    = Vector()
 
 function EFFECT:Init(data)
     self.Entity = data:GetEntity()
-    self.Scale = data:GetScale() -- Lifetime duration from SBShowTrailKey
+    self.Scale = data:GetScale()
     self.DieTime = (self.Scale > 0) and (CurTime() + self.Scale) or -1
 
     self.TrailPoints = {}
@@ -23,19 +23,22 @@ function EFFECT:Init(data)
     self:SetPos(self.Entity:GetPos())
     self:SetParent(self.Entity)
 
-    -- Sword attachment offsets (grip vs tip)
-    self.Attachment1 = 70 -- Grip offset along bone -Up
-    self.Attachment2 = 9  -- Tip offset along bone -Up
+    self.Attachment1 = 70 -- Grip offset
+    self.Attachment2 = 9  -- Tip offset
 
     self.LastPos1 = Vector()
     self.LastPos2 = Vector()
+    self.HasValidPos = false -- Flag to prevent connecting from uninitialized vectors
 
+    -- Cache initial positions if valid, but DO NOT call self:AddSegment() here.
+    -- On tick 0 of weapon deploy, bones are not yet ready; waiting for Think()
+    -- avoids capturing a bogus (0,0,0) segment.
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
     if pos1 and pos2 then
         self.LastPos1:Set(pos1)
         self.LastPos2:Set(pos2)
-        self:AddSegment(pos1, pos2)
+        self.HasValidPos = true
     end
 
     self:SetRenderBounds(Vector(-256, -256, -256), Vector(256, 256, 256))
@@ -72,10 +75,18 @@ function EFFECT:GetAttachmentPos(id)
         handBone = 0
     end
 
-    -- Copy bone transform into temp matrix without heap allocations
+    -- Force bone setup if not yet built this frame to avoid reading (0, 0, 0)
+    renderEnt:SetupBones()
     renderEnt:CopyBoneMatrix(handBone, tempMatrix)
 
     local pos = tempMatrix:GetTranslation()
+
+    -- Sanity check: If bone translation is (0,0,0) while the entity is far from origin,
+    -- the matrix is still uninitialized. Discard it rather than drawing to world origin.
+    if pos:IsZero() and renderEnt:GetPos():DistToSqr(vector_origin) > 10000 then
+        return nil
+    end
+
     local up = tempMatrix:GetUp()
     up:Mul(id)
     pos:Sub(up)
@@ -146,15 +157,29 @@ function EFFECT:Think()
 
     local pos1 = self:GetAttachmentPos(self.Attachment1)
     local pos2 = self:GetAttachmentPos(self.Attachment2)
-    if not pos1 or not pos2 then return false end
+    if not pos1 or not pos2 then 
+        return true -- Wait until bones become valid
+    end
 
     if renderEnt:GetNoDraw() then
         self.LastPos1:Set(pos1)
         self.LastPos2:Set(pos2)
+        self.HasValidPos = true
         return true
     end
 
-    -- Add segment when blade moves
+    -- Redeploy / Teleport check:
+    -- If we don't have a valid starting point yet, or the blade jumped a huge distance
+    -- in a single tick (> 250 units, e.g. unholstering or teleporting), snap positions 
+    -- directly without bridging a giant polygon across the world.
+    if not self.HasValidPos or pos1:DistToSqr(self.LastPos1) > 62500 then -- 250^2
+        self.LastPos1:Set(pos1)
+        self.LastPos2:Set(pos2)
+        self.HasValidPos = true
+        return true
+    end
+
+    -- Only add segment when the blade actually moves
     if not pos1:IsEqualTol(self.LastPos1, 0.1) or not pos2:IsEqualTol(self.LastPos2, 0.1) then
         self:AddSegment(pos1, pos2)
         self.LastPos1:Set(pos1)

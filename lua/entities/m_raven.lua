@@ -1,4 +1,79 @@
 AddCSLuaFile() 
+--[[ 
+class ACH_M_NA_53_Blueprint_C : public ASBCharacter
+{
+public:
+    class USimpleConstructionScript* SimpleConstructionScript = "SimpleConstructionScript'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.CH_M_NA_53_Blueprint_C:SimpleConstructionScript_0'";
+    class UFunction* UberGraphFunction = "Function'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.CH_M_NA_53_Blueprint_C:ExecuteUbergraph_CH_M_NA_53_Blueprint'";
+    struct FPointerToUberGraphFrame UberGraphFrame = {};
+    TArray<class UObject*> HologramBodyMat = {
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_01.MI_Holograms_01'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_02.MI_Holograms_02'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_03.MI_Holograms_03'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_03.MI_Holograms_03'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_04.MI_Holograms_04'",
+        nullptr
+    };
+    TArray<class UMaterialInstanceConstant*> HologramFaceMat = {
+        "MaterialInstanceConstant'/Game/Art/FX/MA/etc/Clear_1.Clear_1'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Face_01.MI_Holograms_Face_01'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Face_02.MI_Holograms_Face_02'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Face_03.MI_Holograms_Face_03'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Face_04.MI_Holograms_Face_04'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Face_05.MI_Holograms_Face_05'",
+        "MaterialInstanceConstant'/Game/Art/FX/MA/etc/Clear_1.Clear_1'"
+    };
+    TArray<class UMaterialInstanceConstant*> HologramHairMat = {
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Hair_1.MI_Holograms_Hair_1'",
+        "MaterialInstanceConstant'/Game/Art/Character/Monster/CH_M_NA_53/Materials/HologramMat/MI_Holograms_Hair_2.MI_Holograms_Hair_2'"
+    };
+    class USBSpringArmComponent* CameraBoom = "SBSpringArmComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CameraBoom'";
+    class USBCollisionGroupComponent* CollisionGroupComponent = "SBCollisionGroupComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CollisionGroup'";
+    float OverrideLockOnMaxDistance = 4000;
+    float OverrideLockOnReleaseDistance = 6000;
+    FName LockOnTargetBoneSocketName = FName("LockOnTarget");
+    FName LockOnUIDisplayBoneSocketName = FName("LockOnTargetUI");
+    bool bOverrideLockOnPitchMin = true;
+    float OverrideLockOnPitchMinValue = -20;
+    bool bOverrideLockOnCamBoomLeftRight = true;
+    float OverrideLockOnCamBoomLeftRight = 30;
+    struct FSBCharMovingStanceData CustomMovingStanceData = {
+        "EffectVolumeAlias": {
+            "TableType": ESBData::ESBData_MAX
+        }
+    };
+    float BulletMagnetCapsuleRadiusScale = 0.5;
+    FName DefaultHeadLookAtTargetSocket = FName("BodyLookAt");
+    FName DefaultBodyLookAtTargetSocket = FName("BodyLookAt");
+    bool IgnoreRenderControl = true;
+    bool bUseOptimizationDisableTick = false;
+    class USBCharacterParticleSet* ParticleSet = "SBCharacterParticleSet'/Game/Art/FX/PS/CharParticleSet/CPS_Monster_RavenHuman.CPS_Monster_RavenHuman'";
+    FSoftObjectPath SoundSet = FSoftObjectPath("/Game/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.CSS_MON_53_Raven");
+    class USBCharacterFactorSetComponent* FactorSetComponent = "SBCharacterFactorSetComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:FactorSetComponent'";
+    class USBCharacterFootStepSet* FootStepSet = "SBCharacterFootStepSet'/Game/Art/FX/PS/PhySufaceParticleSet/Footstep/Raven/FS_Raven.FS_Raven'";
+    class USBSkeletalMeshComponent* Mesh = "SBSkeletalMeshComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CharacterMesh0'";
+    class USBCharacterMovementComponent* CharacterMovement = "SBCharacterMovementComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CharMoveComp'";
+    class UCapsuleComponent* CapsuleComponent = "CapsuleComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CollisionCylinder'";
+    class UClass* AIControllerClass = "Class'/Script/SB.SBAIController'";
+    float DrawDistance = 10000;
+    enum SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+    class UCapsuleComponent* RootComponent = "CapsuleComponent'/Game/Art/Character/Monster/CH_M_NA_53/Blueprints/CH_M_NA_53_Blueprint.Default__CH_M_NA_53_Blueprint_C:CollisionCylinder'";
+    TArray<FName> Tags = {
+        FName("water"),
+        FName("PhotoModeSubjectTag_OverrideCustomDepthStencil_Enemy")
+    };
+    class USBSkeletalMeshComponent* Mesh_Hair;
+    class USBSkeletalMeshComponent* Mesh_Face;
+    class UCapsuleComponent* BodyCollision;
+    bool ChangeBodyMeshNaked;
+    class UStaticMeshComponent* NewVar_0;
+    TArray<class UMaterialInterface*> DefaultBodyMat;
+    TArray<class UMaterialInterface*> DefaultFaceMat;
+    TArray<class UMaterialInterface*> DefaultHairMat;
+    bool VisibilityWeapon;
+    class USBSkeletalMeshComponent* Weapon;
+    bool IsGroggy;
+	--]] 
 
 -- Define the path to your JSON file relative to the "garrysmod" folder.
 IterativeHybridMoveLimit = include("includes/custommoveprobe.lua") 
@@ -75,28 +150,32 @@ ENT.flScheduleStrategyType = 1
 -- 4. Dynamic Asset Imports (Soundset & BehaviorTree)
 if charData.OverrideCharacterSoundSet and charData.OverrideCharacterSoundSet ~= "" then
 	local css = string.match(charData.OverrideCharacterSoundSet, "'(.-)'") or charData.OverrideCharacterSoundSet
-	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".uasset"
 else
-	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_53_Raven.uasset"
 end
-SB_ImportJSON(ENT.CharacterSoundSetPath) 
+SB_CSS_MON_53_Raven = SB_ImportUAsset(ENT.CharacterSoundSetPath) 
 
 ENT.EVE_CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_PC_EVE.json" 
 
-local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".json"
+local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".uasset"
+local BehaviorTreePointer = string.GetFileFromFilename(charData.BehaviorTreeRes) -- M_Raven_AI
+local BehaviorTreePointer = "SB_"..BehaviorTreePointer -- SB_M_Raven_AI
 ENT.BehaviorTreeRes = BehaviorTreeRes
-SB_ImportJSON(BehaviorTreeRes) 
+local BehaviorTree = SB_ImportUAsset(BehaviorTreeRes) 
+_G[BehaviorTreePointer] = BehaviorTree 
 
 function ENT:Initialize() 
 	scripted_ents.Get("cycler_actor2").Initialize(self) 
 	-- start effects in CharacterStanceTable 
 	StellarBlade.ActorStats(self) -- initialize stats if we haven't 
-	-- if SERVER and self.StartEffect then 
-		-- local StartEffect = StellarBlade.ParseTableStrings(self.StartEffect) 
-		-- StellarBlade.AddEffectFromTable(self,StartEffect) 
-	-- end 
-	
-	-- start effects in CharacterTable 
+	if SERVER and self:NPC_ShouldConductBehaviorTree() then 
+		local SBAI_GetAnimSet = self:SBAI_GetAnimSet(ACT_IDLE) 
+		SBAI_GetAnimSet = string.GetFileFromFilename(SBAI_GetAnimSet) -- sequence to play 
+		SBAI_GetAnimSet = self:LookupSequence(SBAI_GetAnimSet) -- sequence ID 
+		self:ResetIdealActivity(ACT_DO_NOT_DISTURB) 
+		self:ResetSequence(SBAI_GetAnimSet) 
+	end 
 end 
 
 function ENT:SBAI_GetEffectTable(strEffect) 
@@ -112,7 +191,9 @@ end
 function ENT:SBAI_RunBehavior()
     -- 1. Create coroutine if missing or dead (restarts clean cycle from root)
     if not self._sbaico or coroutine.status(self._sbaico) == "dead" then
-        self:SBAI_InitTree()
+        if !self:SBAI_InitTree() then
+			return false
+		end
 
         if not self.SBAI_TreeRootID then
             ErrorNoHalt("[SBAI] Error: Cannot run behavior, TreeRootID is missing!\n")
@@ -149,37 +230,85 @@ function ENT:SBAI_RunBehavior()
     return false
 end
 
+local function SBAI_GetOuterName(outer)
+    -- Original JSON representation
+    if isstring(outer) then
+        return outer
+    end
+
+    -- UAsset object-reference representation
+    if istable(outer) and isstring(outer.ObjectName) then
+        return string.match(outer.ObjectName, "'([^']+)'$") or outer.ObjectName
+    end
+
+    return nil
+end
+
 -- Phase 1: Indexing behavior tree JSON structures
 function ENT:SBAI_IndexTree()
+	-- local rawTable = SB_ImportUAsset(self.BehaviorTreeRes) 
     local AITable = "SB_" .. string.StripExtension(string.GetFileFromFilename(self.BehaviorTreeRes))
-    local rawTable = _G[AITable]
-    if not rawTable then
-        ErrorNoHalt("[SBAI] BehaviorTreeRes global table not found! Cannot index Behavior Tree.\n")
+    local rawTable = _G[AITable] 
+    if !istable(rawTable) then
+        ErrorNoHalt("[SBAI] BehaviorTree table not found: " .. AITable .. "\n")
         return false
     end
 
     self.SBAI_NodeLookup = {}
     self.SBAI_TreeRootID = nil
 
+    local indexed = 0
+
     for _, node in ipairs(rawTable) do
         local t = node.Type
         local name = node.Name
-        local outer = node.Outer
+        local outerName = SBAI_GetOuterName(node.Outer)
 
-        if t and name and outer then
-            local fullID = string.format("%s'%s:%s'", t, outer, name)
+        if t and name and outerName then
+            local fullID = string.format(
+                "%s'%s:%s'",
+                t,
+                outerName,
+                name
+            )
+
             self.SBAI_NodeLookup[fullID] = node
+            indexed = indexed + 1
         end
 
-        if t == "BehaviorTree" and node.Properties and node.Properties.RootNode then
+        if t == "BehaviorTree"
+        and node.Properties
+        and node.Properties.RootNode then
+
             self.SBAI_TreeRootID = node.Properties.RootNode.ObjectName
         end
     end
 
-    if not self.SBAI_TreeRootID then
-        ErrorNoHalt("[SBAI] Error: Could not find 'BehaviorTree' entry or RootNode property.\n")
+    if !self.SBAI_TreeRootID then
+        ErrorNoHalt("[SBAI] BehaviorTree RootNode is missing!\n")
         return false
     end
+
+    -- Validate that the root actually resolves.
+    local rootNode = self.SBAI_NodeLookup[self.SBAI_TreeRootID]
+
+    if !rootNode then
+        ErrorNoHalt(
+            "[SBAI] Root node was not indexed: "
+            .. self.SBAI_TreeRootID .. "\n"
+        )
+        return false
+    end
+
+    print(
+        "[SBAI] Indexed:",
+        AITable,
+        "Nodes:", indexed,
+        "Root:", self.SBAI_TreeRootID,
+        "Root children:",
+        rootNode.Properties and rootNode.Properties.Children
+            and #rootNode.Properties.Children or 0
+    )
 
     return true
 end
@@ -192,9 +321,13 @@ function ENT:SBAI_InitTree()
     self.CurrentBranch = nil
     self._sbaico = nil
 
-    if not self.SBAI_NodeLookup then
-        self:SBAI_IndexTree()
+    if !self.SBAI_NodeLookup then
+        if !self:SBAI_IndexTree() then
+            return false
+        end
     end
+
+    return true
 end
 
 -- Helper: safely set a runtime state value for a node
@@ -327,7 +460,7 @@ function ENT:SBAI_AbortNode(nodeID)
     -- Clean up running tasks
     if nodeData.Type and string.find(nodeData.Type, "Task") then
         local rawName = nodeData.Type or nodeData.Name
-        local taskName = string.gsub(rawName, "^SBBTTask_", "")
+        local taskName = string.gsub(rawName, "^SBBTTask_", "") -- the task name that is aborted 
 
         -- 1. Skill cancellation
         if taskName == "SbUseSkill" then
@@ -336,6 +469,11 @@ function ENT:SBAI_AbortNode(nodeID)
             end
             -- if self.StopSkill then pcall(self.StopSkill, self) end
             if self.NPC_StopScriptedActivity then self:NPC_StopScriptedActivity() end
+			local SBAI_GetAnimSet = self:SBAI_GetAnimSet(ACT_IDLE) 
+			SBAI_GetAnimSet = string.GetFileFromFilename(SBAI_GetAnimSet) -- sequence to play 
+			SBAI_GetAnimSet = self:LookupSequence(SBAI_GetAnimSet) -- sequence ID 
+			self:ResetIdealActivity(ACT_DO_NOT_DISTURB) 
+			self:ResetSequence(SBAI_GetAnimSet) 
             -- if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end
 
         -- 2. Show cancellation
@@ -347,9 +485,9 @@ function ENT:SBAI_AbortNode(nodeID)
 
         -- 3. Navigation cancellation
         elseif taskName == "SbCautionToTarget" or taskName == "SbMoveToTarget" or taskName == "SbMoveToHome" then
-            if self.StopMoving then self:StopMoving(true) end
-            if self.ClearGoal then self:ClearGoal() end
-            if self.ResetIdealActivity then self:ResetIdealActivity(ACT_IDLE) end
+            self:StopMoving(true) 
+            self:ClearGoal() 
+            self:ResetIdealActivity(ACT_IDLE) 
         end
 
         -- Wipe node memory completely
@@ -375,7 +513,7 @@ end
 --   LowerPriority/Both: an observer of a link LEFT of the active one turned true (false -> true) and the whole
 --                       link now allows execution                      -> abort the active branch, restart at that link
 -- Returns true when something was aborted.
-function ENT:SBAI_CheckObservers()
+function ENT:SBAI_CheckObservers() 
 	local stack = self.SBAI_ExecutionStack
 	if #stack == 0 then return false end
 	self.SBAI_DecoLast = self.SBAI_DecoLast or {}
@@ -501,6 +639,7 @@ end
 -- Sequence: every child must succeed, a failed or blocked child fails the whole sequence (the parent then
 -- applies its own rule). Nothing restarts the tree except the root finishing.
 function ENT:SBAI_SelectTask(startNodeID)
+	-- print(self,"in selecttask",startNodeID,self.SBAI_ExecutionStack) 
 	if #self.SBAI_ExecutionStack == 0 then
 		table.insert(self.SBAI_ExecutionStack, { NodeID = startNodeID, Index = 1 })
 	end
@@ -514,6 +653,7 @@ function ENT:SBAI_SelectTask(startNodeID)
 			print("[SBAI] Infinite Loop Detected in Behavior Tree! Breaking out.")
 			return nil
 		end
+		-- print(self,"ops is:",ops,CurTime()) 
 
 		local frame = self.SBAI_ExecutionStack[#self.SBAI_ExecutionStack]
 		local nodeID = frame.NodeID
@@ -767,7 +907,8 @@ function ENT:CustomRunAI(sTable)
 
     -- 3. BEHAVIOR TREE RUN EXECUTION
     if NPC_ShouldConductBehaviorTree and not skipBehaviorTree then 
-        return self:SBAI_RunBehavior(), self:NPC_MaintainActivity() 
+		local runbehavior = self:SBAI_RunBehavior() 
+        return runbehavior, self:NPC_MaintainActivity() 
     end
 	local layer = self:FindGestureLayer(ACT_GESTURE_MELEE_ATTACK1) 
 	if layer and layer >= 0 then 
@@ -784,6 +925,12 @@ function ENT:CustomRunAI(sTable)
 		end 
 	end 
 	local retVal = scripted_ents.GetStored("cycler_actor2").t.CustomRunAI(self,sTable) 
+end 
+
+function ENT:NPC_MaintainActivity() 
+	-- call activity changes here 
+	-- translate to proper animset 
+	self:MaintainActivity() -- this calls OnChangeActivity 
 end 
 
 function ENT:OnKilled(dmginfo) 
@@ -950,6 +1097,25 @@ function ENT:SbAggroLevel(tbl)
     return matches
 end
 
+-- SBAI_GetAnimSet(act) 
+-- translate activities to Unreal asset paths 
+-- most translated actions will be idle, walk, run anims 
+-- the result of translation should differ from stance to another stance 
+function ENT:SBAI_GetAnimSet(act) 
+	-- local stanceName = self:GetTable().stanceName -- raven always uses same anims 
+	if act == ACT_IDLE then 
+		return "Animation/M_Raven_BattleIdle01"
+	elseif act == ACT_IDLE_ANGRY then 
+		return "Animation/M_Raven_BattleIdle01" 
+	elseif act == ACT_WALK or act == ACT_RUN then 
+		return "Animation/M_Raven_Caution_Cw" 
+	end 
+end 
+
+function ENT:SBAI_GetStanceAnimSet(stanceName)  
+	if stanceName == "M_Raven_Peaceful" then return "Animation/M_Raven_BattleIdle01" end 
+end 
+
 function ENT:SbAimMe(tbl) -- doesn't have any additional properties 
 	return self:NPC_HasCondition(COND.ENEMY_FACING) and self:NPC_IsEnemyAttacking(self:GetEnemy()) 
 end 
@@ -1071,7 +1237,6 @@ end
 
 
 function ENT:SbCheckActorStat(tbl) 
-	-- PrintTable(tbl) 
 	-- consider ActorType 
 	local CheckStat = tbl.CheckStat -- ActorStatType_AttackSpeed       ActorStatType_StaminaAttackPower        ActorStatType_CriticalPercentage        ActorStatType_HitDefenseLevel   ActorStatType_ShieldIgnorePercentage    ActorStatType_CriticalValueRate ActorStatType_ShieldRegenPerSecond      ActorStatType_AdditiveSkillDamageRate   ActorStatType_ShieldRegenPerSecondRate  ActorStatType_ShieldRegenPerSecondValue ActorStatType_ShieldRegenPerSecondWhenBattleValue       ActorStatType_ShieldRegenPerSecondWhenBattle    ActorStatType_StaminaRegenPerSecond     ActorStatType_ShieldRegenPerSecondWhenBattleRate        ActorStatType_HPRegenPerSecondValue     ActorStatType_HPRegenPerSecond  ActorStatType_SmallWeightTypeDamageAdditiveRate ActorStatType_HPRegenPerSecondRate      ActorStatType_RangeAttackDamageAdditiveRate     ActorStatType_LargeWeightTypeDamageAdditiveRate ActorStatType_RangeAttackDamageReductionRate    ActorStatType_MeleeAttackDamageReductionRate    ActorStatType_GroggyStateDamageAdditiveRate     ActorStatType_DownStateDamageAdditiveRate       ActorStatType_FireAttributeDamageReductionRate  ActorStatType_AirborneStateDamageAdditiveRate   ActorStatType_LightningAttributeDamageReductionRate     ActorStatType_IceAttributeDamageReductionRate   ActorStatType_BetaGaugeAdditiveRate     ActorStatType_PoisonAttributeDamageReductionRate        ActorStatType_LowHpDamageAdditiveRate   ActorStatType_AdditiveFixedDamage       ActorStatType_DOTDamageAdditiveRate     ActorStatType_HighHpDamageAdditiveRate  ActorStatType_TachyGaugeReduceConsumeRate       ActorStatType_TachyGaugeAdditiveGainRate        ActorStatType_FinalShieldDamageReduceRate       ActorStatType_FinalHPDamageReduceRate   ActorStatType_AdditiveSkillDamageGroup1 ActorStatType_Luck      ActorStatType_AdditiveSkillDamageGroup3 ActorStatType_AdditiveSkillDamageGroup2 ActorStatType_AdditiveSkillDamageGroup5 ActorStatType_AdditiveSkillDamageGroup4 ActorStatType_AdditiveSkillDamageGroup7 ActorStatType_AdditiveSkillDamageGroup6 ActorStatType_AdditiveSkillDamageGroup9 ActorStatType_AdditiveSkillDamageGroup8 ActorStatType_DrainHpByAttackPowerRate  ActorStatType_AdditiveSkillDamageGroup10        ActorStatType_SprintableStaminaValue    ActorStatType_DrainHpFixedValue ActorStatType_ItemStackBullet1  ActorStatType_ItemStackRecoveryPotion   ActorStatType_ItemStackBullet3  ActorStatType_ItemStackBullet2  ActorStatType_ItemStackBullet5  ActorStatType_ItemStackBullet4  ActorStatType_ItemStackConsumable1      ActorStatType_ItemStackBullet6  ActorStatType_ItemStackConsumable3      ActorStatType_ItemStackConsumable2      ActorStatType_ItemStackConsumable5      ActorStatType_ItemStackConsumable4      
 	local CheckValue = tbl.CheckValue -- 60.0, 

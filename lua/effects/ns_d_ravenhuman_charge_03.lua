@@ -218,11 +218,15 @@ function EFFECT:GetRenderPos()
 end
 
 function EFFECT:Init(data) 
-    self.Origin = self:GetPos() 
 	self.LocalPos = data:GetStart() 
 	if IsValid(data:GetEntity()) then 
 		self:SetOwner(data:GetEntity()) 
-		self:FollowBone(data:GetEntity(),data:GetEntity():LookupBone("ValveBiped.Bip01_R_Hand")) 
+		local bone = data:GetEntity():LookupBone("ValveBiped.Bip01_R_Hand") 
+		if bone then 
+			self:FollowBone(data:GetEntity(),bone) 
+		else 
+			self:SetParent(data:GetEntity(),0) 
+		end 
 	end 
 	-- self:SetPos(data:GetOrigin()) 
 	self:SetAngles(data:GetAngles()) 
@@ -231,14 +235,9 @@ function EFFECT:Init(data)
 	self.LifeTime = data:GetMagnitude() * 1 
 	self.LifeTime = self.LifeTime != 0 and self.LifeTime or 0.50 
     self.CreationTime = CurTime() 
-    self.Emitter = ParticleEmitter(self.Origin, false) 
+    self.Emitter = ParticleEmitter(self:GetPos(), false) 
 	self:AddEffects(EF_PARENT_ANIMATES) 
-	-- local handBone = self.Entity:LookupBone("ValveBiped.Bip01_R_Hand") 
-	-- print("handBone is:",handBone) 
-	-- local parentPos = self.Entity:GetBoneMatrix(handBone) 
-	-- self:SetParent(self.Entity,handBone) 
 	self:SetLocalPos(vector_origin) 
-	
 	self:NE_SpriteM_Init(data) 
 	
 	-- We'll spawn 4 ribbons
@@ -249,7 +248,7 @@ function EFFECT:Init(data)
     end 
 
     -- render bounds based on possible spawn offsets
-    self:SetRenderBoundsWS(self.Origin + Vector(-600, -600, -600), self.Origin + Vector(600, 600, 600))
+    self:SetRenderBoundsWS(self:GetPos() + Vector(-600, -600, -600), self:GetPos() + Vector(600, 600, 600))
 end
 
 -- Safe unclamped lerp for vectors (some math.ease variants expect unclamped values)

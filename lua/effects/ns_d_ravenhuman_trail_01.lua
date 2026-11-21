@@ -228,7 +228,7 @@ function EFFECT:SpawnSparks(basePos, tipPos)
     local bladeDir = (tipPos - basePos):GetNormalized()
 
     for i = 1, sparkCount do
-		print("sparkCount",i,sparkCount) 
+		-- print("sparkCount",i,sparkCount) 
         -- Bias particle distribution toward the fast-moving tip
         local frac = math.Rand(0.4, 1.0)
         local spawnPos = LerpVector(frac, basePos, tipPos)
@@ -246,7 +246,7 @@ function EFFECT:SpawnSparks(basePos, tipPos)
             p:SetEndSize(0)
             p:SetStartLength(pSize * 0.8)
             p:SetEndLength(0)
-            p:SetVelocityScale(true)
+            -- p:SetVelocityScale(true)
 
             p:SetThinkFunction(CryoSparkUpdate)
             p:SetNextThink(CurTime())

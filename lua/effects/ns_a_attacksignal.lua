@@ -24,6 +24,11 @@ EFFECT.Mat[6] = Material("sprites/MA_A_ParShapeBlur_01")
 -- I think MA_A_RainbowRings is a curve map on how the materials to be rendered will have its color set 
 -- I don't know how source would handle this 
 -- so I just omit 
+local color1 = Color(200,220,255) 
+local color2 = Color(0,0,255) 
+local color3 = Color(255,200,220) 
+local color4 = Color(255,220,200) 
+local color5 = Color(200,240,255) 
 
 function EFFECT:Init(data) 
     local pos   = data:GetOrigin() 
@@ -38,25 +43,25 @@ function EFFECT:Init(data)
 	self.DieTime = DieTime 
 
     -- Cross Flare (bluish white)
-    self:CreateParticle(pos, scale*3.5, self.Mat[2], 0.2, 200, 45, true, Color(200,220,255), 0, "shrink")
+    self:CreateParticle(pos, scale*3.5, self.Mat[2], 0.2, 200, 45, true, color1, 0, "shrink")
 
     -- Sharp Lens Flare (neutral white, no velocity)
-    self:CreateParticle(pos, scale*1.2, self.Mat[3], 0.25, 230, 90, true, Color(0,0,255), 0, "steady")
+    self:CreateParticle(pos, scale*1.2, self.Mat[3], 0.25, 230, 90, true, color2, 0, "steady")
 
     -- Blurred Lens Flare (slight magenta tint)
-    self:CreateParticle(pos, scale * 10.0, self.Mat[4], 0.3, 220, 90, true, Color(255,200,220), 0, "shrink")
+    self:CreateParticle(pos, scale * 10.0, self.Mat[4], 0.3, 220, 90, true, color3, 0, "shrink")
 
     -- Secondary Lens Flare (warm tint)
-    self:CreateParticle(pos, scale * 10.0, self.Mat[5], 0.3, 255, 90, true, Color(255,220,200), 0, "shrink")
+    self:CreateParticle(pos, scale * 10.0, self.Mat[5], 0.3, 255, 90, true, color4, 0, "shrink")
 
     -- Rainbow Rings (rotating, additive)
     -- self:CreateParticle(pos, scale*1.0, self.Mat[1], 0.4, 180, 0, true, Color(255,255,255), 0, "expand")
 
     -- Tertiary Lens Flare (cool tint)
-    self:CreateParticle(pos, scale * 2.2, self.Mat[5], 0.35, 255, -25, false, Color(200,240,255), 0)
+    self:CreateParticle(pos, scale * 2.2, self.Mat[5], 0.35, 255, -25, false, color5, 0)
 
     -- Background Shape Blur (soft, faint)
-    self:CreateParticle(pos, scale * 2.5, self.Mat[6], 0.25, 150, 0, false, Color(255,255,255), 0)
+    self:CreateParticle(pos, scale * 2.5, self.Mat[6], 0.25, 150, 0, false, color_white, 0)
 end
 
 function EFFECT:CreateParticle(pos, size, mat, lifetime, start_alpha, angle, should_rotate, col, velMag, mode)

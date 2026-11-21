@@ -1,5 +1,5 @@
 function EFFECT:Init(data)
-    local Pos, Ang, Scale, Time, Flags = data:GetOrigin(), data:GetAngles(), data:GetScale(), data:GetMagnitude(), data:GetFlags()
+    local Pos, Ang, Scale, Time, Flags, ent = data:GetOrigin(), data:GetAngles(), data:GetScale(), data:GetMagnitude(), data:GetFlags(), data:GetEntity() 
     self.CreationTime = CurTime()
     self.DieTime = Time
     
@@ -7,21 +7,24 @@ function EFFECT:Init(data)
     self.LastPos = Pos -- Start tracking position immediately
     self.LastCall = SysTime() -- Record precise system time
 
-    if IsValid(data:GetEntity()) then
-        self:SetOwner(data:GetEntity()) 
-		self:SetPos(data:GetEntity():WorldSpaceCenter()) 
+    if IsValid(ent) then -- get the root of effect entity 
+		while IsValid(ent:GetParent()) do -- so when skill casting actor blinks on a vehicle 
+			ent = ent:GetParent() -- actually, the whole vehicle will move along with actor 
+		end -- so the effect will be wide as the vehicle 
+        self:SetOwner(ent) 
+		self:SetPos(ent:WorldSpaceCenter()) 
         -- self:SetParent(data:GetEntity(),data:GetHitBox()) 
-		self:FollowBone(data:GetEntity(),data:GetHitBox()) 
+		self:FollowBone(ent,data:GetHitBox()) 
 		self:AddEffects(EF_PARENT_ANIMATES) 
     end
 
-    self.Emitter = ParticleEmitter(Pos, tobool(Flags)) 
+    self.Emitter = ParticleEmitter(Pos, false) 
     local Emitter = self.Emitter 
 
     -- Initial Burst (Unchanged from your original code)
-    for i = 1, 15 do
+    for i = 1, ent:BoundingRadius()*0.25 do
         local UniqueDieTime = math.Rand(0.10, 0.30)
-        local Sprite = Emitter:Add("sprites/MI_B_LensCircle_01_15_AfterDof", Pos + VectorRand(-data:GetEntity():BoundingRadius(), data:GetEntity():BoundingRadius())) 
+        local Sprite = Emitter:Add("sprites/MI_B_LensCircle_01_15_AfterDof", Pos + VectorRand(-ent:BoundingRadius(), ent:BoundingRadius())) 
         
         Sprite:SetStartSize(0)
         Sprite:SetEndSize(0)
@@ -33,10 +36,10 @@ function EFFECT:Init(data)
         Sprite:SetRoll(45)
         Sprite:SetThinkFunction(function(Sprite)
             local Cycle = (Sprite:GetLifeTime()) / UniqueDieTime
-            local ParticleScale = 60 * Cycle * 1/0.5 
+            local ParticleScale = ent:BoundingRadius() * Cycle * 1/0.5 
             if Cycle > 0.5 then
                 Cycle = 1 - Cycle
-                ParticleScale = 60 * Cycle * 1/0.5 
+                ParticleScale = ent:BoundingRadius() * Cycle * 1/0.5 
             end
             Sprite:SetStartSize(ParticleScale)
             Sprite:SetEndSize(ParticleScale)
@@ -59,7 +62,7 @@ function EFFECT:Init(data)
     
     local UniqueDieTime = math.Rand(0.25, 0.30) 
     local Sprite = Emitter:Add("sprites/MI_A_ParNoiseBlur_01_1", Pos)
-    Sprite:SetStartSize(60)
+    Sprite:SetStartSize(ent:BoundingRadius())
     Sprite:SetEndSize(0)
     Sprite:SetDieTime(UniqueDieTime)
     Sprite:SetGravity(VectorRand(-30, 30))
@@ -99,7 +102,7 @@ function EFFECT:Think()
     if Variable > 50 then Variable = 50 end 
 
     -- Get positions for interpolation 
-	local BoundingRadius = IsValid(self:GetOwner()) and self:GetOwner():BoundingRadius() or 16 
+	local BoundingRadius = IsValid(self:GetOwner()) and self:GetOwner():BoundingRadius() or 54 
     local CurrentPos = IsValid(self:GetOwner()) and self:GetOwner():WorldSpaceCenter() or self:GetPos()
     local StartPos = self.LastPos
 
@@ -168,7 +171,7 @@ function EFFECT:Think()
     self.LastPos = CurrentPos
 
     if CurTime() > self.CreationTime + self.DieTime then
-        if IsValid(self.Emitter) then self.Emitter:Finish() end
+        if IsValid(Emitter) then Emitter:Finish() end
         return false
     end
 

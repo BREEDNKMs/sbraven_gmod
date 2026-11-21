@@ -19,7 +19,8 @@ function EFFECT:Init(data)
 			self:SetOwner(data:GetEntity()) 
 		end 
 	end 
-	self:SetAngles(Ang+self:GetOwner():GetRenderAngles()) 
+	local RenderAngles = self:GetOwner():IsPlayer() and self:GetOwner():GetRenderAngles() or self:GetOwner():GetForward():Angle()  
+	self:SetAngles(Ang+RenderAngles) 
 	-- print(self:GetAngles()) 
 
     local segments  = 100
@@ -42,12 +43,12 @@ function EFFECT:Init(data)
             math.Rand(-10, 10)
         )
 
-        local spawnPos = Pos + circleOffset + noise
+        local spawnPos = Pos + circleOffset + noise 
 
-        -- Velocity along self:GetRight(), magnitude 300 ± 400
-        local velocity = right * math.Rand(300, 400)
+        -- Velocity along self:GetRight(), magnitude 300 ± 400 
+        local velocity = right * math.Rand(300, 400) 
 
-        local p = self.Emitter:Add("effects/spark", spawnPos)
+        local p = self.Emitter:Add("effects/spark", spawnPos) 
         if p then
             p:SetDieTime(0.1)
             p:SetStartSize(math.Rand(3.7, 8.2))
@@ -69,7 +70,7 @@ function EFFECT:Init(data)
 		local sphere = ClientsideModel("models/props_combine/sphere.mdl",RENDERGROUP_BOTH) 
 		sphere:SetPos(self:GetPos()) 
 		sphere:SetRenderMode(1) 
-		sphere:SetSkin(1) 
+		-- sphere:SetSkin(1) 
 		if i == 2 then 
 			sphere:SetAngles(Angle(180,0,0)) 
 		end 
@@ -77,7 +78,7 @@ function EFFECT:Init(data)
 		self.BackJumpCombo_Spheres = self.BackJumpCombo_Spheres or { } 
 		table.insert(self.BackJumpCombo_Spheres,sphere) 
 	end 
-end
+end 
 
 function EFFECT:Think() 
 	-- self:SetNextClientThink(CurTime()+FrameTime()) 
@@ -98,12 +99,13 @@ function EFFECT:Think()
 	end 
     return Cycle < 1 
 end 
-
+local mesh_staticcolor = Color(100,255,255) 
 function EFFECT:Render() 
 	local Cycle = math.Clamp((CurTime() - self.CreationTime) / self.LifeTime,0,1) 
 	render.SetMaterial(glowmat) 
-	render.DrawSprite(self:GetPos(), (1-Cycle)*150, (1-Cycle)*10, Color(100,255,255)) 
-	render.DrawSprite(self:GetPos(), (1-Cycle)*150, (1-Cycle)*10, Color(100,255,255)) 
-	render.DrawSprite(self:GetPos(), (1-Cycle)*150, (1-Cycle)*10, Color(100,255,255)) 
-	render.DrawSprite(self:GetPos(), (1-Cycle)*30, (1-Cycle)*30, Color(100,255,255)) 
+	local Pos = self:GetPos() 
+	render.DrawSprite(Pos, (1-Cycle)*150, (1-Cycle)*10, mesh_staticcolor) 
+	render.DrawSprite(Pos, (1-Cycle)*150, (1-Cycle)*10, mesh_staticcolor) 
+	render.DrawSprite(Pos, (1-Cycle)*150, (1-Cycle)*10, mesh_staticcolor) 
+	render.DrawSprite(Pos, (1-Cycle)*30, (1-Cycle)*30, mesh_staticcolor) 
 end

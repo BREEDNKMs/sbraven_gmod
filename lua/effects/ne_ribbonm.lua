@@ -247,16 +247,17 @@ local function TransformUV(u, v, centerX, centerY, scaleX, scaleY, rotateDeg, tr
     return xr + centerX + transX, yr + centerY + transY
 end
 
-function EFFECT:Render()
-    local pts = self.TrailPoints
+function EFFECT:Render() 
+	local sTable = self:GetTable() 
+    local pts = sTable.TrailPoints
     if !pts or #pts < 2 then return end
 
-    local mat = self.Mat
+    local mat = sTable.Mat
     local now = CurTime()
-    local segLife = self.SegmentLifetime
-    local baseWidth = self.BaseWidth or 10
-    local tilingLength = self.TilingLength or 250
-    local hdrBoost = self.HDRMultiplier or 10.0
+    local segLife = sTable.SegmentLifetime
+    local baseWidth = sTable.BaseWidth or 10
+    local tilingLength = sTable.TilingLength or 250
+    local hdrBoost = sTable.HDRMultiplier or 10.0
 
     render.SetMaterial(mat)
 
@@ -274,8 +275,8 @@ function EFFECT:Render()
         local bcol = math.Clamp(255 * intensity * hdrBoost, 0, 255)
         local acol = math.Clamp(255 * alpha, 0, 255)
 
-        local widthMul = SampleCurve(self.WidthCurve, lifeFrac)
-        local halfWidth = (baseWidth * widthMul * (self.WidthMultiplier or 1)) * 0.5
+        local widthMul = SampleCurve(sTable.WidthCurve, lifeFrac)
+        local halfWidth = (baseWidth * widthMul * (sTable.WidthMultiplier or 1)) * 0.5
 
         local p1 = seg.pos1
         local p2 = seg.pos2
@@ -308,8 +309,8 @@ function EFFECT:Render()
             scratchVec4:Normalize()
 
             local twistAngle = 0
-            if self.TwistCurve then
-                local twistNormalized = SampleCurve(self.TwistCurve, lifeFrac)
+            if sTable.TwistCurve then
+                local twistNormalized = SampleCurve(sTable.TwistCurve, lifeFrac)
                 twistAngle = twistNormalized * (seg.twistStrength or 1.0)
             else
                 if i < #pts then

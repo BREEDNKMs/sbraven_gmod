@@ -57,16 +57,20 @@ ENT.NPC_RangedProjectile = "ent_pk_rg_missile"
 -- 4. Dynamic Asset Imports (Soundset & BehaviorTree)
 if charData.OverrideCharacterSoundSet and charData.OverrideCharacterSoundSet ~= "" then
 	local css = string.match(charData.OverrideCharacterSoundSet, "'(.-)'") or charData.OverrideCharacterSoundSet
-	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content" .. string.StripExtension(string.sub(css, 6)) .. ".uasset"
 else
-	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_27_TurretLaser.json"
+	ENT.CharacterSoundSetPath = "data_static/SB/Content/Sound/SoundAsset/CharacterSoundset/CSS_MON_27_TurretLaser.uasset"
 end
-SB_ImportJSON(ENT.CharacterSoundSetPath) 
+SB_CSS_MON_27_TurretLaser = SB_ImportUAsset(ENT.CharacterSoundSetPath) 
 
-local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".json"
+local BehaviorTreeRes = "data_static/SB/Content" .. string.sub(charData.BehaviorTreeRes, 6) .. ".uasset"
+local BehaviorTreePointer = string.GetFileFromFilename(charData.BehaviorTreeRes) -- M_Raven_AI
+local BehaviorTreePointer = "SB_"..BehaviorTreePointer -- SB_M_Raven_AI
 ENT.BehaviorTreeRes = BehaviorTreeRes
-SB_ImportJSON(BehaviorTreeRes) 
-ENT.SBAI_Debug = false 
+local BehaviorTree = SB_ImportUAsset(BehaviorTreeRes) 
+_G[BehaviorTreePointer] = BehaviorTree 
+
+ENT.SBAI_Debug = true  
 function ENT:NPC_GetShootPos() return self:EyePos() end 
 
 function ENT:Draw(flags) 

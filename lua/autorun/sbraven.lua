@@ -3,7 +3,7 @@
 local strRealm = SERVER and "SERVER" or "CLIENT" 
 local sb_playerclass = "M_Raven" -- or M_Raven 
 
-UAsset = UAsset or include("includes/uasset.lua") -- add local behind to get it local 
+UAsset = UAsset or include("includes/uasset.lua") -- add local behind to get it local. you can add this with 'module' as well 
 -- UAsset.RefreshPackageIndex() 
 print(UAsset.CacheCount() )
 StellarBlade_1_1_0 = StellarBlade_1_1_0 or UAsset.LoadUsmapFile("data_static/SB/StellarBlade_1_1_0.raw.usmap") 
@@ -6635,6 +6635,19 @@ local function GetHierarchyRoot(ent)
 	end 
 end
 
+local DefaultCollisionGroupBones = {
+	["Collision_WeaponAndHandR"] = { "ValveBiped.Bip01_R_UpperArm", "ValveBiped.Bip01_R_Forearm", "ValveBiped.Bip01_R_Hand", bWeapon = true },
+	["Collision_Weapon"]          = { bWeapon = true },
+	["Collision_WeaponR"]         = { "ValveBiped.Bip01_R_Forearm", "ValveBiped.Bip01_R_Hand", bWeapon = true },
+	["Collision_WeaponL"]         = { "ValveBiped.Bip01_L_Forearm", "ValveBiped.Bip01_L_Hand" },
+	["Collision_WeaponNoArm"]     = { "ValveBiped.Bip01_R_Hand", "ValveBiped.Bip01_L_Hand", bWeapon = true },
+	["Collision_LegLExtended"]    = { "ValveBiped.Bip01_L_Thigh", "ValveBiped.Bip01_L_Calf", "ValveBiped.Bip01_L_Foot" },
+	["Collision_LegL"]            = { "ValveBiped.Bip01_L_Thigh", "ValveBiped.Bip01_L_Calf", "ValveBiped.Bip01_L_Foot" },
+	["Collision_LegR"]            = { "ValveBiped.Bip01_R_Thigh", "ValveBiped.Bip01_R_Calf", "ValveBiped.Bip01_R_Foot" },
+	["Collision_ArmL"]            = { "ValveBiped.Bip01_L_UpperArm", "ValveBiped.Bip01_L_Forearm", "ValveBiped.Bip01_L_Hand" },
+	["Collision_ArmR"]            = { "ValveBiped.Bip01_R_UpperArm", "ValveBiped.Bip01_R_Forearm", "ValveBiped.Bip01_R_Hand" },
+}
+
 StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryFrameHitCheck,sTable) 
 	local ID = SkillStepTable.ID 
 	local SBAI_SkillTable = SBAI_SkillStep.SBAI_SkillTable 
@@ -6692,72 +6705,62 @@ StellarBlade.CheckSkillHit = function(self,SBAI_SkillStep,SkillStepTable,bEveryF
 		tableofhittargets = StellarBlade.TargetFilter(self,TargetFilterAlias,SBAI_SkillStep.Cycle) 
 	end 
 	
-	if string.find(HitDetectionType,"ActiveCollision") then 
-		if table_IsEmpty(tableofhittargets) then tableofhittargets = ents_FindInPVS and ents_FindInPVS(self) or ents.FindInSphere(self:GetPos(),self:BoundingRadius()*5) end 
-		-- originally, characters have a SBCollisionGroupComponent 
-		-- they lead to character's collision group data asset such as CH_M_NA_53_Raven_Collision 
-		-- those assets have names, bones used, pos and ang data such as AttackCollisionGroupArray[1].GroupName = "Collision_Weapon"
-		-- print("SkillStepTable.AttackCollisionGroupArray",SkillStepTable.AttackCollisionGroupArray) 
-		if string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_WeaponAndHandR") then 
-			local M_Raven_UpperArmR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_UpperArm") 
-			local M_Raven_ForearmR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Forearm") 
-			local M_Raven_HandR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Hand") 
-			local Collision_Weapon = StellarBlade.CheckWeaponCollision(self,tableofhittargets) 
-			local result = { } 
-			table.Add(result, M_Raven_UpperArmR) 
-			table.Add(result, M_Raven_ForearmR) 
-			table.Add(result, M_Raven_HandR) 
-			table.Add(result, Collision_Weapon) 
-			tableofhittargets = result 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_Weapon") then 
-			tableofhittargets = StellarBlade.CheckWeaponCollision(self,tableofhittargets) 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_LegLExtended") then 
-			local M_Raven_ThighL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Thigh") 
-			local M_Raven_CalfL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Calf") 
-			local M_Raven_FootL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Foot") 
-			local result = { } 
-			table.Add(result, M_Raven_ThighL) 
-			table.Add(result, M_Raven_CalfL) 
-			table.Add(result, M_Raven_FootL) 
-			tableofhittargets = result 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_LegL") then 
-			local M_Raven_ThighL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Thigh") 
-			local M_Raven_CalfL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Calf") 
-			local M_Raven_FootL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Foot") 
-			local result = { } 
-			table.Add(result, M_Raven_ThighL) 
-			table.Add(result, M_Raven_CalfL) 
-			table.Add(result, M_Raven_FootL) 
-			tableofhittargets = result 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_LegR") then 
-			local M_Raven_ThighR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Thigh") 
-			local M_Raven_CalfR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Calf") 
-			local M_Raven_FootR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Foot") 
-			local result = { } 
-			table.Add(result, M_Raven_ThighR) 
-			table.Add(result, M_Raven_CalfR) 
-			table.Add(result, M_Raven_FootR) 
-			tableofhittargets = result 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_ArmL") then 
-			local M_Raven_UpperArmL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_UpperArm") 
-			local M_Raven_ForearmL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Forearm") 
-			local M_Raven_HandL = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_L_Hand") 
-			local result = { } 
-			table.Add(result, M_Raven_UpperArmL) 
-			table.Add(result, M_Raven_ForearmL) 
-			table.Add(result, M_Raven_HandL) 
-			tableofhittargets = result 
-		elseif string.find(SkillStepTable.AttackCollisionGroupArray,"Collision_ArmR") then 
-			local M_Raven_UpperArmR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_UpperArm") 
-			local M_Raven_ForearmR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Forearm") 
-			local M_Raven_HandR = StellarBlade.CheckHitboxCollision(self,tableofhittargets,"ValveBiped.Bip01_R_Hand") 
-			local result = { } 
-			table.Add(result, M_Raven_UpperArmR) 
-			table.Add(result, M_Raven_ForearmR) 
-			table.Add(result, M_Raven_HandR) 
-			tableofhittargets = result 
+	if string.find(HitDetectionType, "ActiveCollision") then 
+		if table_IsEmpty(tableofhittargets) then 
+			tableofhittargets = ents_FindInPVS and ents_FindInPVS(self) or ents.FindInSphere(self:GetPos(), self:BoundingRadius() * 5) 
 		end 
-	end 
+
+		print("SkillStepTable.AttackCollisionGroupArray", SkillStepTable.AttackCollisionGroupArray) 
+
+		local collisionGroupStr = SkillStepTable.AttackCollisionGroupArray
+		if collisionGroupStr and collisionGroupStr ~= "" and collisionGroupStr ~= "None" then
+			local matchedBones = nil
+			local bIncludeWeapon = false
+
+			-- 1. Check entity's own collision provider first
+			if sTable.CheckHitboxCollision then
+				for group in string.gmatch(collisionGroupStr, "Collision_[%w_]+") do
+					local ret = { sTable.CheckHitboxCollision(self, tableofhittargets, group) }
+					if ret[1] ~= nil then
+						matchedBones = (type(ret[1]) == "table") and ret[1] or ret
+						break
+					end
+				end
+			end
+
+			-- 2. Fallback to table lookup on entity if defined
+			if not matchedBones and sTable.CollisionGroupBones then
+				for group in string.gmatch(collisionGroupStr, "Collision_[%w_]+") do
+					if sTable.CollisionGroupBones[group] then
+						matchedBones = sTable.CollisionGroupBones[group]
+						break
+					end
+				end
+			end
+
+			-- 3. Fallback to default HL2 ValveBiped mappings
+			if not matchedBones then
+				for group in string.gmatch(collisionGroupStr, "Collision_[%w_]+") do
+					local defaultGroup = DefaultCollisionGroupBones[group]
+					if defaultGroup then
+						matchedBones = defaultGroup
+						bIncludeWeapon = defaultGroup.bWeapon or false
+						break
+					end
+				end
+
+				-- If no exact group matched but string references Collision_Weapon, fallback to weapon
+				if not matchedBones and string.find(collisionGroupStr, "Collision_Weapon") then
+					bIncludeWeapon = true
+				end
+			end
+
+			-- 4. Unified single-pass sweep: expands all hitboxes/bones and filters tableofhittargets in-place
+			if matchedBones or bIncludeWeapon then
+				StellarBlade.CheckHitboxCollision(self, tableofhittargets, matchedBones, 0, bIncludeWeapon)
+			end
+		end
+	end
 	
 	-- print("tableofhittargets size is:",#tableofhittargets) 
 	
@@ -7740,27 +7743,10 @@ end
     Only entities within the provided entityList are kept.
 ]]-- 
 
-StellarBlade.CheckWeaponCollision = function(self, entityList)
-	local ENABLE_SWEEP_INTERPOLATION = true
-    local wep = self:GetActiveWeapon() 
-	if !IsValid(wep) then wep = self end 
-    -- 1. Get the Collision Bounds of the weapon (Local Space)
-	local mins, maxs = wep:GetCollisionBounds()
+-- Default fallback bone sets for standard ValveBiped / HL2 skeletons
 
-	-- 2. Get the Hand Bone Matrix (Simulating the visual bonemerge on the server)
-	local boneIndex = self:LookupBone("ValveBiped.Bip01_R_Hand")
-	if !boneIndex then return {} end
 
-	local matrix = self:GetBoneMatrix(boneIndex)
-	if !matrix then return {} end
-
-	local bonePos = matrix:GetTranslation()
-	local boneAng = matrix:GetAngles()
-	boneAng:RotateAroundAxis(Vector(0,0,0),90) 
-	mins.z = mins.z * 2 
-	maxs.z = maxs.z * 2 
-
-	-- 3. Calculate the "Fat" Axis-Aligned Bounding Box (AABB)
+local function ExpandBoxCorners(mins, maxs, bonePos, boneAng, worldMins, worldMaxs)
 	local corners = {
 		Vector(mins.x, mins.y, mins.z),
 		Vector(mins.x, mins.y, maxs.z),
@@ -7771,169 +7757,178 @@ StellarBlade.CheckWeaponCollision = function(self, entityList)
 		Vector(maxs.x, maxs.y, mins.z),
 		Vector(maxs.x, maxs.y, maxs.z),
 	}
-
-	local worldMins = Vector(math.huge, math.huge, math.huge)
-	local worldMaxs = Vector(-math.huge, -math.huge, -math.huge)
-
-	for _, corner in ipairs(corners) do
-		local worldPt = LocalToWorld(corner, angle_zero, bonePos, boneAng)
-
+	for i = 1, 8 do
+		local worldPt = LocalToWorld(corners[i], angle_zero, bonePos, boneAng)
 		if worldPt.x < worldMins.x then worldMins.x = worldPt.x end
 		if worldPt.y < worldMins.y then worldMins.y = worldPt.y end
 		if worldPt.z < worldMins.z then worldMins.z = worldPt.z end
-
 		if worldPt.x > worldMaxs.x then worldMaxs.x = worldPt.x end
 		if worldPt.y > worldMaxs.y then worldMaxs.y = worldPt.y end
 		if worldPt.z > worldMaxs.z then worldMaxs.z = worldPt.z end
 	end
-
-	-- 3.5. Interpolate / Sweep Bounds with Cached Frame Data
-	local currentTime = CurTime()
-
-	if ENABLE_SWEEP_INTERPOLATION and self.CheckWeaponCollision_lastWeaponCheckTime then
-		local deltaTime = currentTime - self.CheckWeaponCollision_lastWeaponCheckTime
-
-		if deltaTime <= (FrameTime() * 3) and self.CheckWeaponCollision_lastWorldMins and self.CheckWeaponCollision_lastWorldMaxs then
-			worldMins.x = math.min(worldMins.x, self.CheckWeaponCollision_lastWorldMins.x)
-			worldMins.y = math.min(worldMins.y, self.CheckWeaponCollision_lastWorldMins.y)
-			worldMins.z = math.min(worldMins.z, self.CheckWeaponCollision_lastWorldMins.z)
-
-			worldMaxs.x = math.max(worldMaxs.x, self.CheckWeaponCollision_lastWorldMaxs.x)
-			worldMaxs.y = math.max(worldMaxs.y, self.CheckWeaponCollision_lastWorldMaxs.y)
-			worldMaxs.z = math.max(worldMaxs.z, self.CheckWeaponCollision_lastWorldMaxs.z)
-		end
-	end
-
-	-- Update self entity cache with vector copies
-	self.CheckWeaponCollision_lastWeaponCheckTime = currentTime
-	self.CheckWeaponCollision_lastWorldMins = Vector(worldMins)
-	self.CheckWeaponCollision_lastWorldMaxs = Vector(worldMaxs)
-
-	-- 4. Find all entities within the calculated "Fat" AABB
-	local hitEnts = ents.FindInBox(worldMins, worldMaxs)
-
-	-- 5. Filter: Keep only entities that were in the original entityList
-	local filtered = {}
-	local hitAnything = false
-
-	for _, ent in ipairs(hitEnts) do
-		if IsValid(ent) and table.HasValue(entityList, ent) then
-			table.insert(filtered, ent)
-			hitAnything = true
-		end
-	end
-	
-	hook.Run("StellarBlade_OnCheckWeaponCollision",worldMins,worldMaxs,entityList,filtered) -- allow outer hooks to modify result 
-
-	-- 6. Visualization
-	-- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
-	local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
-	-- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
-
-	return filtered
 end
 
 --[[ 
-    Checks whether a given entity’s specified hitbox collides with any entities in entityList.
-    @param owner      (Entity) The entity whose hitbox will be checked.
-    @param entityList (table)  List of entities to test against.
-    @param hitboxID   (number|string) Hitbox index or bone name.
-    @param hitboxSet  (number) Optional: hitbox set index (default = 0).
-    @return table     List of entities intersecting this hitbox.
+    Unified collision check: expands all specified bones/hitboxes (and optional weapon)
+    into a single enclosing AABB sweep and filters entityList in-place without table allocations.
+]]--
+StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitboxSet, bIncludeWeapon)
+	if not IsValid(owner) or not istable(entityList) or #entityList == 0 then return entityList or {} end
+	hitboxSet = hitboxSet or 0
+
+	local sTable = owner:GetTable()
+	local ENABLE_SWEEP_INTERPOLATION = true
+
+	local worldMins = Vector(math.huge, math.huge, math.huge)
+	local worldMaxs = Vector(-math.huge, -math.huge, -math.huge)
+	local hasValidBounds = false
+
+	-- 1. Resolve bones list (supports single bone string, hitbox number, or table of bones)
+	local bonesToCheck = nil
+	if type(hitboxID) == "table" then
+		bonesToCheck = hitboxID
+		if hitboxID.bWeapon then bIncludeWeapon = true end
+	elseif hitboxID ~= nil then
+		bonesToCheck = { hitboxID }
+	end
+
+	local numHitBoxes = owner:GetHitBoxCount(hitboxSet) or 0
+
+	if bonesToCheck then
+		for i = 1, #bonesToCheck do
+			local boneOrID = bonesToCheck[i]
+			if isstring(boneOrID) or isnumber(boneOrID) then
+				local hitID = nil
+				local boneIdx = nil
+
+				if isnumber(boneOrID) then
+					hitID = boneOrID
+					boneIdx = owner:GetHitBoxBone(hitID, hitboxSet)
+				else
+					-- Match bone name to model hitbox
+					for h = 0, numHitBoxes - 1 do
+						local b = owner:GetHitBoxBone(h, hitboxSet)
+						if b and owner:GetBoneName(b) == boneOrID then
+							hitID = h
+							boneIdx = b
+							break
+						end
+					end
+					-- Fallback to skeleton bone index if no explicit $hbox exists
+					if not boneIdx then
+						boneIdx = owner:LookupBone(boneOrID)
+					end
+				end
+
+				if boneIdx and boneIdx >= 0 then
+					local matrix = owner:GetBoneMatrix(boneIdx)
+					if matrix then
+						local bMins, bMaxs = nil, nil
+						if hitID then
+							bMins, bMaxs = owner:GetHitBoxBounds(hitID, hitboxSet)
+						end
+						if not bMins or not bMaxs then
+							bMins, bMaxs = Vector(-6, -6, -6), Vector(6, 6, 6)
+						end
+
+						ExpandBoxCorners(bMins, bMaxs, matrix:GetTranslation(), matrix:GetAngles(), worldMins, worldMaxs)
+						hasValidBounds = true
+					end
+				end
+			end
+		end
+	end
+
+	-- 2. Expand weapon bounds if requested
+	if bIncludeWeapon then
+		local wep = owner.GetActiveWeapon and owner:GetActiveWeapon()
+		if not IsValid(wep) and owner:IsWeapon() then wep = owner end
+		if IsValid(wep) and wep ~= owner then
+			local wMins, wMaxs = wep:GetCollisionBounds()
+			local handBone = owner:LookupBone("ValveBiped.Bip01_R_Hand") or owner:LookupBone("Bip001-R-Hand") or owner:LookupBone("R_Hand")
+			if handBone and handBone >= 0 then
+				local matrix = owner:GetBoneMatrix(handBone)
+				if matrix then
+					local bonePos = matrix:GetTranslation()
+					local boneAng = matrix:GetAngles()
+					boneAng:RotateAroundAxis(Vector(0, 0, 0), 90)
+
+					local wMinsZ2 = Vector(wMins.x, wMins.y, wMins.z * 2)
+					local wMaxsZ2 = Vector(wMaxs.x, wMaxs.y, wMaxs.z * 2)
+					ExpandBoxCorners(wMinsZ2, wMaxsZ2, bonePos, boneAng, worldMins, worldMaxs)
+					hasValidBounds = true
+				end
+			end
+		end
+	end
+
+	if not hasValidBounds then
+		table.Empty(entityList)
+		return entityList
+	end
+
+	-- 3. Sweep interpolation with cached frame data
+	local currentTime = CurTime()
+	if ENABLE_SWEEP_INTERPOLATION and sTable._CheckHitbox_lastTime then
+		local deltaTime = currentTime - sTable._CheckHitbox_lastTime
+		if deltaTime <= (FrameTime() * 3) and sTable._CheckHitbox_lastMins and sTable._CheckHitbox_lastMaxs then
+			worldMins.x = math.min(worldMins.x, sTable._CheckHitbox_lastMins.x)
+			worldMins.y = math.min(worldMins.y, sTable._CheckHitbox_lastMins.y)
+			worldMins.z = math.min(worldMins.z, sTable._CheckHitbox_lastMins.z)
+
+			worldMaxs.x = math.max(worldMaxs.x, sTable._CheckHitbox_lastMaxs.x)
+			worldMaxs.y = math.max(worldMaxs.y, sTable._CheckHitbox_lastMaxs.y)
+			worldMaxs.z = math.max(worldMaxs.z, sTable._CheckHitbox_lastMaxs.z)
+		end
+	end
+
+	sTable._CheckHitbox_lastTime = currentTime
+	sTable._CheckHitbox_lastMins = Vector(worldMins)
+	sTable._CheckHitbox_lastMaxs = Vector(worldMaxs)
+
+	-- 4. Single spatial engine query
+	local hitEnts = ents.FindInBox(worldMins, worldMaxs)
+
+	-- 5. In-place filter on entityList (zero table allocations)
+	local hitAnything = false
+	for i = #entityList, 1, -1 do
+		local ent = entityList[i]
+		local hit = false
+		if IsValid(ent) and ent ~= owner then
+			for j = 1, #hitEnts do
+				if hitEnts[j] == ent then
+					hit = true
+					hitAnything = true
+					break
+				end
+			end
+		end
+		if not hit then
+			table.remove(entityList, i)
+		end
+	end
+
+	hook.Run("StellarBlade_OnCheckHitboxCollision", worldMins, worldMaxs, entityList, hitboxID, hitboxSet, entityList)
+	if bIncludeWeapon then
+		hook.Run("StellarBlade_OnCheckWeaponCollision", worldMins, worldMaxs, entityList, entityList)
+	end
+
+	-- 6. Debug overlay
+	-- local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
+	-- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
+
+	return entityList
+end
+
+--[[
+    Checks weapon collision for a given entity, routing into the unified hitbox sweep.
 ]]-- 
-StellarBlade.CheckHitboxCollision = function(owner, entityList, hitboxID, hitboxSet) 
-    if !IsValid(owner) or !istable(entityList) then return {} end 
-    hitboxSet = hitboxSet or 0 
+StellarBlade.CheckWeaponCollision = function(self, entityList)
+	local StellarBlade_PreCheckWeaponCollision = hook.Run("StellarBlade_PreCheckWeaponCollision", self, entityList)
+	if StellarBlade_PreCheckWeaponCollision then return StellarBlade_PreCheckWeaponCollision end
 
-    -- 1. Convert bone name -> hitbox ID if string was given
-    if isstring(hitboxID) then
-        local numHitBoxes = owner:GetHitBoxCount(hitboxSet)
-        for i = 0, numHitBoxes - 1 do
-            local boneIndex = owner:GetHitBoxBone(i, hitboxSet)
-            local boneName = owner:GetBoneName(boneIndex)
-            if boneName == hitboxID then
-                hitboxID = i
-                break
-            end
-        end
-    end
-
-    if !isnumber(hitboxID) then return {} end
-
-    -- 2. Fetch hitbox bounds (Local to the bone)
-    local mins, maxs = owner:GetHitBoxBounds(hitboxID, hitboxSet)
-    if !mins or !maxs then return {} end
-
-    -- 3. Fetch hitbox orientation via Bone Matrix
-    local boneIndex = owner:GetHitBoxBone(hitboxID, hitboxSet)
-    if !boneIndex then return {} end
-
-    -- Use GetBoneMatrix to ensure we match the logic of CheckWeaponCollision
-    local matrix = owner:GetBoneMatrix(boneIndex)
-    if not matrix then return {} end
-    
-    local bonePos = matrix:GetTranslation()
-    local boneAng = matrix:GetAngles()
-
-    -- 4. Calculate the "Fat" Axis-Aligned Bounding Box (AABB)
-    -- Just like the weapon check, we rotate the 8 corners of the hitbox 
-    -- into world space to find the absolute min/max bounds.
-    local corners = {
-        Vector(mins.x, mins.y, mins.z),
-        Vector(mins.x, mins.y, maxs.z),
-        Vector(mins.x, maxs.y, mins.z),
-        Vector(mins.x, maxs.y, maxs.z),
-        Vector(maxs.x, mins.y, mins.z),
-        Vector(maxs.x, mins.y, maxs.z),
-        Vector(maxs.x, maxs.y, mins.z),
-        Vector(maxs.x, maxs.y, maxs.z),
-    }
-
-    local worldMins = Vector(math.huge, math.huge, math.huge)
-    local worldMaxs = Vector(-math.huge, -math.huge, -math.huge)
-
-    for _, corner in ipairs(corners) do
-        -- Transform the local corner into world space relative to the bone
-        local worldPt = LocalToWorld(corner, angle_zero, bonePos, boneAng)
-
-        -- Expand the world bounds to fit this point
-        if worldPt.x < worldMins.x then worldMins.x = worldPt.x end
-        if worldPt.y < worldMins.y then worldMins.y = worldPt.y end
-        if worldPt.z < worldMins.z then worldMins.z = worldPt.z end
-
-        if worldPt.x > worldMaxs.x then worldMaxs.x = worldPt.x end
-        if worldPt.y > worldMaxs.y then worldMaxs.y = worldPt.y end
-        if worldPt.z > worldMaxs.z then worldMaxs.z = worldPt.z end
-    end
-
-    -- 5. Find all entities within the calculated "Fat" AABB
-    local hitEnts = ents.FindInBox(worldMins, worldMaxs)
-
-    -- 6. Filter: Keep only entities that were in the original entityList
-    local filtered = {}
-    local hitAnything = false
-
-    for _, ent in ipairs(hitEnts) do
-        -- Ensure we don't hit ourselves
-        if IsValid(ent) and ent ~= owner and table.HasValue(entityList, ent) then
-            table.insert(filtered, ent)
-            hitAnything = true
-        end
-    end
-	
-	hook.Run("StellarBlade_OnCheckHitboxCollision",worldMins,worldMaxs,entityList,hitboxID, hitboxSetfiltered) -- allow outer hooks to modify result 
-
-    -- 7. Visualization (Identical style to Weapon Collision)
-    -- RED Rotated Box: Represents the actual hitbox orientation (OBB)
-    -- debugoverlay.BoxAngles(bonePos, mins, maxs, boneAng, 0.1, Color(255, 0, 0, 10))
-    
-    -- BLUE Wireframe Box: Represents the actual detection area (AABB)
-    local debugColor = hitAnything and Color(0, 255, 0, 50) or Color(0, 255, 255, 5)
-    -- debugoverlay.SweptBox(vector_origin, vector_origin, worldMins, worldMaxs, angle_zero, 0.1, debugColor)
-
-    -- print("Hitbox collision count:", #filtered)
-    return filtered
-end 
+	return StellarBlade.CheckHitboxCollision(self, entityList, nil, 0, true)
+end
 
 -- Helper function to determine active states for an entity
 -- Returns a table where keys are state names and values are booleans
